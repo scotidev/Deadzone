@@ -12,19 +12,6 @@
 /[Uu]ser[Ss]ettings/
 *.log
 
-# Only track C# scripts, ignore all other assets
-/Assets/*
-!/Assets/Scripts/
-!/Assets/Scripts/**
-*.shader
-*.shaderlabs
-*.shadergraph
-*.unity
-*.prefab
-*.mat
-*.anim
-*.controller
-
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be commited to version control.
 *.blend1
 *.blend1.meta

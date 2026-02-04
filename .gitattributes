@@ -1,0 +1,12 @@
+# Mark everything as third-party/vendor by default
+* linguist-vendored
+
+# Only count actual C# scripts as your code
+*.cs linguist-vendored=false
+*.cs linguist-detectable=true
+
+# Force treat these extensions as binary data
+*.asset linguist-language=binary
+*.anim linguist-language=binary
+*.mat linguist-language=binary
+*.unity linguist-language=binary
