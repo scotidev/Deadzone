@@ -6,53 +6,53 @@ using System.Globalization;
 namespace InfimaGames.LowPolyShooterPack.Interface
 {
     /// <summary>
-    /// Current Ammunition Text.
+    /// Texto da Interface (HUD) que mostra a munição atual no pente.
     /// </summary>
     public class TextAmmunitionCurrent : ElementText
     {
         #region FIELDS SERIALIZED
-        
-        [Header("Colors")]
-        
-        [Tooltip("Determines if the color of the text should changes as ammunition is fired.")]
+
+        [Header("Cores")]
+
+        [Tooltip("Se marcado, a cor do texto mudará conforme a munição acaba.")]
         [SerializeField]
         private bool updateColor = true;
-        
-        [Tooltip("Determines how fast the color changes as the ammunition is fired.")]
+
+        [Tooltip("Velocidade da mudança de cor.")]
         [SerializeField]
         private float emptySpeed = 1.5f;
-        
-        [Tooltip("Color used on this text when the player character has no ammunition.")]
+
+        [Tooltip("Cor usada quando a munição está acabando.")]
         [SerializeField]
         private Color emptyColor = Color.red;
-        
+
         #endregion
-        
+
         #region METHODS
-        
+
         /// <summary>
-        /// Tick.
+        /// Tick é chamado constantemente para atualizar o texto.
         /// </summary>
         protected override void Tick()
         {
-            //Current Ammunition.
+            // Pega a munição atual da arma equipada.
             float current = equippedWeapon.GetAmmunitionCurrent();
-            //Total Ammunition.
+            // Pega a capacidade total do pente.
             float total = equippedWeapon.GetAmmunitionTotal();
-            
-            //Update Text.
+
+            // Atualiza o texto na tela.
             textMesh.text = current.ToString(CultureInfo.InvariantCulture);
 
-            //Determine if we should update the text's color.
+            // Lógica para mudar a cor para vermelho quando houver poucas balas.
             if (updateColor)
             {
-                //Calculate Color Alpha. Helpful to make the text color change based on count.
+                // Calcula a "transparência" da cor baseada na porcentagem de balas restantes.
                 float colorAlpha = (current / total) * emptySpeed;
-                //Lerp Color. This makes sure that the text color changes based on count.
-                textMesh.color = Color.Lerp(emptyColor, Color.white, colorAlpha);   
+                // Faz a transição suave entre branco (cheio) e vermelho (vazio).
+                textMesh.color = Color.Lerp(emptyColor, Color.white, colorAlpha);
             }
         }
-        
+
         #endregion
     }
 }

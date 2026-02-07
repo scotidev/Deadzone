@@ -7,56 +7,59 @@ namespace InfimaGames.LowPolyShooterPack
     /// <summary>
     /// Weapon. This class handles most of the things that weapons need.
     /// </summary>
+    /// <summary>
+    /// Script que gerencia o comportamento individual de cada arma.
+    /// </summary>
     public class Weapon : WeaponBehaviour
     {
         #region FIELDS SERIALIZED
-        
-        [Header("Firing")]
 
-        [Tooltip("Is this weapon automatic? If yes, then holding down the firing button will continuously fire.")]
-        [SerializeField] 
+        [Header("Configurações de Tiro")]
+
+        [Tooltip("A arma é automática? Se sim, segurar o botão de tiro disparará continuamente.")]
+        [SerializeField]
         private bool automatic;
-        
-        [Tooltip("How fast the projectiles are.")]
+
+        [Tooltip("Velocidade/Impulso do projétil.")]
         [SerializeField]
         private float projectileImpulse = 400.0f;
 
-        [Tooltip("Amount of shots this weapon can shoot in a minute. It determines how fast the weapon shoots.")]
-        [SerializeField] 
+        [Tooltip("Cadência de tiro (tiros por minuto).")]
+        [SerializeField]
         private int roundsPerMinutes = 200;
 
-        [Tooltip("Mask of things recognized when firing.")]
+        [Tooltip("Camadas (Layers) que o tiro pode atingir.")]
         [SerializeField]
         private LayerMask mask;
 
-        [Tooltip("Maximum distance at which this weapon can fire accurately. Shots beyond this distance will not use linetracing for accuracy.")]
+        [Tooltip("Distância máxima para precisão total.")]
         [SerializeField]
         private float maximumDistance = 500.0f;
 
-        [Header("Animation")]
+        [Header("Animação")]
 
-        [Tooltip("Transform that represents the weapon's ejection port, meaning the part of the weapon that casings shoot from.")]
+        [Tooltip("Ponto de onde saem as cápsulas vazias.")]
         [SerializeField]
         private Transform socketEjection;
 
-        [Header("Resources")]
+        [Header("Recursos (Prefabs)")]
 
-        [Tooltip("Casing Prefab.")]
+        [Tooltip("Prefab da cápsula vazia.")]
         [SerializeField]
         private GameObject prefabCasing;
-        
-        [Tooltip("Projectile Prefab. This is the prefab spawned when the weapon shoots.")]
+
+        [Tooltip("Prefab do projétil (bala) que será disparado.")]
         [SerializeField]
         private GameObject prefabProjectile;
-        
+
         [Tooltip("The AnimatorController a player character needs to use while wielding this weapon.")]
-        [SerializeField] 
+        [SerializeField]
         public RuntimeAnimatorController controller;
 
         [Tooltip("Weapon Body Texture.")]
         [SerializeField]
         private Sprite spriteBody;
-        
+
         [Header("Audio Clips Holster")]
 
         [Tooltip("Holster Audio Clip.")]
@@ -66,17 +69,17 @@ namespace InfimaGames.LowPolyShooterPack
         [Tooltip("Unholster Audio Clip.")]
         [SerializeField]
         private AudioClip audioClipUnholster;
-        
+
         [Header("Audio Clips Reloads")]
 
         [Tooltip("Reload Audio Clip.")]
         [SerializeField]
         private AudioClip audioClipReload;
-        
+
         [Tooltip("Reload Empty Audio Clip.")]
         [SerializeField]
         private AudioClip audioClipReloadEmpty;
-        
+
         [Header("Audio Clips Other")]
 
         [Tooltip("AudioClip played when this weapon is fired without any ammunition.")]
@@ -102,7 +105,7 @@ namespace InfimaGames.LowPolyShooterPack
         private int ammunitionCurrent;
 
         #region Attachment Behaviours
-        
+
         /// <summary>
         /// Equipped Magazine Reference.
         /// </summary>
@@ -127,37 +130,35 @@ namespace InfimaGames.LowPolyShooterPack
         /// The player character's camera.
         /// </summary>
         private Transform playerCamera;
-        
+
         #endregion
 
         #region UNITY
-        
+
         protected override void Awake()
         {
-            //Get Animator.
+            // Cacheia o Animator da arma.
             animator = GetComponent<Animator>();
-            //Get Attachment Manager.
+            // Cacheia o gerenciador de acessórios (miras, silenciadores, etc).
             attachmentManager = GetComponent<WeaponAttachmentManagerBehaviour>();
 
-            //Cache the game mode service. We only need this right here, but we'll cache it in case we ever need it again.
+            // Busca referências globais necessárias para o funcionamento da arma.
             gameModeService = ServiceLocator.Current.Get<IGameModeService>();
-            //Cache the player character.
             characterBehaviour = gameModeService.GetPlayerCharacter();
-            //Cache the world camera. We use this in line traces.
+            // Pega a câmera do jogador para saber para onde ele está olhando ao atirar.
             playerCamera = characterBehaviour.GetCameraWorld().transform;
         }
         protected override void Start()
         {
             #region Cache Attachment References
-            
-            //Get Magazine.
+
+            // Pega as referências do pente (magazine) e do bocal (muzzle) equipados.
             magazineBehaviour = attachmentManager.GetEquippedMagazine();
-            //Get Muzzle.
             muzzleBehaviour = attachmentManager.GetEquippedMuzzle();
 
             #endregion
 
-            //Max Out Ammo.
+            // Começa com a munição máxima permitida pelo pente.
             ammunitionCurrent = magazineBehaviour.GetAmmunitionTotal();
         }
 
@@ -166,7 +167,7 @@ namespace InfimaGames.LowPolyShooterPack
         #region GETTERS
 
         public override Animator GetAnimator() => animator;
-        
+
         public override Sprite GetSpriteBody() => spriteBody;
 
         public override AudioClip GetAudioClipHolster() => audioClipHolster;
@@ -176,16 +177,16 @@ namespace InfimaGames.LowPolyShooterPack
         public override AudioClip GetAudioClipReloadEmpty() => audioClipReloadEmpty;
 
         public override AudioClip GetAudioClipFireEmpty() => audioClipFireEmpty;
-        
+
         public override AudioClip GetAudioClipFire() => muzzleBehaviour.GetAudioClipFire();
-        
+
         public override int GetAmmunitionCurrent() => ammunitionCurrent;
 
         public override int GetAmmunitionTotal() => magazineBehaviour.GetAmmunitionTotal();
 
         public override bool IsAutomatic() => automatic;
         public override float GetRateOfFire() => roundsPerMinutes;
-        
+
         public override bool IsFull() => ammunitionCurrent == magazineBehaviour.GetAmmunitionTotal();
         public override bool HasAmmunition() => ammunitionCurrent > 0;
 
@@ -203,51 +204,52 @@ namespace InfimaGames.LowPolyShooterPack
         }
         public override void Fire(float spreadMultiplier = 1.0f)
         {
-            //We need a muzzle in order to fire this weapon!
+            // Precisa de um bocal (muzzle) configurado para sair o tiro.
             if (muzzleBehaviour == null)
                 return;
-            
-            //Make sure that we have a camera cached, otherwise we don't really have the ability to perform traces.
+
+            // Precisa da câmera para calcular a direção.
             if (playerCamera == null)
                 return;
 
-            //Get Muzzle Socket. This is the point we fire from.
+            // Ponto de origem do tiro (ponta da arma).
             Transform muzzleSocket = muzzleBehaviour.GetSocket();
-            
-            //Play the firing animation.
+
+            // Toca a animação de tiro da própria arma.
             const string stateName = "Fire";
             animator.Play(stateName, 0, 0.0f);
-            //Reduce ammunition! We just shot, so we need to get rid of one!
+
+            // Reduz 1 bala do pente atual.
             ammunitionCurrent = Mathf.Clamp(ammunitionCurrent - 1, 0, magazineBehaviour.GetAmmunitionTotal());
 
-            //Play all muzzle effects.
+            // Toca efeitos visuais (fogo, fumaça) e sonoros do bocal.
             muzzleBehaviour.Effect();
-            
-            //Determine the rotation that we want to shoot our projectile in.
+
+            // Calcula a rotação inicial baseada no centro da tela (para onde a câmera olha).
             Quaternion rotation = Quaternion.LookRotation(playerCamera.forward * 1000.0f - muzzleSocket.position);
-            
-            //If there's something blocking, then we can aim directly at that thing, which will result in more accurate shooting.
+
+            // Raycast: se houver um objeto na frente, ajusta a rotação para a bala ir exatamente no ponto central.
             if (Physics.Raycast(new Ray(playerCamera.position, playerCamera.forward),
                 out RaycastHit hit, maximumDistance, mask))
                 rotation = Quaternion.LookRotation(hit.point - muzzleSocket.position);
-                
-            //Spawn projectile from the projectile spawn point.
+
+            // Cria o objeto do projétil no mundo.
             GameObject projectile = Instantiate(prefabProjectile, muzzleSocket.position, rotation);
-            //Add velocity to the projectile.
-            projectile.GetComponent<Rigidbody>().linearVelocity = projectile.transform.forward * projectileImpulse;   
+            // Dá velocidade física ao projétil.
+            projectile.GetComponent<Rigidbody>().linearVelocity = projectile.transform.forward * projectileImpulse;
         }
 
         public override void FillAmmunition(int amount)
         {
             //Update the value by a certain amount.
-            ammunitionCurrent = amount != 0 ? Mathf.Clamp(ammunitionCurrent + amount, 
+            ammunitionCurrent = amount != 0 ? Mathf.Clamp(ammunitionCurrent + amount,
                 0, GetAmmunitionTotal()) : magazineBehaviour.GetAmmunitionTotal();
         }
 
         public override void EjectCasing()
         {
             //Spawn casing prefab at spawn point.
-            if(prefabCasing != null && socketEjection != null)
+            if (prefabCasing != null && socketEjection != null)
                 Instantiate(prefabCasing, socketEjection.position, socketEjection.rotation);
         }
 

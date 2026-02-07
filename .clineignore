@@ -1,0 +1,58 @@
+# Pastas de Sistema (Ignora a pasta e todo o conteúdo)
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/MemoryCaptures/
+
+# Pastas de Configuração e Pacotes 
+/Packages/
+/ProjectSettings/
+
+# Arquivos de IDE e Compilação
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pdb
+*.opendb
+*.VC.db
+
+# Metadados do Unity (Essencial para economizar contexto)
+*.meta
+
+# Assets Binários e Grandes (O Cline não consegue ler ou editar)
+# Se ele tentar ler um .unity ou .prefab, ele vai desperdiçar todo o seu contexto.
+*.unity
+*.prefab
+*.asset
+*.mat
+*.fbx
+*.obj
+*.mesh
+*.anim
+*.controller
+*.overrideController
+*.physicMaterial
+*.physicsMaterial2D
+
+# Mídia
+*.png
+*.jpg
+*.jpeg
+*.tga
+*.psd
+*.tif
+*.tiff
+*.wav
+*.mp3
+*.ogg
+*.mp4
+*.mov
+
+# Plugins (Evita que a IA tente ler DLLs ou SDKs de terceiros)
+/[Aa]ssets/[Pp]lugins/

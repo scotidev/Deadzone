@@ -4,70 +4,79 @@ using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack
 {
+    /// <summary>
+    /// Gerencia as armas que o jogador possui e qual está ativa.
+    /// </summary>
     public class Inventory : InventoryBehaviour
     {
         #region FIELDS
-        
+
         /// <summary>
-        /// Array of all weapons. These are gotten in the order that they are parented to this object.
+        /// Lista de todas as armas disponíveis no inventário. 
+        /// Elas são encontradas automaticamente como objetos filhos deste script na Unity.
         /// </summary>
         private WeaponBehaviour[] weapons;
-        
+
         /// <summary>
-        /// Currently equipped WeaponBehaviour.
+        /// A arma que está atualmente nas mãos do jogador.
         /// </summary>
         private WeaponBehaviour equipped;
         /// <summary>
-        /// Currently equipped index.
+        /// O índice (número) da arma equipada na lista.
         /// </summary>
         private int equippedIndex = -1;
 
         #endregion
-        
+
         #region METHODS
-        
+
+        /// <summary>
+        /// Inicializa o inventário, encontrando as armas e equipando a primeira.
+        /// </summary>
         public override void Init(int equippedAtStart = 0)
         {
-            //Cache all weapons. Beware that weapons need to be parented to the object this component is on!
+            // Busca todas as armas que são filhas deste objeto.
             weapons = GetComponentsInChildren<WeaponBehaviour>(true);
-            
-            //Disable all weapons. This makes it easier for us to only activate the one we need.
+
+            // Desativa todas as armas visualmente no início.
             foreach (WeaponBehaviour weapon in weapons)
                 weapon.gameObject.SetActive(false);
 
-            //Equip.
+            // Equipa a arma inicial (geralmente a de índice 0).
             Equip(equippedAtStart);
         }
 
+        /// <summary>
+        /// Troca a arma atual por uma nova baseada no índice.
+        /// </summary>
         public override WeaponBehaviour Equip(int index)
         {
-            //If we have no weapons, we can't really equip anything.
+            // Se não houver armas, não faz nada.
             if (weapons == null)
                 return equipped;
-            
-            //The index needs to be within the array's bounds.
+
+            // Verifica se o índice pedido existe na lista.
             if (index > weapons.Length - 1)
                 return equipped;
 
-            //No point in allowing equipping the already-equipped weapon.
+            // Se já estiver com essa arma, não faz nada.
             if (equippedIndex == index)
                 return equipped;
-            
-            //Disable the currently equipped weapon, if we have one.
+
+            // Desativa a arma que estava na mão antes.
             if (equipped != null)
                 equipped.gameObject.SetActive(false);
 
-            //Update index.
+            // Atualiza o índice e a referência da arma atual.
             equippedIndex = index;
-            //Update equipped.
             equipped = weapons[equippedIndex];
-            //Activate the newly-equipped weapon.
+
+            // Ativa visualmente a nova arma.
             equipped.gameObject.SetActive(true);
 
-            //Return.
             return equipped;
         }
-        
+
         #endregion
 
         #region Getters
