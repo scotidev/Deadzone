@@ -10,23 +10,22 @@ namespace InfimaGames.LowPolyShooterPack
     {
         #region FIELDS SERIALIZED
 
-        [Header("Sons")]
-
-        [Tooltip("Som tocado quando o jogador está andando.")]
+        [Header("Audio Clips")]
+        
+        [Tooltip("The audio clip that is played while walking.")]
         [SerializeField]
         private AudioClip audioClipWalking;
 
-        [Tooltip("Som tocado quando o jogador está correndo.")]
+        [Tooltip("The audio clip that is played while running.")]
         [SerializeField]
         private AudioClip audioClipRunning;
 
-        [Header("Velocidades")]
+        [Header("Speeds")]
 
-        [Tooltip("Velocidade de caminhada.")]
         [SerializeField]
         private float speedWalking = 5.0f;
 
-        [Tooltip("Velocidade de corrida."), SerializeField]
+        [Tooltip("How fast the player moves while running."), SerializeField]
         private float speedRunning = 9.0f;
 
         #endregion
@@ -58,7 +57,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// Attached AudioSource.
         /// </summary>
         private AudioSource audioSource;
-
+        
         /// <summary>
         /// True if the character is currently grounded.
         /// </summary>
@@ -72,7 +71,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// The player character's equipped weapon.
         /// </summary>
         private WeaponBehaviour equippedWeapon;
-
+        
         /// <summary>
         /// Array of RaycastHits used for ground checking.
         /// </summary>
@@ -83,73 +82,70 @@ namespace InfimaGames.LowPolyShooterPack
         #region UNITY FUNCTIONS
 
         /// <summary>
-        /// Awake é chamado quando o script nasce.
+        /// Awake.
         /// </summary>
         protected override void Awake()
         {
-            // O Kit usa um "ServiceLocator" (tipo uma lista telefônica de scripts importantes).
-            // Aqui ele pede para encontrar quem é o "Jogador Principal" e guarda essa referência.
+            //Get Player Character.
             playerCharacter = ServiceLocator.Current.Get<IGameModeService>().GetPlayerCharacter();
         }
 
-        /// Inicializa o controlador de movimento logo após o Awake.
-        protected override void Start()
+        /// Initializes the FpsController on start.
+        protected override  void Start()
         {
-            // O Rigidbody é o componente da Unity que faz o objeto ter peso e colidir com as coisas.
+            //Rigidbody Setup.
             rigidBody = GetComponent<Rigidbody>();
-            // Avisa a Unity que a física NÃO deve girar o boneco (senão ele cairia de lado como um pino de boliche).
             rigidBody.constraints = RigidbodyConstraints.FreezeRotation;
-
-            // Pega o componente de Colisor (formato de cápsula) que envolve o jogador.
+            //Cache the CapsuleCollider.
             capsule = GetComponent<CapsuleCollider>();
 
-            // Prepara o componente de Som para tocar os passos.
+            //Audio Source Setup.
             audioSource = GetComponent<AudioSource>();
-            audioSource.clip = audioClipWalking; // Começa com o som de caminhada.
-            audioSource.loop = true; // Faz o som repetir enquanto o jogador se move.
+            audioSource.clip = audioClipWalking;
+            audioSource.loop = true;
         }
 
-        /// Função da Unity que avisa se o jogador está encostando em algo (como o chão).
+        /// Checks if the character is on the ground.
         private void OnCollisionStay()
         {
-            // Bounds são os limites da caixa/cápsula do jogador.
+            //Bounds.
             Bounds bounds = capsule.bounds;
+            //Extents.
             Vector3 extents = bounds.extents;
-            // O raio é um pouco menor que o boneco para não dar erro ao bater em paredes.
+            //Radius.
             float radius = extents.x - 0.01f;
-
-            // Atira uma "esfera invisível" para baixo. Se ela bater em algo, significa que o chão está logo ali.
+            
+            //Cast. This checks whether there is indeed ground, or not.
             Physics.SphereCastNonAlloc(bounds.center, radius, Vector3.down,
                 groundHits, extents.y - radius * 0.5f, ~0, QueryTriggerInteraction.Ignore);
-
-            // Se a esfera bater em algo que não seja o próprio jogador...
-            if (!groundHits.Any(hit => hit.collider != null && hit.collider != capsule))
-                return; // Se não bateu em nada, o jogador está no ar.
-
-            // Limpa a lista de batidas para a próxima verificação.
+            
+            //We can ignore the rest if we don't have any proper hits.
+            if (!groundHits.Any(hit => hit.collider != null && hit.collider != capsule)) 
+                return;
+            
+            //Store RaycastHits.
             for (var i = 0; i < groundHits.Length; i++)
                 groundHits[i] = new RaycastHit();
 
-            // Marca que o jogador está pisando no chão.
+            //Set grounded. Now we know for sure that we're grounded.
             grounded = true;
         }
-
-        // FixedUpdate é o Update focado em FÍSICA. Ele roda em intervalos de tempo fixos (ex: 50x por segundo).
+			
         protected override void FixedUpdate()
         {
-            // Chama a função que realmente faz o Rigidbody se mover baseado nas teclas WASD.
+            //Move.
             MoveCharacter();
-
-            // Reseta a variável do chão. Se ele continuar no chão, o OnCollisionStay vai marcar como true de novo no próximo frame.
+            
+            //Unground.
             grounded = false;
         }
 
         /// Moves the camera to the character, processes jumping and plays sounds every frame.
-        protected override void Update()
+        protected override  void Update()
         {
             //Get the equipped weapon!
             equippedWeapon = playerCharacter.GetInventory().GetEquipped();
-
+            
             //Play Sounds!
             PlayFootstepSounds();
         }
@@ -158,53 +154,48 @@ namespace InfimaGames.LowPolyShooterPack
 
         #region METHODS
 
-        /// <summary>
-        /// Calcula e aplica o movimento ao personagem.
-        /// </summary>
         private void MoveCharacter()
         {
             #region Calculate Movement Velocity
 
-            // Pergunta ao script do Personagem: "Quais teclas (WASD) o jogador está apertando agora?"
+            //Get Movement Input!
             Vector2 frameInput = playerCharacter.GetInputMovement();
-            // X é pros lados, Y (no input 2D) vira o Z (pra frente/trás) no mundo 3D.
+            //Calculate local-space direction by using the player's input.
             var movement = new Vector3(frameInput.x, 0.0f, frameInput.y);
-
-            // Checa no script do personagem se ele está no estado de CORRER (segurando shift).
-            if (playerCharacter.IsRunning())
-                movement *= speedRunning; // Multiplica pela velocidade maior.
+            
+            //Running speed calculation.
+            if(playerCharacter.IsRunning())
+                movement *= speedRunning;
             else
             {
-                movement *= speedWalking; // Multiplica pela velocidade de caminhada.
+                //Multiply by the normal walking speed.
+                movement *= speedWalking;
             }
 
-            // IMPORTANTE: transform.TransformDirection faz com que "pra frente" seja para onde o boneco está olhando.
-            // Sem isso, apertar 'W' moveria o jogador sempre para o Norte do mapa, independente de onde ele olhasse.
+            //World space velocity calculation. This allows us to add it to the rigidbody's velocity properly.
             movement = transform.TransformDirection(movement);
 
             #endregion
-
-            // Aplica o movimento final ao Rigidbody. 
-            // O Y fica em 0.0f porque quem cuida da gravidade (cair) é o próprio motor de física da Unity.
+            
+            //Update Velocity.
             Velocity = new Vector3(movement.x, 0.0f, movement.z);
         }
 
         /// <summary>
-        /// Toca os sons de passos.
+        /// Plays Footstep Sounds. This code is slightly old, so may not be great, but it functions alright-y!
         /// </summary>
         private void PlayFootstepSounds()
         {
-            // Se estiver no chão E a velocidade for maior que quase zero (0.1f)...
+            //Check if we're moving on the ground. We don't need footsteps in the air.
             if (grounded && rigidBody.linearVelocity.sqrMagnitude > 0.1f)
             {
-                // Escolhe o som: se estiver correndo, som de corrida. Senão, som de caminhada.
+                //Select the correct audio clip to play.
                 audioSource.clip = playerCharacter.IsRunning() ? audioClipRunning : audioClipWalking;
-
-                // Se o som já não estiver tocando, dá o Play.
+                //Play it!
                 if (!audioSource.isPlaying)
                     audioSource.Play();
             }
-            // Se parou de andar ou saiu do chão (pulo/queda), pausa o som.
+            //Pause it if we're doing something like flying, or not moving!
             else if (audioSource.isPlaying)
                 audioSource.Pause();
         }
