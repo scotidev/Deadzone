@@ -135,30 +135,34 @@ namespace InfimaGames.LowPolyShooterPack
 
         #region UNITY
 
+        // Awake é chamado quando o script da arma nasce.
         protected override void Awake()
         {
-            // Cacheia o Animator da arma.
+            // Pega o Animator da arma. Cada arma tem o seu para animações de recarga próprias.
             animator = GetComponent<Animator>();
-            // Cacheia o gerenciador de acessórios (miras, silenciadores, etc).
+            // Pega o gerenciador de acessórios. Ele sabe se a arma tem mira telescópica, etc.
             attachmentManager = GetComponent<WeaponAttachmentManagerBehaviour>();
 
-            // Busca referências globais necessárias para o funcionamento da arma.
+            // Busca os serviços globais (como o Service Locator que explicamos antes).
             gameModeService = ServiceLocator.Current.Get<IGameModeService>();
+            // Guarda quem é o jogador que está segurando esta arma.
             characterBehaviour = gameModeService.GetPlayerCharacter();
-            // Pega a câmera do jogador para saber para onde ele está olhando ao atirar.
+            // Pega a Câmera do mundo. Isso é vital para saber exatamente para onde o jogador está mirando.
             playerCamera = characterBehaviour.GetCameraWorld().transform;
         }
+
+        // Start roda logo depois do Awake.
         protected override void Start()
         {
             #region Cache Attachment References
 
-            // Pega as referências do pente (magazine) e do bocal (muzzle) equipados.
+            // Pergunta ao attachmentManager: "Qual pente (magazine) e qual bico (muzzle) eu estou usando?"
             magazineBehaviour = attachmentManager.GetEquippedMagazine();
             muzzleBehaviour = attachmentManager.GetEquippedMuzzle();
 
             #endregion
 
-            // Começa com a munição máxima permitida pelo pente.
+            // No começo do jogo, enche o pente da arma com a capacidade total dele.
             ammunitionCurrent = magazineBehaviour.GetAmmunitionTotal();
         }
 
@@ -202,40 +206,45 @@ namespace InfimaGames.LowPolyShooterPack
             //Play Reload Animation.
             animator.Play(HasAmmunition() ? "Reload" : "Reload Empty", 0, 0.0f);
         }
+        /// <summary>
+        /// Faz a arma disparar.
+        /// </summary>
         public override void Fire(float spreadMultiplier = 1.0f)
         {
-            // Precisa de um bocal (muzzle) configurado para sair o tiro.
+            // Se o script não achar o bico da arma (de onde sai o fogo), ele para aqui para não dar erro.
             if (muzzleBehaviour == null)
                 return;
 
-            // Precisa da câmera para calcular a direção.
+            // Se não achar a câmera do jogador, para aqui (não saberia para onde atirar).
             if (playerCamera == null)
                 return;
 
-            // Ponto de origem do tiro (ponta da arma).
+            // muzzleSocket é o ponto exato no modelo 3D onde a bala aparece.
             Transform muzzleSocket = muzzleBehaviour.GetSocket();
 
-            // Toca a animação de tiro da própria arma.
+            // Toca a animação da própria arma (ex: o ferrolho se movendo).
             const string stateName = "Fire";
             animator.Play(stateName, 0, 0.0f);
 
-            // Reduz 1 bala do pente atual.
+            // Tira uma bala do pente. O 'Mathf.Clamp' garante que o número nunca seja menor que zero.
             ammunitionCurrent = Mathf.Clamp(ammunitionCurrent - 1, 0, magazineBehaviour.GetAmmunitionTotal());
 
-            // Toca efeitos visuais (fogo, fumaça) e sonoros do bocal.
+            // Manda o bico da arma soltar o clarão (muzzle flash) e o som do tiro.
             muzzleBehaviour.Effect();
 
-            // Calcula a rotação inicial baseada no centro da tela (para onde a câmera olha).
+            // Calcula uma direção inicial "chutada" para a bala, indo para a frente da câmera.
             Quaternion rotation = Quaternion.LookRotation(playerCamera.forward * 1000.0f - muzzleSocket.position);
 
-            // Raycast: se houver um objeto na frente, ajusta a rotação para a bala ir exatamente no ponto central.
+            // RAYCAST: Isso é um "laser invisível" que sai do centro da câmera.
+            // Se esse laser bater em algo (parede, inimigo), a arma ajusta o cano para a bala ir EXATAMENTE onde o laser bateu.
+            // Isso garante que o tiro saia do cano da arma mas acerte onde a cruz (crosshair) está apontando.
             if (Physics.Raycast(new Ray(playerCamera.position, playerCamera.forward),
                 out RaycastHit hit, maximumDistance, mask))
                 rotation = Quaternion.LookRotation(hit.point - muzzleSocket.position);
 
-            // Cria o objeto do projétil no mundo.
+            // 'Instantiate' cria o objeto da bala (prefabProjectile) no jogo.
             GameObject projectile = Instantiate(prefabProjectile, muzzleSocket.position, rotation);
-            // Dá velocidade física ao projétil.
+            // Pega o Rigidbody da bala e empurra ele para frente com muita força (projectileImpulse).
             projectile.GetComponent<Rigidbody>().linearVelocity = projectile.transform.forward * projectileImpulse;
         }
 

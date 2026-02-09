@@ -83,61 +83,64 @@ namespace InfimaGames.LowPolyShooterPack
         #region UNITY FUNCTIONS
 
         /// <summary>
-        /// Awake é chamado quando o script é carregado.
+        /// Awake é chamado quando o script nasce.
         /// </summary>
         protected override void Awake()
         {
-            // Busca a referência do personagem principal através do Service Locator.
+            // O Kit usa um "ServiceLocator" (tipo uma lista telefônica de scripts importantes).
+            // Aqui ele pede para encontrar quem é o "Jogador Principal" e guarda essa referência.
             playerCharacter = ServiceLocator.Current.Get<IGameModeService>().GetPlayerCharacter();
         }
 
-        /// Inicializa o controlador de movimento no Start.
+        /// Inicializa o controlador de movimento logo após o Awake.
         protected override void Start()
         {
-            // Configura o Rigidbody (física).
+            // O Rigidbody é o componente da Unity que faz o objeto ter peso e colidir com as coisas.
             rigidBody = GetComponent<Rigidbody>();
-            // Trava a rotação para o personagem não "tombar" com a física.
+            // Avisa a Unity que a física NÃO deve girar o boneco (senão ele cairia de lado como um pino de boliche).
             rigidBody.constraints = RigidbodyConstraints.FreezeRotation;
 
-            // Cacheia o CapsuleCollider.
+            // Pega o componente de Colisor (formato de cápsula) que envolve o jogador.
             capsule = GetComponent<CapsuleCollider>();
 
-            // Configuração básica do AudioSource para os sons de passos.
+            // Prepara o componente de Som para tocar os passos.
             audioSource = GetComponent<AudioSource>();
-            audioSource.clip = audioClipWalking;
-            audioSource.loop = true;
+            audioSource.clip = audioClipWalking; // Começa com o som de caminhada.
+            audioSource.loop = true; // Faz o som repetir enquanto o jogador se move.
         }
 
-        /// Verifica se o personagem está tocando o chão usando colisões.
+        /// Função da Unity que avisa se o jogador está encostando em algo (como o chão).
         private void OnCollisionStay()
         {
-            // Obtém os limites do colisor do personagem.
+            // Bounds são os limites da caixa/cápsula do jogador.
             Bounds bounds = capsule.bounds;
             Vector3 extents = bounds.extents;
+            // O raio é um pouco menor que o boneco para não dar erro ao bater em paredes.
             float radius = extents.x - 0.01f;
 
-            // Faz um "SphereCast" (uma esfera invisível disparada para baixo) para checar o chão.
+            // Atira uma "esfera invisível" para baixo. Se ela bater em algo, significa que o chão está logo ali.
             Physics.SphereCastNonAlloc(bounds.center, radius, Vector3.down,
                 groundHits, extents.y - radius * 0.5f, ~0, QueryTriggerInteraction.Ignore);
 
-            // Se a esfera atingiu algo que não seja o próprio jogador, estamos no chão.
+            // Se a esfera bater em algo que não seja o próprio jogador...
             if (!groundHits.Any(hit => hit.collider != null && hit.collider != capsule))
-                return;
+                return; // Se não bateu em nada, o jogador está no ar.
 
-            // Limpa os hits para o próximo frame.
+            // Limpa a lista de batidas para a próxima verificação.
             for (var i = 0; i < groundHits.Length; i++)
                 groundHits[i] = new RaycastHit();
 
-            // Marca como aterrado.
+            // Marca que o jogador está pisando no chão.
             grounded = true;
         }
 
+        // FixedUpdate é o Update focado em FÍSICA. Ele roda em intervalos de tempo fixos (ex: 50x por segundo).
         protected override void FixedUpdate()
         {
-            // Move o personagem. FixedUpdate é melhor para cálculos de física (Rigidbody).
+            // Chama a função que realmente faz o Rigidbody se mover baseado nas teclas WASD.
             MoveCharacter();
 
-            // Reseta o estado de grounded para ser verificado novamente no próximo frame de física.
+            // Reseta a variável do chão. Se ele continuar no chão, o OnCollisionStay vai marcar como true de novo no próximo frame.
             grounded = false;
         }
 
@@ -155,47 +158,53 @@ namespace InfimaGames.LowPolyShooterPack
 
         #region METHODS
 
+        /// <summary>
+        /// Calcula e aplica o movimento ao personagem.
+        /// </summary>
         private void MoveCharacter()
         {
             #region Calculate Movement Velocity
 
-            // Obtém o input (WASD) do script do Personagem.
+            // Pergunta ao script do Personagem: "Quais teclas (WASD) o jogador está apertando agora?"
             Vector2 frameInput = playerCharacter.GetInputMovement();
-            // Transforma o input 2D em um vetor 3D de direção.
+            // X é pros lados, Y (no input 2D) vira o Z (pra frente/trás) no mundo 3D.
             var movement = new Vector3(frameInput.x, 0.0f, frameInput.y);
 
-            // Define a velocidade baseada se o jogador está correndo ou andando.
+            // Checa no script do personagem se ele está no estado de CORRER (segurando shift).
             if (playerCharacter.IsRunning())
-                movement *= speedRunning;
+                movement *= speedRunning; // Multiplica pela velocidade maior.
             else
             {
-                movement *= speedWalking;
+                movement *= speedWalking; // Multiplica pela velocidade de caminhada.
             }
 
-            // Converte a direção do movimento de "local" para "mundo" (faz o WASD seguir a rotação do jogador).
+            // IMPORTANTE: transform.TransformDirection faz com que "pra frente" seja para onde o boneco está olhando.
+            // Sem isso, apertar 'W' moveria o jogador sempre para o Norte do mapa, independente de onde ele olhasse.
             movement = transform.TransformDirection(movement);
 
             #endregion
 
-            // Aplica a velocidade calculada ao Rigidbody (mantendo o Y como zero para não afetar a gravidade aqui).
+            // Aplica o movimento final ao Rigidbody. 
+            // O Y fica em 0.0f porque quem cuida da gravidade (cair) é o próprio motor de física da Unity.
             Velocity = new Vector3(movement.x, 0.0f, movement.z);
         }
 
         /// <summary>
-        /// Plays Footstep Sounds. This code is slightly old, so may not be great, but it functions alright-y!
+        /// Toca os sons de passos.
         /// </summary>
         private void PlayFootstepSounds()
         {
-            //Check if we're moving on the ground. We don't need footsteps in the air.
+            // Se estiver no chão E a velocidade for maior que quase zero (0.1f)...
             if (grounded && rigidBody.linearVelocity.sqrMagnitude > 0.1f)
             {
-                //Select the correct audio clip to play.
+                // Escolhe o som: se estiver correndo, som de corrida. Senão, som de caminhada.
                 audioSource.clip = playerCharacter.IsRunning() ? audioClipRunning : audioClipWalking;
-                //Play it!
+
+                // Se o som já não estiver tocando, dá o Play.
                 if (!audioSource.isPlaying)
                     audioSource.Play();
             }
-            //Pause it if we're doing something like flying, or not moving!
+            // Se parou de andar ou saiu do chão (pulo/queda), pausa o som.
             else if (audioSource.isPlaying)
                 audioSource.Pause();
         }

@@ -167,54 +167,57 @@ namespace InfimaGames.LowPolyShooterPack
 
 		#region UNITY
 
+		// Awake é o primeiro método chamado pela Unity quando o script acorda.
 		protected override void Awake()
 		{
 			#region Lock Cursor
 
-			// Garante que o cursor do mouse esteja travado no centro da tela ao iniciar o jogo.
+			// Define que o cursor deve ser travado. Isso impede que o mouse saia da tela do jogo.
 			cursorLocked = true;
-			// Atualiza o estado visual do cursor.
+			// Chama a função abaixo que realmente avisa a Unity para esconder e travar o cursor.
 			UpdateCursorState();
 
 			#endregion
 
-			// Cacheia o componente CharacterKinematics (gerencia o posicionamento das mãos nas armas).
+			// Busca e guarda o componente de Cinemática. Ele serve para que as mãos do personagem "grudem" no lugar certo da arma automaticamente.
 			characterKinematics = GetComponent<CharacterKinematics>();
 
-			// Inicializa o sistema de inventário.
+			// Dá o comando para o sistema de inventário se preparar (procurar as armas que o jogador tem).
 			inventory.Init();
 
-			// Atualiza as configurações da arma atual (modelo, animações, etc).
+			// Prepara a arma que estiver na mão no começo do jogo (carrega o modelo visual e as animações dela).
 			RefreshWeaponSetup();
 		}
+		// Start é chamado logo após o Awake, antes do primeiro quadro (frame) do jogo.
 		protected override void Start()
 		{
-			// Obtém os índices das camadas do Animator para facilitar o acesso depois.
-			layerHolster = characterAnimator.GetLayerIndex("Layer Holster"); // Camada para guardar/pegar arma
-			layerActions = characterAnimator.GetLayerIndex("Layer Actions"); // Camada para ações como recarregar
-			layerOverlay = characterAnimator.GetLayerIndex("Layer Overlay"); // Camada para sobreposição (como o coice do tiro)
+			// O 'Animator' (controlador de animações) tem "camadas". Aqui o código pergunta qual é o número de cada camada para poder tocar animações nelas depois.
+			layerHolster = characterAnimator.GetLayerIndex("Layer Holster"); // Camada para animações de guardar/pegar a arma.
+			layerActions = characterAnimator.GetLayerIndex("Layer Actions"); // Camada para ações como recarregar ou inspecionar a arma.
+			layerOverlay = characterAnimator.GetLayerIndex("Layer Overlay"); // Camada de sobreposição, usada principalmente para o "coice" (recoil) do tiro.
 		}
 
+		// Update é chamado em todos os quadros (frames). Se o jogo roda a 60 FPS, isso roda 60 vezes por segundo.
 		protected override void Update()
 		{
-			// Verifica se o jogador está tentando mirar e se pode fazer isso no momento.
+			// Define se o jogador está mirando: precisa estar segurando o botão E ter permissão (não pode mirar enquanto recarrega, por exemplo).
 			aiming = holdingButtonAim && CanAim();
-			// Verifica se o jogador está tentando correr e se pode fazer isso no momento.
+			// Define se o jogador está correndo: precisa estar segurando Shift E ter permissão (não pode correr para trás).
 			running = holdingButtonRun && CanRun();
 
-			// Lógica para armas automáticas: se o botão de tiro estiver pressionado...
+			// Se o jogador estiver segurando o botão de atirar (clique esquerdo)...
 			if (holdingButtonFire)
 			{
-				// Verifica se pode atirar, se tem munição e se a arma é automática.
+				// Verifica 3 coisas: 1. Se a animação de tiro pode tocar, 2. Se tem balas, 3. Se a arma é do tipo automática (metralhadora).
 				if (CanPlayAnimationFire() && equippedWeapon.HasAmmunition() && equippedWeapon.IsAutomatic())
 				{
-					// Controla o tempo entre tiros baseado no Rate of Fire da arma.
+					// 'Time.time' é o tempo atual do jogo. Aqui ele checa se já passou tempo suficiente desde o último tiro para dar o próximo (cadência).
 					if (Time.time - lastShotTime > 60.0f / equippedWeapon.GetRateOfFire())
-						Fire();
+						Fire(); // Se tudo estiver OK, dispara a arma!
 				}
 			}
 
-			// Atualiza as variáveis do Animator para que as animações acompanhem o estado do jogador.
+			// Chama a função que envia essas informações (correndo, mirando, movendo) para o sistema de animação visual.
 			UpdateAnimator();
 		}
 
@@ -291,35 +294,38 @@ namespace InfimaGames.LowPolyShooterPack
 		}
 
 		/// <summary>
-		/// Fires the character's weapon.
+		/// Executa o disparo da arma.
 		/// </summary>
 		private void Fire()
 		{
-			//Save the shot time, so we can calculate the fire rate correctly.
+			// Registra o momento exato do tiro para que o próximo tiro respeite o intervalo da cadência.
 			lastShotTime = Time.time;
-			//Fire the weapon! Make sure that we also pass the scope's spread multiplier if we're aiming.
+			// Avisa ao script da ARMA (Weapon.cs) que ela deve criar a bala e fazer o som do tiro.
 			equippedWeapon.Fire();
 
-			//Play firing animation.
+			// Manda o braço do personagem tremer (animação de coice) usando a camada de sobreposição (overlay).
 			const string stateName = "Fire";
 			characterAnimator.CrossFade(stateName, 0.05f, layerOverlay, 0);
 		}
 
+		/// <summary>
+		/// Inicia o processo de recarga.
+		/// </summary>
 		private void PlayReloadAnimation()
 		{
 			#region Animation
 
-			//Get the name of the animation state to play, which depends on weapon settings, and ammunition!
+			// Escolhe a animação: se ainda tiver bala, faz recarga tática. Se estiver zerada, faz recarga completa (mais lenta).
 			string stateName = equippedWeapon.HasAmmunition() ? "Reload" : "Reload Empty";
-			//Play the animation state!
+			// Toca a animação escolhida na camada de ações.
 			characterAnimator.Play(stateName, layerActions, 0.0f);
 
-			//Set.
+			// Marca que o jogador está ocupado recarregando (para não poder atirar ao mesmo tempo).
 			reloading = true;
 
 			#endregion
 
-			//Reload.
+			// Avisa à arma para preparar a lógica interna de recarga (contar tempo, sons específicos da arma).
 			equippedWeapon.Reload();
 		}
 
