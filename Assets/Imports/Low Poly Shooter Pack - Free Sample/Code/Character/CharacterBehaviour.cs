@@ -14,36 +14,47 @@ namespace InfimaGames.LowPolyShooterPack
         /// <summary>
         /// Awake.
         /// </summary>
-        protected virtual void Awake(){}
+        protected virtual void Awake() { }
 
         /// <summary>
         /// Start.
         /// </summary>
-        protected virtual void Start(){}
+        protected virtual void Start() { }
 
         /// <summary>
         /// Update.
         /// </summary>
-        protected virtual void Update(){}
+        protected virtual void Update() { }
 
         /// <summary>
         /// Late Update.
         /// </summary>
-        protected virtual void LateUpdate(){}
+        protected virtual void LateUpdate() { }
 
         #endregion
-        
+
         #region GETTERS
 
         /// <summary>
         /// Returns the player character's main camera.
         /// </summary>
         public abstract Camera GetCameraWorld();
-        
+
         /// <summary>
         /// Returns a reference to the Inventory component.
         /// </summary>
         public abstract InventoryBehaviour GetInventory();
+
+        /// <summary>
+        /// [ADICIONADO] Retorna verdadeiro se o personagem estiver interagindo com um menu/loja.
+        /// </summary>
+        public abstract bool IsInterfaceMode();
+
+        /// <summary>
+        /// [ADICIONADO] Define se o personagem deve entrar ou sair do modo de interface.
+        /// Isso bloqueia ações como atirar e mover a câmera.
+        /// </summary>
+        public abstract void SetInterfaceMode(bool value);
 
         /// <summary>
         /// Returns true if the Crosshair should be visible.
@@ -53,7 +64,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// Returns true if the character is running.
         /// </summary>
         public abstract bool IsRunning();
-        
+
         /// <summary>
         /// Returns true if the character is aiming.
         /// </summary>
@@ -76,7 +87,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// Returns the Look Input.
         /// </summary>
         public abstract Vector2 GetInputLook();
-        
+
         #endregion
 
         #region ANIMATION
@@ -94,7 +105,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// Sets the equipped weapon's magazine to be active or inactive!
         /// </summary>
         public abstract void SetActiveMagazine(int active);
-        
+
         /// <summary>
         /// Reload Animation Ended.
         /// </summary>
