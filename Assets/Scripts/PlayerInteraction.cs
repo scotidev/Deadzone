@@ -47,11 +47,13 @@ public class PlayerInteraction : MonoBehaviour {
     /// Processes player input for interacting with objects.
     /// Triggers interaction when E key is pressed and a valid interactable is detected.
     /// </summary>
-    private void HandleInteractionInput() {
+    private void HandleInteractionInput()
+    {
         if (ShopInterface.Instance != null && ShopInterface.Instance.IsShopOpen())
             return;
 
-        if (currentInteractable != null && Keyboard.current.eKey.wasPressedThisFrame) {
+        if (currentInteractable != null && Keyboard.current.eKey.wasPressedThisFrame)
+        {
             currentInteractable.Interact();
         }
     }

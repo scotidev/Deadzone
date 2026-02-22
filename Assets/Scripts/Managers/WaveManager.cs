@@ -20,6 +20,6 @@ public class WaveManager : MonoBehaviour {
     /// Initiates the next wave of enemies.
     /// </summary>
     public void StartNextWave() {
-        Debug.Log("WaveManager: Next Wave Called");
+        // TODO: Implement wave logic
     }
 }

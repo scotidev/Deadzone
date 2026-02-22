@@ -1,28 +1,19 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static UIManager;
 
 /// <summary>
 /// Manages the shop interface system in the game.
 /// </summary>
-public class ShopInterface : MonoBehaviour
-{
+public class ShopInterface : MonoBehaviour {
     public static ShopInterface Instance { get; private set; }
-
-    [SerializeField] private GameObject shopPanel;
 
     private bool isShopOpen = false;
 
-    private void Awake()
-    {
+    private void Awake() {
         if (Instance == null)
             Instance = this;
         else
             Destroy(gameObject);
-
-        if (shopPanel != null)
-            shopPanel.SetActive(false);
     }
 
     private void Update() {
@@ -43,29 +34,43 @@ public class ShopInterface : MonoBehaviour
     /// Opens the shop interface, pauses the game, and releases the mouse cursor.
     /// Hides the interaction prompt and notifies CharacterInteraction to enter interface mode.
     /// </summary>
-    public void OpenShop()
-    {
+    public void OpenShop() {
         isShopOpen = true;
-        shopPanel.SetActive(true);
 
-        if (Instance != null)
-            UIManager.Instance.ToggleInteractionPrompt(false);
+        if (UIManager.Instance != null) {
+            UIManager.Instance.ShowShop();
+            UIManager.Instance.HideInteractionPrompt();
+        }
 
         if (CharacterInteraction.Instance != null)
             CharacterInteraction.Instance.SetInterfaceMode(true);
+
+        SetCursorState(true);
     }
 
     /// <summary>
     /// Closes the shop interface and returns to gameplay mode.
     /// Notifies CharacterInteraction to resume normal gameplay controls.
     /// </summary>
-    public void CloseShop()
-    {
+    public void CloseShop() {
         isShopOpen = false;
-        shopPanel.SetActive(false);
+
+        if (UIManager.Instance != null)
+            UIManager.Instance.HideAllPanels();
 
         if (CharacterInteraction.Instance != null)
             CharacterInteraction.Instance.SetInterfaceMode(false);
+
+        SetCursorState(false);
+    }
+
+    /// <summary>
+    /// Sets the cursor lock state and visibility.
+    /// </summary>
+    /// <param name="visible">True to show cursor, false to hide and lock.</param>
+    private void SetCursorState(bool visible) {
+        Cursor.visible = visible;
+        Cursor.lockState = visible ? CursorLockMode.None : CursorLockMode.Locked;
     }
 
     /// <summary>

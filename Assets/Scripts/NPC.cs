@@ -12,8 +12,10 @@ public class NPC : Interactable {
     /// <summary>
     /// Opens the shop interface through the ShopInterface singleton when interacted with.
     /// </summary>
-    public override void Interact() {
-        if (ShopInterface.Instance != null) {
+    public override void Interact()
+    {
+        if (ShopInterface.Instance != null)
+        {
             ShopInterface.Instance.OpenShop();
         }
     }
