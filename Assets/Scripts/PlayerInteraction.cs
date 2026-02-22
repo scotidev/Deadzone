@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using static UIManager;
 
 /// <summary>
@@ -11,7 +12,6 @@ public class PlayerInteraction : MonoBehaviour {
     [Header("Interaction Settings")]
     [SerializeField] private float interactionDistance = 3f;
     [SerializeField] private LayerMask interactableLayer;
-    [SerializeField] private KeyCode interactionKey = KeyCode.E;
 
     private Camera playerCamera;
     private Interactable currentInteractable;
@@ -22,11 +22,17 @@ public class PlayerInteraction : MonoBehaviour {
             playerCamera = Camera.main;
     }
 
-    /// <summary>
-    /// Updates interactable object detection every frame and processes interaction input.
-    /// Blocks detection when the shop is open to prevent UI overlap.
-    /// </summary>
     private void Update() {
+        HandleShopOpenBlocking();
+        CheckForInteractable();
+        HandleInteractionInput();
+    }
+
+    /// <summary>
+    /// Handles blocking of interaction detection when the shop is open.
+    /// Clears current interactable and hides UI prompt if shop is active.
+    /// </summary>
+    private void HandleShopOpenBlocking() {
         if (ShopInterface.Instance != null && ShopInterface.Instance.IsShopOpen()) {
             if (currentInteractable != null) {
                 currentInteractable = null;
@@ -34,12 +40,18 @@ public class PlayerInteraction : MonoBehaviour {
                 if (UIManager.Instance != null)
                     UIManager.Instance.ToggleInteractionPrompt(false);
             }
-            return;
         }
+    }
 
-        CheckForInteractable();
+    /// <summary>
+    /// Processes player input for interacting with objects.
+    /// Triggers interaction when E key is pressed and a valid interactable is detected.
+    /// </summary>
+    private void HandleInteractionInput() {
+        if (ShopInterface.Instance != null && ShopInterface.Instance.IsShopOpen())
+            return;
 
-        if (currentInteractable != null && Input.GetKeyDown(interactionKey)) {
+        if (currentInteractable != null && Keyboard.current.eKey.wasPressedThisFrame) {
             currentInteractable.Interact();
         }
     }
