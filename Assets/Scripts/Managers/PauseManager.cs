@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Manages the game pause state and related functionality.
@@ -11,17 +10,14 @@ public class PauseManager : MonoBehaviour {
     private bool isPaused = false;
 
     private void Awake() {
-        InitializeSingleton();
-    }
-
-    /// <summary>
-    /// Initializes the singleton instance.
-    /// </summary>
-    private void InitializeSingleton() {
         if (Instance == null)
             Instance = this;
         else
             Destroy(gameObject);
+    }
+
+    private void Start() {
+        GameManager.Instance?.SetState(GameState.Playing);
     }
 
     private void Update() {
@@ -33,12 +29,15 @@ public class PauseManager : MonoBehaviour {
     /// Toggles pause state when Escape key is pressed.
     /// </summary>
     private void HandlePauseInput() {
-        if (ShopInterface.Instance != null && ShopInterface.Instance.IsShopOpen())
+        if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame)
             return;
 
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) {
-            TogglePause();
+        if (GameManager.Instance?.State == GameState.Shopping) {
+            ShopManager.Instance?.CloseShop();
+            return;
         }
+
+        TogglePause();
     }
 
     /// <summary>
@@ -56,6 +55,7 @@ public class PauseManager : MonoBehaviour {
     /// </summary>
     public void PauseGame() {
         isPaused = true;
+        GameManager.Instance?.SetState(GameState.Paused);
 
         if (CharacterInteraction.Instance != null)
             CharacterInteraction.Instance.SetInterfaceMode(true);
@@ -75,6 +75,7 @@ public class PauseManager : MonoBehaviour {
     public void ResumeGame() {
         Time.timeScale = 1f;
         isPaused = false;
+        GameManager.Instance?.SetState(GameState.Playing);
 
         if (UIManager.Instance != null)
             UIManager.Instance.HideAllPanels();
@@ -89,7 +90,9 @@ public class PauseManager : MonoBehaviour {
     /// Returns to the main menu scene.
     /// </summary>
     public void BackToMainMenu() {
-        SceneManager.LoadScene("Menu");
+        Time.timeScale = 1f;
+        GameManager.Instance?.SetState(GameState.MainMenu);
+        SceneLoader.Instance.LoadMenu();
     }
 
     /// <summary>

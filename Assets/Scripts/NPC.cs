@@ -14,9 +14,9 @@ public class NPC : Interactable {
     /// </summary>
     public override void Interact()
     {
-        if (ShopInterface.Instance != null)
+        if (ShopManager.Instance != null)
         {
-            ShopInterface.Instance.OpenShop();
+            ShopManager.Instance.OpenShop();
         }
     }
 }
