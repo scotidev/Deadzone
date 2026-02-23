@@ -33,7 +33,7 @@ public class PlayerInteraction : MonoBehaviour {
     /// Clears current interactable and hides UI prompt if shop is active.
     /// </summary>
     private void HandleShopOpenBlocking() {
-        if (ShopInterface.Instance != null && ShopInterface.Instance.IsShopOpen()) {
+        if (GameManager.Instance != null && GameManager.Instance.State == GameState.Shopping) {
             if (currentInteractable != null) {
                 currentInteractable = null;
 
@@ -49,7 +49,7 @@ public class PlayerInteraction : MonoBehaviour {
     /// </summary>
     private void HandleInteractionInput()
     {
-        if (ShopInterface.Instance != null && ShopInterface.Instance.IsShopOpen())
+        if (GameManager.Instance != null && GameManager.Instance.State == GameState.Shopping)
             return;
 
         if (currentInteractable != null && Keyboard.current.eKey.wasPressedThisFrame)

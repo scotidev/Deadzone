@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Manages the main menu UI and navigation.
@@ -14,7 +13,7 @@ public class MenuManager : MonoBehaviour {
     /// Loads the game scene.
     /// </summary>
     public void OnNewGameClick() {
-        SceneManager.LoadScene("Game");
+        SceneLoader.Instance.LoadGame();
     }
 
     /// <summary>

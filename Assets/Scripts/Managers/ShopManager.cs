@@ -4,8 +4,8 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Manages the shop interface system in the game.
 /// </summary>
-public class ShopInterface : MonoBehaviour {
-    public static ShopInterface Instance { get; private set; }
+public class ShopManager : MonoBehaviour {
+    public static ShopManager Instance { get; private set; }
 
     private bool isShopOpen = false;
 
@@ -16,26 +16,13 @@ public class ShopInterface : MonoBehaviour {
             Destroy(gameObject);
     }
 
-    private void Update() {
-        HandleCloseShopInput();
-    }
-
     /// <summary>
-    /// Processes player input for closing the shop.
-    /// Closes the shop when Escape key is pressed while shop is open.
-    /// </summary>
-    private void HandleCloseShopInput() {
-        if (isShopOpen && Keyboard.current.escapeKey.wasPressedThisFrame) {
-            CloseShop();
-        }
-    }
-
-    /// <summary>
-    /// Opens the shop interface, pauses the game, and releases the mouse cursor.
+    /// Opens the shop interface
     /// Hides the interaction prompt and notifies CharacterInteraction to enter interface mode.
     /// </summary>
     public void OpenShop() {
         isShopOpen = true;
+        GameManager.Instance?.SetState(GameState.Shopping);
 
         if (UIManager.Instance != null) {
             UIManager.Instance.ShowShop();
@@ -54,6 +41,7 @@ public class ShopInterface : MonoBehaviour {
     /// </summary>
     public void CloseShop() {
         isShopOpen = false;
+        GameManager.Instance?.SetState(GameState.Playing);
 
         if (UIManager.Instance != null)
             UIManager.Instance.HideAllPanels();

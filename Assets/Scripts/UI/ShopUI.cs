@@ -88,7 +88,7 @@ public class ShopUI : BaseUI {
     /// Handles the close button click event.
     /// </summary>
     private void OnCloseClick() {
-        if (ShopInterface.Instance != null)
-            ShopInterface.Instance.CloseShop();
+        if (ShopManager.Instance != null)
+            ShopManager.Instance.CloseShop();
     }
 }
