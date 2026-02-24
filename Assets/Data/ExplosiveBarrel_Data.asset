@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2427f7d62ea46094485afb7906e99b1a, type: 3}
+  m_Name: ExplosiveBarrel_Data
+  m_EditorClassIdentifier: Assembly-CSharp::BuildableSO
+  displayName: ExplosiveBarrel
+  realPrefab: {fileID: 8426833715630008873, guid: a3d893de50bf5b0429696987e48b2ae7,
+    type: 3}
+  ghostPrefab: {fileID: 8426833715630008873, guid: 7161d50500b6a7e47aabcc60808d9bf1,
+    type: 3}
+  placementRotationEuler: {x: 270, y: 0, z: 0}
+  overlapBoxSize: {x: 1, y: 1, z: 1}

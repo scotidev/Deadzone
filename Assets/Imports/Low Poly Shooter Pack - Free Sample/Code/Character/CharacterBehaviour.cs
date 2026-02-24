@@ -57,6 +57,11 @@ namespace InfimaGames.LowPolyShooterPack
         public abstract void SetInterfaceMode(bool value);
 
         /// <summary>
+        /// [ADICIONADO] Guarda ou revela a arma do personagem via animação.
+        /// </summary>
+        public abstract void SetHolstered(bool value);
+
+        /// <summary>
         /// Returns true if the Crosshair should be visible.
         /// </summary>
         public abstract bool IsCrosshairVisible();

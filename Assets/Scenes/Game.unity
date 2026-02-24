@@ -346,10 +346,55 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4618375144268024563, guid: cbee2e2ec3f4bbc4faa184bb6581bdd1,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 5893298893601191269, guid: cbee2e2ec3f4bbc4faa184bb6581bdd1,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 6477464349977902096, guid: cbee2e2ec3f4bbc4faa184bb6581bdd1,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 6610324280402891270, guid: cbee2e2ec3f4bbc4faa184bb6581bdd1,
         type: 3}
       propertyPath: m_Name
       value: Home
+      objectReference: {fileID: 0}
+    - target: {fileID: 6610324280402891270, guid: cbee2e2ec3f4bbc4faa184bb6581bdd1,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 6897227919288651993, guid: cbee2e2ec3f4bbc4faa184bb6581bdd1,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7183261271187664042, guid: cbee2e2ec3f4bbc4faa184bb6581bdd1,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7676353421797684799, guid: cbee2e2ec3f4bbc4faa184bb6581bdd1,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7790330570303944137, guid: cbee2e2ec3f4bbc4faa184bb6581bdd1,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 8811190850786078352, guid: cbee2e2ec3f4bbc4faa184bb6581bdd1,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -959,7 +1004,7 @@ PrefabInstance:
     - target: {fileID: 916095938892669238, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: m_CullingMask.m_Bits
-      value: 101687
+      value: 101759
       objectReference: {fileID: 0}
     - target: {fileID: 2748913124992463393, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
@@ -1036,6 +1081,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1730073689}
+    - targetCorrespondingSourceObject: {fileID: 2751027687307977091, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1730073698}
     - targetCorrespondingSourceObject: {fileID: 56164245437412244, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       insertIndex: -1
@@ -1900,7 +1949,7 @@ GameObject:
   - component: {fileID: 1691958445}
   - component: {fileID: 1691958444}
   - component: {fileID: 1691958443}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1954,7 +2003,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 628bebb971cafb4439ac6bd2f5017fdd, type: 2}
+  - {fileID: 2100000, guid: 10aa0c3ed3ba22b4486929d61bee055a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2042,6 +2091,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcb356bde615b534b9af632f9f947b81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterInteraction
+--- !u!114 &1730073698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730073678}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34192f55e8b91f64297aabae70a9ff81, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingController
+  itemSlot6: {fileID: 11400000, guid: 2ad9bf54fd5171e48938f2c382e50378, type: 2}
+  itemSlot7: {fileID: 11400000, guid: 2f6c04fb7d75d2b42b83053f53891a6a, type: 2}
+  itemSlot8: {fileID: 11400000, guid: d6741f4709c00d3429d633d323ec9f0d, type: 2}
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 65544
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 82176
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  maxPlacementDistance: 8
 --- !u!1 &1755308603
 GameObject:
   m_ObjectHideFlags: 0
