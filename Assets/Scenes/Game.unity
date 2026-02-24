@@ -2682,18 +2682,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13cd7832a8e97e8449eadca86125c029, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaveManager
-  zombieDefaultPrefab: {fileID: 270316871960866942, guid: d1d09725d5529fe44abda6963954f7a8,
-    type: 3}
-  zombieFastPrefab: {fileID: 4449994615583783604, guid: accf882275ba880409157b70de5f2086,
-    type: 3}
-  zombieTankPrefab: {fileID: 8945000935841565596, guid: 703d07df9fd097242bc7a67f2dc6b0f3,
-    type: 3}
+  enemyTypes:
+  - prefab: {fileID: 270316871960866942, guid: d1d09725d5529fe44abda6963954f7a8, type: 3}
+    minimumWave: 1
+    spawnWeight: 0.6
+  - prefab: {fileID: 4449994615583783604, guid: accf882275ba880409157b70de5f2086,
+      type: 3}
+    minimumWave: 0
+    spawnWeight: 0.3
+  - prefab: {fileID: 8945000935841565596, guid: 703d07df9fd097242bc7a67f2dc6b0f3,
+      type: 3}
+    minimumWave: 0
+    spawnWeight: 0.1
+  initialGrowthRate: 0.25
+  growthDecrement: 0.02
+  minGrowthRate: 0.05
+  maxEnemiesPerWave: 500
   spawners:
   - {fileID: 99844785}
   - {fileID: 2126116423}
   - {fileID: 321194190}
   - {fileID: 1980653463}
-  waveUI: {fileID: 0}
+  maxEnemiesAliveAtOnce: 10
+  waveUI: {fileID: 2063910260}
 --- !u!4 &2046954784
 Transform:
   m_ObjectHideFlags: 0

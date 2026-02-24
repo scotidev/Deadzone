@@ -72,10 +72,35 @@ public class WaveUI : BaseUI {
         //  depois imediatamente chamamos Show() para tornar o painel visível.
         //  Resultado: o painel aparece assim que a cena carrega.
         base.Start();
-
-        // Exibe o painel — WaveUI deve ser sempre visível durante gameplay.
-        // Show() está definido em BaseUI e chama panel.SetActive(true).
         Show();
+
+        // ==============================================================
+        //  DIAGNÓSTICO: detecta referências nulas imediatamente
+        // ==============================================================
+        //  CAUSA DO BUG: se waveNumberText ou enemiesRemainingText não
+        //  estiverem atribuídos no Inspector, os "if (texto != null)"
+        //  abaixo ignoram silenciosamente as atualizações — sem erros.
+        //
+        //  Estes logs tornam o problema visível no Console em vermelho
+        //  assim que o jogo inicia, apontando exatamente o que falta.
+        //
+        //  COMO CORRIGIR:
+        //  Selecione o GameObject com WaveUI no Inspector.
+        //  Arraste os objetos TMP_Text correspondentes para cada slot:
+        //    → Wave Number Text      (ex: "WaveNumberText")
+        //    → Enemies Remaining Text (ex: "EnemiesRemainingText")
+        //    → Status Text            (ex: "StatusText")
+        if (waveNumberText == null)
+            Debug.LogError("[WaveUI] 'Wave Number Text' não atribuído no Inspector! " +
+                           "Arraste o TMP_Text do número da onda para este campo.");
+
+        if (enemiesRemainingText == null)
+            Debug.LogError("[WaveUI] 'Enemies Remaining Text' não atribuído no Inspector! " +
+                           "Arraste o TMP_Text de inimigos restantes para este campo.");
+
+        if (statusText == null)
+            Debug.LogError("[WaveUI] 'Status Text' não atribuído no Inspector! " +
+                           "Arraste o TMP_Text de status para este campo.");
 
         // Inicializa os textos com os valores padrão (pré-jogo).
         UpdateWaveNumber(0);

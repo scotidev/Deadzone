@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -43,19 +44,75 @@ public class WaveManager : MonoBehaviour {
     //  CAMPOS SERIALIZADOS — configurar no Inspector
     // ==============================================================
 
-    [Header("Prefabs de Inimigos")]
-    [Tooltip("Prefab do ZombieDefault — disponível desde a onda 1.")]
-    [SerializeField] private GameObject zombieDefaultPrefab;
+    // ==============================================================
+    //  TIPOS DE INIMIGOS — lista extensível
+    // ==============================================================
+    //  Em vez de três campos separados (zombieDefaultPrefab, etc.),
+    //  usamos uma List<EnemySpawnConfig> que aceita QUALQUER número
+    //  de tipos de inimigo. Para adicionar um Boss futuramente:
+    //    → Clique "+" na lista no Inspector.
+    //    → Atribua o prefab, defina minimumWave e spawnWeight.
+    //  Nenhuma linha de código precisa ser alterada.
 
-    [Tooltip("Prefab do ZombieFast — desbloqueado a partir da onda 2.")]
-    [SerializeField] private GameObject zombieFastPrefab;
+    [Header("Tipos de Inimigos")]
+    [Tooltip("Lista de todos os tipos de inimigo.\n" +
+             "Configure prefab, onda mínima e peso de spawn para cada um.\n" +
+             "Sugestão inicial: Default weight=5, Fast weight=3, Tank weight=1.")]
+    [SerializeField] private List<EnemySpawnConfig> enemyTypes;
 
-    [Tooltip("Prefab do ZombieTank — desbloqueado a partir da onda 4.")]
-    [SerializeField] private GameObject zombieTankPrefab;
+    // ==============================================================
+    //  ESCALONAMENTO PROGRESSIVO DE ONDA
+    // ==============================================================
+    //  A taxa de crescimento começa alta e diminui a cada onda,
+    //  até atingir o piso (minGrowthRate). Isso cria uma curva de
+    //  dificuldade que acelera no início e estabiliza no longo prazo.
+    //
+    //  Fórmula: growth(wave) = Max(min, initial - (wave-2) * decrement)
+    //  Exemplos com padrões (initial=25%, decrement=2%, min=5%):
+    //    Onda 2: 25%   Onda 3: 23%   Onda 4: 21%
+    //    Onda 5: 19%   Onda 6: 17%   Onda 7: 15%
+    //    Onda 8: 13%   Onda 9: 11%   Onda 10: 9%
+    //    Onda 11: 7%   Onda 12+: 5%  (piso atingido)
+
+    [Header("Escalonamento de Onda")]
+    [Tooltip("Taxa de crescimento da onda 1 para a 2. 0.25 = +25%.")]
+    [Range(0.05f, 1f)]
+    [SerializeField] private float initialGrowthRate = 0.25f;
+
+    [Tooltip("Quanto a taxa reduz a cada onda. 0.02 = -2% por onda.")]
+    [Range(0f, 0.1f)]
+    [SerializeField] private float growthDecrement = 0.02f;
+
+    [Tooltip("Taxa mínima de crescimento (piso). 0.05 = +5%.")]
+    [Range(0.01f, 0.2f)]
+    [SerializeField] private float minGrowthRate = 0.05f;
+
+    [Tooltip("Número máximo de inimigos que podem existir em uma onda.\n" +
+             "Protege contra crescimento exponencial em ondas muito altas.")]
+    [SerializeField] private int maxEnemiesPerWave = 500;
 
     [Header("Spawners da Cena")]
     [Tooltip("Arraste aqui TODOS os GameObjects com EnemySpawner da cena.")]
     [SerializeField] private List<EnemySpawner> spawners;
+
+    // ==============================================================
+    //  LIMITE DE INIMIGOS SIMULTÂNEOS
+    // ==============================================================
+    //  Em vez de spawnar todos os inimigos da onda de uma vez
+    //  (o que causaria lag/travamento), mantemos no máximo
+    //  maxEnemiesAliveAtOnce inimigos vivos ao mesmo tempo.
+    //
+    //  Quando um inimigo morre e a contagem cai abaixo do limite,
+    //  um novo é spawnado imediatamente para repor a vaga.
+    //
+    //  O contador da HUD mostra o TOTAL restante da onda:
+    //  inimigos vivos na cena + inimigos ainda não spawnados.
+
+    [Header("Limite de Inimigos Simultâneos")]
+    [Tooltip("Máximo de inimigos vivos ao mesmo tempo na cena.\n" +
+             "Quando um morre, um novo é spawnado para repor a vaga.\n" +
+             "Valor sugerido: 10–20 para evitar lag.")]
+    [SerializeField] private int maxEnemiesAliveAtOnce = 15;
 
     [Header("HUD")]
     [Tooltip("Referência ao componente WaveUI na cena.")]
@@ -64,11 +121,22 @@ public class WaveManager : MonoBehaviour {
     // ==============================================================
     //  ESTADO DA ONDA
     // ==============================================================
+    //  Três contadores separados permitem calcular:
+    //    Vivos na cena   = enemiesSpawned - enemiesKilled
+    //    Restantes total = totalEnemiesForWave - enemiesKilled  ← usado na HUD
+    //
+    //  Isso garante que o contador mostra a onda INTEIRA,
+    //  não apenas os inimigos atualmente na cena.
 
-    private int  currentWave        = 0;   // Onda atual (0 = nenhuma iniciada)
-    private int  enemiesAlive       = 0;   // Contagem de vivos nesta onda
-    private int  lastWaveEnemyCount = 5;   // Inimigos da onda anterior (para calcular escalonamento)
-    private bool isWaveActive       = false; // Trava o botão durante a onda
+    private int  currentWave          = 0;     // Onda atual (0 = nenhuma iniciada)
+    private int  totalEnemiesForWave  = 0;     // Total a spawnar nesta onda
+    private int  enemiesSpawned       = 0;     // Quantos já foram spawnados
+    private int  enemiesKilled        = 0;     // Quantos já morreram
+    private int  lastWaveEnemyCount   = 5;     // Base para o cálculo da próxima onda
+    private bool isWaveActive         = false; // Trava o WaveButton durante a onda
+
+    // Cache dos tipos disponíveis na onda atual — evita recalcular a cada spawn.
+    private List<EnemySpawnConfig> currentWaveEnemyTypes;
 
     // ==============================================================
     //  PROPRIEDADES PÚBLICAS (somente leitura)
@@ -147,69 +215,88 @@ public class WaveManager : MonoBehaviour {
         // Incrementa o número da onda.
         currentWave++;
 
-        // Calcula quantos inimigos esta onda deve ter.
-        int totalEnemies  = GetEnemyCountForWave(currentWave);
-        lastWaveEnemyCount = totalEnemies; // Salva para usar no cálculo da próxima onda.
-        enemiesAlive      = totalEnemies;
-        isWaveActive      = true;
+        // Calcula o total de inimigos desta onda e reseta os contadores.
+        totalEnemiesForWave = GetEnemyCountForWave(currentWave);
+        lastWaveEnemyCount  = totalEnemiesForWave;
+        enemiesSpawned      = 0;
+        enemiesKilled       = 0;
+        isWaveActive        = true;
 
         // Notifica o GameManager do novo estado (bloqueia loja, etc.).
-        // "?." = null-conditional: só chama se GameManager.Instance existir.
         GameManager.Instance?.SetState(GameState.InWave);
 
-        // Determina quais tipos de inimigo estão disponíveis nesta onda.
-        List<GameObject> availablePrefabs = GetAvailablePrefabs(currentWave);
+        // Cacheia os tipos disponíveis para esta onda.
+        currentWaveEnemyTypes = GetAvailableEnemyTypes(currentWave);
 
-        // Divide os inimigos entre todos os spawners e os instancia.
-        DistributeEnemiesAcrossSpawners(availablePrefabs, totalEnemies);
+        // Spawna o lote inicial (até maxEnemiesAliveAtOnce inimigos de uma vez).
+        // Os inimigos restantes são spawnados progressivamente conforme outros morrem.
+        StartCoroutine(SpawnInitialBatch());
 
-        // Atualiza o HUD com as informações da nova onda.
+        // HUD: mostra o total da onda — inclui os que ainda não foram spawnados.
         if (waveUI != null) {
             waveUI.UpdateWaveNumber(currentWave);
-            waveUI.UpdateEnemiesRemaining(enemiesAlive);
+            waveUI.UpdateEnemiesRemaining(totalEnemiesForWave);
             waveUI.SetStatus($"Wave {currentWave} — Sobreviva!");
         }
 
-        // ==============================================================
-        //  Debug.Log()
-        // ==============================================================
-        //  Imprime uma mensagem no Console da Unity.
-        //  Útil durante desenvolvimento para rastrear o que acontece.
-        //  Debug.Log    = informação (texto branco)
-        //  Debug.LogWarning = aviso (texto amarelo)
-        //  Debug.LogError   = erro   (texto vermelho, não quebra o jogo)
-        Debug.Log($"[WaveManager] Onda {currentWave} iniciada — {totalEnemies} inimigos em {spawners.Count} spawner(s).");
+        Debug.Log($"[WaveManager] Onda {currentWave} iniciada — {totalEnemiesForWave} inimigos totais " +
+                  $"(máx {maxEnemiesAliveAtOnce} simultâneos em {spawners.Count} spawner(s)).");
     }
 
     // ==============================================================
-    //  DISTRIBUIÇÃO ENTRE SPAWNERS
+    //  SPAWN THROTTLED (com limite de simultâneos)
     // ==============================================================
 
     /// <summary>
-    /// Divide o total de inimigos igualmente entre todos os spawners.
-    /// O resto da divisão inteira vai para o primeiro spawner.
-    ///
-    /// Exemplo: 11 inimigos, 3 spawners → 4 / 3 / 4 inimigos.
-    /// (4 no primeiro absorve o resto de 11 % 3 = 2 → 3+2 = 5... )
-    /// Exemplo correto: base = 11/3 = 3, resto = 11%3 = 2
-    ///   Spawner 0 → 3 + 2 = 5
-    ///   Spawner 1 → 3
-    ///   Spawner 2 → 3
+    /// Spawna o lote inicial de inimigos ao iniciar a onda.
+    /// Limita-se a maxEnemiesAliveAtOnce inimigos, com um pequeno
+    /// delay entre cada spawn para evitar picos de CPU num único frame.
     /// </summary>
-    private void DistributeEnemiesAcrossSpawners(List<GameObject> prefabs, int totalEnemies) {
-        // Divisão inteira: quantos inimigos cada spawner recebe no mínimo.
-        int baseCount = totalEnemies / spawners.Count;
-        // Resto da divisão: os "sobras" vão para o primeiro spawner.
-        int remainder = totalEnemies % spawners.Count;
+    private IEnumerator SpawnInitialBatch() {
+        // Quantos spawnar agora: o menor entre o limite e o total da onda.
+        // Ex: limite=15, total=5 → spawna 5.  limite=15, total=30 → spawna 15.
+        int initialCount = Mathf.Min(maxEnemiesAliveAtOnce, totalEnemiesForWave);
 
-        for (int i = 0; i < spawners.Count; i++) {
-            // O operador ternário "condição ? seTrue : seFalse"
-            // adiciona o resto apenas ao spawner índice 0.
-            int countForThisSpawner = baseCount + (i == 0 ? remainder : 0);
-
-            if (countForThisSpawner > 0)
-                spawners[i].SpawnEnemies(prefabs, countForThisSpawner);
+        for (int i = 0; i < initialCount; i++) {
+            SpawnOneEnemy();
+            // Pequeno delay entre cada spawn do lote inicial.
+            // Distribui o custo de Instantiate() em vários frames.
+            yield return new WaitForSeconds(0.15f);
         }
+    }
+
+    /// <summary>
+    /// Spawna exatamente UM inimigo em um spawner aleatório da cena.
+    /// Incrementa enemiesSpawned e escolhe o tipo pelo peso configurado.
+    /// </summary>
+    private void SpawnOneEnemy() {
+        if (enemiesSpawned >= totalEnemiesForWave) return;
+        if (currentWaveEnemyTypes == null || currentWaveEnemyTypes.Count == 0) return;
+
+        // ==============================================================
+        //  Random.Range com inteiros → escolha de spawner aleatório
+        // ==============================================================
+        //  Com N spawners, sorteia um índice entre 0 e N-1.
+        //  Distribui os spawns uniformemente entre todos os pontos.
+        EnemySpawner spawner = spawners[Random.Range(0, spawners.Count)];
+        spawner.SpawnSingleEnemy(currentWaveEnemyTypes);
+        enemiesSpawned++;
+    }
+
+    /// <summary>
+    /// Tenta spawnar o próximo inimigo da fila se:
+    ///   1. Ainda há inimigos a spawnar nesta onda.
+    ///   2. O número de inimigos vivos está abaixo do limite.
+    ///
+    /// Chamado sempre que um inimigo morre, garantindo que a cena
+    /// se mantém populada sem ultrapassar o limite simultâneo.
+    /// </summary>
+    private void TrySpawnNext() {
+        // Inimigos vivos na cena agora = spawnados - mortos.
+        int aliveNow = enemiesSpawned - enemiesKilled;
+
+        if (enemiesSpawned < totalEnemiesForWave && aliveNow < maxEnemiesAliveAtOnce)
+            SpawnOneEnemy();
     }
 
     // ==============================================================
@@ -221,20 +308,28 @@ public class WaveManager : MonoBehaviour {
     /// Assinado ao evento Enemy.OnAnyEnemyDied em OnEnable().
     /// </summary>
     private void HandleEnemyDied() {
-        // ==============================================================
-        //  Mathf.Max(a, b)
-        // ==============================================================
-        //  Decrementa enemiesAlive mas nunca deixa ir abaixo de 0.
-        //  Sem isso, se HandleEnemyDied fosse chamado mais vezes que
-        //  o esperado, poderíamos ter valores negativos.
-        enemiesAlive = Mathf.Max(0, enemiesAlive - 1);
+        enemiesKilled++;
 
-        // Atualiza o contador na HUD em tempo real.
+        // ==============================================================
+        //  CONTADOR DA HUD — total restante da onda
+        // ==============================================================
+        //  Mostramos (total - mortos), não apenas os vivos na cena.
+        //  Isso inclui inimigos ainda não spawnados, dando ao jogador
+        //  uma noção real do quanto falta para terminar a onda.
+        //
+        //  Exemplo: onda com 30 inimigos, limite 15 simultâneos.
+        //    No início: 15 na cena, 15 na fila → HUD mostra 30.
+        //    Morre 1 → 14 na cena, 15 na fila, novo spawna → HUD mostra 29.
+        //    Fim: 0 na cena, 0 na fila → HUD mostra 0.
+        int totalRemaining = Mathf.Max(0, totalEnemiesForWave - enemiesKilled);
         if (waveUI != null)
-            waveUI.UpdateEnemiesRemaining(enemiesAlive);
+            waveUI.UpdateEnemiesRemaining(totalRemaining);
 
-        // Quando todos morreram, encerra a onda.
-        if (enemiesAlive <= 0)
+        // Tenta spawnar o próximo inimigo da fila para preencher a vaga.
+        TrySpawnNext();
+
+        // Onda completa quando TODOS os inimigos da onda foram mortos.
+        if (enemiesKilled >= totalEnemiesForWave)
             OnWaveCompleted();
     }
 
@@ -262,54 +357,63 @@ public class WaveManager : MonoBehaviour {
     /// Retorna a quantidade de inimigos para a onda informada.
     ///
     /// Onda 1 → sempre 5 (fixo, amigável para tutorial).
-    /// Onda N → Ceil(lastWaveCount * Random(1.12, 1.16))
-    ///          = 12% a 16% mais que a onda anterior.
+    /// Onda N → Ceil(anterior * (1 + taxa)) limitado por maxEnemiesPerWave.
     ///
-    /// Mathf.CeilToInt arredonda PARA CIMA. Exemplo:
-    ///   5 * 1.13 = 5.65 → CeilToInt → 6 inimigos.
-    ///   Nunca perde fração — sempre arredonda para mais.
+    /// A taxa de crescimento é progressivamente reduzida:
+    ///   Wave 1→2: initialGrowthRate (padrão 25%)
+    ///   Wave 2→3: initial - 1*decrement (23%)
+    ///   Wave 3→4: initial - 2*decrement (21%)
+    ///   ... até atingir minGrowthRate (padrão 5%)
+    ///
+    /// Mathf.CeilToInt arredonda para cima, garantindo que o número
+    /// de inimigos nunca fique estagnado por truncamento.
     /// </summary>
     private int GetEnemyCountForWave(int wave) {
         if (wave == 1) return 5;
 
         // ==============================================================
-        //  Random.Range(float, float)
+        //  CÁLCULO DA TAXA PROGRESSIVA
         // ==============================================================
-        //  Com floats, o Range é INCLUSIVO nos dois lados.
-        //  Retorna um valor decimal aleatório entre 1.12 e 1.16.
-        //  Isso corresponde a +12% a +16% de crescimento.
-        float scalingMultiplier = Random.Range(1.12f, 1.16f);
-        return Mathf.CeilToInt(lastWaveEnemyCount * scalingMultiplier);
+        //  (wave - 2) = quantas vezes já reduzimos desde a primeira transição.
+        //  Wave 2: (2-2)*decrement = 0   → growth = initialGrowthRate
+        //  Wave 3: (3-2)*decrement = 1x  → growth = initial - 1*decrement
+        //  Wave 4: (4-2)*decrement = 2x  → growth = initial - 2*decrement
+        //  Mathf.Max garante que nunca fique abaixo do piso mínimo.
+        float rawGrowth = initialGrowthRate - (wave - 2) * growthDecrement;
+        float growth    = Mathf.Max(minGrowthRate, rawGrowth);
+
+        int count = Mathf.CeilToInt(lastWaveEnemyCount * (1f + growth));
+
+        // ==============================================================
+        //  LIMITE MÁXIMO DE INIMIGOS
+        // ==============================================================
+        //  Sem este limite, a fórmula pode produzir centenas de inimigos
+        //  em ondas tardias, sobrecarregando a cena.
+        //  Mathf.Min retorna o menor dos dois valores.
+        return Mathf.Min(count, maxEnemiesPerWave);
     }
 
     /// <summary>
-    /// Retorna a lista de prefabs de inimigos permitidos nesta onda.
+    /// Retorna a lista de tipos de inimigo permitidos para a onda atual.
+    /// Filtra por minimumWave: só inclui tipos cuja onda mínima já foi atingida.
     ///
-    /// Onda 1   → só ZombieDefault.
-    /// Onda 2–3 → ZombieDefault + ZombieFast.
-    /// Onda 4+  → ZombieDefault + ZombieFast + ZombieTank.
-    ///
-    /// O EnemySpawner escolhe aleatoriamente entre os prefabs desta lista
-    /// para cada inimigo que instancia.
+    /// Extensível: para adicionar o ZombieBoss basta criar uma entrada
+    /// na lista enemyTypes no Inspector com minimumWave = onda desejada.
+    /// Nenhuma linha de código precisa ser alterada aqui.
     /// </summary>
-    private List<GameObject> GetAvailablePrefabs(int wave) {
-        var prefabs = new List<GameObject>();
+    private List<EnemySpawnConfig> GetAvailableEnemyTypes(int wave) {
+        var available = new List<EnemySpawnConfig>();
 
-        // ZombieDefault sempre disponível (desde onda 1).
-        if (zombieDefaultPrefab != null)
-            prefabs.Add(zombieDefaultPrefab);
+        foreach (var config in enemyTypes) {
+            // Só inclui se o prefab está atribuído E a onda mínima foi atingida.
+            if (config.prefab != null && config.minimumWave <= wave)
+                available.Add(config);
+        }
 
-        // ZombieFast desbloqueado a partir da onda 2.
-        if (wave >= 2 && zombieFastPrefab != null)
-            prefabs.Add(zombieFastPrefab);
+        if (available.Count == 0)
+            Debug.LogError($"[WaveManager] Nenhum inimigo disponível para a onda {wave}! " +
+                           "Verifique as configurações de minimumWave nos Enemy Types.");
 
-        // ZombieTank desbloqueado a partir da onda 4.
-        if (wave >= 4 && zombieTankPrefab != null)
-            prefabs.Add(zombieTankPrefab);
-
-        if (prefabs.Count == 0)
-            Debug.LogError("[WaveManager] Nenhum prefab de inimigo atribuído! Configure no Inspector.");
-
-        return prefabs;
+        return available;
     }
 }

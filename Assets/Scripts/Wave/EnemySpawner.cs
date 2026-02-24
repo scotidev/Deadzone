@@ -45,23 +45,31 @@ public class EnemySpawner : MonoBehaviour {
     // ==============================================================
 
     /// <summary>
-    /// Instancia um lote de inimigos, escolhendo aleatoriamente entre
-    /// os prefabs fornecidos para cada unidade.
+    /// Spawna EXATAMENTE UM inimigo imediatamente perto deste spawner.
+    /// Chamado pelo WaveManager no sistema de throttle: cada vez que
+    /// um inimigo morre e abre uma vaga, WaveManager chama este método
+    /// no spawner escolhido aleatoriamente.
     ///
-    /// O spawn é feito via Coroutine para distribuir o custo de
-    /// Instantiate() ao longo do tempo (um inimigo por "spawnDelay").
+    /// Não usa Coroutine — o timing é controlado pelo WaveManager.
     /// </summary>
-    /// <param name="availablePrefabs">Lista de prefabs que podem spawnar nesta onda.</param>
-    /// <param name="count">Quantidade de inimigos que ESTE spawner deve criar.</param>
-    public void SpawnEnemies(List<GameObject> availablePrefabs, int count) {
-        // Validação de segurança: não tenta spawnar sem dados válidos.
-        if (availablePrefabs == null || availablePrefabs.Count == 0 || count <= 0)
+    public void SpawnSingleEnemy(List<EnemySpawnConfig> availableTypes) {
+        if (availableTypes == null || availableTypes.Count == 0) return;
+
+        GameObject prefab = PickWeightedRandom(availableTypes);
+        Vector3 spawnPos  = GetValidSpawnPosition();
+        Instantiate(prefab, spawnPos, Quaternion.identity);
+    }
+
+    /// <summary>
+    /// Spawna um lote completo de inimigos com delay entre cada um.
+    /// Método legado — mantido para uso futuro ou debug.
+    /// No sistema de throttle, o WaveManager usa SpawnSingleEnemy.
+    /// </summary>
+    public void SpawnEnemies(List<EnemySpawnConfig> availableTypes, int count) {
+        if (availableTypes == null || availableTypes.Count == 0 || count <= 0)
             return;
 
-        // StartCoroutine inicia a execução da rotina de spawn de forma
-        // assíncrona — ela roda "em paralelo" com o resto do jogo,
-        // pausando entre cada spawn via WaitForSeconds.
-        StartCoroutine(SpawnRoutine(availablePrefabs, count));
+        StartCoroutine(SpawnRoutine(availableTypes, count));
     }
 
     // ==============================================================
@@ -82,33 +90,62 @@ public class EnemySpawner : MonoBehaviour {
     //  "IEnumerator" é o tipo de retorno obrigatório para Coroutines.
     //  Não retorna um valor real — é uma convenção do C# para iteradores.
 
-    private IEnumerator SpawnRoutine(List<GameObject> availablePrefabs, int count) {
+    private IEnumerator SpawnRoutine(List<EnemySpawnConfig> availableTypes, int count) {
         for (int i = 0; i < count; i++) {
             // ==============================================================
-            //  Random.Range(min, max) com inteiros
+            //  SELEÇÃO PONDERADA (Weighted Random)
             // ==============================================================
-            //  Retorna um número inteiro aleatório entre min (inclusivo)
-            //  e max (EXclusivo). Com 3 prefabs (índices 0, 1, 2):
-            //    Random.Range(0, 3) retorna 0, 1 ou 2.
-            int prefabIndex    = Random.Range(0, availablePrefabs.Count);
+            //  Em vez de sortear um índice uniforme (todo prefab com a
+            //  mesma chance), usamos PickWeightedRandom que considera o
+            //  spawnWeight de cada tipo. ZombieTank (weight=1) aparece
+            //  muito menos que ZombieDefault (weight=5).
+            GameObject prefab  = PickWeightedRandom(availableTypes);
             Vector3 spawnPos   = GetValidSpawnPosition();
 
-            // ==============================================================
-            //  Instantiate(prefab, position, rotation)
-            // ==============================================================
-            //  Cria uma CÓPIA do prefab na cena, na posição e rotação dadas.
-            //  "Quaternion.identity" = sem rotação (0,0,0,1).
-            //  O objeto nasce sem rotação aplicada.
-            Instantiate(availablePrefabs[prefabIndex], spawnPos, Quaternion.identity);
+            Instantiate(prefab, spawnPos, Quaternion.identity);
 
-            // ==============================================================
-            //  yield return new WaitForSeconds(segundos)
-            // ==============================================================
-            //  Pausa a Coroutine por "spawnDelay" segundos antes de
-            //  spawnar o próximo inimigo. O resto do jogo continua
-            //  normalmente durante esse período.
             yield return new WaitForSeconds(spawnDelay);
         }
+    }
+
+    // ==============================================================
+    //  SELEÇÃO ALEATÓRIA PONDERADA
+    // ==============================================================
+    //  COMO FUNCIONA:
+    //  1. Soma todos os pesos dos tipos disponíveis (ex: 5+3+1 = 9).
+    //  2. Sorteia um float entre 0 e totalWeight (ex: 6.7).
+    //  3. Percorre a lista acumulando pesos até o acumulado atingir
+    //     o valor sorteado.
+    //
+    //  Exemplo com pesos 5, 3, 1 (total = 9):
+    //    roll = 3.2 → Default (0–5): não     Fast (5–8): sim → ZombieFast
+    //    roll = 0.5 → Default (0–5): sim → ZombieDefault
+    //    roll = 8.5 → Default (0–5): não   Fast (5–8): não   Tank (8–9): sim
+    //
+    //  O resultado é que a probabilidade de cada tipo é exatamente
+    //  proporcional ao seu peso: Default 55%, Fast 33%, Tank 11%.
+
+    private GameObject PickWeightedRandom(List<EnemySpawnConfig> configs) {
+        // Passo 1: calcular o peso total de todos os tipos disponíveis.
+        float totalWeight = 0f;
+        foreach (var config in configs)
+            totalWeight += config.spawnWeight;
+
+        // Passo 2: sortear um valor aleatório na faixa [0, totalWeight].
+        // Random.Range com floats é inclusivo nos dois lados.
+        float roll = Random.Range(0f, totalWeight);
+
+        // Passo 3: percorrer a lista acumulando pesos até encontrar o vencedor.
+        float cumulative = 0f;
+        foreach (var config in configs) {
+            cumulative += config.spawnWeight;
+            if (roll <= cumulative)
+                return config.prefab;
+        }
+
+        // Fallback de segurança: retorna o último da lista se não encontrou.
+        // Pode ocorrer por imprecisão de ponto flutuante em casos extremos.
+        return configs[configs.Count - 1].prefab;
     }
 
     // ==============================================================

@@ -125,6 +125,40 @@ public abstract class Enemy : MonoBehaviour {
         enemyFollow = GetComponent<EnemyFollow>();
         enemyAttack = GetComponent<EnemyAttack>();
 
+        // ==============================================================
+        //  CORREÇÃO DO BUG: inimigos sendo lançados pelo mapa ao tomar tiro
+        // ==============================================================
+        //  CAUSA DO PROBLEMA:
+        //  O projétil (Projectile.cs) tem um Rigidbody com força física
+        //  aplicada. Quando colide com o inimigo — que também tem um
+        //  Rigidbody — a Unity aplica um IMPULSO físico que lança o inimigo.
+        //
+        //  O ZombieTank era o mais afetado porque sua velocidade é muito
+        //  baixa (1.8 m/s). O NavMeshAgent não conseguia "reabsorver" o
+        //  impulso da colisão, e o inimigo voava pelo mapa.
+        //
+        //  SOLUÇÃO: Rigidbody.isKinematic = true
+        //  ┌─────────────────────────────────────────────────────────┐
+        //  │  isKinematic = FALSE (padrão)                           │
+        //  │    → o Rigidbody responde à física (gravidade, colisões)│
+        //  │    → projétil aplica impulso → inimigo é lançado ❌     │
+        //  │                                                          │
+        //  │  isKinematic = TRUE  (nossa solução)                    │
+        //  │    → o Rigidbody IGNORA forças físicas externas         │
+        //  │    → NavMeshAgent controla o movimento ✅               │
+        //  │    → Collider permanece para detecção de colisão ✅     │
+        //  │    → OnCollisionEnter em Projectile.cs ainda dispara ✅ │
+        //  │      (porque o PROJÉTIL tem Rigidbody não-kinematic)    │
+        //  └─────────────────────────────────────────────────────────┘
+        //
+        //  REGRA GERAL DA UNITY:
+        //  Sempre use isKinematic = true em objetos controlados por
+        //  NavMeshAgent, Animator ou qualquer sistema não-físico.
+        //  Rigidbody + NavMeshAgent sem isKinematic = comportamento imprevisível.
+        var rb = GetComponent<Rigidbody>();
+        if (rb != null)
+            rb.isKinematic = true;
+
         // Deixa cada subtipo definir seus próprios stats ANTES de
         // inicializar a vida. A ORDEM aqui é importante!
         InitializeStats();
