@@ -93,6 +93,36 @@ namespace InfimaGames.LowPolyShooterPack
         /// </summary>
         public abstract Vector2 GetInputLook();
 
+        // ==============================================================
+        //  [ADICIONADO] IsJumping()
+        // ==============================================================
+        //  AULA: O QUE É UMA CLASSE ABSTRATA E POR QUE ELA EXISTE AQUI?
+        //
+        //  Imagine que CharacterBehaviour é um "contrato" assinado entre
+        //  dois scripts que precisam se comunicar:
+        //
+        //  → Movement.cs precisa saber: "o jogador está pulando?"
+        //  → Character.cs é quem lê o input e sabe a resposta.
+        //
+        //  O problema: Movement.cs não conhece Character.cs diretamente.
+        //  A solução: ambos falam através do "contrato" CharacterBehaviour.
+        //
+        //  "abstract" significa: "todo filho OBRIGATORIAMENTE deve implementar
+        //  este método". É como dizer "este campo do contrato não pode ficar
+        //  em branco — quem assinar tem que preencher".
+        //
+        //  Character.cs herda de CharacterBehaviour e é obrigado a fornecer
+        //  um IsJumping() real. Movement.cs chama playerCharacter.IsJumping()
+        //  sem precisar saber quem está do outro lado.
+        //
+        //  Esse padrão se chama "programação orientada a interfaces/abstrações"
+        //  e é um dos pilares do código profissional: os módulos se comunicam
+        //  por contratos, não por dependências diretas.
+        /// <summary>
+        /// [ADICIONADO] Retorna verdadeiro se o jogador está pressionando o botão de pulo.
+        /// </summary>
+        public abstract bool IsJumping();
+
         #endregion
 
         #region ANIMATION
