@@ -206,8 +206,10 @@ namespace InfimaGames.LowPolyShooterPack {
 
             //Holding the firing button.
             if (holdingButtonFire) {
-                //Check.
-                if (CanPlayAnimationFire() && equippedWeapon.HasAmmunition() && equippedWeapon.IsAutomatic()) {
+                // Não dispara se estiver no modo de construção.
+                if (BuildingController.Instance != null && BuildingController.Instance.IsPlacing) {
+                    holdingButtonFire = false;
+                } else if (CanPlayAnimationFire() && equippedWeapon.HasAmmunition() && equippedWeapon.IsAutomatic()) {
                     //Has fire rate passed.
                     if (Time.time - lastShotTime > 60.0f / equippedWeapon.GetRateOfFire())
                         Fire();
@@ -396,7 +398,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <summary>
         /// Updates the "Holstered" variable, along with the Character's Animator value.
         /// </summary>
-        private void SetHolstered(bool value = true) {
+        public override void SetHolstered(bool value = true) {
             //Update value.
             holstered = value;
 
@@ -554,6 +556,14 @@ namespace InfimaGames.LowPolyShooterPack {
             // Blocks the mouse cursor and the hability to shoot if the player is on shop.
             if (!cursorLocked || interfaceMode)
                 return;
+
+            // Bloqueia o disparo completamente enquanto o jogador está posicionando
+            // um objeto de construção. Também garante que holdingButtonFire seja false
+            // para não disparar no momento em que sair do modo construção.
+            if (BuildingController.Instance != null && BuildingController.Instance.IsPlacing) {
+                holdingButtonFire = false;
+                return;
+            }
 
             //Switch.
             switch (context) {

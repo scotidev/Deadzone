@@ -29,11 +29,16 @@ public class PlayerInteraction : MonoBehaviour {
     }
 
     /// <summary>
-    /// Handles blocking of interaction detection when the shop is open.
-    /// Clears current interactable and hides UI prompt if shop is active.
+    /// Handles blocking of interaction detection when the shop is open or the player is placing a building item.
+    /// Clears current interactable and hides UI prompt if either mode is active.
     /// </summary>
     private void HandleShopOpenBlocking() {
-        if (GameManager.Instance != null && GameManager.Instance.State == GameState.Shopping) {
+        // Verifica se a loja está aberta OU se o jogador está no modo construção.
+        // Nesses dois casos, o prompt de interação com NPCs não deve aparecer.
+        bool shouldBlock = (GameManager.Instance != null && GameManager.Instance.State == GameState.Shopping)
+            || (BuildingController.Instance != null && BuildingController.Instance.IsPlacing);
+
+        if (shouldBlock) {
             if (currentInteractable != null) {
                 currentInteractable = null;
 
