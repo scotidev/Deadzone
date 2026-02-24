@@ -223,18 +223,88 @@ namespace InfimaGames.LowPolyShooterPack
             //Play all muzzle effects.
             muzzleBehaviour.Effect();
             
-            //Determine the rotation that we want to shoot our projectile in.
-            Quaternion rotation = Quaternion.LookRotation(playerCamera.forward * 1000.0f - muzzleSocket.position);
-            
+            // ==============================================================
+            //  [CORRIGIDO] Cálculo do ponto-alvo do projétil (fallback)
+            // ==============================================================
+            //  AULA: QUAL É A DIFERENÇA ENTRE VETOR DE DIREÇÃO E POSIÇÃO?
+            //
+            //  No código original havia este erro:
+            //      playerCamera.forward * 1000.0f - muzzleSocket.position
+            //
+            //  "playerCamera.forward" é um VETOR DE DIREÇÃO — ele diz "para
+            //  onde a câmera está olhando", mas não diz "de onde". Multiplicar
+            //  por 1000 apenas escala esse vetor, ele continua sendo uma direção,
+            //  não uma posição real no mundo.
+            //
+            //  Sem a posição da câmera, o ponto-alvo era calculado como se a
+            //  câmera estivesse na origem do mundo (0, 0, 0). Quanto mais longe
+            //  o jogador estivesse da origem, maior o desvio da bala — por isso
+            //  o tiro saía levemente torto em algumas posições da cena.
+            //
+            //  CORREÇÃO:
+            //      playerCamera.position + playerCamera.forward * 1000.0f
+            //
+            //  Agora somamos a POSIÇÃO real da câmera ao vetor de direção.
+            //  O resultado é um ponto concreto no mundo: "1000 unidades à frente
+            //  de onde a câmera realmente está". Subtraindo a posição do cano
+            //  (muzzleSocket), obtemos a direção exata que alinha o tiro com
+            //  o centro da tela (crosshair).
+            //
+            //  ANALOGIA: é como a diferença entre dizer "vá para frente" (direção)
+            //  e "vá para frente a partir da sua posição atual" (posição + direção).
+            // [CORRIGIDO] Adicionado playerCamera.position para usar posição real da câmera.
+            // Antes era apenas playerCamera.forward * 1000.0f (sem a posição), o que
+            // causava desvio na bala dependendo de onde o jogador estava na cena.
+            Quaternion rotation = Quaternion.LookRotation(
+                playerCamera.position + playerCamera.forward * 1000.0f - muzzleSocket.position);
+
             //If there's something blocking, then we can aim directly at that thing, which will result in more accurate shooting.
             if (Physics.Raycast(new Ray(playerCamera.position, playerCamera.forward),
                 out RaycastHit hit, maximumDistance, mask))
                 rotation = Quaternion.LookRotation(hit.point - muzzleSocket.position);
-                
+
             //Spawn projectile from the projectile spawn point.
             GameObject projectile = Instantiate(prefabProjectile, muzzleSocket.position, rotation);
+
+            // ==============================================================
+            //  [CORRIGIDO] Modo de detecção de colisão do projétil
+            // ==============================================================
+            //  AULA: O QUE É "BULLET TUNNELING" (TUNELAMENTO DE BALA)?
+            //
+            //  A Unity verifica colisões a cada frame físico (FixedUpdate).
+            //  O padrão é 50 frames por segundo, ou seja, a cada 0,02 segundos.
+            //
+            //  O projétil se move a 400 unidades/segundo. Então a cada frame:
+            //      400 × 0,02 = 8 METROS de deslocamento por frame
+            //
+            //  O barril tem ~1m de largura. Se o projétil pula 8m por frame,
+            //  ele pode PASSAR DIRETO pelo barril sem a Unity perceber — porque
+            //  ela só checa a posição atual, não o caminho percorrido.
+            //  Esse fenômeno se chama "bullet tunneling" (tunelamento de bala).
+            //
+            //  AULA: QUAL É A DIFERENÇA ENTRE OS MODOS?
+            //
+            //  Discrete (padrão)   → checa apenas a posição atual a cada frame.
+            //                        Rápido, mas perde colisões com objetos finos.
+            //
+            //  Continuous          → calcula o CAMINHO percorrido entre frames,
+            //                        mas apenas contra objetos SEM Rigidbody (estáticos).
+            //                        Parede, chão e teto são detectados — o barril, não.
+            //
+            //  ContinuousDynamic   → calcula o caminho contra estáticos E dinâmicos.
+            //                        "Dinâmico" = objeto que TEM um Rigidbody.
+            //                        O barril tem Rigidbody (para receber força da
+            //                        explosão), então só este modo o detecta corretamente.
+            //
+            //  RESUMO: trocamos Continuous por ContinuousDynamic para garantir
+            //  que o projétil sempre colida com o barril, independente da velocidade.
+            Rigidbody projectileRb = projectile.GetComponent<Rigidbody>();
+            // [CORRIGIDO] Era CollisionDetectionMode.Continuous — não detectava o barril
+            // porque ele tem Rigidbody. ContinuousDynamic cobre objetos dinâmicos também.
+            projectileRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+
             //Add velocity to the projectile.
-            projectile.GetComponent<Rigidbody>().linearVelocity = projectile.transform.forward * projectileImpulse;   
+            projectileRb.linearVelocity = projectile.transform.forward * projectileImpulse;
         }
 
         public override void FillAmmunition(int amount)
