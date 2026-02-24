@@ -48,9 +48,32 @@ public class ExplosiveBarrelScript : MonoBehaviour {
 		//Wait for set amount of time
 		yield return new WaitForSeconds(randomTime);
 
+		// ==============================================================
+		//  [ADICIONADO] Câmera lenta ao explodir
+		// ==============================================================
+		//  AULA: COMO ESTE CÓDIGO SE CONECTA AO SlowMotionManager?
+		//
+		//  O operador "?." (null-conditional) chama TriggerSlowMotion
+		//  SOMENTE se SlowMotionManager.Instance não for null.
+		//  Isso evita erros caso o manager não esteja na cena.
+		//
+		//  Por que acionar AQUI, antes do Instantiate?
+		//  Porque este é o exato momento em que a explosão "acontece".
+		//  O jogador vê o barril explodir E o tempo desacelera ao mesmo
+		//  tempo — criando o efeito cinematográfico desejado.
+		//
+		//  O parâmetro 1.0f = 1 segundo em tempo REAL.
+		//  (Veja SlowMotionManager.cs para entender por que "real".)
+		//
+		//  REAÇÃO EM CADEIA: se este barril acertar outro barril próximo
+		//  (tag "ExplosiveBarrel"), aquele barril também chamará
+		//  TriggerSlowMotion. O SlowMotionManager reinicia o timer
+		//  a cada chamada — explosões encadeadas estendem o efeito.
+		SlowMotionManager.Instance?.TriggerSlowMotion(1.0f);
+
 		//Spawn the destroyed barrel prefab
 		Instantiate (destroyedBarrelPrefab, transform.position, 
-		             transform.rotation); 
+					 transform.rotation); 
 
 		//Explosion force
 		Vector3 explosionPos = transform.position;
