@@ -14,10 +14,10 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
-  m_Fog: 0
-  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  m_Fog: 1
+  m_FogColor: {r: 0.015463631, g: 0.6415094, b: 0, a: 1}
   m_FogMode: 3
-  m_FogDensity: 0.01
+  m_FogDensity: 0.03
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b346efe77f4d278419789442bf149f64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SafeZone
-  playerStartsOutside: 0
+  playerStartsOutside: 1
 --- !u!65 &34814648
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2855,15 +2855,15 @@ MonoBehaviour:
   enemyTypes:
   - prefab: {fileID: 270316871960866942, guid: d1d09725d5529fe44abda6963954f7a8, type: 3}
     minimumWave: 1
-    spawnWeight: 0.6
+    spawnWeight: 10
   - prefab: {fileID: 4449994615583783604, guid: accf882275ba880409157b70de5f2086,
       type: 3}
     minimumWave: 0
-    spawnWeight: 0.3
+    spawnWeight: 5
   - prefab: {fileID: 8945000935841565596, guid: 703d07df9fd097242bc7a67f2dc6b0f3,
       type: 3}
     minimumWave: 0
-    spawnWeight: 0.1
+    spawnWeight: 0.5
   initialGrowthRate: 0.25
   growthDecrement: 0.02
   minGrowthRate: 0.05
