@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 185426, guid: ba67efa6dcab9a54aac7e607f17f759c, type: 3}
       propertyPath: m_Name
-      value: P_LPSP_DMG_Barrel Variant
+      value: Barrel
       objectReference: {fileID: 0}
     - target: {fileID: 185426, guid: ba67efa6dcab9a54aac7e607f17f759c, type: 3}
       propertyPath: m_Layer
@@ -70,6 +70,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5414722, guid: ba67efa6dcab9a54aac7e607f17f759c, type: 3}
       propertyPath: m_IsKinematic
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5414722, guid: ba67efa6dcab9a54aac7e607f17f759c, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6441334, guid: ba67efa6dcab9a54aac7e607f17f759c, type: 3}
+      propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []

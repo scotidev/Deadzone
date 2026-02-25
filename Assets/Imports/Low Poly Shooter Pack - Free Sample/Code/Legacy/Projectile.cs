@@ -22,6 +22,19 @@ public class Projectile : MonoBehaviour {
 	public Transform [] dirtImpactPrefabs;
 	public Transform []	concreteImpactPrefabs;
 
+	[Header("Damage")]
+	// ==============================================================
+	//  [ADICIONADO] Campo de dano ao inimigo
+	// ==============================================================
+	//  "public float damage" expõe o valor no Inspector do prefab
+	//  do projétil. Cada arma pode ter um prefab de projétil com
+	//  damage diferente (pistola = 25, espingarda = 40, etc.).
+	//
+	//  Este valor é usado abaixo em enemy.TakeDamage(damage) quando
+	//  o projétil colide com um GameObject de tag "Enemy".
+	[Tooltip("Dano causado em inimigos com tag 'Enemy' no acerto direto.")]
+	public float damage = 25f;
+
 	private void Start ()
 	{
 		//Grab the game mode service, we need it to access the player character!
@@ -137,6 +150,37 @@ public class Projectile : MonoBehaviour {
 			collision.transform.gameObject.GetComponent
 				<GasTankScript> ().isHit = true;
 			//Destroy bullet object
+			Destroy(gameObject);
+		}
+
+		//If bullet collides with an enemy, deal damage and destroy the bullet.
+		// GetComponentInParent handles the case where the bullet hits a child
+		// collider (hitbox) rather than the root Enemy GameObject.
+		if (collision.transform.CompareTag("Enemy"))
+		{
+			// ==============================================================
+			//  [ADICIONADO] Lógica de dano ao inimigo
+			// ==============================================================
+			//  CompareTag("Enemy") é mais eficiente que .tag == "Enemy"
+			//  porque evita alocação de string na comparação.
+			//  O GameObject do inimigo (ou de qualquer filho dele) deve
+			//  ter a tag "Enemy" configurada no Inspector.
+			//
+			//  GetComponentInParent<Enemy>()
+			//  Busca o componente Enemy no GameObject ATINGIDO ou em
+			//  qualquer ANCESTRAL na hierarquia.
+			//  Por que não GetComponent<Enemy>()?
+			//  A bala pode acertar um Collider filho do inimigo (ex: uma
+			//  "hitbox" na cabeça ou no tronco), não o objeto raiz.
+			//  GetComponentInParent sobe na hierarquia até encontrar Enemy.
+			//
+			//  enemy.TakeDamage(damage) → chama Enemy.TakeDamage() que
+			//  reduz a vida e dispara Die() se necessário.
+			Enemy enemy = collision.transform.GetComponentInParent<Enemy>();
+			if (enemy != null)
+				enemy.TakeDamage(damage);
+
+			// Destroí o projétil após acertar o inimigo.
 			Destroy(gameObject);
 		}
 	}

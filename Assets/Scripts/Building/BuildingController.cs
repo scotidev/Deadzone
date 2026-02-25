@@ -307,20 +307,6 @@ public class BuildingController : MonoBehaviour {
                 return; // "return" sai da função imediatamente.
             }
 
-            // ==============================================================
-            //  Calcula a posição elevada para o objeto ficar SOBRE o chão
-            // ==============================================================
-            //  hit.point é o ponto EXATO onde o raio tocou a superfície.
-            //  O pivot (ponto central) do prefab fica no centro geométrico do objeto.
-            //  Se colocássemos o pivot no hit.point, metade do objeto ficaria
-            //  enterrada no chão. Por isso somamos metade da altura:
-            //
-            //  Vector3.up = atalho para Vector3(0, 1, 0) — direção para cima.
-            //  Multiplicar por um número escala o vetor:
-            //  Vector3.up * 2f = Vector3(0, 2, 0) → sobe 2 metros.
-            //
-            //  overlapBoxSize.y é a altura do objeto configurada no BuildableSO.
-            //  * 0.5f = metade da altura → eleva o objeto exatamente o suficiente.
             Vector3 placementPos = hit.point + Vector3.up * (selectedItem.overlapBoxSize.y * 0.5f);
 
             // Move o fantasma para a posição calculada.
