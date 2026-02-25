@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 // ==============================================================
@@ -32,8 +33,19 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
     [Tooltip("Quantidade máxima de pontos de vida.")]
     [SerializeField] private float maxHealth = 100f;
 
+    [Header("Dano da Névoa (Fora da SafeZone)")]
+    [Tooltip("Dano aplicado a cada tick enquanto o jogador está na névoa.")]
+    [SerializeField] private float poisonDamagePerTick = 5f;
+
+    [Tooltip("Intervalo em segundos entre cada tick de dano da névoa.")]
+    [SerializeField] private float poisonTickInterval = 1f;
+
     // Vida atual é privada — só este script a altera diretamente.
     private float currentHealth;
+
+    // Referência à coroutine ativa do veneno.
+    // Guardamos para poder parar em StopPoisonDamage().
+    private Coroutine poisonCoroutine;
 
     // ==============================================================
     //  EVENTOS C#
@@ -62,6 +74,13 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
     /// Disparado quando o jogador morre (vida chega a zero).
     /// </summary>
     public event Action OnPlayerDied;
+
+    /// <summary>
+    /// Disparado quando o estado de envenenamento muda.
+    /// Parâmetro: true = entrou na névoa, false = entrou na safezone.
+    /// Útil para ativar efeito visual de tela (vinheta vermelha, etc.).
+    /// </summary>
+    public event Action<bool> OnPoisonStateChanged;
 
     // ==============================================================
     //  AWAKE — inicialização
@@ -101,6 +120,49 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
         // Se a vida chegou a zero, ativa a sequência de morte.
         if (currentHealth <= 0f)
             Die();
+    }
+
+    // ==============================================================
+    //  DANO DA NÉVOA (POISON)
+    // ==============================================================
+
+    /// <summary>
+    /// Inicia o tick de dano da névoa. Chamado por SafeZone.OnTriggerExit.
+    /// Não faz nada se o jogador já está sendo envenenado.
+    /// </summary>
+    public void StartPoisonDamage() {
+        if (poisonCoroutine != null) return;
+        poisonCoroutine = StartCoroutine(PoisonTick());
+        OnPoisonStateChanged?.Invoke(true);
+        Debug.Log("[PlayerHealth] Névoa ativada — tomando dano por segundo.");
+    }
+
+    /// <summary>
+    /// Para o tick de dano da névoa. Chamado por SafeZone.OnTriggerEnter.
+    /// Não faz nada se o jogador não está sendo envenenado.
+    /// </summary>
+    public void StopPoisonDamage() {
+        if (poisonCoroutine == null) return;
+        StopCoroutine(poisonCoroutine);
+        poisonCoroutine = null;
+        OnPoisonStateChanged?.Invoke(false);
+        Debug.Log("[PlayerHealth] Névoa desativada — dentro da safezone.");
+    }
+
+    /// <summary>
+    /// True enquanto o jogador está sofrendo dano da névoa.
+    /// </summary>
+    public bool IsInPoison => poisonCoroutine != null;
+
+    /// <summary>
+    /// Coroutine que aplica dano a cada poisonTickInterval segundos.
+    /// Respeita Time.timeScale — pausa durante Pause Menu automaticamente.
+    /// </summary>
+    private IEnumerator PoisonTick() {
+        while (true) {
+            yield return new WaitForSeconds(poisonTickInterval);
+            TakeDamage(poisonDamagePerTick);
+        }
     }
 
     // ==============================================================

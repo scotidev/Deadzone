@@ -105,7 +105,7 @@ public class WaveUI : BaseUI {
         // Inicializa os textos com os valores padrão (pré-jogo).
         UpdateWaveNumber(0);
         UpdateEnemiesRemaining(0);
-        SetStatus("Interaja com o Wave Button para começar!");
+        SetStatus("Press the red button to start");
     }
 
     // ==============================================================
@@ -125,7 +125,7 @@ public class WaveUI : BaseUI {
             //  "{wave}" dentro da string é substituído pelo valor da variável.
             //  Exemplo: wave = 3 → texto fica "Wave 3".
             //  "Wave —" é mostrado quando wave == 0 (antes da primeira onda).
-            waveNumberText.text = wave == 0 ? "Wave —" : $"Wave {wave}";
+            waveNumberText.text = wave == 0 ? "Wave " : $"Wave {wave}";
     }
 
     /// <summary>
@@ -134,7 +134,7 @@ public class WaveUI : BaseUI {
     /// </summary>
     public void UpdateEnemiesRemaining(int count) {
         if (enemiesRemainingText != null)
-            enemiesRemainingText.text = $"Inimigos: {count}";
+            enemiesRemainingText.text = $"Enemies {count}";
     }
 
     /// <summary>
