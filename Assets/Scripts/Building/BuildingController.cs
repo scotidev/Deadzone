@@ -1,5 +1,13 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+// ==============================================================
+//  POR QUE O "using UnityEngine.InputSystem" É NECESSÁRIO?
+// ==============================================================
+//  Este namespace (pacote de tipos) contém as classes do NOVO Input
+//  System da Unity: InputAction, InputActionPhase, CallbackContext...
+//  Sem ele, o compilador não reconheceria esses tipos e daria erro.
+//  O "using" funciona como "importe este vocabulário para eu poder
+//  usá-lo sem escrever o nome completo toda vez".
 
 // ==============================================================
 //  VISÃO GERAL: O QUE FAZ O BuildingController?
@@ -14,7 +22,44 @@ using UnityEngine.InputSystem;
 //  PASSO 5: Uma caixa invisível verifica se o espaço está livre ou ocupado.
 //  PASSO 6: O GhostObject pinta o fantasma de verde (livre) ou vermelho (ocupado).
 //  PASSO 7: Jogador clica LMB → objeto real é instanciado no lugar do fantasma.
-//  PASSO 8: ESC ou mesma tecla → cancela, fantasma é destruído, arma volta.
+//  PASSO 8: Mesma tecla (toggle) → cancela, fantasma é destruído, arma volta.
+//
+// ==============================================================
+//  MUDANÇA ARQUITETURAL — POLLING vs EVENTOS
+// ==============================================================
+//  VERSÃO ANTERIOR deste script usava POLLING para detectar 6/7/8:
+//
+//    private void HandleSelectionInput() {                   // [REMOVIDO]
+//        if (Keyboard.current.digit6Key.wasPressedThisFrame) // [REMOVIDO]
+//            SelectItem(itemSlot6);                          // [REMOVIDO]
+//    }                                                       // [REMOVIDO]
+//
+//  ━━━ O QUE É POLLING? ━━━
+//  Polling (do inglês "to poll" = perguntar repetidamente) é a técnica
+//  de VERIFICAR ativamente uma condição a cada frame:
+//    "Está pressionada? Não. Está pressionada? Não. Está pressionada? Sim!"
+//  É como um segurança que faz a ronda 60x por segundo perguntando
+//  "aconteceu alguma coisa?" — mesmo quando nada aconteceu.
+//
+//  Problemas do polling com wasPressedThisFrame:
+//  1. INCONSISTÊNCIA: wasPressedThisFrame usa o OLD Input System
+//     (UnityEngine.InputSystem.Keyboard.current), mas o resto do projeto
+//     (Character.cs, etc.) usa o NEW Input System via PlayerInput.
+//     Misturar os dois sistemas causa comportamentos imprevisíveis.
+//  2. ACOPLAMENTO ao Update(): a detecção de tecla fica presa no
+//     ciclo de frames, impossibilitando reconfigurar controles no Inspector.
+//  3. INEFICIÊNCIA MENOR: o código roda 60x/s mesmo quando não há input.
+//
+//  ━━━ O QUE USAMOS AGORA? EVENTOS (Event-Driven Input) ━━━
+//  Em vez de perguntar a cada frame, registramos métodos que serão
+//  CHAMADOS AUTOMATICAMENTE quando o jogador apertar a tecla.
+//  É como deixar o número do celular: "quando acontecer, ME LIGA".
+//  O Input System da Unity chama isso de "callbacks".
+//
+//  O componente PlayerInput (no mesmo GameObject) lê o arquivo
+//  IA_Player.inputactions e, quando uma Action dispara (ex: tecla 6),
+//  ele chama o método correspondente neste script automaticamente.
+//  Nenhum polling, nenhum wasPressedThisFrame.
 public class BuildingController : MonoBehaviour {
 
     // ==============================================================
@@ -114,14 +159,34 @@ public class BuildingController : MonoBehaviour {
     //  Update() — executado a CADA FRAME (60x por segundo em 60fps)
     // ==============================================================
     //  É o "coração" do script — tudo que precisa ser verificado
-    //  continuamente fica aqui.
+    //  CONTINUAMENTE a cada frame fica aqui.
+    //
+    //  ANTES desta refatoração, o Update() também chamava:
+    //    HandleSelectionInput() → que usava wasPressedThisFrame (polling)
+    //
+    //  Esse método foi REMOVIDO do Update() porque a detecção das teclas
+    //  6, 7 e 8 foi migrada para o sistema de EVENTOS (callbacks).
+    //  Os métodos OnPlaceBuildable1/2/3 (logo abaixo) agora cuidam disso.
+    //
+    //  O que FICOU no Update() e por quê?
+    //
+    //  1. UpdateGhostPosition() → precisa rodar a cada frame porque o
+    //     fantasma tem que SEGUIR a mira do jogador em tempo real.
+    //     Não dá para usar evento aqui: posição de mouse não é um
+    //     evento pontual, é um valor contínuo que muda todo frame.
+    //
+    //  2. HandlePlacementInput() → verifica o clique do mouse (LMB).
+    //     Usa Mouse.current.leftButton.wasPressedThisFrame — isso é
+    //     aceitável aqui porque o mouse não tem uma "Place Buildable"
+    //     action configurada no Input Asset. É um caso isolado de polling
+    //     que pode ser migrado futuramente se necessário.
+    //
+    //  Regra geral: use Update() para coisas CONTÍNUAS (posição, animação).
+    //  Use EVENTOS (callbacks) para coisas PONTUAIS (apertar uma tecla).
     private void Update() {
         // Segurança: se por algum motivo a câmera não foi encontrada,
         // não executa nada (evita NullReferenceException).
         if (playerCamera == null) return;
-
-        // Verifica teclas a cada frame — o jogador pode pressionar a qualquer momento.
-        HandleSelectionInput();
 
         // Só atualiza o fantasma e verifica clique SE estiver em modo de colocação.
         // IsPlacing é true apenas enquanto currentGhost != null.
@@ -132,20 +197,103 @@ public class BuildingController : MonoBehaviour {
     }
 
     // ==============================================================
-    //  HandleSelectionInput() — detecta quais teclas foram pressionadas
+    //  OnPlaceBuildable1 / 2 / 3 — CALLBACKS DO NEW INPUT SYSTEM
     // ==============================================================
-    //  "wasPressedThisFrame" retorna true APENAS no frame exato em que
-    //  a tecla foi pressionada (não fica true enquanto segura).
-    //  É como a diferença entre "pressionar" e "segurar" uma tecla.
-    private void HandleSelectionInput() {
-        if (Keyboard.current.digit6Key.wasPressedThisFrame)
+    //
+    //  ━━━ O QUE É UM CALLBACK? ━━━
+    //  Um callback ("chamar de volta") é um método que você registra
+    //  para ser chamado AUTOMATICAMENTE quando algo acontecer.
+    //  Analogia: você deixa seu número no consultório médico e eles
+    //  te ligam quando a consulta for confirmada. Você não fica
+    //  ligando a cada minuto perguntando "já confirmou?" (= polling).
+    //
+    //  ━━━ COMO O PLAYERINPUT CHAMA ESTES MÉTODOS? ━━━
+    //  O componente PlayerInput (no mesmo GameObject do Player) lê o
+    //  arquivo IA_Player.inputactions. Quando o jogador aperta a tecla 6,
+    //  o Input System dispara a Action "Place Buildable 1". O PlayerInput
+    //  então procura em todos os scripts do GameObject um método chamado
+    //  OnPlaceBuildable1 e o chama automaticamente.
+    //
+    //  Isso é o comportamento "Send Messages":
+    //  PlayerInput → envia mensagem "OnPlaceBuildable1" → BuildingController recebe.
+    //
+    //  ━━━ COMO O NOME DO MÉTODO É GERADO? ━━━
+    //  A Unity remove os espaços do nome da Action e coloca "On" na frente:
+    //    Action no .inputactions: "Place Buildable 1"
+    //    Espaços removidos:       "PlaceBuildable1"
+    //    Prefixo "On" adicionado: "OnPlaceBuildable1"   ← nome do método
+    //
+    //  ━━━ O QUE É InputAction.CallbackContext? ━━━
+    //  É o "envelope" que o Input System entrega junto com a notificação.
+    //  Dentro do contexto há informações sobre o evento:
+    //  - context.phase     → em que fase está a ação agora
+    //  - context.ReadValue<T>() → o valor lido (ex: float, Vector2)
+    //  - context.action    → qual Action foi disparada
+    //  - context.control   → qual controle físico foi acionado (tecla/botão)
+    //
+    //  ━━━ O QUE SÃO AS FASES (InputActionPhase)? ━━━
+    //  Cada pressionar de tecla passa por uma sequência de fases:
+    //
+    //  ┌─────────────────┬────────────────────────────────────────────┐
+    //  │ FASE            │ QUANDO OCORRE                              │
+    //  ├─────────────────┼────────────────────────────────────────────┤
+    //  │ Disabled        │ A action está desativada (não monitora)    │
+    //  │ Waiting         │ Aguardando input (tecla solta, em repouso) │
+    //  │ Started         │ Tecla foi pressionada ↓ (início do contato)│
+    //  │ Performed       │ Ação concluída (para Button: = pressionada)│
+    //  │ Canceled        │ Tecla foi solta ↑ (fim do contato)        │
+    //  └─────────────────┴────────────────────────────────────────────┘
+    //
+    //  Para um botão simples (type "Button" no .inputactions):
+    //    - Started   → frame em que a tecla foi pressionada
+    //    - Performed → mesmo frame que Started (ação considerada completa)
+    //    - Canceled  → frame em que a tecla foi solta
+    //
+    //  Nós agimos apenas no Performed porque:
+    //  1. É a fase que representa "a ação foi de fato executada"
+    //  2. Evita chamar SelectItem duas vezes (no Started E no Performed)
+    //  3. É o padrão adotado no Character.cs do projeto
+    //
+    //  ━━━ POR QUE OS MÉTODOS SÃO public? ━━━
+    //  Com Send Messages, a Unity chama o método via reflexão (reflection)
+    //  — um mecanismo que procura métodos pelo nome em tempo de execução.
+    //  O método PRECISA ser public para ser encontrado e chamado.
+    //  Com Invoke Unity Events, o Inspector também exige public para
+    //  listar o método no dropdown de eventos.
+    //  Se fosse private, o PlayerInput não conseguiria chamá-lo.
+    //
+    //  ━━━ DIFERENÇA PARA O CÓDIGO ANTIGO ━━━
+    //  ANTES:  if (Keyboard.current.digit6Key.wasPressedThisFrame)  ← polling
+    //  AGORA:  public void OnPlaceBuildable1(CallbackContext context) ← evento
+    //  A lógica de "o que fazer ao pressionar 6" é a mesma (SelectItem),
+    //  mas o ACIONAMENTO mudou: de "perguntado a cada frame" para
+    //  "notificado pelo sistema quando acontece".
+
+    /// <summary>
+    /// Called by PlayerInput when the player presses the key bound to "Place Buildable 1" (default: 6).
+    /// </summary>
+    public void OnPlaceBuildable1(InputAction.CallbackContext context) {
+        // Só executa na fase Performed — a ação foi concluída (tecla pressionada).
+        // Ignoramos Started e Canceled para não disparar o método várias vezes
+        // no mesmo pressionar de tecla.
+        if (context.phase == InputActionPhase.Performed)
             SelectItem(itemSlot6);
-        else if (Keyboard.current.digit7Key.wasPressedThisFrame)
+    }
+
+    /// <summary>
+    /// Called by PlayerInput when the player presses the key bound to "Place Buildable 2" (default: 7).
+    /// </summary>
+    public void OnPlaceBuildable2(InputAction.CallbackContext context) {
+        if (context.phase == InputActionPhase.Performed)
             SelectItem(itemSlot7);
-        else if (Keyboard.current.digit8Key.wasPressedThisFrame)
+    }
+
+    /// <summary>
+    /// Called by PlayerInput when the player presses the key bound to "Place Buildable 3" (default: 8).
+    /// </summary>
+    public void OnPlaceBuildable3(InputAction.CallbackContext context) {
+        if (context.phase == InputActionPhase.Performed)
             SelectItem(itemSlot8);
-        else if (Keyboard.current.escapeKey.wasPressedThisFrame)
-            CancelPlacement();
     }
 
     // ==============================================================
@@ -234,7 +382,7 @@ public class BuildingController : MonoBehaviour {
         // Mostra na tela as instruções para o jogador.
         // O $"..." com {variavel} é interpolação de strings.
         UIManager.Instance?.ToggleInteractionPrompt(true,
-            $"{item.displayName}  ·  [LMB] Colocar  ·  [ESC] Cancelar");
+            $"{item.displayName}  ·  [LMB] Colocar  ·  [mesma tecla] Cancelar");
     }
 
     // ==============================================================
