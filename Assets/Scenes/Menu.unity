@@ -1035,18 +1035,18 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 532624250}
-  - component: {fileID: 532624255}
   - component: {fileID: 532624253}
   - component: {fileID: 532624252}
-  - component: {fileID: 532624254}
   - component: {fileID: 532624251}
+  - component: {fileID: 532624254}
+  - component: {fileID: 532624255}
   m_Layer: 5
   m_Name: OptionsButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &532624250
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1185,15 +1185,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 532624249}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e44d603738c40fb4daaf699f01776b8a, type: 3}
+  m_Script: {fileID: 11500000, guid: 583674ed38c43ce41b37ca7e370b0f95, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MenuImageScaleSound
-  normalScale: {x: 1, y: 1, z: 1}
-  selectedScale: {x: 1.15, y: 1.15, z: 1}
-  pressedScale: {x: 0.95, y: 0.95, z: 1}
-  speed: 10
-  hoverSound: {fileID: 982478244}
-  clickSound: {fileID: 1085472824}
+  m_EditorClassIdentifier: Assembly-CSharp::MenuButtonAudio
+  hoverSound: {fileID: 8300000, guid: f81480a45d160c74ebecd28ee18132f4, type: 3}
+  clickSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
 --- !u!1001 &550811706
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1292,17 +1288,17 @@ GameObject:
   m_Component:
   - component: {fileID: 573842792}
   - component: {fileID: 573842795}
-  - component: {fileID: 573842797}
   - component: {fileID: 573842794}
-  - component: {fileID: 573842796}
   - component: {fileID: 573842793}
+  - component: {fileID: 573842796}
+  - component: {fileID: 573842797}
   m_Layer: 5
   m_Name: ExitButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &573842792
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1441,15 +1437,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 573842791}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e44d603738c40fb4daaf699f01776b8a, type: 3}
+  m_Script: {fileID: 11500000, guid: 583674ed38c43ce41b37ca7e370b0f95, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MenuImageScaleSound
-  normalScale: {x: 1, y: 1, z: 1}
-  selectedScale: {x: 1.15, y: 1.15, z: 1}
-  pressedScale: {x: 0.95, y: 0.95, z: 1}
-  speed: 15
-  hoverSound: {fileID: 982478244}
-  clickSound: {fileID: 1085472824}
+  m_EditorClassIdentifier: Assembly-CSharp::MenuButtonAudio
+  hoverSound: {fileID: 8300000, guid: f81480a45d160c74ebecd28ee18132f4, type: 3}
+  clickSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
 --- !u!1 &612131319
 GameObject:
   m_ObjectHideFlags: 0
@@ -1756,17 +1748,17 @@ GameObject:
   m_Component:
   - component: {fileID: 667136237}
   - component: {fileID: 667136240}
-  - component: {fileID: 667136242}
   - component: {fileID: 667136239}
-  - component: {fileID: 667136241}
   - component: {fileID: 667136238}
+  - component: {fileID: 667136241}
+  - component: {fileID: 667136242}
   m_Layer: 5
   m_Name: CreditsButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &667136237
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1905,15 +1897,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 667136236}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e44d603738c40fb4daaf699f01776b8a, type: 3}
+  m_Script: {fileID: 11500000, guid: 583674ed38c43ce41b37ca7e370b0f95, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MenuImageScaleSound
-  normalScale: {x: 1, y: 1, z: 1}
-  selectedScale: {x: 1.15, y: 1.15, z: 1}
-  pressedScale: {x: 0.95, y: 0.95, z: 1}
-  speed: 15
-  hoverSound: {fileID: 982478244}
-  clickSound: {fileID: 1085472824}
+  m_EditorClassIdentifier: Assembly-CSharp::MenuButtonAudio
+  hoverSound: {fileID: 8300000, guid: f81480a45d160c74ebecd28ee18132f4, type: 3}
+  clickSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
 --- !u!1 &687270566
 GameObject:
   m_ObjectHideFlags: 0
@@ -2795,7 +2783,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1515290472
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3337,6 +3325,16 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1396768505}
     m_Modifications:
+    - target: {fileID: 59237343728617374, guid: 5a9fe03a7122ea04f96b91a4c1d5d587,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 59237343728617374, guid: 5a9fe03a7122ea04f96b91a4c1d5d587,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1958968802583336616, guid: 5a9fe03a7122ea04f96b91a4c1d5d587,
         type: 3}
       propertyPath: m_Type
@@ -3495,6 +3493,31 @@ PrefabInstance:
       propertyPath: m_hasFontAssetChanged
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5917175157850336330, guid: 5a9fe03a7122ea04f96b91a4c1d5d587,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5917175157850336330, guid: 5a9fe03a7122ea04f96b91a4c1d5d587,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5917175157850336330, guid: 5a9fe03a7122ea04f96b91a4c1d5d587,
+        type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6486698748497153129, guid: 5a9fe03a7122ea04f96b91a4c1d5d587,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.33333334
+      objectReference: {fileID: 0}
+    - target: {fileID: 6486698748497153129, guid: 5a9fe03a7122ea04f96b91a4c1d5d587,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7298762175236831964, guid: 5a9fe03a7122ea04f96b91a4c1d5d587,
         type: 3}
       propertyPath: m_Color.a
@@ -3552,6 +3575,21 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 302
       objectReference: {fileID: 0}
+    - target: {fileID: 8616425170576628767, guid: 5a9fe03a7122ea04f96b91a4c1d5d587,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.33333334
+      objectReference: {fileID: 0}
+    - target: {fileID: 8616425170576628767, guid: 5a9fe03a7122ea04f96b91a4c1d5d587,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8616425170576628767, guid: 5a9fe03a7122ea04f96b91a4c1d5d587,
+        type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.33333334
+      objectReference: {fileID: 0}
     - target: {fileID: 8958428408244280834, guid: 5a9fe03a7122ea04f96b91a4c1d5d587,
         type: 3}
       propertyPath: m_Name
@@ -3560,7 +3598,7 @@ PrefabInstance:
     - target: {fileID: 8958428408244280834, guid: 5a9fe03a7122ea04f96b91a4c1d5d587,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3595,17 +3633,17 @@ GameObject:
   m_Component:
   - component: {fileID: 2022885988}
   - component: {fileID: 2022885991}
-  - component: {fileID: 2022885993}
   - component: {fileID: 2022885990}
-  - component: {fileID: 2022885992}
   - component: {fileID: 2022885989}
+  - component: {fileID: 2022885992}
+  - component: {fileID: 2022885993}
   m_Layer: 5
   m_Name: ControlsButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2022885988
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3744,15 +3782,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2022885987}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e44d603738c40fb4daaf699f01776b8a, type: 3}
+  m_Script: {fileID: 11500000, guid: 583674ed38c43ce41b37ca7e370b0f95, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MenuImageScaleSound
-  normalScale: {x: 1, y: 1, z: 1}
-  selectedScale: {x: 1.15, y: 1.15, z: 1}
-  pressedScale: {x: 0.95, y: 0.95, z: 1}
-  speed: 15
-  hoverSound: {fileID: 982478244}
-  clickSound: {fileID: 1085472824}
+  m_EditorClassIdentifier: Assembly-CSharp::MenuButtonAudio
+  hoverSound: {fileID: 8300000, guid: f81480a45d160c74ebecd28ee18132f4, type: 3}
+  clickSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
 --- !u!1001 &2032674094
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3850,18 +3884,18 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2091422593}
-  - component: {fileID: 2091422598}
   - component: {fileID: 2091422596}
-  - component: {fileID: 2091422597}
   - component: {fileID: 2091422595}
   - component: {fileID: 2091422594}
+  - component: {fileID: 2091422597}
+  - component: {fileID: 2091422598}
   m_Layer: 5
   m_Name: NewGameButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2091422593
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4000,15 +4034,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2091422592}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e44d603738c40fb4daaf699f01776b8a, type: 3}
+  m_Script: {fileID: 11500000, guid: 583674ed38c43ce41b37ca7e370b0f95, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MenuImageScaleSound
-  normalScale: {x: 1, y: 1, z: 1}
-  selectedScale: {x: 1.15, y: 1.15, z: 1}
-  pressedScale: {x: 0.95, y: 0.95, z: 1}
-  speed: 10
-  hoverSound: {fileID: 982478244}
-  clickSound: {fileID: 1085472824}
+  m_EditorClassIdentifier: Assembly-CSharp::MenuButtonAudio
+  hoverSound: {fileID: 8300000, guid: f81480a45d160c74ebecd28ee18132f4, type: 3}
+  clickSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
 --- !u!1001 &2531902295570261422
 PrefabInstance:
   m_ObjectHideFlags: 0

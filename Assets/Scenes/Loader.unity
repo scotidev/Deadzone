@@ -479,8 +479,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c16fe644f90536f45a040f48cb57001c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
-  bgmSource: {fileID: 0}
-  sfxSource: {fileID: 0}
+  bgmSource: {fileID: 1979561550}
+  sfxSource: {fileID: 1979561549}
   bgmVolume: 0.5
   sfxVolume: 1
 --- !u!82 &1979561549
@@ -495,10 +495,10 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -592,10 +592,10 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
