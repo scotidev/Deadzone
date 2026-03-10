@@ -3,15 +3,13 @@
 using System.Linq;
 using UnityEngine;
 
-namespace InfimaGames.LowPolyShooterPack
-{
+namespace InfimaGames.LowPolyShooterPack {
     [RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
-    public class Movement : MovementBehaviour
-    {
+    public class Movement : MovementBehaviour {
         #region FIELDS SERIALIZED
 
         [Header("Audio Clips")]
-        
+
         [Tooltip("The audio clip that is played while walking.")]
         [SerializeField]
         private AudioClip audioClipWalking;
@@ -50,8 +48,8 @@ namespace InfimaGames.LowPolyShooterPack
         //  [Header] cria um separador visual no Inspector.
         //  [Tooltip] mostra um texto de ajuda ao passar o mouse no Inspector.
         //  [SerializeField] expõe o campo privado para edição no Inspector.
-        [Header("Pulo")]
-        [Tooltip("Força do impulso vertical aplicada ao pular. Valores entre 4 e 8 são recomendados.")]
+        [Header("Jump")]
+        [Tooltip("Jump Strength, values between 4 and 8 are recommended.")]
         [SerializeField]
         private float jumpForce = 5.0f;
 
@@ -60,8 +58,7 @@ namespace InfimaGames.LowPolyShooterPack
         #region PROPERTIES
 
         //Velocity.
-        private Vector3 Velocity
-        {
+        private Vector3 Velocity {
             //Getter.
             get => rigidBody.linearVelocity;
             //Setter.
@@ -84,7 +81,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// Attached AudioSource.
         /// </summary>
         private AudioSource audioSource;
-        
+
         /// <summary>
         /// True if the character is currently grounded.
         /// </summary>
@@ -98,7 +95,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// The player character's equipped weapon.
         /// </summary>
         private WeaponBehaviour equippedWeapon;
-        
+
         /// <summary>
         /// Array of RaycastHits used for ground checking.
         /// </summary>
@@ -142,15 +139,13 @@ namespace InfimaGames.LowPolyShooterPack
         /// <summary>
         /// Awake.
         /// </summary>
-        protected override void Awake()
-        {
+        protected override void Awake() {
             //Get Player Character.
             playerCharacter = ServiceLocator.Current.Get<IGameModeService>().GetPlayerCharacter();
         }
 
         /// Initializes the FpsController on start.
-        protected override  void Start()
-        {
+        protected override void Start() {
             //Rigidbody Setup.
             rigidBody = GetComponent<Rigidbody>();
             rigidBody.constraints = RigidbodyConstraints.FreezeRotation;
@@ -164,23 +159,22 @@ namespace InfimaGames.LowPolyShooterPack
         }
 
         /// Checks if the character is on the ground.
-        private void OnCollisionStay()
-        {
+        private void OnCollisionStay() {
             //Bounds.
             Bounds bounds = capsule.bounds;
             //Extents.
             Vector3 extents = bounds.extents;
             //Radius.
             float radius = extents.x - 0.01f;
-            
+
             //Cast. This checks whether there is indeed ground, or not.
             Physics.SphereCastNonAlloc(bounds.center, radius, Vector3.down,
                 groundHits, extents.y - radius * 0.5f, ~0, QueryTriggerInteraction.Ignore);
-            
+
             //We can ignore the rest if we don't have any proper hits.
-            if (!groundHits.Any(hit => hit.collider != null && hit.collider != capsule)) 
+            if (!groundHits.Any(hit => hit.collider != null && hit.collider != capsule))
                 return;
-            
+
             //Store RaycastHits.
             for (var i = 0; i < groundHits.Length; i++)
                 groundHits[i] = new RaycastHit();
@@ -188,22 +182,20 @@ namespace InfimaGames.LowPolyShooterPack
             //Set grounded. Now we know for sure that we're grounded.
             grounded = true;
         }
-			
-        protected override void FixedUpdate()
-        {
+
+        protected override void FixedUpdate() {
             //Move.
             MoveCharacter();
-            
+
             //Unground.
             grounded = false;
         }
 
         /// Moves the camera to the character, processes jumping and plays sounds every frame.
-        protected override  void Update()
-        {
+        protected override void Update() {
             //Get the equipped weapon!
             equippedWeapon = playerCharacter.GetInventory().GetEquipped();
-            
+
             //Play Sounds!
             PlayFootstepSounds();
         }
@@ -212,8 +204,7 @@ namespace InfimaGames.LowPolyShooterPack
 
         #region METHODS
 
-        private void MoveCharacter()
-        {
+        private void MoveCharacter() {
             #region Calculate Movement Velocity
 
             //Get Movement Input!
@@ -222,10 +213,9 @@ namespace InfimaGames.LowPolyShooterPack
             var movement = new Vector3(frameInput.x, 0.0f, frameInput.y);
 
             //Running speed calculation.
-            if(playerCharacter.IsRunning())
+            if (playerCharacter.IsRunning())
                 movement *= speedRunning;
-            else
-            {
+            else {
                 //Multiply by the normal walking speed.
                 movement *= speedWalking;
             }
@@ -311,11 +301,9 @@ namespace InfimaGames.LowPolyShooterPack
         /// <summary>
         /// Plays Footstep Sounds. This code is slightly old, so may not be great, but it functions alright-y!
         /// </summary>
-        private void PlayFootstepSounds()
-        {
+        private void PlayFootstepSounds() {
             //Check if we're moving on the ground. We don't need footsteps in the air.
-            if (grounded && rigidBody.linearVelocity.sqrMagnitude > 0.1f)
-            {
+            if (grounded && rigidBody.linearVelocity.sqrMagnitude > 0.1f) {
                 //Select the correct audio clip to play.
                 audioSource.clip = playerCharacter.IsRunning() ? audioClipRunning : audioClipWalking;
                 //Play it!

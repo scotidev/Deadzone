@@ -54,10 +54,10 @@ public class ShopUI : BaseUI {
         CreateItemCard(null, "Medkit", 80, "Reliable sidearm");
         CreateItemCard(null, "Grenades", 500, "Explosive area damage");
         CreateItemCard(null, "Wall", 50, "Restores 50 HP");
-        CreateItemCard(null, "Explosive Barrel", 30, "Restores ammunition");
-        CreateItemCard(null, "Landmines", 100, "Increases defense");
-        CreateItemCard(null, "Special", 60, "Throwable explosive");
-        CreateItemCard(null, "Armor", 75, "Increases movement speed");
+        //CreateItemCard(null, "Explosive Barrel", 30, "Restores ammunition");
+        //CreateItemCard(null, "Landmines", 100, "Increases defense");
+        //CreateItemCard(null, "Special", 60, "Throwable explosive");
+        //CreateItemCard(null, "Armor", 75, "Increases movement speed");
     }
 
     /// <summary>

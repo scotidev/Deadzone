@@ -2,8 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Persistent manager responsible for all audio in the game.
-/// Lives in the Loader scene and survives all scene changes via DontDestroyOnLoad.
-/// Requires two AudioSource components assigned in the inspector: one for BGM, one for SFX.
+/// Requires two AudioSource components assigned in the inspector: 1. for BGM, 2. for SFX.
 /// </summary>
 public class AudioManager : MonoBehaviour {
     public static AudioManager Instance { get; private set; }
@@ -13,8 +12,8 @@ public class AudioManager : MonoBehaviour {
     [SerializeField] private AudioSource sfxSource;
 
     [Header("Default Volumes")]
-    [Range(0f, 1f)] [SerializeField] private float bgmVolume = 0.5f;
-    [Range(0f, 1f)] [SerializeField] private float sfxVolume = 1f;
+    [Range(0f, 1f)][SerializeField] private float bgmVolume = 0.5f;
+    [Range(0f, 1f)][SerializeField] private float sfxVolume = 1f;
 
     public float BGMVolume => bgmVolume;
     public float SFXVolume => sfxVolume;
@@ -24,7 +23,8 @@ public class AudioManager : MonoBehaviour {
             Instance = this;
             DontDestroyOnLoad(gameObject);
             InitializeVolumes();
-        } else {
+        }
+        else {
             Destroy(gameObject);
         }
     }
@@ -54,9 +54,9 @@ public class AudioManager : MonoBehaviour {
     /// <summary>
     /// Plays a one-shot sound effect. Safe to call simultaneously with BGM.
     /// </summary>
-    public void PlaySFX(AudioClip clip) {
+    public void PlaySFX(AudioClip clip, float volumeScale = 1f) {
         if (sfxSource != null && clip != null)
-            sfxSource.PlayOneShot(clip);
+            sfxSource.PlayOneShot(clip, volumeScale);
     }
 
     /// <summary>

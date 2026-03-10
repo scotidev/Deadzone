@@ -1,18 +1,6 @@
 using System.Collections;
 using UnityEngine;
 
-// ==============================================================
-//  O QUE FAZ O LogoIntro?
-// ==============================================================
-//  Responsabilidade ÚNICA e simples: cronometrar a intro e
-//  carregar a cena Menu quando o tempo acabar.
-//
-//  Toda a parte visual (fade in, fade out, animações) é feita
-//  diretamente no Animator da Unity — não é responsabilidade
-//  do script. Essa separação segue o princípio SRP:
-//  "Single Responsibility Principle" (Princípio da Responsabilidade
-//  Única) — cada peça faz apenas uma coisa.
-//
 //  FLUXO:
 //    1. Animator toca a animação da intro (fade in + logo + fade out)
 //    2. Este script aguarda "duration" segundos em paralelo

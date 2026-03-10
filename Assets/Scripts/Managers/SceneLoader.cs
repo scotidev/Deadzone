@@ -3,7 +3,6 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Persistent manager responsible for all scene transitions in the game.
-/// Lives in the Loader scene and survives all scene changes via DontDestroyOnLoad.
 /// </summary>
 public class SceneLoader : MonoBehaviour {
     public static SceneLoader Instance { get; private set; }
@@ -12,7 +11,8 @@ public class SceneLoader : MonoBehaviour {
         if (Instance == null) {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-        } else {
+        }
+        else {
             Destroy(gameObject);
         }
     }
