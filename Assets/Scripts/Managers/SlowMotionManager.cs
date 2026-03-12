@@ -1,77 +1,54 @@
-using System.Collections;
 using UnityEngine;
 
 // ==============================================================
-//  SlowMotionManager
+//  DESIGN PATTERN: FACADE
 // ==============================================================
-//  AULA: O QUE É O PADRÃO SINGLETON?
+//  A Facade provides a simplified, stable interface to a subsystem
+//  that may change internally over time.
 //
-//  Um Singleton garante que exista APENAS UMA instância de um
-//  componente em toda a cena. A instância fica guardada em uma
-//  propriedade estática (Instance), que pode ser acessada de
-//  qualquer script sem precisar de referências no Inspector.
+//  Here, SlowMotionManager is a thin facade over GameManager:
+//  any script that needs slow motion simply calls
+//      SlowMotionManager.Instance?.TriggerSlowMotion(1.0f);
+//  without knowing anything about coroutines, fixedDeltaTime, or
+//  how time scale is actually managed.
 //
-//  Uso: SlowMotionManager.Instance?.TriggerSlowMotion(1.0f);
+//  BENEFIT: If the slow motion implementation inside GameManager
+//  changes (e.g. we add a lerp transition), every caller remains
+//  completely untouched — they still talk to SlowMotionManager.
 //
-//  O "?" antes do ponto é o operador "null-conditional":
-//  se Instance for null (manager não está na cena), simplesmente
-//  não faz nada — sem erro de NullReferenceException.
+//  RULE: This class must NEVER write to Time.timeScale directly.
+//  All time manipulation must go through GameManager.
 // ==============================================================
 
 /// <summary>
-/// Manager responsável pelos efeitos de câmera lenta no jogo.
-/// Adicione este componente a um GameObject na cena (ex: "_Managers").
+/// Singleton facade for the slow motion system.
+/// <para>
+/// Exposes the <see cref="TriggerSlowMotion"/> entry point used by
+/// gameplay scripts (e.g. <c>ExplosiveBarrelScript</c>), while
+/// delegating all actual time scale manipulation to <see cref="GameManager"/>,
+/// which is the single source of truth for <c>Time.timeScale</c>.
+/// </para>
+/// <para>Usage: <c>SlowMotionManager.Instance?.TriggerSlowMotion(1.0f);</c></para>
 /// </summary>
 public class SlowMotionManager : MonoBehaviour {
 
+    // ==============================================================
+    //  SINGLETON
+    // ==============================================================
+    //  "public static" → any script can read this.
+    //  "private set"   → only this class can assign it.
+    //  The null-conditional "?" on Instance lets callers skip the
+    //  call safely if this manager is not present in the scene.
+    // ==============================================================
+
     /// <summary>
-    /// Referência estática global. Qualquer script acessa via SlowMotionManager.Instance
+    /// Global access point to the single <see cref="SlowMotionManager"/> instance.
     /// </summary>
     public static SlowMotionManager Instance { get; private set; }
 
-    [Header("Slow Motion Settings")]
-
-    // ==============================================================
-    //  AULA: [Range(min, max)] e [SerializeField]
-    //
-    //  [SerializeField] expõe um campo privado no Inspector da Unity.
-    //  [Range(0.01f, 0.9f)] cria um slider no Inspector, impedindo
-    //  valores inválidos (0 pausaria o jogo; 1 seria velocidade normal).
-    //
-    //  "f" após um número indica que é do tipo float (ex: 0.2f).
-    //  Sem o "f", o C# trataria como double e geraria erro de compilação.
-    // ==============================================================
-    [Tooltip("Fator de escala do tempo durante a câmera lenta. 0.2 = 20% da velocidade normal.")]
-    [Range(0.01f, 0.9f)]
-    [SerializeField] private float slowTimeScale = 0.2f;
-
-    // ==============================================================
-    //  AULA: POR QUE GUARDAR A REFERÊNCIA DA COROUTINE?
-    //
-    //  Se dois barris explodirem em sequência (reação em cadeia),
-    //  o segundo acionaria TriggerSlowMotion antes do primeiro terminar.
-    //  Guardar _activeRoutine nos permite CANCELAR a câmera lenta
-    //  anterior e REINICIAR o timer de 1 segundo do zero — assim
-    //  explosões em cadeia estendem o efeito naturalmente.
-    // ==============================================================
-    /// <summary>
-    /// Referência da coroutine ativa para podermos cancelá-la se necessário.
-    /// </summary>
-    private Coroutine _activeRoutine;
-
     private void Awake() {
-        // ==============================================================
-        //  AULA: IMPLEMENTAÇÃO DO SINGLETON
-        //
-        //  Quando a cena carrega, a Unity chama Awake() em todos os
-        //  MonoBehaviours. Se já existe uma Instance (outra cópia do
-        //  manager), a nova se auto-destrói. Caso contrário, ela
-        //  se registra como a instância oficial.
-        //
-        //  Diferente do AudioManager, não usamos DontDestroyOnLoad aqui
-        //  porque a câmera lenta é um efeito de cena — não precisa
-        //  persistir entre cenas.
-        // ==============================================================
+        // If another instance already exists, this one is a duplicate
+        // and should be destroyed immediately.
         if (Instance != null) {
             Destroy(gameObject);
             return;
@@ -80,84 +57,28 @@ public class SlowMotionManager : MonoBehaviour {
     }
 
     // ==============================================================
-    //  AULA: O QUE É UM MÉTODO PÚBLICO?
-    //
-    //  "public" significa que este método pode ser chamado por
-    //  QUALQUER outro script — não só os da mesma classe.
-    //  É a "porta de entrada" do nosso sistema de câmera lenta.
-    //  O ExplosiveBarrelScript vai chamar exatamente este método.
+    //  PUBLIC API  —  entry point for gameplay scripts
     // ==============================================================
+    //  This is the ONLY method outside scripts should call.
+    //  It intentionally contains zero time-scale logic — its sole
+    //  job is to forward the request to GameManager and let it
+    //  handle the coroutine, fixedDeltaTime, and restoration.
+    // ==============================================================
+
     /// <summary>
-    /// Aciona a câmera lenta por uma duração em tempo REAL.
-    /// Se já houver câmera lenta ativa, reinicia o timer.
+    /// Triggers a slow motion effect lasting <paramref name="realDuration"/>
+    /// seconds of real (wall-clock) time.
+    /// <para>
+    /// If slow motion is already active the timer resets, so chain
+    /// explosions naturally extend the effect rather than overlapping it.
+    /// </para>
     /// </summary>
-    /// <param name="realDuration">Duração em segundos reais (não afetados pelo timeScale).</param>
+    /// <param name="realDuration">
+    /// Duration in real seconds. Not affected by <c>Time.timeScale</c>.
+    /// </param>
     public void TriggerSlowMotion(float realDuration) {
-        // Se uma câmera lenta já está rodando (explosão anterior ainda não terminou),
-        // cancelamos a coroutine para reiniciar o contador do zero.
-        if (_activeRoutine != null)
-            StopCoroutine(_activeRoutine);
-
-        // StartCoroutine inicia a execução da função SlowMotionRoutine de forma
-        // assíncrona — ela roda "em paralelo" com o resto do jogo, pausando
-        // apenas nos "yield return" sem travar o Update principal.
-        _activeRoutine = StartCoroutine(SlowMotionRoutine(realDuration));
-    }
-
-    // ==============================================================
-    //  AULA: O QUE É UMA COROUTINE?
-    //
-    //  Uma Coroutine é uma função que pode ser "pausada" no meio
-    //  da execução com "yield return" e continuada depois, sem
-    //  travar o jogo. É como um roteiro com marcadores de pausa.
-    //
-    //  "IEnumerator" é o tipo de retorno obrigatório para coroutines.
-    //  O C# usa esse tipo para saber que a função pode ser pausada.
-    //
-    //  Fluxo desta coroutine:
-    //    1. Reduz o Time.timeScale  →  câmera lenta começa
-    //    2. yield return WaitForSecondsRealtime  →  espera 1s REAL
-    //    3. Restaura o Time.timeScale  →  câmera lenta termina
-    // ==============================================================
-    /// <summary>
-    /// Coroutine que executa o ciclo completo da câmera lenta.
-    /// </summary>
-    private IEnumerator SlowMotionRoutine(float realDuration) {
-
-        // ── INÍCIO DA CÂMERA LENTA ──────────────────────────────────
-        // Time.timeScale é o "acelerador/freio" global do tempo na Unity.
-        // 1.0 = velocidade normal | 0.0 = jogo pausado | 0.2 = 20% da velocidade.
-        Time.timeScale = slowTimeScale;
-
-        // DETALHE TÉCNICO IMPORTANTE: Time.fixedDeltaTime é o intervalo
-        // entre cada chamada do FixedUpdate (responsável pela física).
-        //
-        // Quando mudamos o timeScale, o fixedDeltaTime precisa ser ajustado
-        // proporcionalmente. A fórmula padrão da Unity é:
-        //     fixedDeltaTime = 0.02f * timeScale
-        //
-        // (0.02f = padrão de 50 atualizações físicas por segundo)
-        //
-        // Sem este ajuste, a física roda de forma inconsistente durante
-        // a câmera lenta — objetos podem ter comportamento estranho.
-        Time.fixedDeltaTime = 0.02f * Time.timeScale;
-
-        // ── ESPERA EM TEMPO REAL ─────────────────────────────────────
-        // POR QUE não usar WaitForSeconds(realDuration)?
-        //
-        //   WaitForSeconds respeita o timeScale.
-        //   Com timeScale = 0.2, esperar 1s de jogo = 5s reais. Errado!
-        //
-        //   WaitForSecondsRealtime ignora o timeScale completamente.
-        //   Sempre espera o tempo real do relógio — exatamente o que queremos.
-        yield return new WaitForSecondsRealtime(realDuration);
-
-        // ── FIM DA CÂMERA LENTA ──────────────────────────────────────
-        // Restaura o tempo para velocidade normal.
-        Time.timeScale = 1.0f;
-        Time.fixedDeltaTime = 0.02f;
-
-        // Limpa a referência, sinalizando que não há câmera lenta ativa.
-        _activeRoutine = null;
+        // Delegate entirely to GameManager — this class owns no logic.
+        // GameManager is the single source of truth for Time.timeScale.
+        GameManager.Instance?.TriggerSlowMotion(realDuration);
     }
 }
