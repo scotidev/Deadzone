@@ -318,7 +318,6 @@ public class BuildingController : MonoBehaviour {
 
         // Se havia um fantasma de outro item, destrói-o antes de criar o novo.
         DestroyCurrentGhost();
-        UIManager.Instance?.ToggleInteractionPrompt(false);
 
         // Registra qual item foi selecionado agora.
         selectedItem = item;
@@ -379,10 +378,6 @@ public class BuildingController : MonoBehaviour {
         // GetComponent<T>() busca o componente T neste MESMO GameObject.
         currentGhostObject = currentGhost.GetComponent<GhostObject>();
 
-        // Mostra na tela as instruções para o jogador.
-        // O $"..." com {variavel} é interpolação de strings.
-        UIManager.Instance?.ToggleInteractionPrompt(true,
-            $"{item.displayName}  ·  [LMB] Colocar  ·  [mesma tecla] Cancelar");
     }
 
     // ==============================================================

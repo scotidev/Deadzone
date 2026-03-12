@@ -148,6 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d8a33e634a539a40bcc0134d5287855, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  slowTimeScale: 0.2
 --- !u!4 &895522581
 Transform:
   m_ObjectHideFlags: 0
@@ -343,7 +344,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42c149dc2e7c3db48963be1a9874e437, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LogoIntro
-  duration: 4
+  duration: 1
   allowSkip: 1
 --- !u!1 &1042376355
 GameObject:

@@ -1,7 +1,5 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static UIManager;
 
 /// <summary>
 /// Manages player interaction with interactable objects in the game world.
@@ -23,7 +21,9 @@ public class PlayerInteraction : MonoBehaviour {
     }
 
     private void Update() {
-        HandleShopOpenBlocking();
+        if (HandleShopOpenBlocking())
+            return;
+
         CheckForInteractable();
         HandleInteractionInput();
     }
@@ -32,11 +32,8 @@ public class PlayerInteraction : MonoBehaviour {
     /// Handles blocking of interaction detection when the shop is open or the player is placing a building item.
     /// Clears current interactable and hides UI prompt if either mode is active.
     /// </summary>
-    private void HandleShopOpenBlocking() {
-        // Verifica se a loja está aberta OU se o jogador está no modo construção.
-        // Nesses dois casos, o prompt de interação com NPCs não deve aparecer.
-        bool shouldBlock = (GameManager.Instance != null && GameManager.Instance.State == GameState.Shopping)
-            || (BuildingController.Instance != null && BuildingController.Instance.IsPlacing);
+    private bool HandleShopOpenBlocking() {
+        bool shouldBlock = GameManager.Instance != null && GameManager.Instance.State == GameState.Shopping;
 
         if (shouldBlock) {
             if (currentInteractable != null) {
@@ -46,19 +43,19 @@ public class PlayerInteraction : MonoBehaviour {
                     UIManager.Instance.ToggleInteractionPrompt(false);
             }
         }
+
+        return shouldBlock;
     }
 
     /// <summary>
     /// Processes player input for interacting with objects.
     /// Triggers interaction when E key is pressed and a valid interactable is detected.
     /// </summary>
-    private void HandleInteractionInput()
-    {
+    private void HandleInteractionInput() {
         if (GameManager.Instance != null && GameManager.Instance.State == GameState.Shopping)
             return;
 
-        if (currentInteractable != null && Keyboard.current.eKey.wasPressedThisFrame)
-        {
+        if (currentInteractable != null && Keyboard.current.eKey.wasPressedThisFrame) {
             currentInteractable.Interact();
         }
     }

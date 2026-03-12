@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 /// Persistent manager responsible for all scene transitions in the game.
 /// </summary>
 public class SceneLoader : MonoBehaviour {
+    /// <summary>Global access point to the single <see cref="SceneLoader"/> instance.</summary>
     public static SceneLoader Instance { get; private set; }
 
     private void Awake() {

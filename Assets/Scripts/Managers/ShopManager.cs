@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 /// Manages the shop interface system in the game.
 /// </summary>
 public class ShopManager : MonoBehaviour {
+    /// <summary>Global access point to the single <see cref="ShopManager"/> instance.</summary>
     public static ShopManager Instance { get; private set; }
 
     private bool isShopOpen = false;

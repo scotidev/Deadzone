@@ -5,6 +5,8 @@ using UnityEngine;
 /// Requires two AudioSource components assigned in the inspector: 1. for BGM, 2. for SFX.
 /// </summary>
 public class AudioManager : MonoBehaviour {
+
+    /// <summary>Global access point to the single <see cref="AudioManager"/> instance.</summary>
     public static AudioManager Instance { get; private set; }
 
     [Header("Audio Sources")]

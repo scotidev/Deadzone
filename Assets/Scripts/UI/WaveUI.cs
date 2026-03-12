@@ -55,13 +55,6 @@ public class WaveUI : BaseUI {
     [Tooltip("Exibe quantos inimigos ainda estão vivos nesta onda.")]
     [SerializeField] private TMP_Text enemiesRemainingText;
 
-    [Tooltip("Mensagem de status: entre ondas e durante a onda.")]
-    [SerializeField] private TMP_Text statusText;
-
-    // ==============================================================
-    //  START — inicialização após todos os Awake() terminarem
-    // ==============================================================
-
     protected override void Start() {
         // ==============================================================
         //  base.Start()
@@ -98,14 +91,9 @@ public class WaveUI : BaseUI {
             Debug.LogError("[WaveUI] 'Enemies Remaining Text' não atribuído no Inspector! " +
                            "Arraste o TMP_Text de inimigos restantes para este campo.");
 
-        if (statusText == null)
-            Debug.LogError("[WaveUI] 'Status Text' não atribuído no Inspector! " +
-                           "Arraste o TMP_Text de status para este campo.");
-
         // Inicializa os textos com os valores padrão (pré-jogo).
         UpdateWaveNumber(0);
         UpdateEnemiesRemaining(0);
-        SetStatus("Press the red button to start");
     }
 
     // ==============================================================
@@ -135,16 +123,5 @@ public class WaveUI : BaseUI {
     public void UpdateEnemiesRemaining(int count) {
         if (enemiesRemainingText != null)
             enemiesRemainingText.text = $"Enemies {count}";
-    }
-
-    /// <summary>
-    /// Define a mensagem de status exibida ao jogador.
-    /// Exemplos:
-    ///   "Wave 3 — Survive!"
-    ///   "Wave 2 cleared! Interaja com o Wave Button para continuar."
-    /// </summary>
-    public void SetStatus(string message) {
-        if (statusText != null)
-            statusText.text = message;
     }
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 /// Manages the main menu UI and navigation.
 /// </summary>
 public class MenuManager : MonoBehaviour {
+
     [Header("UI Panels")]
     [SerializeField] private OptionsUI optionsUI;
     [SerializeField] private ControlsUI controlsUI;
