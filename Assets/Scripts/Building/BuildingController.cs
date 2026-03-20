@@ -1,20 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-// ==============================================================
-//  POR QUE O "using UnityEngine.InputSystem" É NECESSÁRIO?
-// ==============================================================
-//  Este namespace (pacote de tipos) contém as classes do NOVO Input
-//  System da Unity: InputAction, InputActionPhase, CallbackContext...
-//  Sem ele, o compilador não reconheceria esses tipos e daria erro.
-//  O "using" funciona como "importe este vocabulário para eu poder
-//  usá-lo sem escrever o nome completo toda vez".
 
-// ==============================================================
-//  VISÃO GERAL: O QUE FAZ O BuildingController?
-// ==============================================================
-//  É o "gerente central" do modo de construção. Fica colado no mesmo
-//  GameObject do Player e coordena TODO o fluxo de colocação de objetos:
-//
 //  PASSO 1: Jogador aperta tecla 6, 7 ou 8.
 //  PASSO 2: O script cria um "fantasma" transparente do objeto escolhido.
 //  PASSO 3: A cada frame, um raio sai da câmera e detecta onde o chão está.
@@ -24,42 +10,9 @@ using UnityEngine.InputSystem;
 //  PASSO 7: Jogador clica LMB → objeto real é instanciado no lugar do fantasma.
 //  PASSO 8: Mesma tecla (toggle) → cancela, fantasma é destruído, arma volta.
 //
-// ==============================================================
-//  MUDANÇA ARQUITETURAL — POLLING vs EVENTOS
-// ==============================================================
-//  VERSÃO ANTERIOR deste script usava POLLING para detectar 6/7/8:
-//
-//    private void HandleSelectionInput() {                   // [REMOVIDO]
-//        if (Keyboard.current.digit6Key.wasPressedThisFrame) // [REMOVIDO]
-//            SelectItem(itemSlot6);                          // [REMOVIDO]
-//    }                                                       // [REMOVIDO]
-//
-//  ━━━ O QUE É POLLING? ━━━
-//  Polling (do inglês "to poll" = perguntar repetidamente) é a técnica
-//  de VERIFICAR ativamente uma condição a cada frame:
-//    "Está pressionada? Não. Está pressionada? Não. Está pressionada? Sim!"
-//  É como um segurança que faz a ronda 60x por segundo perguntando
-//  "aconteceu alguma coisa?" — mesmo quando nada aconteceu.
-//
-//  Problemas do polling com wasPressedThisFrame:
-//  1. INCONSISTÊNCIA: wasPressedThisFrame usa o OLD Input System
-//     (UnityEngine.InputSystem.Keyboard.current), mas o resto do projeto
-//     (Character.cs, etc.) usa o NEW Input System via PlayerInput.
-//     Misturar os dois sistemas causa comportamentos imprevisíveis.
-//  2. ACOPLAMENTO ao Update(): a detecção de tecla fica presa no
-//     ciclo de frames, impossibilitando reconfigurar controles no Inspector.
-//  3. INEFICIÊNCIA MENOR: o código roda 60x/s mesmo quando não há input.
-//
-//  ━━━ O QUE USAMOS AGORA? EVENTOS (Event-Driven Input) ━━━
-//  Em vez de perguntar a cada frame, registramos métodos que serão
-//  CHAMADOS AUTOMATICAMENTE quando o jogador apertar a tecla.
-//  É como deixar o número do celular: "quando acontecer, ME LIGA".
-//  O Input System da Unity chama isso de "callbacks".
-//
-//  O componente PlayerInput (no mesmo GameObject) lê o arquivo
-//  IA_Player.inputactions e, quando uma Action dispara (ex: tecla 6),
-//  ele chama o método correspondente neste script automaticamente.
-//  Nenhum polling, nenhum wasPressedThisFrame.
+/// <summary>
+/// Controls the building mode: selecting items, showing the ghost object, and placing the real object in the world.
+/// </summary>
 public class BuildingController : MonoBehaviour {
 
     // ==============================================================
@@ -500,7 +453,8 @@ public class BuildingController : MonoBehaviour {
 
             // Exibe o fantasma (estava escondido se o raio não acertou o chão antes).
             currentGhost.SetActive(true);
-        } else {
+        }
+        else {
             // O raio não acertou nenhuma superfície válida (ou passou do alcance).
             // Esconde o fantasma para não ficar flutuando na posição antiga.
             currentGhost.SetActive(false);
