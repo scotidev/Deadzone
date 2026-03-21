@@ -1,10 +1,16 @@
-Sempre que for atuar em uma subpasta, verifique se existe um arquivo AGENTS.md nela e siga as diretrizes específicas daquele módulo.
-Use o sistema de input da Unity novo.
-Todas as variáveis, nomes, classes, resumos, comentários, tudo deve ser escrito em inglês.
-Acima de cada classe ou função criada, adicione comentários semânticos XML explicativos a fim de documentar, faça apenas para classes e funções.
-Em todos os Scripts mantenha a boa prática de não colocar lógica dentro do Update, use o Update apenas para chamar funções, e a lógica deve estar dentro dessas funções.
+This file contains the rules and guidelines for working on the AGENTS module of the project. Please read and follow these instructions carefully to ensure consistency and maintainability of the codebase.
 
-# Regras de EXCLUSÃO DE CONTEXTO:
+# 1. CLEAN CODE RULES:
+- Whenever working in a subfolder, check if there is an AGENTS.md file in it and follow the specific guidelines for that module.
+- All variables, names, classes, summaries, comments, everything must be written in English.
+- Above each class or function created, add XML semantic comments to document them, only for classes and functions.
+
+
+# ARCHITECURE RULES
+- Use the new Unity input system.
+- In all scripts, maintain the good practice of not putting logic inside the Update method, use Update only to call functions, and the logic should be inside those functions.
+
+# CONTEXT EXCLUSION RULES:
 ## NÃO INCLUA, NÃO LEIA, NÃO ANALISE, NÃO RESPONDA SOBRE NENHUM DOS ITENS ABAIXO:
 
 # Pastas de Sistema (Ignora a pasta e todo o conteúdo)
