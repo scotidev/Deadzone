@@ -49,7 +49,7 @@ public class CharacterInteraction : MonoBehaviour {
             Instance = this;
         else
             Destroy(gameObject);
-            // Destroy(gameObject) remove este GameObject da cena imediatamente.
+        // Destroy(gameObject) remove este GameObject da cena imediatamente.
 
         // ==============================================================
         //  O QUE É GetComponent<T>()?
@@ -83,20 +83,13 @@ public class CharacterInteraction : MonoBehaviour {
         playerCharacter.SetInterfaceMode(isPaused);
     }
 
-    // ==============================================================
-    //  SetHolstered(bool holstered)
-    // ==============================================================
-    //  Guarda ou revela a arma do jogador via animação de holster.
-    //
-    //  holstered = true  → guarda a arma (jogador não pode atirar).
-    //  holstered = false → revela a arma (volta ao normal).
-    //
-    //  Chamado pelo BuildingController:
-    //    Ao ENTRAR no modo construção: SetHolstered(true)  → guarda arma
-    //    Ao SAIR do modo construção:   SetHolstered(false) → revela arma
-    //
-    //  Por que guardar a arma? Para impedir que o jogador atire enquanto
-    //  está posicionando objetos no modo construção.
+    /// <summary>
+    /// Hides or reveals the player's weapon by toggling the holster animation.
+    /// holstered = true  → hides the weapon (player cannot shoot).
+    /// holstered = false → reveals the weapon (player can shoot).
+    /// Called by BuildingController when entering/exiting build mode to prevent shooting while building.
+    /// </summary>
+    /// <param name="holstered"></param>
     public void SetHolstered(bool holstered) {
         if (playerCharacter == null) return;
         playerCharacter.SetHolstered(holstered);
