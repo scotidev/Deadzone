@@ -66,11 +66,11 @@ public class WaveManager : MonoBehaviour {
     }
 
     private void OnEnable() {
-        Enemy.OnAnyEnemyDied += HandleEnemyDied;
+        EnemyBase.OnAnyEnemyDied += HandleEnemyDied;
     }
 
     private void OnDisable() {
-        Enemy.OnAnyEnemyDied -= HandleEnemyDied;
+        EnemyBase.OnAnyEnemyDied -= HandleEnemyDied;
     }
 
     /// <summary>

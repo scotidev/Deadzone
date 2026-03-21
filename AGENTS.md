@@ -11,9 +11,9 @@ This file contains the rules and guidelines for working on the AGENTS module of 
 - In all scripts, maintain the good practice of not putting logic inside the Update method, use Update only to call functions, and the logic should be inside those functions.
 
 # CONTEXT EXCLUSION RULES:
-## NÃO INCLUA, NÃO LEIA, NÃO ANALISE, NÃO RESPONDA SOBRE NENHUM DOS ITENS ABAIXO:
+## DO NOT INCLUDE, DO NOT READ, DO NOT ANALYZE, DO NOT RESPOND ABOUT ANY OF THE ITEMS BELOW:
 
-# Pastas de Sistema (Ignora a pasta e todo o conteúdo)
+# System Folders (Ignore the folder and all its contents)
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/
@@ -23,11 +23,11 @@ This file contains the rules and guidelines for working on the AGENTS module of 
 /[Uu]ser[Ss]ettings/
 /MemoryCaptures/
 
-# Pastas de Configuração e Pacotes 
+# Configuration and Package Folders
 /Packages/
 /ProjectSettings/
 
-# Arquivos de IDE e Compilação
+# IDE and Compilation Files
 *.csproj
 *.sln
 *.suo
@@ -37,11 +37,11 @@ This file contains the rules and guidelines for working on the AGENTS module of 
 *.opendb
 *.VC.db
 
-# Metadados do Unity (Essencial para economizar contexto)
+# Unity Metadata (Essential for saving context)
 *.meta
 
-# Assets Binários e Grandes (O Cline não consegue ler ou editar)
-# Se ele tentar ler um .unity ou .prefab, ele vai desperdiçar todo o seu contexto.
+# Large and Binary Assets (The AI cannot read or edit these)
+# If it tries to read a .unity or .prefab, it will waste all its context.
 *.unity
 *.prefab
 *.asset
@@ -55,7 +55,7 @@ This file contains the rules and guidelines for working on the AGENTS module of 
 *.physicMaterial
 *.physicsMaterial2D
 
-# Mídia
+# Media
 *.png
 *.jpg
 *.jpeg
@@ -69,5 +69,5 @@ This file contains the rules and guidelines for working on the AGENTS module of 
 *.mp4
 *.mov
 
-# Plugins (Evita que a IA tente ler DLLs ou SDKs de terceiros)
+# Plugins (Prevents the AI from trying to read DLLs or third-party SDKs)
 /[Aa]ssets/[Pp]lugins/

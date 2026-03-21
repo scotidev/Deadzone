@@ -176,7 +176,7 @@ public class Projectile : MonoBehaviour {
 			//
 			//  enemy.TakeDamage(damage) → chama Enemy.TakeDamage() que
 			//  reduz a vida e dispara Die() se necessário.
-			Enemy enemy = collision.transform.GetComponentInParent<Enemy>();
+			EnemyBase enemy = collision.transform.GetComponentInParent<EnemyBase>();
 			if (enemy != null)
 				enemy.TakeDamage(damage);
 
