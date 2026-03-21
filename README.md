@@ -56,3 +56,8 @@ Earn points by defeating enemies and use them to strengthen your build, improve 
 This repository contains an academic game project developed for the **UNINTER Digital Games** program.
 
 As development continues, mechanics, balancing, and content may evolve.
+
+## DEVELOPERS
+
+- [Gabriel Scoti de Oliveira](https://www.linkedin.com/in/scotidev/)
+- [Laryssa Aguiar Menjon](https://www.linkedin.com/in/larymenjon/)
