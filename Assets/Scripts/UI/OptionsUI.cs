@@ -6,6 +6,11 @@ using UnityEngine.UI;
 /// </summary>
 public class OptionsUI : BaseUI
 {
+    /// <summary>
+    /// Enables Escape-close behavior for this panel.
+    /// </summary>
+    protected override bool CloseOnEscape => true;
+
     [Header("Settings Controls")]
     [SerializeField] private Slider mouseSensitivitySlider;
     [SerializeField] private Slider volumeSlider;
@@ -72,6 +77,14 @@ public class OptionsUI : BaseUI
         Hide();
         if (UIManager.Instance != null)
             UIManager.Instance.ShowPauseMenu();
+    }
+
+    /// <summary>
+    /// Handles Escape key behavior by reusing the Back action.
+    /// </summary>
+    protected override void OnEscapePressed()
+    {
+        OnBackClick();
     }
 
     /// <summary>

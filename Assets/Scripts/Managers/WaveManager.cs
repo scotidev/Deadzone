@@ -11,8 +11,7 @@ public class WaveManager : MonoBehaviour {
     public static WaveManager Instance { get; private set; }
 
     [Header("Enemy Types")]
-    [Tooltip("List of all enemy types.\n" +
-             "Configure prefab, minimum wave, and spawn weight for each.\n")]
+    [Tooltip("List of all enemy types.")]
     [SerializeField] private List<EnemySpawnConfig> enemyTypes;
 
     [Header("Wave Scaling")]
@@ -28,8 +27,7 @@ public class WaveManager : MonoBehaviour {
     [Range(0.01f, 0.2f)]
     [SerializeField] private float minGrowthRate = 0.05f;
 
-    [Tooltip("Maximum number of enemies that can exist in a wave.\n" +
-             "Protects against exponential growth in very high waves.")]
+    [Tooltip("Maximum number of enemies that can exist in a wave.")]
     [SerializeField] private int maxEnemiesPerWave = 500;
 
     [Header("Spawners")]
@@ -37,9 +35,7 @@ public class WaveManager : MonoBehaviour {
     [SerializeField] private List<EnemySpawner> spawners;
 
     [Header("Simultaneous Enemies Limit")]
-    [Tooltip("Maximum number of enemies alive at the same time in the scene.\n" +
-             "When one dies, a new one is spawned to fill the slot.\n" +
-             "Suggested value: 10–20 to avoid lag.")]
+    [Tooltip("Maximum number of enemies alive at the same time in the scene.")]
     [SerializeField] private int maxEnemiesAliveAtOnce = 15;
 
     [Header("HUD")]

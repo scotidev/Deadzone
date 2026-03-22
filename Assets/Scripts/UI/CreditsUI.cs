@@ -5,6 +5,11 @@ using UnityEngine.UI;
 /// Manages the credits panel UI.
 /// </summary>
 public class CreditsUI : BaseUI {
+    /// <summary>
+    /// Enables Escape-close behavior for this panel.
+    /// </summary>
+    protected override bool CloseOnEscape => true;
+
     [Header("Credits Elements")]
     [SerializeField] private Button backButton;
 
@@ -26,5 +31,12 @@ public class CreditsUI : BaseUI {
     /// </summary>
     private void OnBackClick() {
         Hide();
+    }
+
+    /// <summary>
+    /// Handles Escape key behavior by reusing the Back action.
+    /// </summary>
+    protected override void OnEscapePressed() {
+        OnBackClick();
     }
 }

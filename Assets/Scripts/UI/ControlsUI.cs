@@ -6,6 +6,11 @@ using UnityEngine.UI;
 /// </summary>
 public class ControlsUI : BaseUI
 {
+    /// <summary>
+    /// Enables Escape-close behavior for this panel.
+    /// </summary>
+    protected override bool CloseOnEscape => true;
+
     [Header("Controls Elements")]
     [SerializeField] private Button backButton;
 
@@ -32,5 +37,13 @@ public class ControlsUI : BaseUI
         Hide();
         if (UIManager.Instance != null)
             UIManager.Instance.ShowPauseMenu();
+    }
+
+    /// <summary>
+    /// Handles Escape key behavior by reusing the Back action.
+    /// </summary>
+    protected override void OnEscapePressed()
+    {
+        OnBackClick();
     }
 }
