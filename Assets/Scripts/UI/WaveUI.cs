@@ -1,124 +1,44 @@
 using TMPro;
 using UnityEngine;
 
-// ==============================================================
-//  O QUE FAZ ESTE SCRIPT?
-// ==============================================================
-//  WaveUI é o painel HUD que mostra informações da onda atual
-//  durante todo o gameplay. Diferente dos outros painéis (Shop,
-//  Pause), ele fica SEMPRE visível — não é ocultado por HideAllPanels.
-//
-//  O WaveManager atualiza os textos chamando os métodos públicos:
-//    UpdateWaveNumber()      → "Wave 3"
-//    UpdateEnemiesRemaining() → "Enemies: 7"
-//    SetStatus()             → "Wave 3 — Survive!"
-//
-//  HERANÇA DE BaseUI:
-//  "public class WaveUI : BaseUI" significa que WaveUI herda toda a
-//  estrutura de BaseUI (referência ao painel, Show/Hide, etc.).
-//  BaseUI.Start() esconde o painel por padrão. Aqui no Start()
-//  chamamos base.Start() (para rodar a lógica do pai) e em seguida
-//  Show() para deixar o painel visível imediatamente.
-
-// ==============================================================
-//  O QUE É TMP_Text?
-// ==============================================================
-//  TMP_Text é o tipo base de TextMeshPro — o sistema de texto
-//  avançado da Unity. Preferido ao Text legado (UnityEngine.UI.Text)
-//  por oferecer renderização de maior qualidade, suporte a fontes
-//  SDF, efeitos de texto, etc.
-//  Adicione o componente "TextMeshPro - Text (UI)" no Canvas.
-//  "using TMPro;" é necessário para usar este tipo.
-
 /// <summary>
-/// Painel HUD persistente que exibe informações de onda durante o gameplay.
-/// Fica visível automaticamente ao iniciar — não é ocultado entre ondas.
-///
-/// O WaveManager atualiza os textos diretamente via métodos públicos.
+/// Persistent HUD panel that displays wave information during gameplay.
 /// </summary>
 public class WaveUI : BaseUI {
 
-    // ==============================================================
-    //  CAMPOS SERIALIZADOS
-    // ==============================================================
-    //  Cada campo é preenchido no Inspector arrastando o objeto
-    //  TextMeshPro correspondente do Canvas para o slot.
-    //
-    //  [Header("...")] cria uma seção visual separadora no Inspector.
-    //  [Tooltip("...")] mostra um texto de ajuda ao passar o mouse.
-    //  [SerializeField] expõe o campo privado no Inspector sem tornar public.
-
-    [Header("Textos de Informação da Onda")]
-    [Tooltip("Exibe o número da onda atual. Exemplo: 'Wave 3'")]
+    [Header("Wave Information Texts")]
+    [Tooltip("Displays the current wave number. Example: 'Wave 3'")]
     [SerializeField] private TMP_Text waveNumberText;
 
-    [Tooltip("Exibe quantos inimigos ainda estão vivos nesta onda.")]
+    [Tooltip("Displays how many enemies are still alive in this wave.")]
     [SerializeField] private TMP_Text enemiesRemainingText;
 
     protected override void Start() {
-        // ==============================================================
-        //  base.Start()
-        // ==============================================================
-        //  "base" acessa a classe pai (BaseUI). BaseUI.Start() esconde
-        //  o painel por padrão (panel.SetActive(false)).
-        //  Chamamos base.Start() primeiro para respeitar a lógica do pai,
-        //  depois imediatamente chamamos Show() para tornar o painel visível.
-        //  Resultado: o painel aparece assim que a cena carrega.
         base.Start();
         Show();
 
-        // ==============================================================
-        //  DIAGNÓSTICO: detecta referências nulas imediatamente
-        // ==============================================================
-        //  CAUSA DO BUG: se waveNumberText ou enemiesRemainingText não
-        //  estiverem atribuídos no Inspector, os "if (texto != null)"
-        //  abaixo ignoram silenciosamente as atualizações — sem erros.
-        //
-        //  Estes logs tornam o problema visível no Console em vermelho
-        //  assim que o jogo inicia, apontando exatamente o que falta.
-        //
-        //  COMO CORRIGIR:
-        //  Selecione o GameObject com WaveUI no Inspector.
-        //  Arraste os objetos TMP_Text correspondentes para cada slot:
-        //    → Wave Number Text      (ex: "WaveNumberText")
-        //    → Enemies Remaining Text (ex: "EnemiesRemainingText")
-        //    → Status Text            (ex: "StatusText")
         if (waveNumberText == null)
-            Debug.LogError("[WaveUI] 'Wave Number Text' não atribuído no Inspector! " +
-                           "Arraste o TMP_Text do número da onda para este campo.");
+            Debug.LogError("[WaveUI] 'Wave Number Text' not assigned in the Inspector!");
 
         if (enemiesRemainingText == null)
-            Debug.LogError("[WaveUI] 'Enemies Remaining Text' não atribuído no Inspector! " +
-                           "Arraste o TMP_Text de inimigos restantes para este campo.");
+            Debug.LogError("[WaveUI] 'Enemies Remaining Text' not assigned in the Inspector!");
 
-        // Inicializa os textos com os valores padrão (pré-jogo).
         UpdateWaveNumber(0);
         UpdateEnemiesRemaining(0);
     }
 
-    // ==============================================================
-    //  MÉTODOS PÚBLICOS — chamados pelo WaveManager
-    // ==============================================================
-
     /// <summary>
-    /// Atualiza o label do número da onda.
-    /// Onda 0 (estado inicial) exibe "Wave —".
+    /// Updates the wave number label.
+    /// Wave 0 (initial state) displays "Wave —".
     /// </summary>
     public void UpdateWaveNumber(int wave) {
         if (waveNumberText != null)
-            // ==============================================================
-            //  INTERPOLAÇÃO DE STRING COM "$"
-            // ==============================================================
-            //  "$" antes das aspas ativa "string interpolation" do C#.
-            //  "{wave}" dentro da string é substituído pelo valor da variável.
-            //  Exemplo: wave = 3 → texto fica "Wave 3".
-            //  "Wave —" é mostrado quando wave == 0 (antes da primeira onda).
             waveNumberText.text = wave == 0 ? "Wave " : $"Wave {wave}";
     }
 
     /// <summary>
-    /// Atualiza o label de inimigos restantes.
-    /// Chamado pelo WaveManager a cada morte de inimigo.
+    /// Updates the enemies remaining label.
+    /// Called by the WaveManager each time an enemy dies.
     /// </summary>
     public void UpdateEnemiesRemaining(int count) {
         if (enemiesRemainingText != null)
