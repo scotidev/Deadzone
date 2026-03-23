@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 /// <summary>
 /// Manages the shop UI including item cards and shop panel interactions.
@@ -7,8 +8,9 @@ using UnityEngine.UI;
 public class ShopUI : BaseUI {
     [Header("Shop Elements")]
     [SerializeField] private Transform itemsContainer;
-    [SerializeField] private GameObject shopItemCardPrefab;
+    [SerializeField] private ShopItemCard shopItemCardPrefab;
     [SerializeField] private Button closeButton;
+    [SerializeField] private List<ShopItemData> shopItems = new List<ShopItemData>();
 
     protected override void Awake() {
         base.Awake();
@@ -32,47 +34,41 @@ public class ShopUI : BaseUI {
     }
 
     /// <summary>
-    /// Populates the shop with item cards (placeholders for now).
+    /// Populates the shop with item cards based on the inspector item list.
     /// </summary>
     private void PopulateShopItems() {
         if (itemsContainer == null || shopItemCardPrefab == null)
+        {
+            Debug.LogWarning($"{nameof(ShopUI)} has missing references for items container or card prefab.", this);
             return;
+        }
 
         ClearShopItems();
-
-        // Create placeholder items for testing
-        CreatePlaceholderItems();
+        CreateConfiguredItems();
     }
 
     /// <summary>
-    /// Creates placeholder shop items for testing purposes.
+    /// Creates card instances from the configured inspector data.
     /// </summary>
-    private void CreatePlaceholderItems() {
-        CreateItemCard(null, "Pistol", 150, "High fire rate weapon");
-        CreateItemCard(null, "Shotgun", 200, "Close range power");
-        CreateItemCard(null, "AK-47", 300, "Long range precision");
-        CreateItemCard(null, "Medkit", 80, "Reliable sidearm");
-        CreateItemCard(null, "Grenades", 500, "Explosive area damage");
-        CreateItemCard(null, "Wall", 50, "Restores 50 HP");
-        //CreateItemCard(null, "Explosive Barrel", 30, "Restores ammunition");
-        //CreateItemCard(null, "Landmines", 100, "Increases defense");
-        //CreateItemCard(null, "Special", 60, "Throwable explosive");
-        //CreateItemCard(null, "Armor", 75, "Increases movement speed");
-    }
+    private void CreateConfiguredItems() {
+        if (shopItems == null || shopItems.Count == 0)
+        {
+            Debug.LogWarning($"{nameof(ShopUI)} has no configured shop items.", this);
+            return;
+        }
 
-    /// <summary>
-    /// Creates a single shop item card.
-    /// </summary>
-    /// <param name="icon">The item icon sprite.</param>
-    /// <param name="name">The item name.</param>
-    /// <param name="price">The item price.</param>
-    /// <param name="description">The item description.</param>
-    private void CreateItemCard(Sprite icon, string name, int price, string description) {
-        GameObject cardObject = Instantiate(shopItemCardPrefab, itemsContainer);
-        ShopItemCard card = cardObject.GetComponent<ShopItemCard>();
+        for (int index = 0; index < shopItems.Count; index++)
+        {
+            ShopItemData itemData = shopItems[index];
+            if (itemData == null)
+            {
+                Debug.LogWarning($"{nameof(ShopUI)} has a null item entry at index {index}.", this);
+                continue;
+            }
 
-        if (card != null)
-            card.Setup(icon, name, price, description);
+            ShopItemCard card = Instantiate(shopItemCardPrefab, itemsContainer);
+            card.Setup(itemData);
+        }
     }
 
     /// <summary>
