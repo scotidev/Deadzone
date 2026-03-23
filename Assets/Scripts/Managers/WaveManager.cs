@@ -127,7 +127,7 @@ public class WaveManager : MonoBehaviour {
         if (currentWaveEnemyTypes == null || currentWaveEnemyTypes.Count == 0) return;
 
         EnemySpawner spawner = spawners[Random.Range(0, spawners.Count)];
-        spawner.SpawnSingleEnemy(currentWaveEnemyTypes);
+        spawner.SpawnEnemies(currentWaveEnemyTypes);
         enemiesSpawned++;
     }
 
