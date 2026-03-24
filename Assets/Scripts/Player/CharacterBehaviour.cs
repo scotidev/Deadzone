@@ -2,13 +2,11 @@
 
 using UnityEngine;
 
-namespace InfimaGames.LowPolyShooterPack
-{
+namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
     /// Character Abstract Behaviour.
     /// </summary>
-    public abstract class CharacterBehaviour : MonoBehaviour
-    {
+    public abstract class CharacterBehaviour : MonoBehaviour {
         #region UNITY
 
         /// <summary>
@@ -46,18 +44,16 @@ namespace InfimaGames.LowPolyShooterPack
         public abstract InventoryBehaviour GetInventory();
 
         /// <summary>
-        /// [ADICIONADO] Retorna verdadeiro se o personagem estiver interagindo com um menu/loja.
-        /// </summary>
+        /// Returns true if the character is interacting with a menu or shop.
         public abstract bool IsInterfaceMode();
 
         /// <summary>
-        /// [ADICIONADO] Define se o personagem deve entrar ou sair do modo de interface.
-        /// Isso bloqueia ações como atirar e mover a câmera.
+        /// Defines if the character should enter or exit interface mode. This locks actions such as shooting and moving the camera.
         /// </summary>
         public abstract void SetInterfaceMode(bool value);
 
         /// <summary>
-        /// [ADICIONADO] Guarda ou revela a arma do personagem via animação.
+        /// Holsters or unholsters the character's weapon. This can be used to trigger a holster animation, or simply hide the weapon model.
         /// </summary>
         public abstract void SetHolstered(bool value);
 
@@ -93,33 +89,8 @@ namespace InfimaGames.LowPolyShooterPack
         /// </summary>
         public abstract Vector2 GetInputLook();
 
-        // ==============================================================
-        //  [ADICIONADO] IsJumping()
-        // ==============================================================
-        //  AULA: O QUE É UMA CLASSE ABSTRATA E POR QUE ELA EXISTE AQUI?
-        //
-        //  Imagine que CharacterBehaviour é um "contrato" assinado entre
-        //  dois scripts que precisam se comunicar:
-        //
-        //  → Movement.cs precisa saber: "o jogador está pulando?"
-        //  → Character.cs é quem lê o input e sabe a resposta.
-        //
-        //  O problema: Movement.cs não conhece Character.cs diretamente.
-        //  A solução: ambos falam através do "contrato" CharacterBehaviour.
-        //
-        //  "abstract" significa: "todo filho OBRIGATORIAMENTE deve implementar
-        //  este método". É como dizer "este campo do contrato não pode ficar
-        //  em branco — quem assinar tem que preencher".
-        //
-        //  Character.cs herda de CharacterBehaviour e é obrigado a fornecer
-        //  um IsJumping() real. Movement.cs chama playerCharacter.IsJumping()
-        //  sem precisar saber quem está do outro lado.
-        //
-        //  Esse padrão se chama "programação orientada a interfaces/abstrações"
-        //  e é um dos pilares do código profissional: os módulos se comunicam
-        //  por contratos, não por dependências diretas.
         /// <summary>
-        /// [ADICIONADO] Retorna verdadeiro se o jogador está pressionando o botão de pulo.
+        /// Returns true if the player is pressing the button to jump.
         /// </summary>
         public abstract bool IsJumping();
 

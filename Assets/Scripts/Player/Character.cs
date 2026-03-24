@@ -137,23 +137,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         private bool holdingButtonFire;
 
-        // ==============================================================
-        //  [ADICIONADO] holdingButtonJump
-        // ==============================================================
-        //  AULA: POR QUE GUARDAR O INPUT EM UMA VARIÁVEL BOOL?
-        //
-        //  O Input System da Unity chama callbacks (funções) nos momentos
-        //  exatos em que a tecla é pressionada ou solta — não a cada frame.
-        //  Já o FixedUpdate() do Movement.cs roda a cada frame físico (50x/s).
-        //
-        //  Se tentássemos ler o input diretamente no FixedUpdate, poderíamos
-        //  perder o frame em que o espaço foi apertado.
-        //
-        //  A solução é usar uma "caixa de correio": o callback escreve
-        //  true/false nesta variável, e o FixedUpdate lê quando chegar sua vez.
-        //  Assim nenhuma intenção do jogador é perdida.
         /// <summary>
-        /// [ADICIONADO] True se o jogador está pressionando o botão de pulo.
+        /// True if the player is holding the jump button.
         /// </summary>
         private bool holdingButtonJump;
 
@@ -229,7 +214,8 @@ namespace InfimaGames.LowPolyShooterPack {
                 // Não dispara se estiver no modo de construção.
                 if (BuildingController.Instance != null && BuildingController.Instance.IsPlacing) {
                     holdingButtonFire = false;
-                } else if (CanPlayAnimationFire() && equippedWeapon.HasAmmunition() && equippedWeapon.IsAutomatic()) {
+                }
+                else if (CanPlayAnimationFire() && equippedWeapon.HasAmmunition() && equippedWeapon.IsAutomatic()) {
                     //Has fire rate passed.
                     if (Time.time - lastShotTime > 60.0f / equippedWeapon.GetRateOfFire())
                         Fire();
@@ -279,25 +265,6 @@ namespace InfimaGames.LowPolyShooterPack {
         public override bool IsCrosshairVisible() => !aiming && !holstered;
         public override bool IsRunning() => running;
 
-        // ==============================================================
-        //  [ADICIONADO] IsJumping()
-        // ==============================================================
-        //  AULA: O QUE É "=>" (EXPRESSION BODY)?
-        //
-        //  Esta sintaxe é um atalho para métodos de uma única linha.
-        //  "public override bool IsJumping() => holdingButtonJump;"
-        //  É exatamente igual a escrever:
-        //    public override bool IsJumping() {
-        //        return holdingButtonJump;
-        //    }
-        //
-        //  "override" significa que estamos CUMPRINDO o contrato definido
-        //  como "abstract" em CharacterBehaviour. Sem o override, o C#
-        //  acusaria erro de compilação — o contrato DEVE ser cumprido.
-        //
-        //  "holdingButtonJump" é a "caixa de correio" preenchida pelo
-        //  callback OnTryJump() abaixo. O Movement.cs lê daqui para
-        //  saber se deve aplicar o impulso de pulo.
         public override bool IsJumping() => holdingButtonJump;
 
         public override bool IsAiming() => aiming;
@@ -570,33 +537,6 @@ namespace InfimaGames.LowPolyShooterPack {
             if (inspecting)
                 return false;
 
-            // ==============================================================
-            //  [MODIFICADO] Removida a restrição de correr enquanto recarrega
-            // ==============================================================
-            //  AULA: POR QUE O CÓDIGO ORIGINAL BLOQUEAVA CORRIDA+RECARGA?
-            //
-            //  O código original tinha esta condição:
-            //      if (reloading || aiming) return false;
-            //
-            //  O "||" é o operador OU lógico: a condição é verdadeira se
-            //  QUALQUER um dos dois lados for verdadeiro. Então bastava
-            //  "reloading" ser true para a corrida ser bloqueada.
-            //
-            //  Por que o original fazia isso? Provavelmente por simplicidade:
-            //  misturar animação de recarga com animação de corrida exige que
-            //  o Animator Controller tenha transições e blending configurados.
-            //  Bloquear a corrida era uma solução fácil para evitar conflito.
-            //
-            //  Nossa alteração: removemos "reloading" da condição, mantendo
-            //  apenas "aiming". Agora a regra é:
-            //      "pode correr a menos que esteja mirando"
-            //  Recarregar enquanto corre é permitido — o personagem pode
-            //  fazer as duas coisas ao mesmo tempo.
-            //
-            //  IMPORTANTE: isso pode causar conflito visual de animação se o
-            //  Animator Controller não tiver uma camada separada para recarga.
-            //  O Low Poly Shooter Pack usa "Layer Actions" para recarga, que
-            //  roda em paralelo com a locomotion — por isso funciona bem aqui.
             //Block.
             if (aiming)
                 return false;
@@ -625,9 +565,6 @@ namespace InfimaGames.LowPolyShooterPack {
             if (!cursorLocked || interfaceMode)
                 return;
 
-            // Bloqueia o disparo completamente enquanto o jogador está posicionando
-            // um objeto de construção. Também garante que holdingButtonFire seja false
-            // para não disparar no momento em que sair do modo construção.
             if (BuildingController.Instance != null && BuildingController.Instance.IsPlacing) {
                 holdingButtonFire = false;
                 return;
@@ -775,48 +712,18 @@ namespace InfimaGames.LowPolyShooterPack {
                     break;
             }
         }
-
-        // ==============================================================
-        //  [ADICIONADO] OnTryJump()
-        // ==============================================================
-        //  AULA: COMO FUNCIONA O SISTEMA DE INPUT DA UNITY (INPUT SYSTEM)?
-        //
-        //  O novo Input System funciona com EVENTOS, não com polling.
-        //  Polling seria: "a cada frame, pergunto se o espaço está apertado."
-        //  Eventos são: "me avisa QUANDO o espaço for apertado ou solto."
-        //
-        //  InputAction.CallbackContext é o "envelope" que chega quando o
-        //  evento dispara. Dentro dele temos a propriedade "phase" (fase):
-        //
-        //  ┌─────────────────────────────────────────────────────┐
-        //  │  FASE              │ QUANDO OCORRE                   │
-        //  ├────────────────────┼─────────────────────────────────┤
-        //  │  Started           │ Tecla foi pressionada ↓         │
-        //  │  Performed         │ Ação foi completada (hold/tap)  │
-        //  │  Canceled          │ Tecla foi solta ↑               │
-        //  └─────────────────────────────────────────────────────┘
-        //
-        //  Para pulo, nos interessa só Started (começo do pressionar)
-        //  e Canceled (soltou a tecla). Performed não é usado aqui.
-        //
-        //  Por que bloqueamos se !cursorLocked ou interfaceMode?
-        //  Porque se o cursor estiver visível (menu aberto, loja, etc.)
-        //  o jogador está interagindo com a UI, não com o jogo. Nesse
-        //  caso não faz sentido pular.
         /// <summary>
-        /// [ADICIONADO] Pulo — chamado pelo PlayerInput quando o jogador pressiona/solta Espaço.
+        /// Jump.
         /// </summary>
         public void OnTryJump(InputAction.CallbackContext context) {
-            // Bloqueia se o cursor estiver solto (ex: menu aberto) ou em modo de interface.
             if (!cursorLocked || interfaceMode)
                 return;
 
             switch (context.phase) {
-                // Tecla PRESSIONADA: registra intenção de pular.
                 case InputActionPhase.Started:
                     holdingButtonJump = true;
                     break;
-                // Tecla SOLTA: cancela a intenção de pular.
+
                 case InputActionPhase.Canceled:
                     holdingButtonJump = false;
                     break;
