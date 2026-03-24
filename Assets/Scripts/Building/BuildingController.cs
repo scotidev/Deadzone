@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using InfimaGames.LowPolyShooterPack;
 
 /// <summary>
 /// Controls the building mode: selecting items, showing the ghost object, and placing the real object in the world.
@@ -18,6 +19,7 @@ public class BuildingController : MonoBehaviour {
     [SerializeField] private LayerMask wallLayer;
     [SerializeField] private LayerMask obstacleLayer;
     [SerializeField] private float maxPlacementDistance = 8f;
+    [SerializeField] private Character playerCharacter;
 
     private Camera playerCamera;
     private GameObject currentGhost;
@@ -31,6 +33,18 @@ public class BuildingController : MonoBehaviour {
             Instance = this;
         else
             Destroy(gameObject);
+
+        ResolvePlayerCharacter();
+    }
+
+    /// <summary>
+    /// Ensures a valid reference to the player's character component.
+    /// </summary>
+    private void ResolvePlayerCharacter() {
+        if (playerCharacter != null)
+            return;
+
+        playerCharacter = FindObjectOfType<Character>();
     }
 
     private void Start() {
@@ -78,6 +92,7 @@ public class BuildingController : MonoBehaviour {
     /// </summary>
     /// <param name="item"></param>
     private void SelectItem(BuildableSO item) {
+        ResolvePlayerCharacter();
         if (item == null) return;
 
         if (selectedItem == item) {
@@ -89,12 +104,12 @@ public class BuildingController : MonoBehaviour {
 
         selectedItem = item;
 
-        CharacterInteraction.Instance?.SetHolstered(true);
+        playerCharacter?.SetHolstered(true);
 
         if (item.ghostPrefab == null) {
             Debug.LogWarning($"[BuildingController] ${item.name} não tem Ghost Prefab configurado no BuildableSO!");
             selectedItem = null;
-            CharacterInteraction.Instance?.SetHolstered(false);
+            playerCharacter?.SetHolstered(false);
             return;
         }
 
@@ -203,9 +218,10 @@ public class BuildingController : MonoBehaviour {
     /// Cancels the current placement mode, cleaning up all related objects and UI elements.
     /// </summary>
     private void CancelPlacement() {
+        ResolvePlayerCharacter();
         DestroyCurrentGhost();
         selectedItem = null;
-        CharacterInteraction.Instance?.SetHolstered(false);
+        playerCharacter?.SetHolstered(false);
     }
 
     private void OnDestroy() {

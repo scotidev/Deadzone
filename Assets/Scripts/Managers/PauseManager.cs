@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using InfimaGames.LowPolyShooterPack;
 
 /// <summary>
 /// Singleton that manages the game's pause state and related behaviour:
@@ -12,12 +13,25 @@ public class PauseManager : MonoBehaviour {
     public static PauseManager Instance { get; private set; }
 
     private bool isPaused = false;
+    [SerializeField] private Character playerCharacter;
 
     private void Awake() {
         if (Instance == null)
             Instance = this;
         else
             Destroy(gameObject);
+
+        ResolvePlayerCharacter();
+    }
+
+    /// <summary>
+    /// Ensures a valid reference to the player's character component.
+    /// </summary>
+    private void ResolvePlayerCharacter() {
+        if (playerCharacter != null)
+            return;
+
+        playerCharacter = FindObjectOfType<Character>();
     }
 
     private void Start() {
@@ -60,11 +74,12 @@ public class PauseManager : MonoBehaviour {
     /// shows the pause menu, and unlocks the cursor.
     /// </summary>
     public void PauseGame() {
+        ResolvePlayerCharacter();
         isPaused = true;
         GameManager.Instance?.SetState(GameState.Paused);
 
-        if (CharacterInteraction.Instance != null)
-            CharacterInteraction.Instance.SetInterfaceMode(true);
+        if (playerCharacter != null)
+            playerCharacter.SetInterfaceMode(true);
 
         SetCursorState(true);
 
@@ -79,6 +94,7 @@ public class PauseManager : MonoBehaviour {
     /// hides all menus, and locks the cursor back to the viewport.
     /// </summary>
     public void ResumeGame() {
+        ResolvePlayerCharacter();
         GameManager.Instance?.ResumeTime();
         isPaused = false;
         GameManager.Instance?.SetState(GameState.Playing);
@@ -88,8 +104,8 @@ public class PauseManager : MonoBehaviour {
 
         SetCursorState(false);
 
-        if (CharacterInteraction.Instance != null)
-            CharacterInteraction.Instance.SetInterfaceMode(false);
+        if (playerCharacter != null)
+            playerCharacter.SetInterfaceMode(false);
     }
 
     /// <summary>
