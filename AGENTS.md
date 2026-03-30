@@ -1,18 +1,22 @@
 This file contains the rules and guidelines for working on the AGENTS module of the project. Please read and follow these instructions carefully to ensure consistency and maintainability of the codebase.
 
-# 1. CLEAN CODE RULES:
+# CLEAN CODE RULES:
 
 - Whenever working in a subfolder, check if there is an AGENTS.md file in it and follow the specific guidelines for that module.
 - All variables, names, classes, summaries, comments, everything must be written in English.
 - Above each class or function created, add XML semantic comments to document them, only for classes and functions.
 
-# 2. ARCHITECTURE RULES
+# ARCHITECTURE RULES:
 
 - Use the new Unity input system.
 - In all scripts, maintain the good practice of not putting logic inside the Update method, use Update only to call functions, and the logic should be inside those functions.
 - Using Unity Engine 6000.2.10f1. When needed, consult the documentation for this version using context7 MCP.
 
-# 3. CONTEXT EXCLUSION RULES:
+# TEACHING RULES:
+
+- I'm a game development student, so everytime you write code, you should also comment on the lines up above it an explanation of what it does, covering the first principles of that code. These comments must be written in portuguese.
+
+# CONTEXT EXCLUSION RULES:
 
 ## DO NOT INCLUDE, DO NOT READ, DO NOT ANALYZE, DO NOT RESPOND ABOUT ANY OF THE ITEMS BELOW:
 
