@@ -26,28 +26,9 @@ namespace InfimaGames.LowPolyShooterPack {
         [Tooltip("How fast the player moves while running."), SerializeField]
         private float speedRunning = 9.0f;
 
-        // ==============================================================
-        //  [ADICIONADO] jumpForce
-        // ==============================================================
-        //  AULA: O QUE É ForceMode.Impulse E POR QUE USAR ELE?
-        //
-        //  Na física do Unity, existem formas diferentes de aplicar força:
-        //
-        //  ForceMode.Force     → força contínua, cresce devagar (motor de foguete)
-        //  ForceMode.Impulse   → força instantânea, aplicada uma só vez (chute numa bola)
-        //  ForceMode.Acceleration → ignora a massa do objeto
-        //  ForceMode.VelocityChange → muda a velocidade ignorando a massa
-        //
-        //  Para pulo, queremos um impulso único e instantâneo para cima —
-        //  como se o personagem desse um salto. Por isso usamos Impulse.
-        //
-        //  O valor de jumpForce controla a "força do chute". Valores típicos:
-        //  → 4.0 a 5.0 = pulo baixo e rápido
-        //  → 6.0 a 8.0 = pulo alto e dramático
-        //
-        //  [Header] cria um separador visual no Inspector.
-        //  [Tooltip] mostra um texto de ajuda ao passar o mouse no Inspector.
-        //  [SerializeField] expõe o campo privado para edição no Inspector.
+        [Tooltip("How fast the player moves while aiming."), SerializeField]
+        private float speedAiming = 3.0f;
+
         [Header("Jump")]
         [Tooltip("Jump Strength, values between 4 and 8 are recommended.")]
         [SerializeField]
@@ -212,9 +193,15 @@ namespace InfimaGames.LowPolyShooterPack {
             //Calculate local-space direction by using the player's input.
             var movement = new Vector3(frameInput.x, 0.0f, frameInput.y);
 
-            //Running speed calculation.
-            if (playerCharacter.IsRunning())
+            //Speed calculation based on character state.
+            if (playerCharacter.IsAiming()) {
+                //Multiply by the aiming speed (reduced movement).
+                movement *= speedAiming;
+            }
+            else if (playerCharacter.IsRunning()) {
+                //Multiply by the running speed.
                 movement *= speedRunning;
+            }
             else {
                 //Multiply by the normal walking speed.
                 movement *= speedWalking;
@@ -225,74 +212,9 @@ namespace InfimaGames.LowPolyShooterPack {
 
             #endregion
 
-            // ==============================================================
-            //  [MODIFICADO] Atualiza a velocidade PRESERVANDO o eixo Y
-            // ==============================================================
-            //  AULA: POR QUE O CÓDIGO ORIGINAL QUEBRAVA O PULO?
-            //
-            //  O código original fazia isto:
-            //      Velocity = new Vector3(movement.x, 0.0f, movement.z);
-            //
-            //  O problema está no "0.0f" no eixo Y. A cada frame físico
-            //  (50 vezes por segundo), o Y era forçado a zero. Isso significa:
-            //
-            //  Frame 1: aplicamos impulso de pulo → Y = +5 ✓
-            //  Frame 2: MoveCharacter() roda → Y = 0  ✗ (pulo cancelado!)
-            //
-            //  A correção é simples: ao construir o novo vetor de velocidade,
-            //  mantemos o Y que o Rigidbody já tinha calculado:
-            //      Velocity = new Vector3(movement.x, Velocity.y, movement.z);
-            //
-            //  "Velocity.y" lê a velocidade vertical ATUAL do Rigidbody.
-            //  Isso inclui tanto o impulso do pulo quanto a gravidade.
-            //  Assim a física natural do Unity toma conta da descida — sem
-            //  precisar escrever nenhuma lógica de gravidade manual.
             Velocity = new Vector3(movement.x, Velocity.y, movement.z);
 
-            // ==============================================================
-            //  [ADICIONADO] Lógica de pulo com cooldown
-            // ==============================================================
-            //  AULA: POR QUE VERIFICAMOS "grounded" ANTES DE PULAR?
-            //
-            //  "grounded" é marcado como true em OnCollisionStay(), que é
-            //  chamado pela Unity enquanto o personagem está tocando algum
-            //  objeto sólido (o chão). No FixedUpdate(), após MoveCharacter(),
-            //  ele é resetado para false — e só volta a true no próximo
-            //  OnCollisionStay, que acontece no mesmo frame se ainda houver
-            //  contato com o chão.
-            //
-            //  Isso cria um "detector de chão" confiável:
-            //  → grounded = true  → personagem está no chão → pode pular
-            //  → grounded = false → personagem está no ar  → NÃO pode pular
-            //
-            //  Sem essa verificação, o jogador poderia pular infinitamente
-            //  no ar (o famoso "double jump indesejado").
-            //
-            //  AULA: COMO O COOLDOWN DE 0.5S FUNCIONA AQUI?
-            //
-            //  Adicionamos uma terceira condição ao pulo:
-            //      Time.time - lastJumpTime >= 0.5f
-            //
-            //  Veja o fluxo completo:
-            //
-            //  t = 5.00s → jogador pula
-            //              lastJumpTime = 5.00
-            //              impulso aplicado ✓
-            //
-            //  t = 5.10s → jogador está no chão (caiu rápido) e aperta espaço
-            //              Time.time(5.10) - lastJumpTime(5.00) = 0.10s < 0.5 ✗
-            //              pulo BLOQUEADO pelo cooldown
-            //
-            //  t = 5.55s → jogador aperta espaço novamente
-            //              Time.time(5.55) - lastJumpTime(5.00) = 0.55s ≥ 0.5 ✓
-            //              pulo PERMITIDO → lastJumpTime = 5.55
-            //
-            //  As 3 condições precisam ser ALL TRUE ao mesmo tempo (operador &&):
-            //  1. grounded        → está no chão
-            //  2. IsJumping()     → espaço está pressionado
-            //  3. cooldown vencido → passaram-se 0.5s desde o último pulo
             if (grounded && playerCharacter.IsJumping() && Time.time - lastJumpTime >= 0.5f) {
-                // Registra o momento exato deste pulo para o próximo cálculo de cooldown.
                 lastJumpTime = Time.time;
                 rigidBody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             }
