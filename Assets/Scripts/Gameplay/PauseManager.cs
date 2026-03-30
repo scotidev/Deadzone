@@ -78,8 +78,10 @@ public class PauseManager : MonoBehaviour {
         isPaused = true;
         GameManager.Instance?.SetState(GameState.Paused);
 
-        if (playerCharacter != null)
+        if (playerCharacter != null) {
             playerCharacter.SetInterfaceMode(true);
+            playerCharacter.ClearInputStates();
+        }
 
         SetCursorState(true);
 

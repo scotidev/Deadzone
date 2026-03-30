@@ -258,6 +258,16 @@ namespace InfimaGames.LowPolyShooterPack {
             UpdateCursorState();
         }
 
+        /// <summary>
+        /// Clears all active input states. Used when pausing/resuming to prevent ghost inputs.
+        /// </summary>
+        public void ClearInputStates() {
+            holdingButtonFire = false;
+            holdingButtonAim = false;
+            holdingButtonRun = false;
+            holdingButtonJump = false;
+        }
+
         public override Camera GetCameraWorld() => cameraWorld;
 
         public override InventoryBehaviour GetInventory() => inventory;
