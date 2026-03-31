@@ -14,7 +14,7 @@ This file contains the rules and guidelines for working on the AGENTS module of 
 
 # TEACHING RULES:
 
-- I'm a game development student, so everytime you write code, you should also comment on the lines up above it an explanation of what it does, covering the first principles of that code. These comments must be written in portuguese.
+- I'm a game development student, so everytime you write code, you should also comment on the lines up above it an explanation of what it does, covering the first principles of that code.
 
 # CONTEXT EXCLUSION RULES:
 

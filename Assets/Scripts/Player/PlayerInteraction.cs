@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Manages player interaction with interactable objects in the game world.
-/// Uses raycasting from the player camera to detect objects with Interactable components.
+/// Uses raycasting from the player camera to detect objects with Interactable/HUD components.
 /// Allows interaction through a configurable key.
 /// Also detects enemies for the health bar UI system.
 /// </summary>
@@ -15,7 +15,7 @@ public class PlayerInteraction : MonoBehaviour {
     [Header("Enemy Detection")]
     [Tooltip("Maximum distance to detect enemies for health bar display.")]
     [SerializeField] private float enemyDetectionDistance = 50f;
-    
+
     [Tooltip("Reference to the EnemyHealthBarUI component.")]
     [SerializeField] private EnemyHealthBarUI enemyHealthBarUI;
 
