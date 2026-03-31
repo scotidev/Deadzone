@@ -178,7 +178,18 @@ public class Projectile : MonoBehaviour {
 			//  reduz a vida e dispara Die() se necessário.
 			EnemyBase enemy = collision.transform.GetComponentInParent<EnemyBase>();
 			if (enemy != null)
+			{
 				enemy.TakeDamage(damage);
+				// ==============================================================
+				//  [ADICIONADO] Dispara o evento de hitmarker
+				// ==============================================================
+				//  HitmarkerManager.TriggerHitmarker() chama um método estático que
+				//  dispara o evento interno do HitmarkerManager.
+				//  Isso ativa a animação do hitmarker na UI e toca o som de "hit".
+				//  Este é o único ponto onde o sistema de hitmarker é acionado,
+				//  garantindo que só ocorre em acertos de inimigos confirmados.
+				HitmarkerManager.TriggerHitmarker();
+			}
 
 			// Destroí o projétil após acertar o inimigo.
 			Destroy(gameObject);
