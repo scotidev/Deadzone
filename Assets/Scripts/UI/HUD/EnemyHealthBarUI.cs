@@ -4,21 +4,20 @@ using UnityEngine.UI;
 /// <summary>
 /// Manages a single reusable health bar that displays above the currently targeted enemy.
 /// Shows only when the player's aim is on an enemy.
-/// Green bar represents current health, red background represents lost health.
 /// </summary>
 public class EnemyHealthBarUI : MonoBehaviour {
 
     [Header("UI References")]
     [Tooltip("The Image component that represents current health (green bar).")]
     [SerializeField] private Image healthFillImage;
-    
+
     [Tooltip("CanvasGroup for controlling fade in/out alpha.")]
     [SerializeField] private CanvasGroup canvasGroup;
 
     [Header("Animation Settings")]
     [Tooltip("Speed of health bar fill animation.")]
     [SerializeField] private float fillSpeed = 10f;
-    
+
     [Tooltip("Speed of position follow smoothing.")]
     [SerializeField] private float positionSmoothSpeed = 15f;
 
@@ -28,7 +27,7 @@ public class EnemyHealthBarUI : MonoBehaviour {
 
     private Camera mainCamera;
     private RectTransform rectTransform;
-    
+
     private EnemyBase currentTargetEnemy;
 
     private void Awake() {
@@ -62,7 +61,8 @@ public class EnemyHealthBarUI : MonoBehaviour {
             canvasGroup.alpha = 1f;
             gameObject.SetActive(true);
             healthFillImage.fillAmount = currentTargetEnemy.GetHealthFraction();
-        } else {
+        }
+        else {
             canvasGroup.alpha = 0f;
             gameObject.SetActive(false);
         }
@@ -81,7 +81,8 @@ public class EnemyHealthBarUI : MonoBehaviour {
         if (screenPos.z > 0) {
             Vector2 targetPosition = new Vector2(screenPos.x, screenPos.y + screenOffsetY);
             rectTransform.position = Vector2.Lerp(rectTransform.position, targetPosition, Time.deltaTime * positionSmoothSpeed);
-        } else {
+        }
+        else {
             gameObject.SetActive(false);
         }
     }

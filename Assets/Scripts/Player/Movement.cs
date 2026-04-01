@@ -82,34 +82,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         private readonly RaycastHit[] groundHits = new RaycastHit[8];
 
-        // ==============================================================
-        //  [ADICIONADO] lastJumpTime — controla o cooldown entre pulos
-        // ==============================================================
-        //  AULA: O QUE É Time.time E COMO USAR PARA CRIAR UM COOLDOWN?
-        //
-        //  "Time.time" é um contador que a Unity mantém automaticamente:
-        //  ele guarda quantos SEGUNDOS se passaram desde que o jogo iniciou.
-        //  É como um relógio que nunca para, sempre crescendo.
-        //
-        //  Exemplo real:
-        //    Jogo inicia       → Time.time = 0.0
-        //    Após 3 segundos   → Time.time = 3.0
-        //    Após 10 segundos  → Time.time = 10.0
-        //
-        //  Para criar um cooldown, usamos uma subtração simples:
-        //    "quanto tempo passou desde o último pulo?"
-        //    = Time.time - lastJumpTime
-        //
-        //  Se esse valor for maior que 0.5 (segundos), o cooldown acabou
-        //  e o jogador pode pular novamente.
-        //
-        //  Por que inicializamos com -1f?
-        //  Para garantir que no PRIMEIRO frame do jogo, a conta seja:
-        //    Time.time(≈0) - lastJumpTime(-1) = 1.0 → maior que 0.5 ✓
-        //  Ou seja, o jogador pode pular imediatamente quando o jogo começa,
-        //  sem ter que esperar 0.5s antes do primeiro salto.
         /// <summary>
-        /// Momento (em segundos) do último pulo realizado. Usado para calcular o cooldown.
+        /// Moment (in seconds) since the last jump. This is used to calculate the cooldown between jumps, preventing jump spamming.
         /// </summary>
         private float lastJumpTime = -1f;
 
