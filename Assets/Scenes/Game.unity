@@ -1188,7 +1188,11 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 117093003}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9082bbd979d525f47a3523d5e627e9b3,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1109356576}
   m_SourcePrefab: {fileID: 100100000, guid: 9082bbd979d525f47a3523d5e627e9b3, type: 3}
 --- !u!4 &248025858 stripped
 Transform:
@@ -1354,7 +1358,7 @@ Transform:
   m_GameObject: {fileID: 307430571}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4.720001, y: 1.348, z: 2.6400003}
+  m_LocalPosition: {x: 4.720001, y: 1.0216756, z: 2.6400003}
   m_LocalScale: {x: 1, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3485,6 +3489,34 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!1 &1109356573 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 9082bbd979d525f47a3523d5e627e9b3,
+    type: 3}
+  m_PrefabInstance: {fileID: 248025853}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &1109356576
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1109356573}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -275901717459723143, guid: 9082bbd979d525f47a3523d5e627e9b3, type: 3}
 --- !u!1 &1125503730
 GameObject:
   m_ObjectHideFlags: 0
@@ -11503,14 +11535,24 @@ MonoBehaviour:
   - prefab: {fileID: 270316871960866942, guid: d1d09725d5529fe44abda6963954f7a8, type: 3}
     minimumWave: 1
     spawnWeight: 10
+    isBoss: 0
   - prefab: {fileID: 4449994615583783604, guid: accf882275ba880409157b70de5f2086,
       type: 3}
     minimumWave: 0
     spawnWeight: 5
+    isBoss: 0
   - prefab: {fileID: 8945000935841565596, guid: 703d07df9fd097242bc7a67f2dc6b0f3,
       type: 3}
     minimumWave: 0
     spawnWeight: 0.5
+    isBoss: 0
+  lightWaveClip: {fileID: 8300000, guid: eb424eeff2478d446b7dced1d6df8241, type: 3}
+  mediumWaveClip: {fileID: 8300000, guid: b5bf6dc28c7e9af49923ae859d07c6b2, type: 3}
+  hardWaveClip: {fileID: 8300000, guid: f1794e2ba3d0dc4459d821ae44e24ae9, type: 3}
+  bossWaveClip: {fileID: 8300000, guid: 20971c729f4a8a74586ac4e7bea1b26d, type: 3}
+  waveFadeOutClip: {fileID: 8300000, guid: b1464bb36859b874f916fac4742a107d, type: 3}
+  lastLightWave: 3
+  lastMediumWave: 7
   initialGrowthRate: 0.25
   growthDecrement: 0.02
   minGrowthRate: 0.05

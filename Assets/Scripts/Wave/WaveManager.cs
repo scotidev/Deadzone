@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Singleton Manager responsible for the entire wave lifecycle.
+/// Singleton manager responsible for the entire wave lifecycle.
 /// </summary>
-/// 
 public class WaveManager : MonoBehaviour {
     /// <summary>Global access point to the single <see cref="WaveManager"/> instance.</summary>
     public static WaveManager Instance { get; private set; }
@@ -13,6 +12,33 @@ public class WaveManager : MonoBehaviour {
     [Header("Enemy Types")]
     [Tooltip("List of all enemy types.")]
     [SerializeField] private List<EnemySpawnConfig> enemyTypes;
+
+    [Header("Wave Start SFX")]
+    [Tooltip("Sound played for early waves.")]
+    [SerializeField] private AudioClip lightWaveClip;
+
+    [Tooltip("Sound played after the initial waves.")]
+    [SerializeField] private AudioClip mediumWaveClip;
+
+    [Tooltip("Sound played for late-game waves.")]
+    [SerializeField] private AudioClip hardWaveClip;
+
+    [Tooltip("Sound played when the wave includes a boss enemy.")]
+    [SerializeField] private AudioClip bossWaveClip;
+
+    /// <summary>
+    /// Sound played after the selected wave-start SFX finishes.
+    /// </summary>
+    [Tooltip("Sound played after the wave-start SFX finishes.")]
+    [SerializeField] private AudioClip waveFadeOutClip;
+
+    [Tooltip("Last wave that still counts as Light.")]
+    [Min(1)]
+    [SerializeField] private int lastLightWave = 3;
+
+    [Tooltip("Last wave that still counts as Medium.")]
+    [Min(1)]
+    [SerializeField] private int lastMediumWave = 7;
 
     [Header("Wave Scaling")]
     [Tooltip("Growth rate from wave 1 to 2.")]
@@ -94,6 +120,7 @@ public class WaveManager : MonoBehaviour {
         GameManager.Instance?.SetState(GameState.InWave);
 
         currentWaveEnemyTypes = GetAvailableEnemyTypes(currentWave);
+        PlayWaveStartSound();
 
         StartCoroutine(SpawnInitialBatch());
 
@@ -104,9 +131,8 @@ public class WaveManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Spawns the inital batch of enemies at the start of the wave.
-    /// It's limited tomaxEnemiesAliveAtOnce to avoid overwhelming the scene, with a small 
-    /// delay between each spawn.
+    /// Spawns the initial batch of enemies at the start of the wave.
+    /// It is limited by <see cref="maxEnemiesAliveAtOnce"/> to avoid overwhelming the scene.
     /// </summary>
     private IEnumerator SpawnInitialBatch() {
         int initialCount = Mathf.Min(maxEnemiesAliveAtOnce, totalEnemiesForWave);
@@ -119,8 +145,8 @@ public class WaveManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Spawns exactly ONE enemy at a random spawner in the scene.
-    /// Increments enemiesSpawned and selects the type based on the configured weight.
+    /// Spawns exactly one enemy at a random spawner in the scene.
+    /// Increments <c>enemiesSpawned</c> and selects the type based on the configured weight.
     /// </summary>
     private void SpawnOneEnemy() {
         if (enemiesSpawned >= totalEnemiesForWave) return;
@@ -133,8 +159,7 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Attempts to spawn the next enemy.
-    /// Called whenever an enemy dies, ensuring the scene
-    /// remains populated without exceeding the simultaneous limit.
+    /// Called whenever an enemy dies, ensuring the scene remains populated.
     /// </summary>
     private void TrySpawnNext() {
         int aliveNow = enemiesSpawned - enemiesKilled;
@@ -144,8 +169,7 @@ public class WaveManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Called automatically every time any Enemy dies in the scene.
-    /// Subscribed to the Enemy.OnAnyEnemyDied event in OnEnable().
+    /// Called automatically every time any enemy dies in the scene.
     /// </summary>
     private void HandleEnemyDied() {
         enemiesKilled++;
@@ -162,7 +186,6 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Called when the last enemy of the wave dies.
-    /// Releases the WaveButton and updates the game state.
     /// </summary>
     private void OnWaveCompleted() {
         isWaveActive = false;
@@ -196,5 +219,79 @@ public class WaveManager : MonoBehaviour {
         }
 
         return available;
+    }
+
+    /// <summary>
+    /// Chooses the wave-start sound and decides whether it should be delayed.
+    /// </summary>
+    private void PlayWaveStartSound() {
+        AudioClip clip = GetWaveStartClip();
+        if (clip == null && waveFadeOutClip == null)
+            return;
+
+        StartCoroutine(PlayWaveStartSoundSequence(clip));
+    }
+
+    /// <summary>
+    /// Plays the selected start clip, waits for it to finish, then plays the fade-out clip.
+    /// </summary>
+    private IEnumerator PlayWaveStartSoundSequence(AudioClip clip) {
+        // Primeiro princípio: uma coroutine permite separar ações no tempo sem travar o jogo.
+        // Aqui usamos isso para criar uma sequência sonora suave.
+        if (clip != null) {
+            // Waves médias e hard recebem um pequeno atraso antes do som principal.
+            // A ideia é dar um pequeno respiro dramático antes do impacto sonoro.
+            if (ShouldDelayWaveStartSound())
+                yield return new WaitForSeconds(0.5f);
+
+            // O AudioManager toca o som no canal de SFX persistente da scene Loader.
+            AudioManager.Instance?.PlaySFX(clip);
+
+            // Esperamos a duração real do áudio terminar.
+            // Isso evita que o fade out entre cedo demais.
+            yield return new WaitForSeconds(clip.length);
+        }
+
+        // Se houver um clip de fade out, ele é disparado após o som principal.
+        if (waveFadeOutClip != null)
+            AudioManager.Instance?.PlaySFX(waveFadeOutClip);
+    }
+
+    /// <summary>
+    /// Returns true when the wave-start SFX should be delayed by 0.5 seconds.
+    /// </summary>
+    private bool ShouldDelayWaveStartSound() {
+        return currentWave > lastLightWave && !HasBossEnemyAvailable();
+    }
+
+    /// <summary>
+    /// Returns the correct SFX for the current wave based on progression and boss presence.
+    /// </summary>
+    private AudioClip GetWaveStartClip() {
+        if (HasBossEnemyAvailable())
+            return bossWaveClip != null ? bossWaveClip : hardWaveClip ?? mediumWaveClip ?? lightWaveClip;
+
+        if (currentWave <= lastLightWave)
+            return lightWaveClip != null ? lightWaveClip : mediumWaveClip ?? hardWaveClip ?? bossWaveClip;
+
+        if (currentWave <= lastMediumWave)
+            return mediumWaveClip != null ? mediumWaveClip : hardWaveClip ?? lightWaveClip ?? bossWaveClip;
+
+        return hardWaveClip != null ? hardWaveClip : mediumWaveClip ?? lightWaveClip ?? bossWaveClip;
+    }
+
+    /// <summary>
+    /// Checks whether the current wave contains at least one enemy marked as boss.
+    /// </summary>
+    private bool HasBossEnemyAvailable() {
+        if (currentWaveEnemyTypes == null)
+            return false;
+
+        for (int i = 0; i < currentWaveEnemyTypes.Count; i++) {
+            if (currentWaveEnemyTypes[i] != null && currentWaveEnemyTypes[i].isBoss)
+                return true;
+        }
+
+        return false;
     }
 }
