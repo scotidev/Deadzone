@@ -26,12 +26,6 @@ public class WaveManager : MonoBehaviour {
     [Tooltip("Sound played when the wave includes a boss enemy.")]
     [SerializeField] private AudioClip bossWaveClip;
 
-    /// <summary>
-    /// Sound played after the selected wave-start SFX finishes.
-    /// </summary>
-    [Tooltip("Sound played after the wave-start SFX finishes.")]
-    [SerializeField] private AudioClip waveFadeOutClip;
-
     [Tooltip("Last wave that still counts as Light.")]
     [Min(1)]
     [SerializeField] private int lastLightWave = 3;
@@ -222,39 +216,27 @@ public class WaveManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Chooses the wave-start sound and decides whether it should be delayed.
+    /// Chooses the wave-start sound and plays it immediately or with the existing delay rule.
     /// </summary>
     private void PlayWaveStartSound() {
         AudioClip clip = GetWaveStartClip();
-        if (clip == null && waveFadeOutClip == null)
+        if (clip == null)
             return;
 
-        StartCoroutine(PlayWaveStartSoundSequence(clip));
+        if (ShouldDelayWaveStartSound())
+            StartCoroutine(PlayWaveStartSoundDelayed(clip));
+        else
+            AudioManager.Instance?.PlaySFX(clip);
     }
 
     /// <summary>
-    /// Plays the selected start clip, waits for it to finish, then plays the fade-out clip.
+    /// Plays the selected start clip after a short delay.
     /// </summary>
-    private IEnumerator PlayWaveStartSoundSequence(AudioClip clip) {
-        // Primeiro princípio: uma coroutine permite separar ações no tempo sem travar o jogo.
-        // Aqui usamos isso para criar uma sequência sonora suave.
-        if (clip != null) {
-            // Waves médias e hard recebem um pequeno atraso antes do som principal.
-            // A ideia é dar um pequeno respiro dramático antes do impacto sonoro.
-            if (ShouldDelayWaveStartSound())
-                yield return new WaitForSeconds(0.5f);
-
-            // O AudioManager toca o som no canal de SFX persistente da scene Loader.
-            AudioManager.Instance?.PlaySFX(clip);
-
-            // Esperamos a duração real do áudio terminar.
-            // Isso evita que o fade out entre cedo demais.
-            yield return new WaitForSeconds(clip.length);
-        }
-
-        // Se houver um clip de fade out, ele é disparado após o som principal.
-        if (waveFadeOutClip != null)
-            AudioManager.Instance?.PlaySFX(waveFadeOutClip);
+    private IEnumerator PlayWaveStartSoundDelayed(AudioClip clip) {
+        // Waves médias e hard recebem um pequeno atraso antes do som principal.
+        // A ideia é dar um pequeno respiro dramático antes do impacto sonoro.
+        yield return new WaitForSeconds(0.5f);
+        AudioManager.Instance?.PlaySFX(clip);
     }
 
     /// <summary>
