@@ -94,6 +94,11 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         public abstract bool IsJumping();
 
+        /// <summary>
+        /// Returns true if the character is crouching.
+        /// </summary>
+        public abstract bool IsCrouching();
+
         #endregion
 
         #region ANIMATION

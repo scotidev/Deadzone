@@ -143,6 +143,11 @@ namespace InfimaGames.LowPolyShooterPack {
         private bool holdingButtonJump;
 
         /// <summary>
+        /// True if the player is holding the crouch button.
+        /// </summary>
+        private bool holdingButtonCrouch;
+
+        /// <summary>
         /// If true, the tutorial text should be visible on screen.
         /// </summary>
         private bool tutorialTextVisible;
@@ -266,6 +271,7 @@ namespace InfimaGames.LowPolyShooterPack {
             holdingButtonAim = false;
             holdingButtonRun = false;
             holdingButtonJump = false;
+            holdingButtonCrouch = false;
         }
 
         public override Camera GetCameraWorld() => cameraWorld;
@@ -276,6 +282,8 @@ namespace InfimaGames.LowPolyShooterPack {
         public override bool IsRunning() => running;
 
         public override bool IsJumping() => holdingButtonJump;
+
+        public override bool IsCrouching() => holdingButtonCrouch;
 
         public override bool IsAiming() => aiming;
         public override bool IsCursorLocked() => cursorLocked;
@@ -739,6 +747,29 @@ namespace InfimaGames.LowPolyShooterPack {
                     break;
             }
         }
+
+        /// <summary>
+        /// Crouch. Callback do Input System quando o jogador segura o botão de agachar (CTRL).
+        /// </summary>
+        public void OnTryCrouch(InputAction.CallbackContext context) {
+            // Não permite agachar se o cursor não estiver travado ou estiver em modo interface
+            if (!cursorLocked || interfaceMode)
+                return;
+
+            // Alterna o estado do botão de agachamento baseado na fase do input
+            switch (context.phase) {
+                case InputActionPhase.Started:
+                    // Quando começar a segurar CTRL, ativa o agachamento
+                    holdingButtonCrouch = true;
+                    break;
+
+                case InputActionPhase.Canceled:
+                    // Quando soltar CTRL, desativa o agachamento
+                    holdingButtonCrouch = false;
+                    break;
+            }
+        }
+
         /// <summary>
         /// Next Inventory Weapon.
         /// </summary>

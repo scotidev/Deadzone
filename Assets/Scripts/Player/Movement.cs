@@ -37,6 +37,44 @@ namespace InfimaGames.LowPolyShooterPack {
         [Tooltip("How fast the player moves while aiming."), SerializeField]
         private float speedAiming = 3.0f;
 
+        [Header("Crouch")]
+
+        [Tooltip("How fast the player moves while crouching."), SerializeField]
+        // ===== AULA: VELOCIDADE DE CROUCH =====
+        // Velocidade de movimento enquanto agachado
+        // 
+        // COMPARAÇÃO DE VALORES:
+        // - speedWalking = 5.0f (velocidade normal)
+        // - speedRunning = 9.0f (velocidade correndo)
+        // - speedCrouching = 1.8f (MUITO mais lento - aproximadamente 36% da velocidade normal)
+        //
+        // POR QUE TÃO LENTO?
+        // 1. Realismo: Agachar e se mover é difícil na vida real
+        // 2. Gameplay: Equilibra a vantagem de ser menos visível com desvantagem de velocidade
+        // 3. Stealth: Movimento lento = mais silencioso = furtivo
+        // 
+        // O QUE É UM FLOAT?
+        // float = "floating point number" = número com vírgula (exemplo: 1.8, 2.5, 10.0)
+        // Em C#, sempre usamos ponto (.) ao invés de vírgula (,) para decimais
+        // O "f" no final (1.8f) diz ao C# que é um float e não um double (outro tipo de número)
+        private float speedCrouching = 1.8f;
+
+        [Tooltip("Height multiplier for capsule collider when crouching (0-1)."), SerializeField]
+        // Multiplicador de altura da cápsula quando agachado (0.5 = metade da altura)
+        // Princípio: reduzir collider permite passar sob obstáculos baixos
+        private float crouchHeightMultiplier = 0.5f;
+
+        [Tooltip("Camera height offset when crouching (negative to lower)."), SerializeField]
+        // Offset vertical da câmera quando agachado (negativo = abaixa a câmera)
+        // Princípio: a câmera deve seguir a altura da "cabeça" do personagem para manter imersão
+        // Valor ajustado: -0.25 é mais sutil que -0.5 (estava abaixando demais)
+        private float crouchCameraOffset = -0.25f;
+
+        [Tooltip("How fast the crouch transition happens."), SerializeField]
+        // Velocidade da transição de agachar/levantar (mais alto = transição mais rápida)
+        // Princípio: interpolação suave evita mudanças bruscas que causam motion sickness
+        private float crouchTransitionSpeed = 8.0f;
+
         [Header("Jump")]
         [Tooltip("Jump Strength, values between 4 and 8 are recommended.")]
         [SerializeField]
@@ -154,6 +192,117 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         private float lastJumpTime = -1f;
 
+        /// <summary>
+        /// Original height of the capsule collider (stored on Start to restore when standing up).
+        /// Armazena a altura original da cápsula para poder restaurar ao levantar.
+        /// </summary>
+        private float originalCapsuleHeight;
+
+        /// <summary>
+        /// Original center Y position of the capsule collider.
+        /// Armazena o centro Y original da cápsula (usado para ajustar quando agachar).
+        /// </summary>
+        private float originalCapsuleCenterY;
+
+        /// <summary>
+        /// Current target height for the capsule (smoothly interpolated).
+        /// Altura alvo atual da cápsula (interpolada suavemente durante transição).
+        /// </summary>
+        private float targetCapsuleHeight;
+
+        /// <summary>
+        /// Current target center Y for the capsule (smoothly interpolated).
+        /// Centro Y alvo atual da cápsula (interpolado suavemente durante transição).
+        /// </summary>
+        private float targetCapsuleCenterY;
+
+        // ===== AULA: TRANSFORM =====
+        // Transform é um componente que TODOS os GameObjects no Unity têm
+        // Ele guarda 3 informações essenciais:
+        // 1. Position (posição X, Y, Z no mundo 3D)
+        // 2. Rotation (rotação em graus)
+        // 3. Scale (tamanho/escala)
+        //
+        // Quando escrevemos "private Transform cameraTransform", estamos dizendo:
+        // "Crie uma variável chamada cameraTransform que vai guardar uma REFERÊNCIA a um Transform"
+        // Referência = ponteiro = endereço de memória apontando para um objeto específico
+        //
+        // POR QUE PRIVATE?
+        // private = só este script pode acessar esta variável
+        // public = outros scripts podem acessar
+        // [SerializeField] = private mas aparece no Inspector do Unity
+        private Transform cameraTransform;
+
+        // ===== AULA: FLOAT E POSIÇÃO Y =====
+        // originalCameraY guarda a posição Y ORIGINAL da câmera quando o jogo inicia
+        // Por que guardar? Porque precisamos voltar a este valor quando o player levanta!
+        //
+        // SISTEMA DE COORDENADAS NO UNITY:
+        // X = horizontal (esquerda/direita)
+        // Y = vertical (cima/baixo) <- É o que nos interessa para agachar!
+        // Z = profundidade (frente/trás)
+        //
+        // EXEMPLO PRÁTICO:
+        // Se a câmera começa em Y=0 (em relação ao Root)
+        // originalCameraY = 0.0f
+        // Quando agachar, não mexemos mais na câmera (ela segue o Root)
+        private float originalCameraY;
+
+        // ===== AULA: TARGET (ALVO) E INTERPOLAÇÃO =====
+        // targetCameraY é o valor ALVO para onde queremos que a câmera vá
+        // 
+        // CONCEITO DE INTERPOLAÇÃO:
+        // Não movemos a câmera instantaneamente (isso causa "jerk" = movimento brusco)
+        // Ao invés disso, movemos GRADUALMENTE de "posição atual" para "target"
+        // É como um carro acelerando suavemente ao invés de dar um tranco
+        //
+        // EXEMPLO:
+        // Frame 1: Camera Y=0.0, Target=-0.5, movemos um pouquinho -> Camera Y=-0.02
+        // Frame 2: Camera Y=-0.02, Target=-0.5, movemos mais um pouco -> Camera Y=-0.04
+        // Frame 3: Camera Y=-0.04, Target=-0.5, continua... -> Camera Y=-0.07
+        // ... até chegar em -0.5 (transição suave!)
+        private float targetCameraY;
+
+        // ===== AULA: A SOLUÇÃO DO BUG - ROOT TRANSFORM =====
+        // PROBLEMA ANTERIOR:
+        // Tentávamos mover o "Armature" (os ossos do personagem)
+        // MAS o Animator resetava a posição dele todo frame!
+        // Era como tentar empurrar uma porta enquanto alguém do outro lado segura
+        //
+        // SOLUÇÃO NOVA:
+        // Movemos o "SK_FP_CH_Default_Root" - o GameObject PAI que CONTÉM o Animator
+        // É como pegar a sala inteira e mover, ao invés de tentar mover uma pessoa dentro da sala
+        //
+        // HIERARQUIA (de pai para filho):
+        // Player (raiz, Y=0 no mundo)
+        //   └─ SK_FP_CH_Default_Root (Y=1.8 local) <- MOVEMOS ESTE!
+        //       ├─ Animator (controla animações)
+        //       ├─ Camera (Y=0 local, SEGUE o Root automaticamente)
+        //       └─ Armature (Y=0 local, Animator controla internamente)
+        //
+        // VANTAGEM:
+        // O Animator continua funcionando DENTRO do Root normalmente
+        // A câmera desce automaticamente porque é FILHA do Root
+        // Não há conflito - todos são felizes! 🎉
+        private Transform characterRootTransform;
+
+        /// <summary>
+        /// Original local Y position of the character root (SK_FP_CH_Default_Root).
+        /// Posição Y local original do Root do personagem (normalmente 1.8).
+        /// </summary>
+        private float originalRootY;
+
+        /// <summary>
+        /// Current target Y position for the character root (smoothly interpolated).
+        /// Posição Y alvo atual do Root do personagem (interpolada suavemente).
+        /// </summary>
+        private float targetRootY;
+
+        /// <summary>
+        /// Debug: armazena o último estado de crouch para detectar mudanças.
+        /// </summary>
+        private bool lastCrouchState = false;
+
         #endregion
 
         #region UNITY FUNCTIONS
@@ -178,6 +327,118 @@ namespace InfimaGames.LowPolyShooterPack {
             audioSource = GetComponent<AudioSource>();
             audioSource.clip = audioClipWalking;
             audioSource.loop = true;
+
+            // Crouch Setup - Inicializa as variáveis de agachamento
+            // Armazena a altura original da cápsula para poder restaurar depois
+            originalCapsuleHeight = capsule.height;
+            // Armazena o centro Y original da cápsula
+            originalCapsuleCenterY = capsule.center.y;
+            // Inicializa os valores alvo com os originais (começa em pé)
+            targetCapsuleHeight = originalCapsuleHeight;
+            targetCapsuleCenterY = originalCapsuleCenterY;
+
+            // Busca a câmera do player para ajustar sua altura
+            // GetCameraWorld() retorna a câmera principal do personagem
+            cameraTransform = playerCharacter.GetCameraWorld().transform;
+            // Armazena a posição Y local original da câmera
+            originalCameraY = cameraTransform.localPosition.y;
+            // Inicializa o alvo da câmera com a posição original
+            targetCameraY = originalCameraY;
+
+            // ===== AULA: BUSCAR OBJETOS NA HIERARQUIA =====
+            // transform.Find("nome") procura um GameObject FILHO direto deste objeto
+            // É como procurar uma pasta dentro de outra pasta
+            //
+            // IMPORTANTE:
+            // "transform" (minúsculo) = a Transform do GameObject onde este script está
+            // Neste caso, o script está no "Player", então:
+            // transform = Transform do Player
+            // transform.Find("SK_FP_CH_Default_Root") = procura filho chamado "SK_FP_CH_Default_Root"
+            //
+            // RETORNO:
+            // Se encontrar: retorna a Transform do objeto
+            // Se NÃO encontrar: retorna null (nulo/vazio)
+            //
+            // POR QUE GUARDAR NUMA VARIÁVEL?
+            // Se buscarmos todo frame com Find(), é LENTO (Unity percorre todos os filhos)
+            // Buscamos UMA VEZ no Start() e guardamos em "characterRootTransform"
+            // Depois, usamos a variável sempre que precisar (RÁPIDO!)
+            characterRootTransform = transform.Find("SK_FP_CH_Default_Root");
+            
+            // ===== AULA: DEBUG.LOG =====
+            // Debug.Log() imprime mensagens no Console do Unity
+            // Serve para verificar se o código está funcionando
+            // É como fazer "print" em Python ou "console.log" em JavaScript
+            //
+            // O $ ANTES DAS ASPAS:
+            // Em C#, $ antes de "" significa "string interpolation"
+            // Permite colocar variáveis dentro do texto usando {variavel}
+            //
+            // EXEMPLO:
+            // string nome = "João";
+            // Debug.Log($"Olá {nome}!"); // Imprime: Olá João!
+            //
+            // OPERADOR != (diferente de):
+            // characterRootTransform != null significa "é diferente de nulo?"
+            // Se encontrou o objeto: != null é true (verdadeiro)
+            // Se NÃO encontrou: != null é false (falso)
+            Debug.Log($"[CROUCH INIT] Procurando SK_FP_CH_Default_Root... Found: {characterRootTransform != null}");
+            
+            // ===== AULA: IF (CONDICIONAL) =====
+            // if = "se" em português
+            // Executa o código dentro das chaves {} APENAS SE a condição for verdadeira
+            //
+            // if (characterRootTransform != null) significa:
+            // "Se characterRootTransform for diferente de null (ou seja, se encontramos o objeto)"
+            //
+            // ESTRUTURA:
+            // if (condição) {
+            //     código executado se condição = true
+            // }
+            // else {
+            //     código executado se condição = false
+            // }
+            if (characterRootTransform != null) {
+                // ===== AULA: LOCALPOSITION =====
+                // Todo Transform tem duas posições:
+                // 1. position = posição absoluta no MUNDO (World Space)
+                // 2. localPosition = posição relativa ao PAI (Local Space)
+                //
+                // EXEMPLO PRÁTICO:
+                // Imagine uma casa (Pai) na coordenada X=100 no mundo
+                // Dentro da casa tem uma mesa (Filho) a 5 metros da parede (localPosition.x = 5)
+                // A posição da mesa NO MUNDO seria: position.x = 100 + 5 = 105
+                //
+                // NESTE CASO:
+                // Player está em Y=0 no mundo
+                // SK_FP_CH_Default_Root tem localPosition.y = 1.8
+                // Posição do Root no mundo = 0 + 1.8 = 1.8 (altura dos olhos do personagem)
+                //
+                // .y = acessa APENAS a componente Y (vertical)
+                // Pegamos só o Y porque só nos interessa altura (não queremos X ou Z)
+                originalRootY = characterRootTransform.localPosition.y;
+                
+                // Inicializa o target (alvo) com o valor original
+                // No início do jogo, estamos em pé, então target = original
+                targetRootY = originalRootY;
+                
+                Debug.Log($"[CROUCH INIT] ✓ SK_FP_CH_Default_Root ENCONTRADO!");
+                Debug.Log($"[CROUCH INIT] ✓ Original Root Y: {originalRootY}");
+                Debug.Log($"[CROUCH INIT] ✓ Root será movido ao agachar (Animator não será afetado)!");
+            }
+            else {
+                // ===== AULA: DEBUG.LOGERROR =====
+                // Debug.LogError() é como Debug.Log() mas aparece em VERMELHO no Console
+                // Usado para indicar ERROS que precisam de atenção
+                // Se chegamos aqui, algo está errado na hierarquia do Player!
+                Debug.LogError("[CROUCH INIT] ✗ SK_FP_CH_Default_Root NÃO encontrado!");
+            }
+            
+            // Log de inicialização do sistema de crouch
+            Debug.Log($"[CROUCH DEBUG - Init] Sistema inicializado!");
+            Debug.Log($"[CROUCH DEBUG - Init] Capsule Height: {originalCapsuleHeight}, Center Y: {originalCapsuleCenterY}");
+            Debug.Log($"[CROUCH DEBUG - Init] Camera Y: {originalCameraY}");
+            Debug.Log($"[CROUCH DEBUG - Init] Crouch Settings - Speed: {speedCrouching}, HeightMult: {crouchHeightMultiplier}, CameraOffset: {crouchCameraOffset}");
         }
 
         protected override void FixedUpdate() {
@@ -203,6 +464,9 @@ namespace InfimaGames.LowPolyShooterPack {
         protected override void Update() {
             //Get the equipped weapon!
             equippedWeapon = playerCharacter.GetInventory().GetEquipped();
+
+            //Process Crouch - Processa a transição de agachamento
+            ProcessCrouch();
 
             //Play Sounds!
             PlayFootstepSounds();
@@ -272,12 +536,21 @@ namespace InfimaGames.LowPolyShooterPack {
             var movement = new Vector3(frameInput.x, 0.0f, frameInput.y);
 
             //Speed calculation based on character state.
+            // Prioridade: Aiming > Crouching > Running > Walking
+            // Princípio: cada estado de movimento tem sua velocidade característica
             if (playerCharacter.IsAiming()) {
                 //Multiply by the aiming speed (reduced movement).
+                // Velocidade reduzida ao mirar para dar mais precisão
                 movement *= speedAiming;
+            }
+            else if (playerCharacter.IsCrouching()) {
+                //Multiply by the crouching speed (very slow movement).
+                // Velocidade ainda mais reduzida ao agachar (movimento furtivo e cauteloso)
+                movement *= speedCrouching;
             }
             else if (playerCharacter.IsRunning()) {
                 //Multiply by the running speed.
+                // Velocidade máxima ao correr
                 movement *= speedRunning;
             }
             else {
@@ -389,6 +662,176 @@ namespace InfimaGames.LowPolyShooterPack {
             //Pause it if we're doing something like flying, or not moving!
             else if (audioSource.isPlaying)
                 audioSource.Pause();
+        }
+
+        /// <summary>
+        /// Processa o agachamento do personagem, ajustando suavemente:
+        /// - Altura do CapsuleCollider (para passar sob obstáculos baixos)
+        /// - Centro do CapsuleCollider (para manter os pés no chão)
+        /// - Altura da câmera (para refletir visualmente o agachamento)
+        /// - Posição do modelo visual (para que a mesh abaixe junto com a câmera)
+        /// 
+        /// Princípio: Interpolação suave (Lerp) evita transições bruscas que causam
+        /// motion sickness e mantém a experiência de jogo fluida.
+        /// </summary>
+        private void ProcessCrouch() {
+            // ===== AULA: MÉTODO ProcessCrouch() =====
+            // Este método é chamado TODO FRAME no Update()
+            // Ele é responsável por gerenciar a transição de agachamento (crouch)
+            //
+            // O QUE ELE FAZ:
+            // 1. Verifica se o player está agachado ou em pé
+            // 2. Calcula os valores ALVO (target) para cada componente
+            // 3. Move SUAVEMENTE em direção aos alvos (interpolação)
+            //
+            // POR QUE TODO FRAME?
+            // Para criar uma transição suave! Se mudássemos instantaneamente,
+            // o player "pularia" de em pé para agachado = HORRÍVEL visualmente
+            
+            // ===== AULA: CHAMADA DE MÉTODO =====
+            // playerCharacter.IsCrouching() chama um MÉTODO (função) de outro script
+            // playerCharacter = objeto da classe Character
+            // IsCrouching() = método que retorna true (agachado) ou false (em pé)
+            //
+            // O () VAZIO significa que o método não precisa de parâmetros
+            // O método RETORNA um valor boolean (true/false)
+            //
+            // GUARDAMOS O RESULTADO EM UMA VARIÁVEL:
+            // bool isCrouching = valor retornado pelo método
+            bool isCrouching = playerCharacter.IsCrouching();
+            
+            // ===== AULA: LÓGICA CONDICIONAL (IF/ELSE) =====
+            // Aqui definimos os ALVOS (targets) baseado no estado
+            // É como um interruptor: se está agachado, alvos = valores agachados
+            //                         se está em pé, alvos = valores originais
+            
+            if (isCrouching) {
+                // ===== QUANDO ESTÁ AGACHADO =====
+                
+                // ===== AULA: MULTIPLICAÇÃO E ALTURA DA CÁPSULA =====
+                // CapsuleCollider = o "corpo físico" do personagem no Unity
+                // É um cilindro invisível que colide com paredes, chão, etc.
+                //
+                // CÁLCULO:
+                // originalCapsuleHeight = 1.8 (altura original em metros)
+                // crouchHeightMultiplier = 0.5 (50%)
+                // targetCapsuleHeight = 1.8 * 0.5 = 0.9 metros
+                //
+                // POR QUE REDUZIR?
+                // Para o player caber sob obstáculos baixos!
+                // Imagine passar por baixo de uma mesa - precisa abaixar o collider
+                targetCapsuleHeight = originalCapsuleHeight * crouchHeightMultiplier;
+                
+                // ===== AULA: AJUSTE DO CENTRO DA CÁPSULA =====
+                // Quando reduzimos a altura da cápsula, precisamos ajustar o CENTRO
+                // Se não ajustarmos, os pés do player vão FLUTUAR no ar!
+                //
+                // ANALOGIA:
+                // Imagine uma régua de 20cm (capsule)
+                // Centro está no meio = 10cm
+                // Se cortamos a régua ao meio (agora tem 10cm)
+                // O centro TAMBÉM precisa abaixar para 5cm
+                //
+                // MATEMÁTICA:
+                // heightDifference = quanto a cápsula encolheu
+                // Exemplo: 1.8 - 0.9 = 0.9 metros de diferença
+                float heightDifference = originalCapsuleHeight - targetCapsuleHeight;
+                
+                // Dividimos por 2 porque o centro é no MEIO da cápsula
+                // Se encolhemos 0.9m, o centro desce 0.9 / 2 = 0.45m
+                // O SINAL NEGATIVO (-) faz descer (Y menor = mais baixo)
+                targetCapsuleCenterY = originalCapsuleCenterY - (heightDifference * 0.5f);
+                
+                // ===== AULA: A SOLUÇÃO DO BUG - MOVER O ROOT! =====
+                // AQUI ESTÁ A MÁGICA QUE RESOLVE O BUG VISUAL!
+                //
+                // LEMBRE-SE DO PROBLEMA:
+                // Tentávamos mover o Armature, mas o Animator resetava a posição
+                //
+                // SOLUÇÃO:
+                // Movemos o SK_FP_CH_Default_Root (PAI do Animator)
+                //
+                // CÁLCULO:
+                // originalRootY = 1.8 (posição Y original do Root)
+                // crouchCameraOffset = -0.25 (quanto queremos descer)
+                // targetRootY = 1.8 + (-0.25) = 1.55
+                //
+                // SOMA COM NEGATIVO = SUBTRAÇÃO:
+                // 1.8 + (-0.25) é o mesmo que 1.8 - 0.25 = 1.55
+                targetRootY = originalRootY + crouchCameraOffset;
+                
+                // ===== AULA: POR QUE A CÂMERA NÃO PRECISA OFFSET? =====
+                // HIERARQUIA (lembre-se):
+                // Player (Y=0 mundo)
+                //   └─ SK_FP_CH_Default_Root (Y=1.55 quando agachado) <- MOVEMOS ESTE!
+                //       └─ Camera (Y=0 local em relação ao Root) <- SEGUE AUTOMATICAMENTE!
+                //
+                // MATEMÁTICA:
+                // Posição da câmera no mundo = Posição do Root + Posição local da câmera
+                // Quando em pé:     Câmera mundo = 1.8 + 0 = 1.8
+                // Quando agachado:  Câmera mundo = 1.55 + 0 = 1.55 ✓ (desceu 0.25!)
+                //
+                // CONCLUSÃO:
+                // NÃO precisamos mover a câmera manualmente!
+                // Ela "herda" automaticamente o movimento do Root por ser filha dele
+                // É a magia da hierarquia de GameObjects do Unity!
+                targetCameraY = originalCameraY;
+            }
+            else {
+                // ===== QUANDO ESTÁ EM PÉ =====
+                // Simplesmente restauramos TODOS os valores originais
+                // É como apertar "reset" - volta ao estado inicial
+                targetCapsuleHeight = originalCapsuleHeight;
+                targetCapsuleCenterY = originalCapsuleCenterY;
+                targetRootY = originalRootY;
+                targetCameraY = originalCameraY;
+            }
+
+            // Log detalhado quando muda de estado
+            if (isCrouching != lastCrouchState) {
+                Debug.Log($"========== MUDANÇA DE ESTADO (NOVA ABORDAGEM) ==========");
+                Debug.Log($"[CROUCH] IsCrouching mudou para: {isCrouching}");
+                Debug.Log($"[CROUCH] crouchCameraOffset = {crouchCameraOffset}");
+                Debug.Log($"[CROUCH] originalRootY = {originalRootY}");
+                Debug.Log($"[CROUCH] CÁLCULO: targetRootY = {originalRootY} + {crouchCameraOffset} = {targetRootY}");
+                if (characterRootTransform != null) {
+                    Debug.Log($"[CROUCH] Root - Target: {targetRootY}, Current: {characterRootTransform.localPosition.y}");
+                    Debug.Log($"[CROUCH] characterRootTransform existe? SIM");
+                }
+                else {
+                    Debug.LogError($"[CROUCH] characterRootTransform existe? NÃO! É NULL!");
+                }
+                Debug.Log($"========================================================");
+                lastCrouchState = isCrouching;
+            }
+
+            // Interpola suavemente a altura da cápsula em direção ao alvo
+            capsule.height = Mathf.Lerp(capsule.height, targetCapsuleHeight, 
+                Time.deltaTime * crouchTransitionSpeed);
+
+            // Interpola suavemente o centro Y da cápsula
+            Vector3 center = capsule.center;
+            center.y = Mathf.Lerp(center.y, targetCapsuleCenterY, 
+                Time.deltaTime * crouchTransitionSpeed);
+            capsule.center = center;
+
+            // NOVA ABORDAGEM: Move o SK_FP_CH_Default_Root inteiro
+            // Vantagem: O Animator continua funcionando normalmente, não há conflito
+            // A câmera (filha do Root) se move automaticamente junto!
+            if (characterRootTransform != null) {
+                Vector3 rootPos = characterRootTransform.localPosition;
+                float oldRootY = rootPos.y;
+                
+                // Interpola suavemente a posição Y do Root
+                rootPos.y = Mathf.Lerp(rootPos.y, targetRootY, 
+                    Time.deltaTime * crouchTransitionSpeed);
+                characterRootTransform.localPosition = rootPos;
+                
+                // Log quando o Root se move
+                if (isCrouching && Mathf.Abs(oldRootY - rootPos.y) > 0.001f) {
+                    Debug.Log($"[CROUCH ROOT] Root movendo: {oldRootY:F3} → {rootPos.y:F3} (target: {targetRootY})");
+                }
+            }
         }
 
         #endregion
