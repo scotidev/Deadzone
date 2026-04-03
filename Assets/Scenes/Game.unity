@@ -5784,6 +5784,18 @@ MonoBehaviour:
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 23800000, guid: 7534320cef928174b911d1920beed69d, type: 2}
   m_BuildHeightMesh: 0
+--- !u!114 &1735731087 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8211855974502300213, guid: a20c4961b0655574e9f91c372538fa9f,
+    type: 3}
+  m_PrefabInstance: {fileID: 4545309492575171591}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3c368290cc3e914ab3a0cf540de2166, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1747269608
 GameObject:
   m_ObjectHideFlags: 0
@@ -6031,6 +6043,21 @@ MonoBehaviour:
   visualLocalPosition: {x: 0.18, y: -0.2, z: 0.7}
   visualLocalEuler: {x: 0, y: 0, z: -20}
   visualLocalScale: {x: 0.08, y: 0.16, z: 0.8}
+--- !u!114 &1776962838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1459338491}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 741ab73d7709a2849a2fe8c3572e622e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponSelector
+  character: {fileID: 1413941464}
+  inventory: {fileID: 1735731087}
+  enableDebugLogs: 1
 --- !u!1 &1777799202
 GameObject:
   m_ObjectHideFlags: 0
@@ -13571,12 +13598,32 @@ PrefabInstance:
     - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: m_ActionEvents.Array.size
-      value: 20
+      value: 18
+      objectReference: {fileID: 0}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[16].m_ActionId
+      value: ddecb9b1-36bd-41c3-9f63-e6ed1d2c6995
+      objectReference: {fileID: 0}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[17].m_ActionId
+      value: d8770a27-f6cc-4fe9-9085-248cf57edd0d
       objectReference: {fileID: 0}
     - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: m_ActionEvents.Array.data[19].m_ActionId
       value: ddecb9b1-36bd-41c3-9f63-e6ed1d2c6995
+      objectReference: {fileID: 0}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[16].m_ActionName
+      value: 'Player/Crouch[/Keyboard/leftCtrl]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[17].m_ActionName
+      value: 'Player/Select Weapon[/Keyboard/1,/Keyboard/2,/Keyboard/3,/Keyboard/4,/Keyboard/5,/Keyboard/6,/Keyboard/7,/Keyboard/8,/Keyboard/9]'
       objectReference: {fileID: 0}
     - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
@@ -13591,6 +13638,11 @@ PrefabInstance:
     - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: m_DeviceLostEvent.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[17].m_PersistentCalls.m_Calls.Array.size
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
@@ -13615,6 +13667,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
+      propertyPath: m_ActionEvents.Array.data[17].m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
       propertyPath: m_ActionEvents.Array.data[18].m_PersistentCalls.m_Calls.Array.data[1].m_Mode
       value: 1
       objectReference: {fileID: 0}
@@ -13623,6 +13680,16 @@ PrefabInstance:
       propertyPath: m_ActionEvents.Array.data[19].m_PersistentCalls.m_Calls.Array.data[0].m_Mode
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[16].m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1413941464}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[17].m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1776962838}
     - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: m_ActionEvents.Array.data[19].m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -13640,8 +13707,28 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
+      propertyPath: m_ActionEvents.Array.data[16].m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnTryCrouch
+      objectReference: {fileID: 0}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[17].m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnSelectWeapon
+      objectReference: {fileID: 0}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
       propertyPath: m_ActionEvents.Array.data[19].m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: OnTryCrouch
+      objectReference: {fileID: 0}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[16].m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: InfimaGames.LowPolyShooterPack.Character, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[17].m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: WeaponSelector, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
@@ -13652,6 +13739,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_ActionEvents.Array.data[19].m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
       value: InfimaGames.LowPolyShooterPack.Character, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[17].m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
@@ -13741,6 +13833,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1776962828}
+    - targetCorrespondingSourceObject: {fileID: 2765326547094986479, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1776962838}
   m_SourcePrefab: {fileID: 100100000, guid: a20c4961b0655574e9f91c372538fa9f, type: 3}
 --- !u!1001 &8256302428203510670
 PrefabInstance:

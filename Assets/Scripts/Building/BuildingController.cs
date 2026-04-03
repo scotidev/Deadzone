@@ -88,6 +88,31 @@ public class BuildingController : MonoBehaviour {
     }
 
     /// <summary>
+    /// Public method to select a buildable item by slot number (1, 2, or 3).
+    /// Called by the unified weapon selection system in Character.cs.
+    /// This allows keys 6, 7, 8 to be handled through the OnSelectWeapon method.
+    /// </summary>
+    /// <param name="slotNumber">The buildable slot to select (1 = Barricade/Key 6, 2 = Explosive Barrel/Key 7, 3 = Trap/Key 8)</param>
+    public void SelectBuildableBySlot(int slotNumber) {
+        // Based on the slot number, select the corresponding buildable item
+        switch (slotNumber) {
+            case 1: // Key 6 - Barricade
+                SelectItem(itemSlot6);
+                break;
+            case 2: // Key 7 - Explosive Barrel
+                SelectItem(itemSlot7);
+                break;
+            case 3: // Key 8 - Trap
+                SelectItem(itemSlot8);
+                break;
+            default:
+                // Invalid slot number
+                Debug.LogWarning($"[BuildingController] Invalid buildable slot number: {slotNumber}. Must be 1, 2, or 3.");
+                break;
+        }
+    }
+
+    /// <summary>
     /// Receives the selected buildable item and sets up the ghost object for placement. If the same item is selected again, it cancels the placement mode.
     /// </summary>
     /// <param name="item"></param>

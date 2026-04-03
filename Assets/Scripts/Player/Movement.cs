@@ -364,7 +364,7 @@ namespace InfimaGames.LowPolyShooterPack {
             // Buscamos UMA VEZ no Start() e guardamos em "characterRootTransform"
             // Depois, usamos a variável sempre que precisar (RÁPIDO!)
             characterRootTransform = transform.Find("SK_FP_CH_Default_Root");
-            
+
             // ===== AULA: DEBUG.LOG =====
             // Debug.Log() imprime mensagens no Console do Unity
             // Serve para verificar se o código está funcionando
@@ -382,8 +382,6 @@ namespace InfimaGames.LowPolyShooterPack {
             // characterRootTransform != null significa "é diferente de nulo?"
             // Se encontrou o objeto: != null é true (verdadeiro)
             // Se NÃO encontrou: != null é false (falso)
-            Debug.Log($"[CROUCH INIT] Procurando SK_FP_CH_Default_Root... Found: {characterRootTransform != null}");
-            
             // ===== AULA: IF (CONDICIONAL) =====
             // if = "se" em português
             // Executa o código dentro das chaves {} APENAS SE a condição for verdadeira
@@ -417,28 +415,19 @@ namespace InfimaGames.LowPolyShooterPack {
                 // .y = acessa APENAS a componente Y (vertical)
                 // Pegamos só o Y porque só nos interessa altura (não queremos X ou Z)
                 originalRootY = characterRootTransform.localPosition.y;
-                
+
                 // Inicializa o target (alvo) com o valor original
                 // No início do jogo, estamos em pé, então target = original
                 targetRootY = originalRootY;
-                
-                Debug.Log($"[CROUCH INIT] ✓ SK_FP_CH_Default_Root ENCONTRADO!");
-                Debug.Log($"[CROUCH INIT] ✓ Original Root Y: {originalRootY}");
-                Debug.Log($"[CROUCH INIT] ✓ Root será movido ao agachar (Animator não será afetado)!");
+
             }
             else {
                 // ===== AULA: DEBUG.LOGERROR =====
                 // Debug.LogError() é como Debug.Log() mas aparece em VERMELHO no Console
                 // Usado para indicar ERROS que precisam de atenção
                 // Se chegamos aqui, algo está errado na hierarquia do Player!
-                Debug.LogError("[CROUCH INIT] ✗ SK_FP_CH_Default_Root NÃO encontrado!");
             }
-            
-            // Log de inicialização do sistema de crouch
-            Debug.Log($"[CROUCH DEBUG - Init] Sistema inicializado!");
-            Debug.Log($"[CROUCH DEBUG - Init] Capsule Height: {originalCapsuleHeight}, Center Y: {originalCapsuleCenterY}");
-            Debug.Log($"[CROUCH DEBUG - Init] Camera Y: {originalCameraY}");
-            Debug.Log($"[CROUCH DEBUG - Init] Crouch Settings - Speed: {speedCrouching}, HeightMult: {crouchHeightMultiplier}, CameraOffset: {crouchCameraOffset}");
+
         }
 
         protected override void FixedUpdate() {
@@ -687,7 +676,7 @@ namespace InfimaGames.LowPolyShooterPack {
             // POR QUE TODO FRAME?
             // Para criar uma transição suave! Se mudássemos instantaneamente,
             // o player "pularia" de em pé para agachado = HORRÍVEL visualmente
-            
+
             // ===== AULA: CHAMADA DE MÉTODO =====
             // playerCharacter.IsCrouching() chama um MÉTODO (função) de outro script
             // playerCharacter = objeto da classe Character
@@ -699,15 +688,15 @@ namespace InfimaGames.LowPolyShooterPack {
             // GUARDAMOS O RESULTADO EM UMA VARIÁVEL:
             // bool isCrouching = valor retornado pelo método
             bool isCrouching = playerCharacter.IsCrouching();
-            
+
             // ===== AULA: LÓGICA CONDICIONAL (IF/ELSE) =====
             // Aqui definimos os ALVOS (targets) baseado no estado
             // É como um interruptor: se está agachado, alvos = valores agachados
             //                         se está em pé, alvos = valores originais
-            
+
             if (isCrouching) {
                 // ===== QUANDO ESTÁ AGACHADO =====
-                
+
                 // ===== AULA: MULTIPLICAÇÃO E ALTURA DA CÁPSULA =====
                 // CapsuleCollider = o "corpo físico" do personagem no Unity
                 // É um cilindro invisível que colide com paredes, chão, etc.
@@ -721,7 +710,7 @@ namespace InfimaGames.LowPolyShooterPack {
                 // Para o player caber sob obstáculos baixos!
                 // Imagine passar por baixo de uma mesa - precisa abaixar o collider
                 targetCapsuleHeight = originalCapsuleHeight * crouchHeightMultiplier;
-                
+
                 // ===== AULA: AJUSTE DO CENTRO DA CÁPSULA =====
                 // Quando reduzimos a altura da cápsula, precisamos ajustar o CENTRO
                 // Se não ajustarmos, os pés do player vão FLUTUAR no ar!
@@ -736,12 +725,12 @@ namespace InfimaGames.LowPolyShooterPack {
                 // heightDifference = quanto a cápsula encolheu
                 // Exemplo: 1.8 - 0.9 = 0.9 metros de diferença
                 float heightDifference = originalCapsuleHeight - targetCapsuleHeight;
-                
+
                 // Dividimos por 2 porque o centro é no MEIO da cápsula
                 // Se encolhemos 0.9m, o centro desce 0.9 / 2 = 0.45m
                 // O SINAL NEGATIVO (-) faz descer (Y menor = mais baixo)
                 targetCapsuleCenterY = originalCapsuleCenterY - (heightDifference * 0.5f);
-                
+
                 // ===== AULA: A SOLUÇÃO DO BUG - MOVER O ROOT! =====
                 // AQUI ESTÁ A MÁGICA QUE RESOLVE O BUG VISUAL!
                 //
@@ -759,7 +748,7 @@ namespace InfimaGames.LowPolyShooterPack {
                 // SOMA COM NEGATIVO = SUBTRAÇÃO:
                 // 1.8 + (-0.25) é o mesmo que 1.8 - 0.25 = 1.55
                 targetRootY = originalRootY + crouchCameraOffset;
-                
+
                 // ===== AULA: POR QUE A CÂMERA NÃO PRECISA OFFSET? =====
                 // HIERARQUIA (lembre-se):
                 // Player (Y=0 mundo)
@@ -787,31 +776,14 @@ namespace InfimaGames.LowPolyShooterPack {
                 targetCameraY = originalCameraY;
             }
 
-            // Log detalhado quando muda de estado
-            if (isCrouching != lastCrouchState) {
-                Debug.Log($"========== MUDANÇA DE ESTADO (NOVA ABORDAGEM) ==========");
-                Debug.Log($"[CROUCH] IsCrouching mudou para: {isCrouching}");
-                Debug.Log($"[CROUCH] crouchCameraOffset = {crouchCameraOffset}");
-                Debug.Log($"[CROUCH] originalRootY = {originalRootY}");
-                Debug.Log($"[CROUCH] CÁLCULO: targetRootY = {originalRootY} + {crouchCameraOffset} = {targetRootY}");
-                if (characterRootTransform != null) {
-                    Debug.Log($"[CROUCH] Root - Target: {targetRootY}, Current: {characterRootTransform.localPosition.y}");
-                    Debug.Log($"[CROUCH] characterRootTransform existe? SIM");
-                }
-                else {
-                    Debug.LogError($"[CROUCH] characterRootTransform existe? NÃO! É NULL!");
-                }
-                Debug.Log($"========================================================");
-                lastCrouchState = isCrouching;
-            }
 
             // Interpola suavemente a altura da cápsula em direção ao alvo
-            capsule.height = Mathf.Lerp(capsule.height, targetCapsuleHeight, 
+            capsule.height = Mathf.Lerp(capsule.height, targetCapsuleHeight,
                 Time.deltaTime * crouchTransitionSpeed);
 
             // Interpola suavemente o centro Y da cápsula
             Vector3 center = capsule.center;
-            center.y = Mathf.Lerp(center.y, targetCapsuleCenterY, 
+            center.y = Mathf.Lerp(center.y, targetCapsuleCenterY,
                 Time.deltaTime * crouchTransitionSpeed);
             capsule.center = center;
 
@@ -821,16 +793,12 @@ namespace InfimaGames.LowPolyShooterPack {
             if (characterRootTransform != null) {
                 Vector3 rootPos = characterRootTransform.localPosition;
                 float oldRootY = rootPos.y;
-                
+
                 // Interpola suavemente a posição Y do Root
-                rootPos.y = Mathf.Lerp(rootPos.y, targetRootY, 
+                rootPos.y = Mathf.Lerp(rootPos.y, targetRootY,
                     Time.deltaTime * crouchTransitionSpeed);
                 characterRootTransform.localPosition = rootPos;
-                
-                // Log quando o Root se move
-                if (isCrouching && Mathf.Abs(oldRootY - rootPos.y) > 0.001f) {
-                    Debug.Log($"[CROUCH ROOT] Root movendo: {oldRootY:F3} → {rootPos.y:F3} (target: {targetRootY})");
-                }
+
             }
         }
 
