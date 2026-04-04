@@ -1,9 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using InfimaGames.LowPolyShooterPack;
 /// <summary>
 /// Singleton manager responsible for the entire wave lifecycle.
+/// 
+/// Migrado para usar IAudioManagerService para sons de início de wave.
+/// Mantém o singleton para o WaveManager em si (gerenciamento de waves),
+/// mas usa o serviço para áudio.
 /// </summary>
 public class WaveManager : MonoBehaviour {
     /// <summary>Global access point to the single <see cref="WaveManager"/> instance.</summary>
@@ -70,15 +74,26 @@ public class WaveManager : MonoBehaviour {
     private bool isWaveActive = false;
 
     private List<EnemySpawnConfig> currentWaveEnemyTypes;
+    
+    /// <summary>
+    /// Referência ao serviço de áudio obtida do Service Locator.
+    /// Usada para tocar sons de início de wave de forma consistente.
+    /// </summary>
+    private IAudioManagerService audioService;
 
     public bool IsWaveActive => isWaveActive;
     public int CurrentWave => currentWave;
 
     private void Awake() {
+        // Padrão Singleton: garante que só existe uma instância do WaveManager
         if (Instance == null)
             Instance = this;
         else
             Destroy(gameObject);
+        
+        // Obtém o serviço de áudio do Service Locator
+        // ServiceLocator é inicializado no Bootstraper antes de qualquer cena carregar
+        audioService = ServiceLocator.Current.Get<IAudioManagerService>();
     }
 
     private void OnEnable() {
@@ -217,6 +232,9 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Chooses the wave-start sound and plays it immediately or with the existing delay rule.
+    /// 
+    /// Agora usa o serviço de áudio unificado para tocar sons 2D (UI/Feedback).
+    /// Sons de início de wave são considerados feedback/UI, não sons posicionais.
     /// </summary>
     private void PlayWaveStartSound() {
         AudioClip clip = GetWaveStartClip();
@@ -226,17 +244,23 @@ public class WaveManager : MonoBehaviour {
         if (ShouldDelayWaveStartSound())
             StartCoroutine(PlayWaveStartSoundDelayed(clip));
         else
-            AudioManager.Instance?.PlaySFX(clip);
+            // Usa PlaySFX2D porque é um som de feedback/UI, não posicional no mundo 3D
+            audioService?.PlaySFX2D(clip);
     }
 
     /// <summary>
     /// Plays the selected start clip after a short delay.
+    /// 
+    /// Cria tensão dramática com um pequeno delay antes do som de impacto.
+    /// Coroutine permite executar código após um delay sem travar o jogo.
     /// </summary>
     private IEnumerator PlayWaveStartSoundDelayed(AudioClip clip) {
-        // Waves m�dias e hard recebem um pequeno atraso antes do som principal.
-        // A ideia � dar um pequeno respiro dram�tico antes do impacto sonoro.
+        // Waves médias e hard recebem um pequeno atraso antes do som principal.
+        // A ideia é dar um pequeno respiro dramático antes do impacto sonoro.
         yield return new WaitForSeconds(0.5f);
-        AudioManager.Instance?.PlaySFX(clip);
+        
+        // ?. só chama o método se audioService não for null (null-conditional operator)
+        audioService?.PlaySFX2D(clip);
     }
 
     /// <summary>
