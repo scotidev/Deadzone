@@ -102,15 +102,21 @@ namespace InfimaGames.LowPolyShooterPack
 
         /// <summary>
         /// Destroys the audio source once it has finished playing.
+        /// Inclui verificação de null para evitar MissingReferenceException quando o AudioSource
+        /// é destruído durante transições de scene (DontDestroyOnLoad persiste coroutines).
         /// </summary>
         private IEnumerator DestroySourceWhenFinished(AudioSource source)
         {
-            //Wait for the audio source to complete playing the clip.
-            yield return new WaitWhile(() => source.isPlaying);
+            // Verifica se o source ainda existe E se ainda está tocando
+            // O operador && com null check previne acesso a objetos destruídos
+            yield return new WaitWhile(() => source != null && source.isPlaying);
             
-            //Destroy the audio game object, since we're not using it anymore.
-            //This isn't really too great for performance, but it works, for now.
-            DestroyImmediate(source.gameObject);
+            // Apenas destrói se o objeto ainda existir
+            // Durante transições de scene, o AudioSource pode já ter sido destruído pela Unity
+            if (source != null && source.gameObject != null)
+            {
+                DestroyImmediate(source.gameObject);
+            }
         }
 
         /// <summary>
@@ -200,9 +206,13 @@ namespace InfimaGames.LowPolyShooterPack
         /// <summary>
         /// Coroutine que faz fade out da música atual e fade in da nova.
         /// Coroutines permitem executar código ao longo de vários frames.
+        /// Inclui verificação de null para compatibilidade com DontDestroyOnLoad.
         /// </summary>
         private IEnumerator FadeBGM(AudioClip newClip, bool loop, float duration)
         {
+            // Verifica se bgmSource ainda existe antes de começar
+            if (bgmSource == null) yield break;
+            
             // Guarda o volume original para restaurar depois
             float startVolume = bgmSource.volume;
             float elapsed = 0f;
@@ -210,10 +220,16 @@ namespace InfimaGames.LowPolyShooterPack
             // Fade out: reduz volume gradualmente até 0
             while (elapsed < duration / 2f)
             {
+                // Verifica se bgmSource ainda existe durante o loop
+                if (bgmSource == null) yield break;
+                
                 elapsed += Time.deltaTime; // Time.deltaTime = tempo desde o último frame
                 bgmSource.volume = Mathf.Lerp(startVolume, 0f, elapsed / (duration / 2f));
                 yield return null; // Espera o próximo frame
             }
+            
+            // Verifica novamente antes de manipular o source
+            if (bgmSource == null) yield break;
             
             // Troca a música no meio do fade
             bgmSource.Stop();
@@ -226,10 +242,16 @@ namespace InfimaGames.LowPolyShooterPack
             // Fade in: aumenta volume gradualmente até o volume original
             while (elapsed < duration / 2f)
             {
+                // Verifica se bgmSource ainda existe durante o loop
+                if (bgmSource == null) yield break;
+                
                 elapsed += Time.deltaTime;
                 bgmSource.volume = Mathf.Lerp(0f, startVolume, elapsed / (duration / 2f));
                 yield return null;
             }
+            
+            // Verifica antes de ajustar volume final
+            if (bgmSource == null) yield break;
             
             // Garante que o volume final seja exato
             bgmSource.volume = startVolume;
@@ -254,19 +276,29 @@ namespace InfimaGames.LowPolyShooterPack
         
         /// <summary>
         /// Coroutine que faz fade out e para a música.
+        /// Inclui verificação de null para compatibilidade com DontDestroyOnLoad.
         /// </summary>
         private IEnumerator FadeOutBGM(float duration)
         {
+            // Verifica se bgmSource ainda existe antes de começar
+            if (bgmSource == null) yield break;
+            
             float startVolume = bgmSource.volume;
             float elapsed = 0f;
             
             // Reduz volume gradualmente
             while (elapsed < duration)
             {
+                // Verifica se bgmSource ainda existe durante o loop
+                if (bgmSource == null) yield break;
+                
                 elapsed += Time.deltaTime;
                 bgmSource.volume = Mathf.Lerp(startVolume, 0f, elapsed / duration);
                 yield return null;
             }
+            
+            // Verifica antes de parar e restaurar volume
+            if (bgmSource == null) yield break;
             
             bgmSource.Stop();
             bgmSource.volume = startVolume; // Restaura volume para próxima música
