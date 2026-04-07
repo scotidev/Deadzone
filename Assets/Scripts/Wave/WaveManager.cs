@@ -195,11 +195,21 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Called when the last enemy of the wave dies.
+    /// Awards currency to the player based on wave completion.
+    /// Formula: 1000 for wave 1, +500 for each additional wave (1500 for wave 2, 2000 for wave 3, etc.)
     /// </summary>
     private void OnWaveCompleted() {
         isWaveActive = false;
 
         GameManager.Instance?.SetState(GameState.Playing);
+
+        // Award currency for completing the wave
+        // Wave 1 = 1000, Wave 2 = 1500, Wave 3 = 2000, etc.
+        if (EconomyManager.Instance != null) {
+            int waveReward = 1000 + (500 * (currentWave - 1));
+            EconomyManager.Instance.AddCurrency(waveReward);
+            Debug.Log($"[WaveManager] Wave {currentWave} completed! Rewarded {waveReward} currency.");
+        }
     }
 
     /// <summary>

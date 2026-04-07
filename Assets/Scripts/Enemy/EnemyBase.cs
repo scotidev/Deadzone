@@ -68,6 +68,7 @@ public abstract class EnemyBase : MonoBehaviour {
 
     /// <summary>
     /// Handles enemy death logic.
+    /// Awards currency to the player when enemy is killed.
     /// </summary>
     protected virtual void Die() {
         if (isDead) return;
@@ -76,6 +77,12 @@ public abstract class EnemyBase : MonoBehaviour {
         if (enemyFollow != null) enemyFollow.SetMovementEnabled(false);
 
         if (enemyAttack != null) enemyAttack.enabled = false;
+
+        // Award currency to the player for killing this enemy
+        // Each enemy killed gives 100 currency
+        if (EconomyManager.Instance != null) {
+            EconomyManager.Instance.AddCurrency(100);
+        }
 
         OnAnyEnemyDied?.Invoke();
 

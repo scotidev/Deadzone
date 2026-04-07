@@ -12,10 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54ff5c628e24e7b4da18cce067ddbe98, type: 3}
   m_Name: Pistol
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemData
+  itemID: Pistol
   itemName: Pistol
-  description: Handgun pistol
+  description: Handgun pistol. Default weapon, always unlocked.
   icon: {fileID: 21300000, guid: 74db8f47f97906a44a4461b1d19d466f, type: 3}
-  damage: 15
-  fireRate: 1
-  ammoCapacity: 5
-  price: 500
+  isWeapon: 1
+  isBuildable: 0
+  isVest: 0
+  damageDisplay: 15
+  fireRateDisplay: 1
+  ammoCapacityDisplay: 5
+  unlockCost: 0
+  baseUpgradeCost: 100
+  ammoCost: 60
+  ammoAmountPerPurchase: 30
+  unitCost: 0
+  weaponData: {fileID: 11400000, guid: 41adb49d70ee55a47916910a6a68c0d5, type: 2}

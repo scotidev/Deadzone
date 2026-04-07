@@ -161,6 +161,7 @@ public class WeaponSelector : MonoBehaviour {
     /// <summary>
     /// Selects a weapon by equipping it from the inventory.
     /// Handles weapon index mapping and delegates to the Character's Equip coroutine.
+    /// Validates if weapon is unlocked before attempting to equip.
     /// </summary>
     private void SelectWeapon(int keyNumber) {
         // Validate inventory exists
@@ -171,9 +172,6 @@ public class WeaponSelector : MonoBehaviour {
         }
 
         // Convert key number to weapon index in the inventory array
-        // Keys 1-5 map to indices 0-4
-        // Key 9 maps to index 8 (Special weapon)
-        // Indices 5-7 are skipped because they would be for buildables
         int weaponIndex = GetWeaponIndex(keyNumber);
 
         // Get the current weapon's index to check if we're trying to equip the same weapon
@@ -187,8 +185,36 @@ public class WeaponSelector : MonoBehaviour {
             return;
         }
 
+        // Check if weapon is unlocked (except Pistol)
+        if (PlayerProgress.Instance != null && weaponIndex != 0) {
+            string weaponID = GetWeaponIDForIndex(weaponIndex);
+            if (!string.IsNullOrEmpty(weaponID) && !PlayerProgress.Instance.IsWeaponUnlocked(weaponID)) {
+                if (enableDebugLogs) {
+                    Debug.Log($"[WeaponSelector] {itemNames[keyNumber - 1]} is locked! Visit the shop to unlock it.");
+                }
+                // TODO: Play error sound (Phase 7)
+                return;
+            }
+        }
+
         // Try to equip the weapon
         EquipWeaponAtIndex(weaponIndex, keyNumber);
+    }
+
+    /// <summary>
+    /// Maps weapon index to weapon ID for unlock checking.
+    /// Must match Inventory.GetWeaponIDForIndex().
+    /// </summary>
+    private string GetWeaponIDForIndex(int weaponIndex) {
+        switch (weaponIndex) {
+            case 0: return "Pistol";
+            case 1: return "SMG";
+            case 2: return "Shotgun";
+            case 3: return "Medkit";
+            case 4: return "Grenades";
+            case 8: return "SpecialWeapon";
+            default: return null;
+        }
     }
 
     /// <summary>
