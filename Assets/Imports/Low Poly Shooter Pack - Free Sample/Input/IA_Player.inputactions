@@ -151,28 +151,19 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Place Buildable 1",
+                    "name": "Crouch",
                     "type": "Button",
-                    "id": "5083ee78-4f84-44eb-972b-02a2c5495e55",
+                    "id": "ddecb9b1-36bd-41c3-9f63-e6ed1d2c6995",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Place Buildable 2",
+                    "name": "Select Weapon",
                     "type": "Button",
-                    "id": "0f93201e-9aff-4733-a8f6-e42b80742523",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Place Buildable 3",
-                    "type": "Button",
-                    "id": "39416654-6e9f-4ad2-9260-2199be351113",
-                    "expectedControlType": "Button",
+                    "id": "d8770a27-f6cc-4fe9-9085-248cf57edd0d",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -544,34 +535,111 @@
                 },
                 {
                     "name": "",
-                    "id": "d9507ad5-020e-45e5-9b57-22c9c28edc52",
+                    "id": "2e83b865-e469-4734-b155-4e3edfaafa03",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Crouch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "149c69a5-52cb-4b16-8741-2079a47734f6",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select Weapon",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5a2bcd49-b5bd-45d2-be86-a8907e8d18bf",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select Weapon",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3c337181-6d4b-4d45-b767-9ea976a02f2f",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select Weapon",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7fbc3868-a03c-4dfa-b674-7c8c45f02be4",
+                    "path": "<Keyboard>/4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select Weapon",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1cb95b7c-562f-48a1-9bb8-fe0ac0b15f10",
+                    "path": "<Keyboard>/5",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select Weapon",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e89b90de-990b-4797-9143-648e05603137",
                     "path": "<Keyboard>/6",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Place Buildable 1",
+                    "action": "Select Weapon",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "e4baa4b7-291b-4b87-9d01-ccdc24cbf9c7",
+                    "id": "e90e2a7c-49ce-4f2d-9bef-9e9ed47baf92",
                     "path": "<Keyboard>/7",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Place Buildable 2",
+                    "action": "Select Weapon",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "97704d17-294e-424a-9c8e-ff97233f35d4",
+                    "id": "8a59f03d-7bda-4e96-8e42-817a582f7f0d",
                     "path": "<Keyboard>/8",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Place Buildable 3",
+                    "action": "Select Weapon",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "10e69d93-73b9-4c5d-af51-e73945da395e",
+                    "path": "<Keyboard>/9",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select Weapon",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

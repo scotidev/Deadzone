@@ -421,10 +421,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2751027687307977091, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8637064870560603879}
-    - targetCorrespondingSourceObject: {fileID: 2751027687307977091, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
-        type: 3}
-      insertIndex: -1
       addedObject: {fileID: 3155399887243227366}
     - targetCorrespondingSourceObject: {fileID: 2751027687307977091, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
@@ -469,24 +465,14 @@ MonoBehaviour:
   interactableLayer:
     serializedVersion: 2
     m_Bits: 65536
+  enemyDetectionDistance: 50
+  enemyHealthBarUI: {fileID: 0}
 --- !u!1 &2765326547094986479 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2751027687307977091, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
     type: 3}
   m_PrefabInstance: {fileID: 21942734424932204}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8637064870560603879
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2765326547094986479}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dcb356bde615b534b9af632f9f947b81, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CharacterInteraction
 --- !u!114 &3155399887243227366
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -512,6 +498,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   maxPlacementDistance: 8
+  playerCharacter: {fileID: 0}
 --- !u!114 &2600745054873756570
 MonoBehaviour:
   m_ObjectHideFlags: 0

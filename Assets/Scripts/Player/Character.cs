@@ -9,7 +9,6 @@ namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
     /// Main Character Component. This component handles the most important functions of the character, and interfaces
     /// with basically every part of the asset, it is the hub where it all converges.
-    /// </summary>
     [RequireComponent(typeof(CharacterKinematics))]
     public sealed class Character : CharacterBehaviour {
         #region FIELDS SERIALIZED
@@ -19,6 +18,10 @@ namespace InfimaGames.LowPolyShooterPack {
         [Tooltip("Inventory.")]
         [SerializeField]
         private InventoryBehaviour inventory;
+
+        [Tooltip("Starting weapon index (0 = Pistol, 1 = SMG, etc).")]
+        [SerializeField]
+        private int startingWeaponIndex = 0;
 
         [Header("Cameras")]
 
@@ -143,6 +146,11 @@ namespace InfimaGames.LowPolyShooterPack {
         private bool holdingButtonJump;
 
         /// <summary>
+        /// True if the player is holding the crouch button.
+        /// </summary>
+        private bool holdingButtonCrouch;
+
+        /// <summary>
         /// If true, the tutorial text should be visible on screen.
         /// </summary>
         private bool tutorialTextVisible;
@@ -188,11 +196,18 @@ namespace InfimaGames.LowPolyShooterPack {
             //Cache the CharacterKinematics component.
             characterKinematics = GetComponent<CharacterKinematics>();
 
-            //Initialize Inventory.
-            inventory.Init();
+            //Initialize Inventory with the starting weapon.
+            Debug.Log($"[Character.Awake] Initializing inventory with startingWeaponIndex = {startingWeaponIndex}");
+            inventory.Init(startingWeaponIndex);
 
             //Refresh!
             RefreshWeaponSetup();
+            
+            // Log which weapon was actually equipped after init
+            var equippedWeapon = inventory.GetEquipped();
+            if (equippedWeapon != null) {
+                Debug.Log($"[Character.Awake] After Init(), equipped weapon is: {equippedWeapon.name} at index {inventory.GetEquippedIndex()}");
+            }
         }
         protected override void Start() {
             //Cache a reference to the holster layer's index.
@@ -201,6 +216,11 @@ namespace InfimaGames.LowPolyShooterPack {
             layerActions = characterAnimator.GetLayerIndex("Layer Actions");
             //Cache a reference to the overlay layer's index.
             layerOverlay = characterAnimator.GetLayerIndex("Layer Overlay");
+            
+            // Debug: Check if weapon changed after Awake
+            var currentWeapon = inventory.GetEquipped();
+            int currentIndex = inventory.GetEquippedIndex();
+            Debug.Log($"[Character.Start] Current weapon: {currentWeapon?.name} at index {currentIndex}");
         }
 
         protected override void Update() {
@@ -266,6 +286,7 @@ namespace InfimaGames.LowPolyShooterPack {
             holdingButtonAim = false;
             holdingButtonRun = false;
             holdingButtonJump = false;
+            holdingButtonCrouch = false;
         }
 
         public override Camera GetCameraWorld() => cameraWorld;
@@ -276,6 +297,8 @@ namespace InfimaGames.LowPolyShooterPack {
         public override bool IsRunning() => running;
 
         public override bool IsJumping() => holdingButtonJump;
+
+        public override bool IsCrouching() => holdingButtonCrouch;
 
         public override bool IsAiming() => aiming;
         public override bool IsCursorLocked() => cursorLocked;
@@ -739,6 +762,29 @@ namespace InfimaGames.LowPolyShooterPack {
                     break;
             }
         }
+
+        /// <summary>
+        /// Crouch. Callback do Input System quando o jogador segura o botão de agachar (CTRL).
+        /// </summary>
+        public void OnTryCrouch(InputAction.CallbackContext context) {
+            // Não permite agachar se o cursor não estiver travado ou estiver em modo interface
+            if (!cursorLocked || interfaceMode)
+                return;
+
+            // Alterna o estado do botão de agachamento baseado na fase do input
+            switch (context.phase) {
+                case InputActionPhase.Started:
+                    // Quando começar a segurar CTRL, ativa o agachamento
+                    holdingButtonCrouch = true;
+                    break;
+
+                case InputActionPhase.Canceled:
+                    // Quando soltar CTRL, desativa o agachamento
+                    holdingButtonCrouch = false;
+                    break;
+            }
+        }
+
         /// <summary>
         /// Next Inventory Weapon.
         /// </summary>
@@ -769,6 +815,51 @@ namespace InfimaGames.LowPolyShooterPack {
                         StartCoroutine(nameof(Equip), indexNext);
                     break;
             }
+        }
+
+        /// <summary>
+        /// Public method to request a weapon equip by index.
+        /// This is called by external systems like WeaponSelector.
+        /// Validates that the weapon change is allowed before starting the equip coroutine.
+        /// </summary>
+        /// <param name="weaponIndex">Index of the weapon to equip in the inventory array</param>
+        /// <returns>True if the equip was started, false if blocked</returns>
+        public bool TryEquipWeapon(int weaponIndex) {
+            Debug.Log($"[Character.TryEquipWeapon] Requested weaponIndex = {weaponIndex}");
+            
+            // Check if inventory exists
+            if (inventory == null) {
+                Debug.LogWarning("[Character.TryEquipWeapon] Inventory is null!");
+                return false;
+            }
+
+            // ✅ VALIDATE INDEX BEFORE DOING ANYTHING
+            int maxIndex = inventory.GetLastIndex();
+            if (weaponIndex < 0 || weaponIndex > maxIndex) {
+                Debug.LogWarning($"[Character.TryEquipWeapon] Index {weaponIndex} is out of bounds (valid range: 0-{maxIndex}). Weapon does not exist.");
+                return false;
+            }
+
+            // Get the current weapon's index
+            int currentIndex = inventory.GetEquippedIndex();
+            Debug.Log($"[Character.TryEquipWeapon] Current equipped index = {currentIndex}");
+
+            // Check if we're trying to equip the same weapon (no need to switch)
+            if (currentIndex == weaponIndex) {
+                Debug.Log($"[Character.TryEquipWeapon] Weapon at index {weaponIndex} is already equipped.");
+                return false;
+            }
+
+            // Check if we're allowed to change weapons (not reloading, firing, etc.)
+            if (!CanChangeWeapon()) {
+                Debug.Log("[Character.TryEquipWeapon] Cannot change weapon right now (reloading, firing, etc.)");
+                return false;
+            }
+
+            // Start the equip coroutine
+            Debug.Log($"[Character.TryEquipWeapon] Starting Equip coroutine for index {weaponIndex}");
+            StartCoroutine(nameof(Equip), weaponIndex);
+            return true;
         }
 
         public void OnLockCursor(InputAction.CallbackContext context) {

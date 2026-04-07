@@ -31,31 +31,48 @@ namespace InfimaGames.LowPolyShooterPack
             //Cache all weapons. Beware that weapons need to be parented to the object this component is on!
             weapons = GetComponentsInChildren<WeaponBehaviour>(true);
             
+            Debug.Log($"[Inventory.Init] Called with equippedAtStart = {equippedAtStart}");
+            Debug.Log($"[Inventory.Init] Found {weapons.Length} weapons:");
+            for (int i = 0; i < weapons.Length; i++) {
+                Debug.Log($"  [{i}] {weapons[i].name}");
+            }
+            
             //Disable all weapons. This makes it easier for us to only activate the one we need.
             foreach (WeaponBehaviour weapon in weapons)
                 weapon.gameObject.SetActive(false);
 
             //Equip.
+            Debug.Log($"[Inventory.Init] Now calling Equip({equippedAtStart})");
             Equip(equippedAtStart);
         }
 
         public override WeaponBehaviour Equip(int index)
         {
+            Debug.Log($"[Inventory.Equip] Called with index = {index}, current equippedIndex = {equippedIndex}");
+            
             //If we have no weapons, we can't really equip anything.
-            if (weapons == null)
+            if (weapons == null) {
+                Debug.LogWarning("[Inventory.Equip] weapons array is null!");
                 return equipped;
+            }
             
             //The index needs to be within the array's bounds.
-            if (index > weapons.Length - 1)
+            if (index > weapons.Length - 1) {
+                Debug.LogWarning($"[Inventory.Equip] Index {index} is out of bounds (max = {weapons.Length - 1})");
                 return equipped;
+            }
 
             //No point in allowing equipping the already-equipped weapon.
-            if (equippedIndex == index)
+            if (equippedIndex == index) {
+                Debug.Log($"[Inventory.Equip] Weapon at index {index} is already equipped. Skipping.");
                 return equipped;
+            }
             
             //Disable the currently equipped weapon, if we have one.
-            if (equipped != null)
+            if (equipped != null) {
+                Debug.Log($"[Inventory.Equip] Disabling current weapon: {equipped.name}");
                 equipped.gameObject.SetActive(false);
+            }
 
             //Update index.
             equippedIndex = index;
@@ -63,6 +80,8 @@ namespace InfimaGames.LowPolyShooterPack
             equipped = weapons[equippedIndex];
             //Activate the newly-equipped weapon.
             equipped.gameObject.SetActive(true);
+            
+            Debug.Log($"[Inventory.Equip] Successfully equipped: {equipped.name} at index {equippedIndex}");
 
             //Return.
             return equipped;

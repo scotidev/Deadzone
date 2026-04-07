@@ -34,6 +34,42 @@ namespace InfimaGames.LowPolyShooterPack
             ServiceLocator.Current.Register<IAudioManagerService>(soundManagerService);
 
             #endregion
+
+            #region Game Manager
+
+            // Cria um objeto para o GameManager e adiciona o componente
+            // Isso garante que o GameManager esteja disponível em qualquer scene
+            var gameManagerObject = new GameObject("Game Manager");
+            var gameManagerComponent = gameManagerObject.AddComponent<GameManager>();
+            
+            // Marca como DontDestroyOnLoad para persistir entre scenes
+            Object.DontDestroyOnLoad(gameManagerObject);
+
+            #endregion
+
+            #region Slow Motion Manager
+
+            // Cria o SlowMotionManager como facade para o sistema de slow motion
+            // Permite que qualquer script acesse a funcionalidade de slow motion
+            var slowMotionObject = new GameObject("Slow Motion Manager");
+            var slowMotionComponent = slowMotionObject.AddComponent<SlowMotionManager>();
+            
+            // Marca como DontDestroyOnLoad para persistir entre scenes
+            Object.DontDestroyOnLoad(slowMotionObject);
+
+            #endregion
+
+            #region Scene Loader
+
+            // Cria o SceneLoader para gerenciar transições entre scenes
+            // Permite carregar Menu, Game, etc de qualquer lugar
+            var sceneLoaderObject = new GameObject("Scene Loader");
+            var sceneLoaderComponent = sceneLoaderObject.AddComponent<SceneLoader>();
+            
+            // Marca como DontDestroyOnLoad para persistir entre scenes
+            Object.DontDestroyOnLoad(sceneLoaderObject);
+
+            #endregion
         }
     }
 }
