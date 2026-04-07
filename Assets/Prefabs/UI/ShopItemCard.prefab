@@ -98,12 +98,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemCard
   itemIcon: {fileID: 1411858391140275840}
   itemNameText: {fileID: 5929533789082197697}
+  itemLevelText: {fileID: 0}
+  itemDescriptionText: {fileID: 2614172619317157595}
   itemDamageText: {fileID: 3780970868973988169}
   itemFireRateText: {fileID: 3037084919549446738}
   itemAmmoCapacityText: {fileID: 6905846999834814778}
-  itemPriceText: {fileID: 7974646808481824018}
-  itemDescriptionText: {fileID: 2614172619317157595}
-  purchaseButton: {fileID: 3720273849754210112}
+  unlockUpgradeButton: {fileID: 3720273849754210112}
+  unlockUpgradeButtonText: {fileID: 6634880154114577648}
+  unlockUpgradePriceText: {fileID: 7974646808481824018}
+  buyAmmoButton: {fileID: 0}
+  buyAmmoButtonText: {fileID: 0}
+  buyAmmoPriceText: {fileID: 0}
+  cardBackground: {fileID: 0}
+  lockedColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  unlockedColor: {r: 1, g: 1, b: 1, a: 1}
+  maxLevelColor: {r: 1, g: 0.84, b: 0, a: 1}
+  feedbackMessageText: {fileID: 0}
+  errorColor: {r: 1, g: 0, b: 0, a: 1}
+  successColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!1 &1391108883041144932
 GameObject:
   m_ObjectHideFlags: 0
