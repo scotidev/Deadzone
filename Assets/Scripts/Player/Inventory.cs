@@ -67,6 +67,15 @@ namespace InfimaGames.LowPolyShooterPack
                 Debug.Log($"[Inventory.Equip] Weapon at index {index} is already equipped. Skipping.");
                 return equipped;
             }
+
+            // Check if weapon is unlocked (except Pistol at index 0 which is always unlocked)
+            if (index != 0 && PlayerProgress.Instance != null) {
+                string weaponID = GetWeaponIDForIndex(index);
+                if (!string.IsNullOrEmpty(weaponID) && !PlayerProgress.Instance.IsWeaponUnlocked(weaponID)) {
+                    Debug.LogWarning($"[Inventory.Equip] Weapon at index {index} ({weaponID}) is locked!");
+                    return equipped;
+                }
+            }
             
             //Disable the currently equipped weapon, if we have one.
             if (equipped != null) {
@@ -115,6 +124,23 @@ namespace InfimaGames.LowPolyShooterPack
 
         public override WeaponBehaviour GetEquipped() => equipped;
         public override int GetEquippedIndex() => equippedIndex;
+
+        /// <summary>
+        /// Maps weapon array index to weapon ID for unlock checking.
+        /// This mapping should match the shop item order.
+        /// </summary>
+        private string GetWeaponIDForIndex(int index) {
+            switch (index) {
+                case 0: return "Pistol";
+                case 1: return "SMG";
+                case 2: return "Shotgun";
+                case 3: return "Medkit";
+                case 4: return "Grenades";
+                // Indices 5-7 are buildables (handled by BuildingController)
+                case 8: return "SpecialWeapon";
+                default: return null;
+            }
+        }
 
         #endregion
     }

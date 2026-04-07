@@ -10,22 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 54ff5c628e24e7b4da18cce067ddbe98, type: 3}
-  m_Name: Shotgun
+  m_Name: Vest
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemData
-  itemID: Shotgun
-  itemName: Shotgun
-  description: High damage close-range weapon
-  icon: {fileID: 21300000, guid: 84b0ab639d0a07b41a8a562b8096bff7, type: 3}
-  isWeapon: 1
+  itemID: Vest
+  itemName: Vest
+  description: Protective armor that can be repaired
+  icon: {fileID: 0}
+  isWeapon: 0
   isBuildable: 0
-  isVest: 0
-  damageDisplay: 30
-  fireRateDisplay: 1
-  ammoCapacityDisplay: 2
-  unlockCost: 2500
-  baseUpgradeCost: 200
-  ammoCost: 80
-  ammoAmountPerPurchase: 8
-  unitCost: 0
+  isVest: 1
+  damageDisplay: 0
+  fireRateDisplay: 0
+  ammoCapacityDisplay: 0
+  unlockCost: 1500
+  baseUpgradeCost: 150
+  ammoCost: 0
+  ammoAmountPerPurchase: 0
+  unitCost: 250
   weaponData: {fileID: 0}
-

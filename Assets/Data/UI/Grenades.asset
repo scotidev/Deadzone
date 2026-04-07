@@ -10,22 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 54ff5c628e24e7b4da18cce067ddbe98, type: 3}
-  m_Name: Shotgun
+  m_Name: Grenades
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemData
-  itemID: Shotgun
-  itemName: Shotgun
-  description: High damage close-range weapon
-  icon: {fileID: 21300000, guid: 84b0ab639d0a07b41a8a562b8096bff7, type: 3}
+  itemID: Grenades
+  itemName: Grenades
+  description: Throwable explosives
+  icon: {fileID: 0}
   isWeapon: 1
   isBuildable: 0
   isVest: 0
-  damageDisplay: 30
+  damageDisplay: 100
   fireRateDisplay: 1
-  ammoCapacityDisplay: 2
-  unlockCost: 2500
+  ammoCapacityDisplay: 1
+  unlockCost: 2000
   baseUpgradeCost: 200
-  ammoCost: 80
-  ammoAmountPerPurchase: 8
-  unitCost: 0
+  ammoCost: 100
+  ammoAmountPerPurchase: 1
+  unitCost: 100
   weaponData: {fileID: 0}
-

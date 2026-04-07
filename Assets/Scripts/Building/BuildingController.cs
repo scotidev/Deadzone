@@ -114,11 +114,24 @@ public class BuildingController : MonoBehaviour {
 
     /// <summary>
     /// Receives the selected buildable item and sets up the ghost object for placement. If the same item is selected again, it cancels the placement mode.
+    /// Checks if player has any of this buildable in inventory before allowing placement.
     /// </summary>
     /// <param name="item"></param>
     private void SelectItem(BuildableSO item) {
         ResolvePlayerCharacter();
         if (item == null) return;
+
+        // Check if player has this buildable in inventory
+        if (PlayerProgress.Instance != null) {
+            string buildableID = GetBuildableID(item);
+            if (!string.IsNullOrEmpty(buildableID)) {
+                int quantity = PlayerProgress.Instance.GetBuildableQuantity(buildableID);
+                if (quantity <= 0) {
+                    Debug.LogWarning($"[BuildingController] No {buildableID} in inventory! Purchase from shop first.");
+                    return;
+                }
+            }
+        }
 
         if (selectedItem == item) {
             CancelPlacement();
@@ -205,7 +218,7 @@ public class BuildingController : MonoBehaviour {
 
     /// <summary>
     /// Attempts to place the currently selected object in the scene at the position and rotation of the active ghost
-    /// object, if placement conditions are met.
+    /// object, if placement conditions are met. Consumes one buildable from inventory.
     /// </summary>
     /// <remarks>This method checks whether the ghost object is active, the target location is valid, and a
     /// real prefab is assigned before instantiating the object. After successful placement, the method immediately
@@ -218,11 +231,33 @@ public class BuildingController : MonoBehaviour {
 
         if (selectedItem.realPrefab == null) return;
 
+        // Check if player has this buildable in inventory and consume one
+        if (PlayerProgress.Instance != null) {
+            string buildableID = GetBuildableID(selectedItem);
+            if (!string.IsNullOrEmpty(buildableID)) {
+                if (!PlayerProgress.Instance.ConsumeBuildable(buildableID)) {
+                    Debug.LogWarning($"[BuildingController] Failed to consume {buildableID} - inventory empty!");
+                    CancelPlacement();
+                    return;
+                }
+            }
+        }
+
         Instantiate(selectedItem.realPrefab,
             currentGhost.transform.position,
             Quaternion.Euler(selectedItem.placementRotationEuler));
 
         CancelPlacement();
+    }
+
+    /// <summary>
+    /// Maps BuildableSO to buildable ID for inventory tracking.
+    /// </summary>
+    private string GetBuildableID(BuildableSO buildable) {
+        if (buildable == itemSlot6) return "Barricades";
+        if (buildable == itemSlot7) return "ExplosiveBarrels";
+        if (buildable == itemSlot8) return "Traps";
+        return null;
     }
 
     /// <summary>

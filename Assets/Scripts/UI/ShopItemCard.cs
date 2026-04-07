@@ -3,114 +3,287 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Represents an individual shop item card with icon, name, price, and description.
+/// Represents an individual shop item card with dynamic unlock/upgrade/ammo buttons.
+/// Updates based on PlayerProgress to show appropriate options and prices.
 /// </summary>
 public class ShopItemCard : MonoBehaviour {
     [Header("UI Elements")]
     [SerializeField] private Image itemIcon;
     [SerializeField] private TextMeshProUGUI itemNameText;
+    [SerializeField] private TextMeshProUGUI itemLevelText;
+    [SerializeField] private TextMeshProUGUI itemDescriptionText;
     [SerializeField] private TextMeshProUGUI itemDamageText;
     [SerializeField] private TextMeshProUGUI itemFireRateText;
     [SerializeField] private TextMeshProUGUI itemAmmoCapacityText;
-    [SerializeField] private TextMeshProUGUI itemPriceText;
-    [SerializeField] private TextMeshProUGUI itemDescriptionText;
-    [SerializeField] private Button purchaseButton;
+
+    [Header("Buttons")]
+    [SerializeField] private Button unlockUpgradeButton;
+    [SerializeField] private TextMeshProUGUI unlockUpgradeButtonText;
+    [SerializeField] private TextMeshProUGUI unlockUpgradePriceText;
+    [SerializeField] private Button buyAmmoButton;
+    [SerializeField] private TextMeshProUGUI buyAmmoButtonText;
+    [SerializeField] private TextMeshProUGUI buyAmmoPriceText;
+
+    [Header("Visual States")]
+    [SerializeField] private Image cardBackground;
+    [SerializeField] private Color lockedColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+    [SerializeField] private Color unlockedColor = Color.white;
+    [SerializeField] private Color maxLevelColor = new Color(1f, 0.84f, 0f, 1f);
+
+    [Header("Feedback Messages")]
+    [SerializeField] private TextMeshProUGUI feedbackMessageText;
+    [SerializeField] private Color errorColor = Color.red;
+    [SerializeField] private Color successColor = Color.green;
 
     private ShopItemData currentItemData;
+    private Coroutine messageCoroutine;
 
     private void Awake() {
-        if (purchaseButton != null)
-            purchaseButton.onClick.AddListener(OnPurchaseClick);
+        if (unlockUpgradeButton != null)
+            unlockUpgradeButton.onClick.AddListener(OnUnlockUpgradeClick);
+        if (buyAmmoButton != null)
+            buyAmmoButton.onClick.AddListener(OnBuyAmmoClick);
     }
 
-    /// <summary>
-    /// Sets up the shop item card with all necessary data.
-    /// </summary>
-    /// <param name="itemData">Item data asset to render on this card.</param>
     public void Setup(ShopItemData itemData) {
         currentItemData = itemData;
+        if (currentItemData == null) return;
 
-        if (currentItemData == null) {
-            Debug.LogWarning($"{nameof(ShopItemCard)} received null item data.", this);
-            return;
+        if (itemIcon != null) itemIcon.sprite = currentItemData.Icon;
+        if (itemNameText != null) itemNameText.text = currentItemData.ItemName;
+        if (itemDescriptionText != null) itemDescriptionText.text = currentItemData.Description;
+        
+        RefreshCardState();
+    }
+
+    /// MÉTODO PRINCIPAL: Atualiza o estado visual do card baseado no progresso do jogador
+    /// Este método é chamado toda vez que algo muda (compra, upgrade, etc)
+    /// CONCEITO: State-based UI - a interface reflete o estado do jogo
+    private void RefreshCardState() {
+        // EARLY RETURN: Se dados essenciais estão faltando, sai da função imediatamente
+        // Isso previne NullReferenceException (erro muito comum em Unity)
+        if (currentItemData == null || PlayerProgress.Instance == null) return;
+
+        // CACHE DE VALORES: Armazenamos valores usados múltiplas vezes em variáveis locais
+        // Isso evita chamar os mesmos métodos repetidamente (mais eficiente)
+        string itemID = currentItemData.ItemID;
+        bool isUnlocked = PlayerProgress.Instance.IsWeaponUnlocked(itemID);
+        int currentLevel = PlayerProgress.Instance.GetWeaponLevel(itemID);
+        bool isMaxLevel = currentLevel >= PlayerProgress.MAX_UPGRADE_LEVEL;
+
+        // ATUALIZAÇÃO DE TEXTO DO NÍVEL
+        // OPERADOR TERNÁRIO ANINHADO: condição ? verdadeiro : falso
+        // Lê-se: "Se não desbloqueado, mostra LOCKED; senão, se max level, mostra MAX LEVEL; senão, mostra Level X/10"
+        if (itemLevelText != null) {
+            itemLevelText.text = !isUnlocked ? "LOCKED" : isMaxLevel ? "MAX LEVEL" : $"Level {currentLevel}/{PlayerProgress.MAX_UPGRADE_LEVEL}";
         }
 
-        SetItemIcon(currentItemData.Icon);
-        SetItemName(currentItemData.ItemName);
-        SetItemDamage(currentItemData.Damage);
-        SetItemFireRate(currentItemData.FireRate);
-        SetItemAmmoCapacity(currentItemData.AmmoCapacity);
-        SetItemPrice(currentItemData.Price);
-        SetItemDescription(currentItemData.Description);
+        // FEEDBACK VISUAL: Cor de fundo muda baseado no estado
+        // CINZA = locked, BRANCO = unlocked, DOURADO = max level
+        if (cardBackground != null) {
+            cardBackground.color = !isUnlocked ? lockedColor : isMaxLevel ? maxLevelColor : unlockedColor;
+        }
+
+        // BOTÃO UNLOCK/UPGRADE - Lógica de State Machine
+        // O botão muda seu comportamento baseado no estado atual
+        if (unlockUpgradeButton != null) {
+            if (!isUnlocked) {
+                // ESTADO 1: LOCKED - Botão mostra "UNLOCK" com preço
+                int cost = currentItemData.UnlockCost;
+                if (unlockUpgradeButtonText != null) unlockUpgradeButtonText.text = "UNLOCK";
+                if (unlockUpgradePriceText != null) unlockUpgradePriceText.text = $"${cost:N0}"; // :N0 = separador de milhares
+                unlockUpgradeButton.interactable = EconomyManager.Instance != null && EconomyManager.Instance.CanAfford(cost);
+            } else if (isMaxLevel) {
+                // ESTADO 2: MAX LEVEL - Botão desabilitado
+                if (unlockUpgradeButtonText != null) unlockUpgradeButtonText.text = "MAX LEVEL";
+                if (unlockUpgradePriceText != null) unlockUpgradePriceText.text = "";
+                unlockUpgradeButton.interactable = false;
+            } else {
+                // ESTADO 3: UNLOCKED (1-9) - Botão mostra "UPGRADE" com preço escalável
+                int cost = CalculateUpgradeCost(currentLevel);
+                if (unlockUpgradeButtonText != null) unlockUpgradeButtonText.text = $"UPGRADE (Lv.{currentLevel + 1})";
+                if (unlockUpgradePriceText != null) unlockUpgradePriceText.text = $"${cost:N0}";
+                unlockUpgradeButton.interactable = EconomyManager.Instance != null && EconomyManager.Instance.CanAfford(cost);
+            }
+        }
+
+        // BOTÃO AMMO/REPAIR/BUY - Comportamento diferente por tipo de item
+        if (buyAmmoButton != null) {
+            if (!isUnlocked) {
+                // Se locked, esconde botão de ammo (não faz sentido comprar ammo de arma locked)
+                buyAmmoButton.gameObject.SetActive(false);
+            } else {
+                buyAmmoButton.gameObject.SetActive(true);
+                
+                // TIPO 1: VEST (Colete) - Botão de REPAIR
+                if (currentItemData.IsVest) {
+                    int cost = currentItemData.UnitCost;
+                    if (buyAmmoButtonText != null) buyAmmoButtonText.text = "REPAIR";
+                    if (buyAmmoPriceText != null) buyAmmoPriceText.text = $"${cost:N0}";
+                    buyAmmoButton.interactable = EconomyManager.Instance != null && EconomyManager.Instance.CanAfford(cost);
+                } 
+                // TIPO 2: BUILDABLE (Barricadas/Barris/Armadilhas) - Mostra quantidade/limite
+                else if (currentItemData.IsBuildable) {
+                    int qty = PlayerProgress.Instance.GetBuildableQuantity(itemID);
+                    int cost = currentItemData.UnitCost;
+                    if (buyAmmoButtonText != null) buyAmmoButtonText.text = $"BUY ({qty}/{PlayerProgress.MAX_BUILDABLE_QUANTITY})";
+                    if (buyAmmoPriceText != null) buyAmmoPriceText.text = $"${cost:N0}";
+                    // Desabilita se inventário cheio (qty >= 5) ou sem dinheiro
+                    buyAmmoButton.interactable = EconomyManager.Instance != null && EconomyManager.Instance.CanAfford(cost) && qty < PlayerProgress.MAX_BUILDABLE_QUANTITY;
+                } 
+                // TIPO 3: WEAPON (Armas) - Comprar munição com limite de reserva
+                else if (currentItemData.IsWeapon) {
+                    int reserve = PlayerProgress.Instance.GetReserveAmmo(itemID);
+                    int maxReserve = currentItemData.WeaponData != null ? currentItemData.WeaponData.maxReserveAmmo : 999;
+                    int cost = currentItemData.AmmoCost;
+                    if (buyAmmoButtonText != null) buyAmmoButtonText.text = $"AMMO ({reserve}/{maxReserve})";
+                    if (buyAmmoPriceText != null) buyAmmoPriceText.text = $"${cost:N0}";
+                    // Desabilita se munição cheia ou sem dinheiro
+                    buyAmmoButton.interactable = EconomyManager.Instance != null && EconomyManager.Instance.CanAfford(cost) && reserve < maxReserve;
+                }
+            }
+        }
+
+        // STATS DINÂMICOS: Se for arma com WeaponDataSO, mostra stats escalados pelo nível
+        if (currentItemData.IsWeapon && currentItemData.WeaponData != null) {
+            WeaponDataSO data = currentItemData.WeaponData;
+            // :F1 = 1 casa decimal, :F0 = sem decimais
+            if (itemDamageText != null) itemDamageText.text = $"Damage: {data.GetDamageAtLevel(currentLevel):F1}";
+            if (itemFireRateText != null) itemFireRateText.text = $"Fire Rate: {data.GetFireRateAtLevel(currentLevel):F0} RPM";
+            if (itemAmmoCapacityText != null) itemAmmoCapacityText.text = $"Magazine: {data.GetMagazineCapacityAtLevel(currentLevel)}";
+        }
+    }
+
+    private void OnUnlockUpgradeClick() {
+        if (currentItemData == null || PlayerProgress.Instance == null || EconomyManager.Instance == null) return;
+
+        bool isUnlocked = PlayerProgress.Instance.IsWeaponUnlocked(currentItemData.ItemID);
+
+        if (!isUnlocked) {
+            // Handle unlock
+            if (EconomyManager.Instance.TrySpendCurrency(currentItemData.UnlockCost)) {
+                PlayerProgress.Instance.UnlockWeapon(currentItemData.ItemID);
+                ShowFeedback($"{currentItemData.ItemName} UNLOCKED!", successColor);
+                Debug.Log($"[ShopItemCard] Unlocked {currentItemData.ItemName}!");
+                RefreshCardState();
+            } else {
+                int missingAmount = currentItemData.UnlockCost - EconomyManager.Instance.GetCurrentCurrency();
+                ShowFeedback($"Insufficient funds! Need {missingAmount} more coins.", errorColor);
+            }
+        } else {
+            // Handle upgrade
+            int currentLevel = PlayerProgress.Instance.GetWeaponLevel(currentItemData.ItemID);
+            
+            if (currentLevel >= PlayerProgress.MAX_UPGRADE_LEVEL) {
+                ShowFeedback("Already at MAX LEVEL! Exclusive power active.", errorColor);
+                return;
+            }
+
+            int upgradeCost = CalculateUpgradeCost(currentLevel);
+            if (UpgradeManager.Instance != null && UpgradeManager.Instance.TryUpgradeWeapon(currentItemData.ItemID, currentItemData.BaseUpgradeCost)) {
+                int newLevel = PlayerProgress.Instance.GetWeaponLevel(currentItemData.ItemID);
+                if (newLevel == PlayerProgress.MAX_UPGRADE_LEVEL) {
+                    ShowFeedback("MAX LEVEL REACHED! Exclusive Power Activated!", successColor);
+                } else {
+                    ShowFeedback($"Upgraded to Level {newLevel}!", successColor);
+                }
+                Debug.Log($"[ShopItemCard] Upgraded {currentItemData.ItemName}!");
+                RefreshCardState();
+            } else {
+                int missingAmount = upgradeCost - EconomyManager.Instance.GetCurrentCurrency();
+                ShowFeedback($"Insufficient funds! Need {missingAmount} more coins.", errorColor);
+            }
+        }
+    }
+
+    private void OnBuyAmmoClick() {
+        if (currentItemData == null || PlayerProgress.Instance == null || EconomyManager.Instance == null) return;
+
+        if (currentItemData.IsVest) {
+            PlayerArmor armor = FindObjectOfType<PlayerArmor>();
+            if (armor == null) {
+                ShowFeedback("Player armor system not found!", errorColor);
+                return;
+            }
+
+            if (armor.GetCurrentArmor() >= armor.GetMaxArmor()) {
+                ShowFeedback("Vest already at full durability!", errorColor);
+                return;
+            }
+
+            if (EconomyManager.Instance.TrySpendCurrency(currentItemData.UnitCost)) {
+                armor.RepairArmor(armor.GetMaxArmor());
+                ShowFeedback("Vest repaired!", successColor);
+                RefreshCardState();
+            } else {
+                int missingAmount = currentItemData.UnitCost - EconomyManager.Instance.GetCurrentCurrency();
+                ShowFeedback($"Insufficient funds! Need {missingAmount} more coins.", errorColor);
+            }
+        } else if (currentItemData.IsBuildable) {
+            int currentQuantity = PlayerProgress.Instance.GetBuildableQuantity(currentItemData.ItemID);
+            if (currentQuantity >= PlayerProgress.MAX_BUILDABLE_QUANTITY) {
+                ShowFeedback($"Inventory full! Max {PlayerProgress.MAX_BUILDABLE_QUANTITY} {currentItemData.ItemName} allowed.", errorColor);
+                return;
+            }
+
+            if (EconomyManager.Instance.TrySpendCurrency(currentItemData.UnitCost)) {
+                PlayerProgress.Instance.AddBuildable(currentItemData.ItemID, 1);
+                ShowFeedback($"{currentItemData.ItemName} purchased!", successColor);
+                RefreshCardState();
+            } else {
+                int missingAmount = currentItemData.UnitCost - EconomyManager.Instance.GetCurrentCurrency();
+                ShowFeedback($"Insufficient funds! Need {missingAmount} more coins.", errorColor);
+            }
+        } else if (currentItemData.IsWeapon) {
+            int maxReserve = currentItemData.WeaponData != null ? currentItemData.WeaponData.maxReserveAmmo : 999;
+            int currentAmmo = PlayerProgress.Instance.GetReserveAmmo(currentItemData.ItemID);
+
+            if (currentAmmo >= maxReserve) {
+                ShowFeedback($"Ammo reserve full! ({currentAmmo}/{maxReserve})", errorColor);
+                return;
+            }
+
+            if (EconomyManager.Instance.TrySpendCurrency(currentItemData.AmmoCost)) {
+                PlayerProgress.Instance.AddReserveAmmo(currentItemData.ItemID, currentItemData.AmmoAmountPerPurchase, maxReserve);
+                ShowFeedback($"Ammo purchased!", successColor);
+                RefreshCardState();
+            } else {
+                int missingAmount = currentItemData.AmmoCost - EconomyManager.Instance.GetCurrentCurrency();
+                ShowFeedback($"Insufficient funds! Need {missingAmount} more coins.", errorColor);
+            }
+        }
     }
 
     /// <summary>
-    /// Sets the item icon sprite.
+    /// Shows a temporary feedback message on the card.
     /// </summary>
-    /// <param name="icon">The sprite to display.</param>
-    private void SetItemIcon(Sprite icon) {
-        if (itemIcon != null)
-            itemIcon.sprite = icon;
+    private void ShowFeedback(string message, Color color) {
+        if (feedbackMessageText == null) return;
+
+        // Cancel previous message if still showing
+        if (messageCoroutine != null) {
+            StopCoroutine(messageCoroutine);
+        }
+
+        feedbackMessageText.text = message;
+        feedbackMessageText.color = color;
+        feedbackMessageText.gameObject.SetActive(true);
+
+        messageCoroutine = StartCoroutine(HideMessageAfterDelay(2.0f));
     }
 
     /// <summary>
-    /// Sets the item name text.
+    /// Hides the feedback message after a delay.
     /// </summary>
-    /// <param name="name">The item name.</param>
-    private void SetItemName(string name) {
-        if (itemNameText != null)
-            itemNameText.text = name;
+    private System.Collections.IEnumerator HideMessageAfterDelay(float delay) {
+        yield return new WaitForSeconds(delay);
+        if (feedbackMessageText != null) {
+            feedbackMessageText.gameObject.SetActive(false);
+        }
+        messageCoroutine = null;
     }
 
-    /// <summary>
-    /// Sets the item damage text.
-    /// </summary>
-    /// <param name="damage">The item damage value.</param>
-    private void SetItemDamage(float damage) {
-        if (itemDamageText != null)
-            itemDamageText.text = $"Damage: {damage:0.##}";
-    }
-
-    /// <summary>
-    /// Sets the item fire-rate text.
-    /// </summary>
-    /// <param name="fireRate">The item fire-rate value.</param>
-    private void SetItemFireRate(float fireRate) {
-        if (itemFireRateText != null)
-            itemFireRateText.text = $"FireRate: {fireRate:0.##}";
-    }
-
-    /// <summary>
-    /// Sets the item ammo capacity text.
-    /// </summary>
-    /// <param name="ammoCapacity">The item ammo capacity value.</param>
-    private void SetItemAmmoCapacity(int ammoCapacity) {
-        if (itemAmmoCapacityText != null)
-            itemAmmoCapacityText.text = $"Ammo: {ammoCapacity}";
-    }
-
-    /// <summary>
-    /// Sets the item price text.
-    /// </summary>
-    /// <param name="price">The item price.</param>
-    private void SetItemPrice(int price) {
-        if (itemPriceText != null)
-            itemPriceText.text = $"${price}";
-    }
-
-    /// <summary>
-    /// Sets the item description text.
-    /// </summary>
-    /// <param name="description">The item description.</param>
-    private void SetItemDescription(string description) {
-        if (itemDescriptionText != null)
-            itemDescriptionText.text = description;
-    }
-
-    /// <summary>
-    /// Handles the purchase button click event.
-    /// </summary>
-    private void OnPurchaseClick() {
-        // TODO: Implement purchase logic
+    private int CalculateUpgradeCost(int currentLevel) {
+        return UpgradeManager.Instance != null ? UpgradeManager.Instance.GetNextUpgradeCost(currentItemData.ItemID, currentItemData.BaseUpgradeCost) : 0;
     }
 }
