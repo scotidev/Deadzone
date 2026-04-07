@@ -147,10 +147,10 @@ public class ShopItemCard : MonoBehaviour {
         // STATS DINÂMICOS: Se for arma com WeaponDataSO, mostra stats escalados pelo nível
         if (currentItemData.IsWeapon && currentItemData.WeaponData != null) {
             WeaponDataSO data = currentItemData.WeaponData;
-            // :F1 = 1 casa decimal, :F0 = sem decimais
-            if (itemDamageText != null) itemDamageText.text = $"Damage: {data.GetDamageAtLevel(currentLevel):F1}";
-            if (itemFireRateText != null) itemFireRateText.text = $"Fire Rate: {data.GetFireRateAtLevel(currentLevel):F0} RPM";
-            if (itemAmmoCapacityText != null) itemAmmoCapacityText.text = $"Magazine: {data.GetMagazineCapacityAtLevel(currentLevel)}";
+            // :F0 = sem decimais (número inteiro), :F1 = 1 casa decimal
+            if (itemDamageText != null) itemDamageText.text = $"Damage: {data.GetDamageAtLevel(currentLevel):F0}";
+            if (itemFireRateText != null) itemFireRateText.text = $"Fire Rate: {data.GetFireRateAtLevel(currentLevel):F1}";
+            if (itemAmmoCapacityText != null) itemAmmoCapacityText.text = $"Ammo: {data.GetMagazineCapacityAtLevel(currentLevel)}";
         }
     }
 

@@ -54,6 +54,14 @@ public class WeaponDataSO : ScriptableObject {
     [Range(0f, 0.5f)]
     /// [Range] limita o valor no Inspector (previne valores absurdos como 500% de scaling)
     public float fireRateScaling = 0.05f; // +5% per level
+    
+    [Tooltip("Maximum fire rate cap (prevents fire rate from going too high with upgrades).")]
+    /// CONCEITO: Soft Cap / Hard Cap
+    /// Soft Cap: Limite opcional que pode ser ultrapassado
+    /// Hard Cap: Limite absoluto que nunca é ultrapassado
+    /// Aqui usamos HARD CAP para evitar que armas fiquem extremamente rápidas
+    /// Exemplo: Se maxFireRate = 1000, mesmo que upgrades calculem 1200, será limitado a 1000
+    public float maxFireRate = 1000f; // RPM máximo permitido
 
     [Tooltip("Percentage increase in magazine capacity per upgrade level.")]
     [Range(0f, 0.5f)]
@@ -89,13 +97,19 @@ public class WeaponDataSO : ScriptableObject {
     /// Higher fire rate = faster shooting.
     /// </summary>
     /// <param name="level">Current upgrade level (1-10).</param>
-    /// <returns>The calculated fire rate in rounds per minute.</returns>
+    /// <returns>The calculated fire rate in rounds per minute (capped at maxFireRate).</returns>
     public float GetFireRateAtLevel(int level) {
         // Clamp to valid level range
         level = Mathf.Clamp(level, 1, 10);
         
         // Calculate scaled fire rate
-        return baseFireRate * (1 + fireRateScaling * level);
+        float calculatedFireRate = baseFireRate * (1 + fireRateScaling * level);
+        
+        // CLAMPING: Limita o valor calculado ao máximo permitido
+        // Mathf.Min retorna o MENOR valor entre dois números
+        // Isso garante que o fire rate nunca ultrapasse o maxFireRate
+        // Exemplo: Se calculou 1200 mas max é 1000, retorna 1000
+        return Mathf.Min(calculatedFireRate, maxFireRate);
     }
 
     /// <summary>
@@ -157,6 +171,18 @@ public class WeaponDataSO : ScriptableObject {
         float maxDamage = GetDamageAtLevel(10);
         if (maxDamage > baseDamage * 3) {
             Debug.LogWarning($"[WeaponDataSO] {name} damage at level 10 ({maxDamage:F1}) is over 3x base. Consider lowering scaling.", this);
+        }
+        
+        // Warn if maxFireRate is lower than baseFireRate
+        if (maxFireRate < baseFireRate) {
+            Debug.LogWarning($"[WeaponDataSO] {name} maxFireRate ({maxFireRate}) is lower than baseFireRate ({baseFireRate})!", this);
+        }
+        
+        // Warn if fire rate would hit the cap before level 10
+        float maxScaledFireRate = baseFireRate * (1 + fireRateScaling * 10);
+        if (maxScaledFireRate > maxFireRate) {
+            int levelWhenCapped = Mathf.FloorToInt((maxFireRate / baseFireRate - 1) / fireRateScaling);
+            Debug.Log($"[WeaponDataSO] {name} fire rate will reach cap ({maxFireRate}) at level ~{levelWhenCapped}.", this);
         }
     }
 }
