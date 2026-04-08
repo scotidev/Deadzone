@@ -203,6 +203,9 @@ public class WaveManager : MonoBehaviour {
 
         GameManager.Instance?.SetState(GameState.Playing);
 
+        if (waveUI != null)
+            waveUI.ShowWaveClearAnnouncement();
+
         // Award currency for completing the wave
         // Wave 1 = 1000, Wave 2 = 1500, Wave 3 = 2000, etc.
         if (EconomyManager.Instance != null) {
