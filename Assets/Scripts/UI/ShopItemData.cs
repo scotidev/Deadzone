@@ -17,6 +17,10 @@ public class ShopItemData : ScriptableObject
     [Header("Visual")]
     [SerializeField] private Sprite icon;
 
+    [Header("3D Preview")]
+    [Tooltip("Optional lightweight prefab used in the shop right-side 3D preview.")]
+    [SerializeField] private GameObject previewPrefab;
+
     [Header("Item Type")]
     [Tooltip("Is this a weapon (Pistol, SMG, etc.) or a utility item (Medkit, Grenades)?")]
     [SerializeField] private bool isWeapon = true;
@@ -72,6 +76,9 @@ public class ShopItemData : ScriptableObject
 
     /// <summary>Returns the item icon sprite.</summary>
     public Sprite Icon => icon;
+
+    /// <summary>Returns the optional prefab used for 3D preview rendering in the shop.</summary>
+    public GameObject PreviewPrefab => previewPrefab;
 
     /// <summary>Returns whether this is a weapon.</summary>
     public bool IsWeapon => isWeapon;

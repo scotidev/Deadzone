@@ -14,12 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDataSO
   weaponID: Pistol
   weaponName: Pistol
-  baseDamage: 100
+  baseDamage: 40
   baseFireRate: 300
   baseMagazineCapacity: 12
-  maxReserveAmmo: 120
+  maxReserveAmmo: 80
   damageScaling: 0.1
   fireRateScaling: 0.05
+  maxFireRate: 1000
   magazineScaling: 0.1
   exclusivePowerID: PistolExclusive
   exclusivePowerDescription: Infinite ammo for 10 seconds

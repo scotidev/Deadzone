@@ -786,35 +786,38 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Next Inventory Weapon.
+        /// MÉTODO DESCONTINUADO - OnTryInventoryNext
+        /// 
+        /// AULA: O que aconteceu aqui?
+        /// Este método foi REMOVIDO da funcionalidade ativa do jogo. Ele era responsável por processar
+        /// os eventos de entrada (input) do scroll do mouse para mudar de arma. Vamos entender o fluxo:
+        /// 
+        /// ANTES (Funcionava assim):
+        /// 1. Jogador rola a roda do mouse (scroll up ou scroll down)
+        /// 2. O Input System detectava essa ação através da ação "ScrollWheel" no arquivo InputSystem_Actions.inputactions
+        /// 3. Essa ação acionava automaticamente este método OnTryInventoryNext (callback do Input System)
+        /// 4. O método lia o valor do scroll (scrollValue) para determinar direção (próxima arma ou arma anterior)
+        /// 5. Mudava a arma chamando StartCoroutine(nameof(Equip), indexNext)
+        /// 
+        /// AGORA (O que mudou):
+        /// - A ação "ScrollWheel" foi REMOVIDA do arquivo InputSystem_Actions.inputactions
+        /// - O binding do mouse scroll foi REMOVIDO também
+        /// - Este método não recebe mais callbacks do Input System
+        /// - Portanto, rolar o mouse NÃO muda mais de arma
+        /// 
+        /// POR QUÉ fazer isso?
+        /// Às vezes, sistemas de input podem conflitar ou não ser intuitivos para o jogador.
+        /// Remover o scroll força o uso das teclas numéricas (1-9) que são mais previsíveis e consistentes.
+        /// Isso simplifica a experiência do usuário.
+        /// 
+        /// CALLBACK: Um callback é uma função que é "chamada de volta" automaticamente quando um evento ocorre.
+        /// No caso do Input System, quando uma ação é acionada, o sistema procura por um método com o nome
+        /// "On" + nome_da_acao (exemplo: OnTryInventoryNext para ação "Next").
         /// </summary>
+        [System.Obsolete("Este método foi descontinuado. O atalho de scroll do mouse foi removido. Use as teclas numéricas (1-9) para mudar de arma, ou chame TryEquipWeapon diretamente.")]
         public void OnTryInventoryNext(InputAction.CallbackContext context) {
-            //Block while the cursor is unlocked.
-            if (!cursorLocked)
-                return;
-
-            //Null Check.
-            if (inventory == null)
-                return;
-
-            //Switch.
-            switch (context) {
-                //Performed.
-                case { phase: InputActionPhase.Performed }:
-                    //Get the index increment direction for our inventory using the scroll wheel direction. If we're not
-                    //actually using one, then just increment by one.
-                    float scrollValue = context.valueType.IsEquivalentTo(typeof(Vector2)) ? Mathf.Sign(context.ReadValue<Vector2>().y) : 1.0f;
-
-                    //Get the next index to switch to.
-                    int indexNext = scrollValue > 0 ? inventory.GetNextIndex() : inventory.GetLastIndex();
-                    //Get the current weapon's index.
-                    int indexCurrent = inventory.GetEquippedIndex();
-
-                    //Make sure we're allowed to change, and also that we're not using the same index, otherwise weird things happen!
-                    if (CanChangeWeapon() && (indexCurrent != indexNext))
-                        StartCoroutine(nameof(Equip), indexNext);
-                    break;
-            }
+            // Este método não faz mais nada - é apenas um placeholder para fins históricos/educacionais.
+            // Se você tentar chamar este método, o compilador emitirá um aviso porque está marcado como [Obsolete].
         }
 
         /// <summary>

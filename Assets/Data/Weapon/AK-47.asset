@@ -14,12 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDataSO
   weaponID: SMG
   weaponName: Submachine Gun
-  baseDamage: 12
+  baseDamage: 70
   baseFireRate: 600
   baseMagazineCapacity: 30
-  maxReserveAmmo: 470
+  maxReserveAmmo: 200
   damageScaling: 0.1
   fireRateScaling: 0.05
+  maxFireRate: 1000
   magazineScaling: 0.1
   exclusivePowerID: SMGExlusive
   exclusivePowerDescription: Bullet storm - fires 3x faster for 5 seconds
