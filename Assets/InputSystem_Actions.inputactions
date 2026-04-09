@@ -68,15 +68,7 @@
                     "interactions": "",
                     "initialStateCheck": false
                 },
-                {
-                    "name": "Next",
-                    "type": "Button",
-                    "id": "b7230bb6-fc9b-4f52-8b25-f5e19cb2c2ba",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
+
                 {
                     "name": "Sprint",
                     "type": "Button",
@@ -319,28 +311,7 @@
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
-                {
-                    "name": "",
-                    "id": "cbac6039-9c09-46a1-b5f2-4e5124ccb5ed",
-                    "path": "<Keyboard>/2",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Next",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "e15ca19d-e649-4852-97d5-7fe8ccc44e94",
-                    "path": "<Gamepad>/dpad/right",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "Next",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
+
                 {
                     "name": "",
                     "id": "f2e9ba44-c423-42a7-ad56-f20975884794",
@@ -542,15 +513,7 @@
                     "interactions": "",
                     "initialStateCheck": false
                 },
-                {
-                    "name": "ScrollWheel",
-                    "type": "PassThrough",
-                    "id": "0489e84a-4833-4c40-bfae-cea84b696689",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
+
                 {
                     "name": "TrackedDevicePosition",
                     "type": "PassThrough",
@@ -934,17 +897,7 @@
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
-                {
-                    "name": "",
-                    "id": "38c99815-14ea-4617-8627-164d27641299",
-                    "path": "<Mouse>/scroll",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "ScrollWheel",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
+
                 {
                     "name": "",
                     "id": "4c191405-5738-4d4b-a523-c6a301dbf754",
