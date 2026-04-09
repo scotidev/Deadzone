@@ -35,6 +35,12 @@ public class ShopItemCard : MonoBehaviour {
     [SerializeField] private Color errorColor = Color.red;
     [SerializeField] private Color successColor = Color.green;
 
+    [Header("Fire Rate Display Balance")]
+    [SerializeField] private float minFireRateDisplay = 1f;
+    [SerializeField] private float maxFireRateDisplay = 10f;
+    [SerializeField] private float pistolReferenceFireRate = 315f;
+    [SerializeField] private float smgReferenceFireRate = 630f;
+
     private ShopItemData currentItemData;
     private Coroutine messageCoroutine;
 
@@ -149,9 +155,33 @@ public class ShopItemCard : MonoBehaviour {
             WeaponDataSO data = currentItemData.WeaponData;
             // :F0 = sem decimais (número inteiro), :F1 = 1 casa decimal
             if (itemDamageText != null) itemDamageText.text = $"Damage: {data.GetDamageAtLevel(currentLevel):F0}";
-            if (itemFireRateText != null) itemFireRateText.text = $"Fire Rate: {data.GetFireRateAtLevel(currentLevel):F1}";
+            if (itemFireRateText != null) itemFireRateText.text = $"Fire Rate: {CalculateFireRateDisplay(data, currentLevel):F1}";
             if (itemAmmoCapacityText != null) itemAmmoCapacityText.text = $"Ammo: {data.GetMagazineCapacityAtLevel(currentLevel)}";
         }
+    }
+
+    /// <summary>
+    /// Converts real fire rate (RPM) into a balanced shop display value between 1 and 10.
+    /// </summary>
+    /// <param name="weaponData">Weapon data source for the real RPM value.</param>
+    /// <param name="level">Current weapon level used in the RPM calculation.</param>
+    /// <returns>Fire rate display value clamped to the configured range.</returns>
+    private float CalculateFireRateDisplay(WeaponDataSO weaponData, int level) {
+        // Read the current RPM from the weapon progression data to keep UI aligned with gameplay values.
+        float currentFireRate = weaponData.GetFireRateAtLevel(level);
+
+        // Use the pistol-to-SMG range as the baseline slope so pistol starts near 1 and SMG near 3.
+        float fireRateRange = Mathf.Max(smgReferenceFireRate - pistolReferenceFireRate, 1f);
+        float displayIncreasePerRpm = 2f / fireRateRange;
+
+        // Map RPM to a display score where pistol reference = 1 and SMG reference ≈ 3.
+        float normalizedDisplay = minFireRateDisplay + (currentFireRate - pistolReferenceFireRate) * displayIncreasePerRpm;
+
+        // Keep the configured range safe even if someone sets max lower than min in the Inspector.
+        float safeMaxDisplay = Mathf.Max(maxFireRateDisplay, minFireRateDisplay);
+
+        // Clamp to keep the stat readable and capped at the intended UI maximum.
+        return Mathf.Clamp(normalizedDisplay, minFireRateDisplay, safeMaxDisplay);
     }
 
     private void OnUnlockUpgradeClick() {
