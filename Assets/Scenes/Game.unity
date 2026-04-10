@@ -4275,7 +4275,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.01
-  far clip plane: 1000
+  far clip plane: 3000
   field of view: 25.655296
   orthographic: 0
   orthographic size: 5
@@ -18368,6 +18368,11 @@ PrefabInstance:
         type: 2}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
+      propertyPath: cameraZPositions.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
       propertyPath: selectedItemDescriptionText
       value: 
       objectReference: {fileID: 178168904}
@@ -18390,6 +18395,26 @@ PrefabInstance:
         type: 3}
       propertyPath: fovOverrides.Array.data[1].weaponID
       value: SMG
+      objectReference: {fileID: 0}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
+      propertyPath: cameraZPositions.Array.data[0].weaponID
+      value: Pistol
+      objectReference: {fileID: 0}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
+      propertyPath: cameraZPositions.Array.data[1].weaponID
+      value: SMG
+      objectReference: {fileID: 0}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
+      propertyPath: cameraZPositions.Array.data[0].cameraZPosition
+      value: -1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
+      propertyPath: cameraZPositions.Array.data[1].cameraZPosition
+      value: -2500
       objectReference: {fileID: 0}
     - target: {fileID: 5334385605530644135, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
