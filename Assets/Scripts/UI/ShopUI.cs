@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using InfimaGames.LowPolyShooterPack;
 
@@ -53,6 +54,26 @@ public class ShopUI : BaseUI {
     // Você ajusta isso no Inspector até a arma ficar visível no preview.
     [SerializeField] private float previewModelScale = 100f;
     [Tooltip("Scale multiplier for the 3D preview model. Increase if model appears too small in the RawImage preview.")]
+    
+    [Header("Camera Adjustment")]
+    // CONCEITO: Ajuste Dinâmico de Câmera
+    // Diferentes armas têm tamanhos diferentes. O pistola é pequeno, mas SMG/Shotgun são grandes.
+    // Sem ajuste, a câmera corta as armas maiores. Por isso ajustamos o FOV dinamicamente.
+    // enableDynamicCameraAdjustment ativa/desativa este sistema
+    [SerializeField] private bool enableDynamicCameraAdjustment = true;
+    [Tooltip("If enabled, automatically adjusts camera FOV based on weapon model size.")]
+    
+    // CONCEITO: Dicionário de FOV Customizado
+    // Aqui você pode definir FOV específico para cada tipo de arma
+    // Se uma arma não estiver no dicionário, usamos cálculo automático
+    [SerializeField] private List<WeaponFOVOverride> fovOverrides = new List<WeaponFOVOverride>();
+    [Tooltip("Custom FOV values for specific weapons. Leave empty for automatic calculation.")]
+    
+    // CONCEITO: Parâmetros de Ajuste Automático
+    // boundsMultiplier = quanto de margem adicionar (1.5 = 50% de espaço extra ao redor)
+    // Este valor multiplica o tamanho da bounding box para garantir que toda a arma cabe na tela
+    [SerializeField] private float boundsMultiplier = 1.5f;
+    [Tooltip("Margin multiplier for bounds calculation (1.5 = 50% extra space around model).")]
     [SerializeField] private TextMeshProUGUI selectedItemNameText;
     [SerializeField] private TextMeshProUGUI selectedItemDescriptionText;
     [SerializeField] private StatBlockDisplay damageBlockDisplay;
@@ -730,7 +751,16 @@ public class ShopUI : BaseUI {
         if (previewCamera != null) {
             Debug.Log($"[RebuildPreviewModel] 📷 Preview Camera posição: {previewCamera.transform.position}");
             Debug.Log($"[RebuildPreviewModel] 📷 Preview Camera rotação: {previewCamera.transform.eulerAngles}");
-            Debug.Log($"[RebuildPreviewModel] 📷 Preview Camera FOV: {previewCamera.fieldOfView}");
+            Debug.Log($"[RebuildPreviewModel] 📷 Preview Camera FOV (ANTES): {previewCamera.fieldOfView}");
+        }
+        
+        // CONCEITO: Ajuste Dinâmico de Câmera
+        // Após instanciar o modelo, ajustamos a câmera para que ela enxergue toda a arma
+        // sem cortá-la. Isto é essencial para armas de diferentes tamanhos (pistola vs SMG).
+        AdjustCameraForWeaponSize();
+        
+        if (previewCamera != null) {
+            Debug.Log($"[RebuildPreviewModel] 📷 Preview Camera FOV (DEPOIS): {previewCamera.fieldOfView}");
         }
     }
 
@@ -902,7 +932,6 @@ public class ShopUI : BaseUI {
     /// - Mostrar a foto no Canvas com RawImage
     /// </summary>
     private Camera GetWeaponPreviewCamera() {
-    {
         // CONCEITO: Null Checking (Validação de Existência)
         // previewAnchor pode ser null se não foi atribuído no Inspector
         // Checamos antes de usá-lo para evitar erros
@@ -933,6 +962,92 @@ public class ShopUI : BaseUI {
         // Se chegou aqui, não encontrou câmera
         return null;
     }
+
+    /// <summary>
+    /// Dynamically adjusts the preview camera FOV based on the instantiated weapon model's bounds.
+    /// This prevents larger weapons from being clipped by the camera frustum.
+    /// </summary>
+    private void AdjustCameraForWeaponSize() {
+        // CONCEITO: Guard Clause
+        // Se dynamic adjustment está desativado, não fazemos nada
+        if (!enableDynamicCameraAdjustment) return;
+        
+        // CONCEITO: Null Checking
+        // Verificamos se o modelo existe antes de fazer cálculos
+        if (activePreviewModel == null) return;
+        
+        Camera previewCamera = GetWeaponPreviewCamera();
+        if (previewCamera == null) return;
+        
+        // CONCEITO: FOV Override (Customização Manual)
+        // Primeiro, verificamos se há um FOV customizado para esta arma
+        // Se sim, usamos esse valor ao invés de cálculo automático
+        if (selectedItemData != null) {
+            string weaponID = selectedItemData.ItemID;
+            float? customFOV = GetFOVOverride(weaponID);
+            if (customFOV.HasValue) {
+                previewCamera.fieldOfView = customFOV.Value;
+                Debug.Log($"[ShopUI] Applied custom FOV {customFOV.Value} for weapon: {weaponID}");
+                return;
+            }
+        }
+        
+        // CONCEITO: Bounds (Limite de um Objeto)
+        // GetComponent busca componentes no objeto
+        // Aqui procuramos Renderer para obter os limites visuais do modelo
+        Renderer renderer = activePreviewModel.GetComponent<Renderer>();
+        if (renderer == null) {
+            // Se não tem Renderer direto, tenta nos filhos
+            renderer = activePreviewModel.GetComponentInChildren<Renderer>();
+            if (renderer == null) {
+                Debug.LogWarning("[ShopUI] No Renderer found on preview model!");
+                return;
+            }
+        }
+        
+        // CONCEITO: Bounds - Caixa Invisível que Envolve o Objeto
+        // bounds é uma caixa 3D que envolve o modelo
+        // .size é o tamanho dessa caixa (x, y, z)
+        // Usamos o tamanho para calcular quanto de FOV precisamos
+        Bounds modelBounds = renderer.bounds;
+        float modelSize = modelBounds.extents.magnitude;
+        
+        // CONCEITO: Cálculo Matemático de FOV
+        // FOV (Field of View) é o ângulo de visão da câmera
+        // Quanto maior o objeto, maior o FOV necessário para enxergá-lo todo
+        // Fórmula: FOV = 2 * arctan(tamanho / distância) * Rad2Deg
+        // Aqui simplificamos usando uma proporção: FOV = baseFOV * (tamanho * multiplier)
+        float distanceFromCamera = Vector3.Distance(previewCamera.transform.position, modelBounds.center);
+        float requiredFOV = 2f * Mathf.Atan(modelSize / distanceFromCamera) * Mathf.Rad2Deg * boundsMultiplier;
+        
+        // CONCEITO: Clamping (Limitar Valores)
+        // Clamp garante que o FOV fica dentro de limites mínimo e máximo
+        // Sem isso, poderíamos ter FOV muito grande (> 180) ou muito pequeno
+        float adjustedFOV = Mathf.Clamp(requiredFOV, 10f, 120f);
+        
+        previewCamera.fieldOfView = adjustedFOV;
+        
+        Debug.Log($"[ShopUI] Adjusted camera FOV to {adjustedFOV} for model size {modelSize}");
+    }
+    
+    /// <summary>
+    /// Retrieves custom FOV override for a weapon if one exists.
+    /// Returns null if no override is configured for this weapon.
+    /// </summary>
+    private float? GetFOVOverride(string weaponID) {
+        // CONCEITO: LINQ (Language Integrated Query)
+        // LINQ permite fazer buscas em listas de forma elegante
+        // FirstOrDefault procura o primeiro item que atende a condição
+        // Se não encontrar, retorna um valor padrão (struct vazio)
+        
+        // Procura na lista de overrides por um que tenha weaponID igual
+        WeaponFOVOverride foundOverride = fovOverrides.FirstOrDefault(o => o.weaponID == weaponID);
+        
+        // CONCEITO: Verificação de Existência com Structs
+        // Como struct não pode ser null, verificamos se a weaponID string não está vazia
+        // Se está vazia, significa que FirstOrDefault retornou o valor padrão (não encontrou nada)
+        // Se não está vazia, encontramos um override válido
+        return !string.IsNullOrEmpty(foundOverride.weaponID) ? (float?)foundOverride.fovValue : null;
     }
 
     /// <summary>
@@ -942,4 +1057,26 @@ public class ShopUI : BaseUI {
         if (ShopManager.Instance != null)
             ShopManager.Instance.CloseShop();
     }
+}
+
+/// <summary>
+/// Serializable struct to store custom FOV values for specific weapons.
+/// This allows designers to tune the camera view per weapon type without code changes.
+/// </summary>
+[System.Serializable]
+public struct WeaponFOVOverride {
+    // CONCEITO: Struct (Tipo de Dado Customizado)
+    // Um struct é como uma "caixa" que pode conter vários valores relacionados
+    // Aqui criamos uma caixa que contém:
+    // 1. Um ID de arma (texto)
+    // 2. Um valor de FOV (número)
+    // Quando você quer salvar um par de informações relacionadas, use struct
+    
+    [Tooltip("The unique identifier for the weapon (e.g., 'PISTOL_01', 'AK47').")]
+    [SerializeField]
+    public string weaponID;
+    
+    [Tooltip("Custom FOV for this weapon preview (recommended: 30-90).")]
+    [SerializeField]
+    public float fovValue;
 }
