@@ -243,9 +243,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShopUI
   panel: {fileID: 8152379450977053494}
   itemsContainer: {fileID: 7147455108484642097}
-  shopItemCardPrefab: {fileID: 1175313377975955395, guid: 9a522808a4168b246bfcf15cef5d1748,
+  shopItemCardPrefab: {fileID: 5192029264721592234, guid: 9a522808a4168b246bfcf15cef5d1748,
     type: 3}
   closeButton: {fileID: 0}
+  shopItems: []
+  forceLeftHalfLayout: 1
+  gridColumns: 3
+  gridRows: 4
+  gridPadding: {x: 16, y: 16}
+  gridSpacing: {x: 12, y: 12}
+  leftHalfOffsetMin: {x: 16, y: 16}
+  leftHalfOffsetMax: {x: -16, y: -16}
+  previewAnchor: {fileID: 0}
+  previewRotationSpeed: 35
+  previewModelScale: 100
+  cameraZPositions: []
+  selectedItemNameText: {fileID: 0}
+  selectedItemDescriptionText: {fileID: 0}
+  damageBlockDisplay: {fileID: 0}
+  fireRateBlockDisplay: {fileID: 0}
+  ammoBlockDisplay: {fileID: 0}
+  selectedItemPriceText: {fileID: 0}
+  selectedItemActionButton: {fileID: 0}
+  selectedItemActionButtonText: {fileID: 0}
+  currencyText: {fileID: 0}
 --- !u!1001 &5432570899698075662
 PrefabInstance:
   m_ObjectHideFlags: 0
