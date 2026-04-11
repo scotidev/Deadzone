@@ -724,21 +724,6 @@ public class ShopUI : BaseUI {
             // interactable = true o habilita (fica verde e clicável)
             selectedItemActionButton.interactable = EconomyManager.Instance.CanAfford(cost);
             selectedItemActionButton.onClick.AddListener(() => OnRightPanelUnlock(itemData));
-        } else {
-            if (isMaxLevel) {
-                // First principle: once upgrade progression is complete, the same action button pivots to ammo economy.
-                int ammoCost = itemData.AmmoCost;
-                int ammoAmount = itemData.AmmoAmountPerPurchase;
-                if (selectedItemActionButtonText != null) selectedItemActionButtonText.text = $"BUY AMMO +{ammoAmount} - ${ammoCost:N0}";
-                selectedItemActionButton.interactable = EconomyManager.Instance.CanAfford(ammoCost) && CanPurchaseAmmo(itemData);
-                selectedItemActionButton.onClick.AddListener(() => OnRightPanelBuyAmmo(itemData));
-            } else {
-                // UPGRADE button
-                int cost = CalculateUpgradeCostForItem(itemData, currentLevel);
-                if (selectedItemActionButtonText != null) selectedItemActionButtonText.text = $"UPGRADE - ${cost:N0}";
-                selectedItemActionButton.interactable = EconomyManager.Instance.CanAfford(cost);
-                selectedItemActionButton.onClick.AddListener(() => OnRightPanelUpgrade(itemData));
-            }
         } else if (isMaxLevel) {
             // MAX LEVEL - arma chegou no nível máximo, não há mais upgrades
             // CONCEITO: "MAXED OUT" feedback visual
@@ -810,46 +795,6 @@ public class ShopUI : BaseUI {
     }
 
     /// <summary>
-    /// Handles reserve ammo purchases from the right-panel action button.
-    /// </summary>
-    /// <param name="itemData">Selected weapon data.</param>
-    private void OnRightPanelBuyAmmo(ShopItemData itemData) {
-        if (itemData == null || EconomyManager.Instance == null || PlayerProgress.Instance == null) {
-            return;
-        }
-
-        if (!itemData.IsWeapon || itemData.WeaponData == null) {
-            Debug.LogWarning($"[ShopUI] Cannot buy ammo for non-weapon item '{itemData.ItemName}'.");
-            return;
-        }
-
-        int reserveCap = itemData.WeaponData.maxReserveAmmo;
-        bool addedAmmo = false;
-
-        if (EconomyManager.Instance.TrySpendCurrency(itemData.AmmoCost)) {
-            // First principle: reserve ammo is clamped by each weapon's configured carry capacity.
-            addedAmmo = PlayerProgress.Instance.AddReserveAmmo(itemData.ItemID, itemData.AmmoAmountPerPurchase, reserveCap);
-            if (!addedAmmo) {
-                // Refund if purchase could not be applied (for example, reserve already full).
-                EconomyManager.Instance.AddCurrency(itemData.AmmoCost);
-                Debug.LogWarning($"[ShopUI] Ammo purchase cancelled. {itemData.ItemName} reserve is already full.");
-                RefreshAllCards();
-                return;
-            }
-        } else {
-            int missingAmount = itemData.AmmoCost - EconomyManager.Instance.GetCurrentCurrency();
-            Debug.LogWarning($"[ShopUI] Insufficient funds for ammo! Need {missingAmount} more coins.");
-            return;
-        }
-
-        if (addedAmmo) {
-            Debug.Log($"[ShopUI] Purchased ammo for {itemData.ItemName}: +{itemData.AmmoAmountPerPurchase}");
-            AmmoPurchased?.Invoke(itemData.ItemID, itemData.AmmoAmountPerPurchase);
-            RefreshAllCards();
-        }
-    }
-
-    /// <summary>
     /// Helper to calculate upgrade cost for a given item at its current level.
     /// </summary>
     private int CalculateUpgradeCostForItem(ShopItemData itemData, int currentLevel) {
@@ -857,17 +802,6 @@ public class ShopUI : BaseUI {
     }
 
     /// <summary>
-    /// Checks if the selected weapon can receive more reserve ammo.
-    /// </summary>
-    /// <param name="itemData">Selected weapon data.</param>
-    /// <returns>True if reserve ammo is below cap.</returns>
-    private bool CanPurchaseAmmo(ShopItemData itemData) {
-        if (itemData == null || !itemData.IsWeapon || itemData.WeaponData == null || PlayerProgress.Instance == null) {
-            return false;
-        }
-
-        int currentReserve = PlayerProgress.Instance.GetReserveAmmo(itemData.ItemID);
-        return currentReserve < itemData.WeaponData.maxReserveAmmo;
     /// Finds the ammo pricing configuration for the specified weapon ID.
     /// Returns a default struct if not found (weaponID will be empty string).
     /// 
@@ -955,6 +889,7 @@ public class ShopUI : BaseUI {
             PlayerProgress.Instance.AddWeaponReserveAmmo(itemID, actualAmmoAdded);
             
             Debug.Log($"[ShopUI.OnAmmoButtonPressed] Purchased {actualAmmoAdded} ammo for {itemID}. Cost: ${actualCost}. New total: {newAmmo}");
+            AmmoPurchased?.Invoke(itemID, actualAmmoAdded);
             
             // Atualiza o display para refletir a nova munição
             UpdateSelectedItemInfo();
