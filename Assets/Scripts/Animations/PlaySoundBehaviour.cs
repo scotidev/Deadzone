@@ -3,7 +3,7 @@
 namespace InfimaGames.LowPolyShooterPack
 {
     /// <summary>
-    /// Play Sound Behaviour. Plays an AudioClip using our custom AudioManager!
+    /// Play Sound Behaviour. Plays an AudioClip using the centralized audio service.
     /// </summary>
     public class PlaySoundBehaviour : StateMachineBehaviour
     {

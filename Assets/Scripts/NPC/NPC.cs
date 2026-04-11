@@ -5,6 +5,17 @@ using UnityEngine;
 /// </summary>
 public class NPC : Interactable {
     [SerializeField] private string npcName = "Merchant";
+    [SerializeField] private NPCAudio npcAudio;
+
+    /// <summary>
+    /// Resolves optional component references.
+    /// </summary>
+    private void Awake()
+    {
+        // First principle: GetComponent lookup at startup avoids repeated lookups during interaction.
+        if (npcAudio == null)
+            npcAudio = GetComponent<NPCAudio>();
+    }
 
     /// <returns>The NPC's name as a string.</returns>
     public string GetNPCName() => npcName;
@@ -16,6 +27,8 @@ public class NPC : Interactable {
     {
         if (ShopManager.Instance != null)
         {
+            // First principle: dialogue is immediate player feedback, so play it at the interaction moment.
+            npcAudio?.PlayRandomShopOpenDialogue();
             ShopManager.Instance.OpenShop();
         }
     }

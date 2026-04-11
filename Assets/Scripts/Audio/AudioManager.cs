@@ -1,79 +1,104 @@
 using UnityEngine;
+using InfimaGames.LowPolyShooterPack;
 
 /// <summary>
-/// Persistent manager responsible for all audio in the game.
-/// Requires two AudioSource components assigned in the inspector: 1. for BGM, 2. for SFX.
+/// Legacy compatibility wrapper that forwards audio calls to <see cref="IAudioManagerService"/>.
+/// This keeps old scene references safe while the real implementation stays centralized in AudioManagerService.
 /// </summary>
-public class AudioManager : MonoBehaviour {
-
+[System.Obsolete("Use IAudioManagerService via ServiceLocator.Current.Get<IAudioManagerService>() instead.")]
+public class AudioManager : MonoBehaviour
+{
     /// <summary>Global access point to the single <see cref="AudioManager"/> instance.</summary>
     public static AudioManager Instance { get; private set; }
 
-    [Header("Audio Sources")]
-    [SerializeField] private AudioSource bgmSource;
-    [SerializeField] private AudioSource sfxSource;
+    /// <summary>
+    /// Cached reference to the unified audio service.
+    /// </summary>
+    private IAudioManagerService audioService;
 
-    [Header("Default Volumes")]
-    [Range(0f, 1f)][SerializeField] private float bgmVolume = 0.5f;
-    [Range(0f, 1f)][SerializeField] private float sfxVolume = 1f;
+    /// <summary>
+    /// Exposes the current BGM volume from the unified audio service.
+    /// </summary>
+    public float BGMVolume => audioService?.GetBGMVolume() ?? 0f;
 
-    public float BGMVolume => bgmVolume;
-    public float SFXVolume => sfxVolume;
+    /// <summary>
+    /// Exposes the current SFX volume from the unified audio service.
+    /// </summary>
+    public float SFXVolume => audioService?.GetSFXVolume() ?? 0f;
 
-    private void Awake() {
-        if (Instance == null) {
+    /// <summary>
+    /// Initializes singleton compatibility and resolves the unified audio service.
+    /// </summary>
+    private void Awake()
+    {
+        if (Instance == null)
+        {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            InitializeVolumes();
+            ResolveAudioService();
+            return;
         }
-        else {
-            Destroy(gameObject);
-        }
-    }
 
-    private void InitializeVolumes() {
-        if (bgmSource != null) bgmSource.volume = bgmVolume;
-        if (sfxSource != null) sfxSource.volume = sfxVolume;
+        Destroy(gameObject);
     }
 
     /// <summary>
-    /// Plays a background music clip. Loops by default.
+    /// Resolves the centralized audio service through the Service Locator.
     /// </summary>
-    public void PlayBGM(AudioClip clip, bool loop = true) {
-        if (bgmSource == null || clip == null) return;
-        bgmSource.clip = clip;
-        bgmSource.loop = loop;
-        bgmSource.Play();
+    private void ResolveAudioService()
+    {
+        // First principle: this wrapper should never own audio state, only delegate to the single source of truth.
+        audioService ??= ServiceLocator.Current.Get<IAudioManagerService>();
     }
 
     /// <summary>
-    /// Stops the currently playing background music.
+    /// Plays a BGM clip through the centralized audio service.
     /// </summary>
-    public void StopBGM() {
-        bgmSource?.Stop();
+    /// <param name="clip">Music clip to play.</param>
+    /// <param name="loop">True to loop playback.</param>
+    public void PlayBGM(AudioClip clip, bool loop = true)
+    {
+        ResolveAudioService();
+        audioService?.PlayBGM(clip, loop);
     }
 
     /// <summary>
-    /// Plays a one-shot sound effect. Safe to call simultaneously with BGM.
+    /// Stops BGM playback through the centralized audio service.
     /// </summary>
-    public void PlaySFX(AudioClip clip, float volumeScale = 1f) {
-        if (sfxSource != null && clip != null)
-            sfxSource.PlayOneShot(clip, volumeScale);
+    public void StopBGM()
+    {
+        ResolveAudioService();
+        audioService?.StopBGM();
     }
 
     /// <summary>
-    /// Sets the background music volume (0 to 1).
+    /// Plays a non-spatial one-shot SFX through the centralized audio service.
     /// </summary>
-    public void SetBGMVolume(float volume) {
-        bgmVolume = Mathf.Clamp01(volume);
-        if (bgmSource != null) bgmSource.volume = bgmVolume;
+    /// <param name="clip">SFX clip to play.</param>
+    /// <param name="volumeScale">Per-call volume multiplier.</param>
+    public void PlaySFX(AudioClip clip, float volumeScale = 1f)
+    {
+        ResolveAudioService();
+        audioService?.PlaySFX2D(clip, volumeScale);
     }
 
     /// <summary>
-    /// Sets the sound effects volume (0 to 1).
+    /// Sets BGM volume through the centralized audio service.
     /// </summary>
-    public void SetSFXVolume(float volume) {
-        sfxVolume = Mathf.Clamp01(volume);
-        if (sfxSource != null) sfxSource.volume = sfxVolume;
+    /// <param name="volume">Volume value in the [0, 1] range.</param>
+    public void SetBGMVolume(float volume)
+    {
+        ResolveAudioService();
+        audioService?.SetBGMVolume(volume);
+    }
+
+    /// <summary>
+    /// Sets SFX volume through the centralized audio service.
+    /// </summary>
+    /// <param name="volume">Volume value in the [0, 1] range.</param>
+    public void SetSFXVolume(float volume)
+    {
+        ResolveAudioService();
+        audioService?.SetSFXVolume(volume);
     }
 }

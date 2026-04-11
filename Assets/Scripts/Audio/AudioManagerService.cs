@@ -34,6 +34,12 @@ namespace InfimaGames.LowPolyShooterPack
         /// Todos os SFX (2D e 3D) usarão este volume como base.
         /// </summary>
         private float sfxVolume = 1f;
+
+        /// <summary>
+        /// Master dialogue volume (0 to 1).
+        /// Dialogue is kept separate from generic SFX to allow independent accessibility tuning.
+        /// </summary>
+        private float dialogueVolume = 1f;
         
         #endregion
 
@@ -333,16 +339,39 @@ namespace InfimaGames.LowPolyShooterPack
         /// </summary>
         public void PlaySFX2D(AudioClip clip, float volumeScale = 1f)
         {
+            Play2DClip(clip, sfxVolume, volumeScale);
+        }
+
+        /// <summary>
+        /// Plays a non-spatial dialogue clip.
+        /// Dialogue is intentionally 2D so it remains clear regardless of world distance.
+        /// </summary>
+        public void PlayDialogue2D(AudioClip clip, float volumeScale = 1f)
+        {
+            Play2DClip(clip, dialogueVolume, volumeScale);
+        }
+
+        /// <summary>
+        /// Shared 2D playback helper used by UI SFX and dialogue.
+        /// First principle: 2D sounds use spatialBlend = 0 so they are not attenuated by distance.
+        /// </summary>
+        /// <param name="clip">Clip to play.</param>
+        /// <param name="masterVolume">Category master volume.</param>
+        /// <param name="volumeScale">Per-call volume scale.</param>
+        private void Play2DClip(AudioClip clip, float masterVolume, float volumeScale)
+        {
             if (clip == null) return;
-            
-            // Cria um AudioSettings configurado para som 2D
-            // spatialBlend = 0f significa som completamente 2D
+
+            // First principle: final loudness is category master * per-call scale.
+            float finalVolume = Mathf.Clamp01(masterVolume * volumeScale);
+
+            // spatialBlend = 0f means non-positional audio (left/right balance does not depend on world position).
             var settings = new AudioSettings(
-                volume: sfxVolume * volumeScale, // Volume final = master * escala
-                spatialBlend: 0f, // 2D
-                automaticCleanup: true // Remove o AudioSource após tocar
+                volume: finalVolume,
+                spatialBlend: 0f,
+                automaticCleanup: true
             );
-            
+
             PlayOneShot_Internal(clip, settings);
         }
         
@@ -361,6 +390,24 @@ namespace InfimaGames.LowPolyShooterPack
         public float GetSFXVolume()
         {
             return sfxVolume;
+        }
+
+        /// <summary>
+        /// Sets the dialogue master volume.
+        /// </summary>
+        /// <param name="volume">Volume value in the [0, 1] range.</param>
+        public void SetDialogueVolume(float volume)
+        {
+            dialogueVolume = Mathf.Clamp01(volume);
+        }
+
+        /// <summary>
+        /// Gets the current dialogue master volume.
+        /// </summary>
+        /// <returns>Dialogue volume in the [0, 1] range.</returns>
+        public float GetDialogueVolume()
+        {
+            return dialogueVolume;
         }
         
         #endregion
