@@ -86,6 +86,16 @@ public class ShopUI : BaseUI {
     [SerializeField] private Button selectedItemActionButton;
     [SerializeField] private TextMeshProUGUI selectedItemActionButtonText;
 
+    [Header("Ammo Purchase")]
+    [Tooltip("Button to purchase additional ammo for the selected weapon.")]
+    [SerializeField] private Button ammoButton;
+    [Tooltip("Text displaying the ammo purchase price.")]
+    [SerializeField] private TextMeshProUGUI ammoPriceText;
+    [Tooltip("Text displaying current reserve ammo for the selected weapon.")]
+    [SerializeField] private TextMeshProUGUI currentAmmoText;
+    [Tooltip("Configuration for weapon ammo pricing and limits.")]
+    [SerializeField] private List<WeaponAmmoPricing> weaponAmmoPricings = new List<WeaponAmmoPricing>();
+
     [Header("Currency Display")]
     [Tooltip("Text component to display player's current currency in the shop.")]
     [SerializeField] private TextMeshProUGUI currencyText;
@@ -154,6 +164,13 @@ public class ShopUI : BaseUI {
     private void BindButtons() {
         if (closeButton != null)
             closeButton.onClick.AddListener(OnCloseClick);
+        
+        // CONCEITO: Null Checking (Validação)
+        // Verificamos se ammoButton não é null antes de usá-lo
+        // Se for null, significa que o designer não atribuiu no Inspector
+        // Nesse caso, simplesmente pulamos (o botão não terá funcionalidade)
+        if (ammoButton != null)
+            ammoButton.onClick.AddListener(OnAmmoButtonPressed);
     }
 
     /// <summary>
@@ -214,11 +231,24 @@ public class ShopUI : BaseUI {
 
     /// <summary>
     /// Event handler for currency changes.
-    /// Updates the currency display text.
+    /// Updates the currency display text and refreshes button interactable state.
+    /// 
+    /// CONCEITO: Event Callback Pattern
+    /// Quando a moeda muda, atualizamos não só o display de moeda,
+    /// mas também o estado do botão (enabled/disabled) baseado na disponibilidade de fundos
     /// </summary>
     /// <param name="newAmount">The new currency amount.</param>
     private void OnCurrencyChanged(int newAmount) {
         UpdateCurrencyDisplay();
+        
+        // CONCEITO: Atualizar Estado do Botão
+        // Quando a moeda muda, o botão pode ficar habilitado ou desabilitado
+        // Por exemplo: jogador tinha $50, não podia fazer upgrade por $100
+        // Então ganha moedas e agora tem $150, pode fazer upgrade!
+        // Precisamos refrescar o estado do botão neste momento
+        if (selectedItemData != null) {
+            UpdateActionButton(selectedItemData, 0);
+        }
     }
 
     /// <summary>
@@ -493,6 +523,7 @@ public class ShopUI : BaseUI {
             SetSelectedInfoTexts(string.Empty, string.Empty);
             ClearStatBlocks();
             UpdateActionButton(null, 0);
+            ClearAmmoDisplay();
             return;
         }
 
@@ -550,8 +581,13 @@ public class ShopUI : BaseUI {
                 ammoBlockDisplay.SetMaxStatValue(WeaponStatsCalculator.STAT_BARS);
                 ammoBlockDisplay.SetStatValues(currentAmmoNormalized, nextAmmoNormalized);
             }
+            
+            // CONCEITO: Atualizar Display de Munição
+            // Mostra a munição reserva atual do jogador para esta arma
+            UpdateAmmoDisplay(selectedItemData.ItemID);
         } else {
             ClearStatBlocks();
+            ClearAmmoDisplay();
         }
 
         UpdateActionButton(selectedItemData, 0);
@@ -564,6 +600,76 @@ public class ShopUI : BaseUI {
         if (damageBlockDisplay != null) damageBlockDisplay.SetStatValues(0f, 0f);
         if (fireRateBlockDisplay != null) fireRateBlockDisplay.SetStatValues(0f, 0f);
         if (ammoBlockDisplay != null) ammoBlockDisplay.SetStatValues(0f, 0f);
+    }
+
+    /// <summary>
+    /// Updates ammo purchase display for the selected weapon.
+    /// Shows current reserve ammo and the cost to purchase more.
+    /// 
+    /// CONCEITO: Atualização Condicional de UI
+    /// Cada elemento é atualizado individualmente com null checks
+    /// Isso permite que o designer deixe alguns elementos vazios no Inspector
+    /// </summary>
+    private void UpdateAmmoDisplay(string weaponID) {
+        // CONCEITO: Guard Clause (Validação Rápida)
+        if (string.IsNullOrEmpty(weaponID) || PlayerProgress.Instance == null) {
+            ClearAmmoDisplay();
+            return;
+        }
+
+        // CONCEITO: Buscar Munição Reserva Atual
+        // GetWeaponReserveAmmo retorna quantas balas o jogador tem dessa arma
+        int currentAmmo = PlayerProgress.Instance.GetWeaponReserveAmmo(weaponID);
+        
+        // CONCEITO: Buscar Configuração de Preço
+        // GetWeaponAmmoPricing encontra as informações de preço/quantidade desta arma
+        WeaponAmmoPricing ammoPricing = GetWeaponAmmoPricing(weaponID);
+        
+        // Se não há configuração, não podemos mostrar preço
+        if (string.IsNullOrEmpty(ammoPricing.weaponID)) {
+            ClearAmmoDisplay();
+            return;
+        }
+
+        // CONCEITO: Atualizar Texto de Munição Atual
+        // Mostra "Current: 45/100" por exemplo
+        if (currentAmmoText != null) {
+            currentAmmoText.text = $"Current: {currentAmmo}/{ammoPricing.maxReserveAmmo}";
+        }
+
+        // CONCEITO: Checar se Está no Máximo
+        // Se a munição atual já é igual ao máximo, não há razão para mostrar preço de compra
+        if (currentAmmo >= ammoPricing.maxReserveAmmo) {
+            // Munição em seu máximo
+            if (ammoPriceText != null) {
+                ammoPriceText.text = "MAX AMMO";
+            }
+            if (ammoButton != null) {
+                ammoButton.interactable = false;
+            }
+        } else {
+            // CONCEITO: Atualizar Preço de Compra
+            // Mostra o preço para adicionar mais munição
+            if (ammoPriceText != null) {
+                ammoPriceText.text = $"${ammoPricing.costPerPurchase:N0}";
+            }
+            
+            // CONCEITO: Habilitação Condicional do Botão
+            // O botão só é clicável se o jogador tiver dinheiro suficiente
+            if (ammoButton != null) {
+                ammoButton.interactable = EconomyManager.Instance != null && 
+                                         EconomyManager.Instance.CanAfford(ammoPricing.costPerPurchase);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Clears ammo display texts (resets to empty).
+    /// </summary>
+    private void ClearAmmoDisplay() {
+        if (currentAmmoText != null) currentAmmoText.text = string.Empty;
+        if (ammoPriceText != null) ammoPriceText.text = string.Empty;
+        if (ammoButton != null) ammoButton.interactable = false;
     }
 
     /// <summary>
@@ -582,7 +688,10 @@ public class ShopUI : BaseUI {
             return;
         }
 
-        // Remove existing listeners to avoid duplicate calls
+        // CONCEITO: RemoveAllListeners (Limpeza de Callbacks)
+        // Cada vez que atualizamos o botão, removemos os listeners antigos
+        // Isso evita que múltiplas funções sejam chamadas ao clicar
+        // (sem isso, um botão clicado 5 vezes teria 5 listeners!)
         selectedItemActionButton.onClick.RemoveAllListeners();
 
         if (PlayerProgress.Instance == null || EconomyManager.Instance == null) {
@@ -591,14 +700,28 @@ public class ShopUI : BaseUI {
         }
 
         string itemID = itemData.ItemID;
+        
+        // CONCEITO: Booleanos (True/False)
+        // isUnlocked é true se a arma foi desbloqueada
+        // isMaxLevel é true se chegou no nível máximo (10)
         bool isUnlocked = PlayerProgress.Instance.IsWeaponUnlocked(itemID);
         int currentLevel = PlayerProgress.Instance.GetWeaponLevel(itemID);
         bool isMaxLevel = currentLevel >= PlayerProgress.MAX_UPGRADE_LEVEL;
 
         if (!isUnlocked) {
-            // UNLOCK button
+            // UNLOCK button - arma está bloqueada
             int cost = itemData.UnlockCost;
-            if (selectedItemActionButtonText != null) selectedItemActionButtonText.text = $"UNLOCK - ${cost:N0}";
+            if (selectedItemActionButtonText != null) 
+                selectedItemActionButtonText.text = "UNLOCK";
+            
+            // CONCEITO: Exibir Preço
+            // Mostramos o preço de desbloqueio no elemento de preço separado
+            if (selectedItemPriceText != null)
+                selectedItemPriceText.text = $"${cost:N0}";
+            
+            // CONCEITO: Habilitação Condicional de Botão
+            // interactable = false desabilita o botão (fica cinza e não responde)
+            // interactable = true o habilita (fica verde e clicável)
             selectedItemActionButton.interactable = EconomyManager.Instance.CanAfford(cost);
             selectedItemActionButton.onClick.AddListener(() => OnRightPanelUnlock(itemData));
         } else {
@@ -616,6 +739,34 @@ public class ShopUI : BaseUI {
                 selectedItemActionButton.interactable = EconomyManager.Instance.CanAfford(cost);
                 selectedItemActionButton.onClick.AddListener(() => OnRightPanelUpgrade(itemData));
             }
+        } else if (isMaxLevel) {
+            // MAX LEVEL - arma chegou no nível máximo, não há mais upgrades
+            // CONCEITO: "MAXED OUT" feedback visual
+            // Mostramos "MAXED OUT" sem preço para indicar que não há mais ações disponíveis
+            if (selectedItemActionButtonText != null) 
+                selectedItemActionButtonText.text = "MAXED OUT";
+            
+            // Desabilita o botão porque não há mais ação disponível
+            selectedItemActionButton.interactable = false;
+            
+            // CONCEITO: Ocultar Preço (Limpar Texto)
+            // Quando está maxed out, não há preço a mostrar
+            // Atribuir empty string ("") faz o texto desaparecer
+            if (selectedItemPriceText != null)
+                selectedItemPriceText.text = string.Empty;
+        } else {
+            // UPGRADE button - arma desbloqueada e pode fazer upgrade
+            int cost = CalculateUpgradeCostForItem(itemData, currentLevel);
+            if (selectedItemActionButtonText != null) 
+                selectedItemActionButtonText.text = "UPGRADE";
+            
+            // CONCEITO: Exibir Preço
+            // Mostramos o preço de upgrade no elemento de preço separado
+            if (selectedItemPriceText != null)
+                selectedItemPriceText.text = $"${cost:N0}";
+            
+            selectedItemActionButton.interactable = EconomyManager.Instance.CanAfford(cost);
+            selectedItemActionButton.onClick.AddListener(() => OnRightPanelUpgrade(itemData));
         }
     }
 
@@ -717,6 +868,99 @@ public class ShopUI : BaseUI {
 
         int currentReserve = PlayerProgress.Instance.GetReserveAmmo(itemData.ItemID);
         return currentReserve < itemData.WeaponData.maxReserveAmmo;
+    /// Finds the ammo pricing configuration for the specified weapon ID.
+    /// Returns a default struct if not found (weaponID will be empty string).
+    /// 
+    /// CONCEITO: LINQ FirstOrDefault
+    /// FirstOrDefault procura o primeiro item da lista que atende à condição
+    /// Se encontrar, retorna esse item
+    /// Se não encontrar, retorna um valor padrão (struct vazio com string vazio)
+    /// </summary>
+    private WeaponAmmoPricing GetWeaponAmmoPricing(string weaponID) {
+        // CONCEITO: Busca em Lista (Linear Search)
+        // FirstOrDefault percorre a lista até encontrar um item com weaponID correspondente
+        // Isso é simples e funciona bem para listas pequenas (como nossa lista de armas)
+        return weaponAmmoPricings.FirstOrDefault(w => w.weaponID == weaponID);
+    }
+
+    /// <summary>
+    /// Handles ammo purchase button click.
+    /// Validates funds, adds ammo to reserve, and deducts currency.
+    /// </summary>
+    private void OnAmmoButtonPressed() {
+        // CONCEITO: Guard Clauses (Validações Rápidas)
+        // No início da função, checamos todas as pré-condições
+        // Se qualquer uma falhar, retornamos cedo evitando lógica desnecessária
+        
+        if (selectedItemData == null) {
+            Debug.LogWarning("[ShopUI.OnAmmoButtonPressed] No weapon selected!");
+            return;
+        }
+
+        if (PlayerProgress.Instance == null || EconomyManager.Instance == null) {
+            Debug.LogError("[ShopUI.OnAmmoButtonPressed] PlayerProgress or EconomyManager is null!");
+            return;
+        }
+
+        // CONCEITO: Encontrar Configuração
+        // Buscamos as informações de preço/quantidade desta arma
+        string itemID = selectedItemData.ItemID;
+        WeaponAmmoPricing ammoPricing = GetWeaponAmmoPricing(itemID);
+        
+        // Se não encontramos configuração (weaponID está vazio), significa que não há config
+        if (string.IsNullOrEmpty(ammoPricing.weaponID)) {
+            Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] No ammo pricing configuration found for weapon: {itemID}");
+            return;
+        }
+
+        // CONCEITO: Verificação de Fundos
+        // Antes de gastar, verificamos se o jogador tem dinheiro suficiente
+        if (!EconomyManager.Instance.CanAfford(ammoPricing.costPerPurchase)) {
+            int missingAmount = ammoPricing.costPerPurchase - EconomyManager.Instance.GetCurrentCurrency();
+            Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Insufficient funds! Need {missingAmount} more coins.");
+            // Aqui poderíamos tocar um som de erro ou mostrar uma mensagem visual
+            return;
+        }
+
+        // CONCEITO: Obter Munição Atual
+        // Consultamos quanto de munição reserva o jogador já tem dessa arma
+        int currentAmmo = PlayerProgress.Instance.GetWeaponReserveAmmo(itemID);
+        int newAmmo = currentAmmo + ammoPricing.ammoPerPurchase;
+        
+        // CONCEITO: Validação de Limite (Clamping)
+        // Clamp garante que newAmmo não ultrapasse o máximo permitido
+        // Se newAmmo = 950 e max = 500, Clamp(950, 0, 500) retorna 500
+        newAmmo = Mathf.Clamp(newAmmo, 0, ammoPricing.maxReserveAmmo);
+        
+        // CONCEITO: Calcular Quantidade Real Adicionada
+        // Se havia 490 e o máx é 500, só adicionamos 10 (não os 60 pedidos)
+        int actualAmmoAdded = newAmmo - currentAmmo;
+        
+        // Se já está no máximo, não há nada a fazer
+        if (actualAmmoAdded <= 0) {
+            Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Weapon {itemID} already at max ammo ({ammoPricing.maxReserveAmmo})!");
+            return;
+        }
+
+        // CONCEITO: Calcular Preço Proporcional
+        // Se o jogador só pode adicionar 10 ammo mas compraria 60, cobra menos
+        // (10 / 60) * 300 = 50 moedas ao invés de 300
+        float ammoProportion = (float)actualAmmoAdded / ammoPricing.ammoPerPurchase;
+        int actualCost = Mathf.RoundToInt(ammoPricing.costPerPurchase * ammoProportion);
+        
+        // CONCEITO: Transação de Moeda
+        // Tenta descontar a moeda
+        if (EconomyManager.Instance.TrySpendCurrency(actualCost)) {
+            // Se bem-sucedido, adiciona a munição
+            PlayerProgress.Instance.AddWeaponReserveAmmo(itemID, actualAmmoAdded);
+            
+            Debug.Log($"[ShopUI.OnAmmoButtonPressed] Purchased {actualAmmoAdded} ammo for {itemID}. Cost: ${actualCost}. New total: {newAmmo}");
+            
+            // Atualiza o display para refletir a nova munição
+            UpdateSelectedItemInfo();
+        } else {
+            Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Failed to spend currency!");
+        }
     }
 
     /// <summary>
@@ -1111,4 +1355,32 @@ public struct WeaponCameraZPosition {
     [Tooltip("Camera Z position for this weapon (can be negative). Negative = camera farther away, Positive = camera closer.")]
     [SerializeField]
     public float cameraZPosition;
+}
+
+/// <summary>
+/// Serializable struct to configure ammo purchase pricing and limits for each weapon.
+/// This defines how much ammo is added per purchase, the cost, and maximum reserve ammo.
+/// </summary>
+[System.Serializable]
+public struct WeaponAmmoPricing {
+    // CONCEITO: Struct para Configuração de Dados
+    // Este struct armazena as configurações de compra de munição para uma arma específica
+    // Permite que diferentes armas tenham preços e quantidades diferentes
+    // Exemplo: Pistola (+15 muni por $100) vs SMG (+60 muni por $300)
+    
+    [Tooltip("The unique identifier for the weapon (e.g., 'Pistol', 'SMG', 'Shotgun').")]
+    [SerializeField]
+    public string weaponID;
+    
+    [Tooltip("Amount of ammo added per purchase.")]
+    [SerializeField]
+    public int ammoPerPurchase;
+    
+    [Tooltip("Cost in currency per ammo purchase.")]
+    [SerializeField]
+    public int costPerPurchase;
+    
+    [Tooltip("Maximum reserve ammo this weapon can hold.")]
+    [SerializeField]
+    public int maxReserveAmmo;
 }
