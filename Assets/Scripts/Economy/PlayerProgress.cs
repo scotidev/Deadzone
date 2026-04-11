@@ -236,6 +236,30 @@ public class PlayerProgress : MonoBehaviour {
         return weaponReserveAmmo.TryGetValue(weaponID, out int ammo) ? ammo : 0;
     }
 
+    /// <summary>
+    /// Public wrapper for GetReserveAmmo to maintain consistent naming convention.
+    /// Gets the current reserve ammo for a weapon (used by Shop UI).
+    /// </summary>
+    /// <param name="weaponID">The weapon to check.</param>
+    /// <returns>Current reserve ammo count.</returns>
+    public int GetWeaponReserveAmmo(string weaponID) {
+        return GetReserveAmmo(weaponID);
+    }
+
+    /// <summary>
+    /// Public wrapper for AddReserveAmmo to maintain consistent naming convention.
+    /// Adds reserve ammo for a weapon without specifying max (used by Shop UI).
+    /// </summary>
+    /// <param name="weaponID">The weapon to add ammo for.</param>
+    /// <param name="amount">Amount of ammo to add.</param>
+    public void AddWeaponReserveAmmo(string weaponID, int amount) {
+        // This is a simplified wrapper that doesn't enforce max limit
+        // The caller (ShopUI) handles max limit enforcement
+        int currentAmmo = GetReserveAmmo(weaponID);
+        weaponReserveAmmo[weaponID] = currentAmmo + amount;
+        Debug.Log($"[PlayerProgress] Added {amount} reserve ammo to {weaponID}. New total: {weaponReserveAmmo[weaponID]}");
+    }
+
     #endregion
 
     #region Buildables
