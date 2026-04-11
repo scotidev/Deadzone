@@ -17974,6 +17974,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
+      propertyPath: ammoButton
+      value: 
+      objectReference: {fileID: 1064943564}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
       propertyPath: closeButton
       value: 
       objectReference: {fileID: 3288950}
@@ -17982,6 +17987,11 @@ PrefabInstance:
       propertyPath: currencyText
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
+      propertyPath: ammoPriceText
+      value: 
+      objectReference: {fileID: 40619075}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
       propertyPath: previewAnchor
@@ -18028,6 +18038,11 @@ PrefabInstance:
       propertyPath: shopItems.Array.size
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
+      propertyPath: selectedItemPriceText
+      value: 
+      objectReference: {fileID: 562059415}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
       propertyPath: fovOverrides.Array.size
@@ -18089,6 +18104,11 @@ PrefabInstance:
         type: 2}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
+      propertyPath: selectedItemActionButton
+      value: 
+      objectReference: {fileID: 1311570965}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
       propertyPath: cameraZPositions.Array.size
       value: 2
       objectReference: {fileID: 0}
@@ -18097,6 +18117,11 @@ PrefabInstance:
       propertyPath: selectedItemDescriptionText
       value: 
       objectReference: {fileID: 178168904}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
+      propertyPath: selectedItemActionButtonText
+      value: 
+      objectReference: {fileID: 562866462}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
       propertyPath: fovOverrides.Array.data[0].fovValue
@@ -18381,12 +18406,12 @@ PrefabInstance:
     - target: {fileID: 7147455108484642097, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: -170
       objectReference: {fileID: 0}
     - target: {fileID: 7147455108484642097, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: -1080
       objectReference: {fileID: 0}
     - target: {fileID: 7147455108484642097, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}

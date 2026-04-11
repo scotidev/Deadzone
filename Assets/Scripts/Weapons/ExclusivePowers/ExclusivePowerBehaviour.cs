@@ -53,6 +53,11 @@ namespace InfimaGames.LowPolyShooterPack
         [SerializeField]
         protected AudioClip activationSound;
 
+        /// <summary>
+        /// Unified audio service reference used to centralize playback.
+        /// </summary>
+        protected IAudioManagerService audioManagerService;
+
         #endregion
 
         #region UNITY
@@ -65,6 +70,9 @@ namespace InfimaGames.LowPolyShooterPack
             if (weapon == null) {
                 Debug.LogError($"[ExclusivePowerBehaviour] No WeaponBehaviour found on {gameObject.name}!");
             }
+
+            // First principle: resolve shared services once and reuse them to avoid repeated lookups at runtime.
+            audioManagerService = ServiceLocator.Current.Get<IAudioManagerService>();
         }
 
         #endregion
@@ -89,11 +97,8 @@ namespace InfimaGames.LowPolyShooterPack
 
             // Play sound effect
             if (activationSound != null && weapon != null) {
-                // Try to play through weapon's audio source if available
-                AudioSource audioSource = weapon.GetComponent<AudioSource>();
-                if (audioSource != null) {
-                    audioSource.PlayOneShot(activationSound);
-                }
+                // First principle: world-origin sounds should be spatial so the listener perceives where they come from.
+                audioManagerService?.PlaySFX3DAttached(activationSound, weapon.transform, 1f, 1f, 25f);
             }
 
             Debug.Log($"[ExclusivePowerBehaviour] Exclusive power activated on {gameObject.name}!");

@@ -70,6 +70,14 @@ namespace InfimaGames.LowPolyShooterPack
         /// <param name="clip">Clipe de som a tocar.</param>
         /// <param name="volumeScale">Multiplicador de volume para este som específico (0 a 1).</param>
         void PlaySFX2D(AudioClip clip, float volumeScale = 1f);
+
+        /// <summary>
+        /// Plays a dialogue line as a non-spatial (2D) sound.
+        /// Dialogue is intentionally 2D so it stays intelligible regardless of distance.
+        /// </summary>
+        /// <param name="clip">Dialogue clip to play.</param>
+        /// <param name="volumeScale">Per-clip volume multiplier (0 to 1).</param>
+        void PlayDialogue2D(AudioClip clip, float volumeScale = 1f);
         
         /// <summary>
         /// Define o volume geral de efeitos sonoros (0 a 1).
@@ -81,6 +89,16 @@ namespace InfimaGames.LowPolyShooterPack
         /// Obtém o volume atual de efeitos sonoros.
         /// </summary>
         float GetSFXVolume();
+
+        /// <summary>
+        /// Sets the master volume for dialogue playback (0 to 1).
+        /// </summary>
+        void SetDialogueVolume(float volume);
+
+        /// <summary>
+        /// Gets the current dialogue master volume.
+        /// </summary>
+        float GetDialogueVolume();
         
         #endregion
 
