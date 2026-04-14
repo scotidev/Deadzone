@@ -187,34 +187,7 @@ public class UpgradeManager : MonoBehaviour {
         Debug.Log($"[UpgradeManager] Exclusive power will activate for {weaponID} when equipped.");
     }
 
-    /// <summary>
-    /// Activates exclusive power on a weapon instance if it's at max level.
-    /// Adds the appropriate power component if it doesn't exist.
-    /// </summary>
-    private void ActivateExclusivePowerOnWeapon(InfimaGames.LowPolyShooterPack.WeaponBehaviour weaponInstance) {
-        if (weaponInstance == null) return;
 
-        // Check if weapon already has an exclusive power component
-        ExclusivePowerBehaviour existingPower = weaponInstance.GetComponent<ExclusivePowerBehaviour>();
-        if (existingPower != null) {
-            // Power already exists, just activate it
-            if (!existingPower.IsActive()) {
-                existingPower.ActivatePower();
-            }
-            return;
-        }
-
-        //// Determine which power to add based on weapon name
-        //string weaponName = weaponInstance.gameObject.name.ToLower();
-        ////System.Type powerType = GetPowerTypeForWeapon(weaponName);
-
-        //if (powerType != null) {
-        //    // Add the appropriate power component
-        //    ExclusivePowerBehaviour newPower = (ExclusivePowerBehaviour)weaponInstance.gameObject.AddComponent(powerType);
-        //    newPower.ActivatePower();
-        //    Debug.Log($"[UpgradeManager] Added and activated {powerType.Name} on {weaponInstance.gameObject.name}");
-        //}
-    }
 
     /// <summary>
     /// Maps weapon names to their exclusive power types.

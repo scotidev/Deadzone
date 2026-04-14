@@ -7,6 +7,8 @@ using UnityEngine;
 ///</summary>
 public class BuildableDataSO : ItemDataSO {
     [Header("Buildable Stats")]
+    public float damage;
+    public int explosionRadius;
     public float resistance;
     public float length;
     public int maxAmount;
@@ -27,6 +29,6 @@ public class BuildableDataSO : ItemDataSO {
     public Vector3 overlapBoxSize = new Vector3(1f, 1f, 1f);
 
     // Implement stat labels/values for shop UI (example for Barricade)
-    public override string[] GetStatLabels() => new[] { "Resistance", "Length", "Ammo" };
-    public override float[] GetStatValues() => new[] { resistance, length, maxAmount };
+    public override string[] GetStatLabels() => new[] { "Damage", "Resistance", "Length", "Ammo", "Explosion Radius" };
+    public override float[] GetStatValues() => new[] { damage, resistance, length, maxAmount, explosionRadius };
 }
