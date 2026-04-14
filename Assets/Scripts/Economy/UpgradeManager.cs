@@ -1,5 +1,5 @@
-using UnityEngine;
 using InfimaGames.LowPolyShooterPack;
+using UnityEngine;
 
 /// <summary>
 /// Manages weapon upgrades and applies stat changes to weapons at runtime.
@@ -52,7 +52,7 @@ public class UpgradeManager : MonoBehaviour {
         //   Nível 9→10: 100 × 9 × 1.5 = 1350 moedas
         // OBSERVE: O custo aumenta muito mais rápido do que linearmente!
         float cost = baseUpgradeCost * currentLevel * 1.5f;
-        
+
         // CONVERSÃO: Mathf.RoundToInt() arredonda float para int
         // Necessário porque currency é número inteiro (não temos "meio moeda")
         return Mathf.RoundToInt(cost);
@@ -110,13 +110,13 @@ public class UpgradeManager : MonoBehaviour {
         if (upgradeSuccess) {
             int newLevel = PlayerProgress.Instance.GetWeaponLevel(weaponID);
             Debug.Log($"[UpgradeManager] {weaponID} upgraded to level {newLevel} for {upgradeCost} currency.");
-            
+
             // Check if reached max level (unlocked exclusive power)
             if (newLevel == PlayerProgress.MAX_UPGRADE_LEVEL) {
                 Debug.Log($"[UpgradeManager] {weaponID} reached MAX LEVEL! Exclusive power unlocked!");
                 ActivateExclusivePower(weaponID);
             }
-            
+
             return true;
         }
 
@@ -169,11 +169,11 @@ public class UpgradeManager : MonoBehaviour {
         // or storing these values in a way the weapon can read them
         // For now, we log them - implementation in Phase 5
 
-        // Check if exclusive power is unlocked and activate it
-        if (weaponData.HasExclusivePower(currentLevel)) {
-            Debug.Log($"[UpgradeManager] {weaponID} has exclusive power: {weaponData.exclusivePowerDescription}");
-            ActivateExclusivePowerOnWeapon(weaponInstance);
-        }
+        //// Check if exclusive power is unlocked and activate it
+        //if (weaponData.HasExclusivePower(currentLevel)) {
+        //    Debug.Log($"[UpgradeManager] {weaponID} has exclusive power: {weaponData.exclusivePowerDescription}");
+        //    ActivateExclusivePowerOnWeapon(weaponInstance);
+        //}
     }
 
     /// <summary>
@@ -187,51 +187,24 @@ public class UpgradeManager : MonoBehaviour {
         Debug.Log($"[UpgradeManager] Exclusive power will activate for {weaponID} when equipped.");
     }
 
-    /// <summary>
-    /// Activates exclusive power on a weapon instance if it's at max level.
-    /// Adds the appropriate power component if it doesn't exist.
-    /// </summary>
-    private void ActivateExclusivePowerOnWeapon(InfimaGames.LowPolyShooterPack.WeaponBehaviour weaponInstance) {
-        if (weaponInstance == null) return;
 
-        // Check if weapon already has an exclusive power component
-        ExclusivePowerBehaviour existingPower = weaponInstance.GetComponent<ExclusivePowerBehaviour>();
-        if (existingPower != null) {
-            // Power already exists, just activate it
-            if (!existingPower.IsActive()) {
-                existingPower.ActivatePower();
-            }
-            return;
-        }
-
-        // Determine which power to add based on weapon name
-        string weaponName = weaponInstance.gameObject.name.ToLower();
-        System.Type powerType = GetPowerTypeForWeapon(weaponName);
-
-        if (powerType != null) {
-            // Add the appropriate power component
-            ExclusivePowerBehaviour newPower = (ExclusivePowerBehaviour)weaponInstance.gameObject.AddComponent(powerType);
-            newPower.ActivatePower();
-            Debug.Log($"[UpgradeManager] Added and activated {powerType.Name} on {weaponInstance.gameObject.name}");
-        }
-    }
 
     /// <summary>
     /// Maps weapon names to their exclusive power types.
     /// </summary>
-    private System.Type GetPowerTypeForWeapon(string weaponName) {
-        // Match weapon names (case insensitive) to power types
-        if (weaponName.Contains("pistol")) return typeof(InfiniteAmmoPower);
-        if (weaponName.Contains("smg") || weaponName.Contains("ak")) return typeof(BulletStormPower);
-        if (weaponName.Contains("shotgun")) return typeof(ExplosiveShellsPower);
-        if (weaponName.Contains("medkit") || weaponName.Contains("health")) return typeof(InstantHealPower);
-        if (weaponName.Contains("grenade")) return typeof(ClusterGrenadePower);
-        // Note: Buildables (Barricades, Explosive Barrels, Traps) are not weapon instances
-        // Their powers would be applied when they are placed in the world
-        if (weaponName.Contains("special")) return typeof(DevastationPower);
-        
-        return null;
-    }
+    //private System.Type GetPowerTypeForWeapon(string weaponName) {
+    //    // Match weapon names (case insensitive) to power types
+    //    if (weaponName.Contains("pistol")) return typeof(InfiniteAmmoPower);
+    //    if (weaponName.Contains("smg") || weaponName.Contains("ak")) return typeof(BulletStormPower);
+    //    if (weaponName.Contains("shotgun")) return typeof(ExplosiveShellsPower);
+    //    if (weaponName.Contains("medkit") || weaponName.Contains("health")) return typeof(InstantHealPower);
+    //    if (weaponName.Contains("grenade")) return typeof(ClusterGrenadePower);
+    //    // Note: Buildables (Barricades, Explosive Barrels, Traps) are not weapon instances
+    //    // Their powers would be applied when they are placed in the world
+    //    if (weaponName.Contains("special")) return typeof(DevastationPower);
+
+    //    return null;
+    //}
 
     /// <summary>
     /// Gets the next upgrade cost for a weapon without performing the upgrade.

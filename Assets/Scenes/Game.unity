@@ -9629,21 +9629,6 @@ MonoBehaviour:
   visualLocalPosition: {x: 0.18, y: -0.2, z: 0.7}
   visualLocalEuler: {x: 0, y: 0, z: -20}
   visualLocalScale: {x: 0.08, y: 0.16, z: 0.8}
---- !u!114 &1776962838
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1459338491}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 741ab73d7709a2849a2fe8c3572e622e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WeaponSelector
-  character: {fileID: 1413941464}
-  inventory: {fileID: 1735731087}
-  enableDebugLogs: 1
 --- !u!114 &1776962848
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9657,6 +9642,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerArmor
   maxArmor: 100
+--- !u!114 &1776962849 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3155399887243227366, guid: a20c4961b0655574e9f91c372538fa9f,
+    type: 3}
+  m_PrefabInstance: {fileID: 4545309492575171591}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1459338491}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34192f55e8b91f64297aabae70a9ff81, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingController
+--- !u!114 &1776962858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1459338491}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 845d8c00d2d7a964e88c528c8baa2925, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSelector
+  character: {fileID: 1413941464}
+  inventory: {fileID: 1735731087}
+  buildingController: {fileID: 1776962849}
+  enableDebugLogs: 1
 --- !u!1 &1777799202
 GameObject:
   m_ObjectHideFlags: 0
@@ -16574,6 +16587,12 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2071537008}
   m_CullTransparentMesh: 1
+--- !u!4 &2074451063 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8493848889635974000, guid: a20c4961b0655574e9f91c372538fa9f,
+    type: 3}
+  m_PrefabInstance: {fileID: 4545309492575171591}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2084480059
 GameObject:
   m_ObjectHideFlags: 0
@@ -18302,7 +18321,7 @@ PrefabInstance:
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
       propertyPath: shopItems.Array.size
-      value: 9
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
@@ -18411,12 +18430,12 @@ PrefabInstance:
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
       propertyPath: cameraZPositions.Array.data[0].weaponID
-      value: Pistol
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
       propertyPath: cameraZPositions.Array.data[1].weaponID
-      value: SMG
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
@@ -18749,8 +18768,18 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 21942733976301129, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
+      propertyPath: jumpForce
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 21942733976301129, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: stepSmooth
+      value: 0.12
+      objectReference: {fileID: 0}
+    - target: {fileID: 21942733976301129, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
       propertyPath: maxStepHeight
-      value: 1
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 21942733976301129, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
@@ -18759,9 +18788,19 @@ PrefabInstance:
       objectReference: {fileID: 1793505543}
     - target: {fileID: 21942733976301129, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
+      propertyPath: stepCheckDistance
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 21942733976301129, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
       propertyPath: crouchCameraOffset
       value: -0.6
       objectReference: {fileID: 0}
+    - target: {fileID: 21942733976301129, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: characterRootTransform
+      value: 
+      objectReference: {fileID: 2074451063}
     - target: {fileID: 21942733976301129, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: crouchHeightMultiplier
@@ -18867,7 +18906,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_ActionEvents.Array.data[17].m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1776962838}
+      objectReference: {fileID: 1776962858}
     - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: m_ActionEvents.Array.data[19].m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -18906,7 +18945,7 @@ PrefabInstance:
     - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: m_ActionEvents.Array.data[17].m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: WeaponSelector, Assembly-CSharp
+      value: ItemSelector, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
@@ -18941,7 +18980,7 @@ PrefabInstance:
     - target: {fileID: 2768567120988589389, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -113.35
+      value: -114.92931
       objectReference: {fileID: 0}
     - target: {fileID: 2768567120988589389, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
@@ -19019,11 +19058,11 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2765326547094986479, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1776962838}
+      addedObject: {fileID: 1776962848}
     - targetCorrespondingSourceObject: {fileID: 2765326547094986479, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1776962848}
+      addedObject: {fileID: 1776962858}
   m_SourcePrefab: {fileID: 100100000, guid: a20c4961b0655574e9f91c372538fa9f, type: 3}
 --- !u!1001 &8256302428203510670
 PrefabInstance:

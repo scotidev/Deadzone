@@ -12,20 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54ff5c628e24e7b4da18cce067ddbe98, type: 3}
   m_Name: Vest
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemData
-  itemID: Vest
+  itemID: 8
   itemName: Vest
-  description: Protective armor that can be repaired
+  itemDescription: Protects you from taking damage.
+  itemData: {fileID: 11400000, guid: e44b5bda533ab7a4180840811c517de1, type: 2}
   icon: {fileID: 21300000, guid: 7a0ed12306f916b4e9780ef1485272ad, type: 3}
   previewPrefab: {fileID: 0}
-  isWeapon: 0
-  isBuildable: 0
-  isVest: 1
-  damageDisplay: 0
-  fireRateDisplay: 0
-  ammoCapacityDisplay: 0
-  unlockCost: 1500
-  baseUpgradeCost: 150
-  ammoCost: 0
-  ammoAmountPerPurchase: 0
-  unitCost: 250
-  weaponData: {fileID: 0}
+  unlockCost: 3000
+  baseUpgradeCost: 1000
+  ammoCost: 500
+  ammoAmountPerPurchase: 1
+  levelToUnlockExclusive: 9
+  exclusiveUpgradeCost: 15000
+  exclusivePowerDescription: Repair itself when not in combat.

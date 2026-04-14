@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98c757ab19163464f8313e1bcffe423c, type: 3}
+  m_Name: AK47Data
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponDataSO
+  itemID: 2
+  itemName: AK47
+  description: 
+  icon: {fileID: 0}
+  previewPrefab: {fileID: 0}
+  weaponID: SMG
+  weaponName: Submachine Gun
+  baseDamage: 15
+  baseFireRate: 200
+  baseMagazineCapacity: 30
+  maxReserveAmmo: 200
+  damageScaling: 0.1
+  fireRateScaling: 0.05
+  maxFireRate: 1000
+  magazineScaling: 0.1
+  exclusivePowerID: 2
+  exclusivePowerDescription: Bullet storm - fires 3x faster for 5 seconds

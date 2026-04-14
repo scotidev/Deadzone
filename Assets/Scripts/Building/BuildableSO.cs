@@ -5,7 +5,13 @@ using UnityEngine;
 ///<summary> 
 /// ScriptableObject that represents a buildable item in the game.
 ///</summary>
-public class BuildableSO : ScriptableObject {
+public class BuildableDataSO : ItemDataSO {
+    [Header("Buildable Stats")]
+    public float damage;
+    public int explosionRadius;
+    public float resistance;
+    public float length;
+    public int maxAmount;
 
     [Header("Prefabs")]
 
@@ -21,4 +27,8 @@ public class BuildableSO : ScriptableObject {
 
     [Tooltip("Size of the box used to check for overlapping objects when placing the buildable item. Adjust this to ensure proper placement and avoid collisions with other objects.")]
     public Vector3 overlapBoxSize = new Vector3(1f, 1f, 1f);
+
+    // Implement stat labels/values for shop UI (example for Barricade)
+    public override string[] GetStatLabels() => new[] { "Damage", "Resistance", "Length", "Ammo", "Explosion Radius" };
+    public override float[] GetStatValues() => new[] { damage, resistance, length, maxAmount, explosionRadius };
 }

@@ -5,14 +5,14 @@ using InfimaGames.LowPolyShooterPack;
 /// <summary>
 /// Controls the building mode: selecting items, showing the ghost object, and placing the real object in the world.
 /// </summary>
-public class BuildingController : MonoBehaviour {
+    public class BuildingController : MonoBehaviour, ISelectableItem {
     /// <summary>Global access point to the single <see cref="BuildingController"/> instance.</summary>
     public static BuildingController Instance { get; private set; }
 
     [Header("Buildable Items (keys 6 / 7 / 8)")]
-    [SerializeField] private BuildableSO itemSlot6; // Wall
-    [SerializeField] private BuildableSO itemSlot7; // Explosive Barrel
-    [SerializeField] private BuildableSO itemSlot8; // Beartrap
+    [SerializeField] private BuildableDataSO itemSlot6; // Wall
+    [SerializeField] private BuildableDataSO itemSlot7; // Explosive Barrel
+    [SerializeField] private BuildableDataSO itemSlot8; // Beartrap
 
     [Header("Detection Settings")]
     [SerializeField] private LayerMask groundLayer;
@@ -24,7 +24,7 @@ public class BuildingController : MonoBehaviour {
     private Camera playerCamera;
     private GameObject currentGhost;
     private GhostObject currentGhostObject;
-    private BuildableSO selectedItem;
+    private BuildableDataSO selectedItem;
 
     public bool IsPlacing => currentGhost != null;
 
@@ -63,29 +63,8 @@ public class BuildingController : MonoBehaviour {
         }
     }
 
-    /// <summary>
-    /// Called by PlayerInput when the player presses the key bound to "Place Buildable 1" (default: 6).
-    /// </summary>
-    public void OnPlaceBuildable1(InputAction.CallbackContext context) {
-        if (context.phase == InputActionPhase.Performed)
-            SelectItem(itemSlot6);
-    }
-
-    /// <summary>
-    /// Called by PlayerInput when the player presses the key bound to "Place Buildable 2" (default: 7).
-    /// </summary>
-    public void OnPlaceBuildable2(InputAction.CallbackContext context) {
-        if (context.phase == InputActionPhase.Performed)
-            SelectItem(itemSlot7);
-    }
-
-    /// <summary>
-    /// Called by PlayerInput when the player presses the key bound to "Place Buildable 3" (default: 8).
-    /// </summary>
-    public void OnPlaceBuildable3(InputAction.CallbackContext context) {
-        if (context.phase == InputActionPhase.Performed)
-            SelectItem(itemSlot8);
-    }
+    // Legacy Input Actions removed: OnPlaceBuildable1, OnPlaceBuildable2, OnPlaceBuildable3.
+    // Buildable selection is now centralized in ItemSelector.cs through SelectBuildableBySlot().
 
     /// <summary>
     /// Public method to select a buildable item by slot number (1, 2, or 3).
@@ -117,7 +96,7 @@ public class BuildingController : MonoBehaviour {
     /// Checks if player has any of this buildable in inventory before allowing placement.
     /// </summary>
     /// <param name="item"></param>
-    private void SelectItem(BuildableSO item) {
+    private void SelectItem(BuildableDataSO item) {
         ResolvePlayerCharacter();
         if (item == null) return;
 
@@ -253,11 +232,27 @@ public class BuildingController : MonoBehaviour {
     /// <summary>
     /// Maps BuildableSO to buildable ID for inventory tracking.
     /// </summary>
-    private string GetBuildableID(BuildableSO buildable) {
-        if (buildable == itemSlot6) return "Barricades";
-        if (buildable == itemSlot7) return "ExplosiveBarrels";
-        if (buildable == itemSlot8) return "Traps";
+    public string GetBuildableID(BuildableDataSO buildable) {
+        if (buildable == itemSlot6) return "6"; // Barricades
+        if (buildable == itemSlot7) return "7"; // ExplosiveBarrels
+        if (buildable == itemSlot8) return "8"; // Traps
         return null;
+    }
+
+    /// <summary>
+    /// Selects the currently chosen buildable item.
+    /// This method is part of the ISelectableItem interface.
+    /// </summary>
+    public void Select()
+    {
+        // The BuildingController's Select logic is handled by SelectItem(BuildableDataSO item),
+        // which is called by SelectBuildableBySlot(int slotNumber).
+        // For ISelectableItem, we need a way to select the currently *staged* buildable.
+        // If there's a selectedItem, re-select it to potentially cancel placement if already selected.
+        if (selectedItem != null)
+        {
+            SelectItem(selectedItem);
+        }
     }
 
     /// <summary>
