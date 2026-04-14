@@ -60,7 +60,7 @@ public class ItemSelector : MonoBehaviour {
         }
 
         if (buildingController == null) {
-            buildingController = FindObjectOfType<BuildingController>();
+            buildingController = FindFirstObjectByType<BuildingController>();
             if (buildingController == null) {
                 Debug.LogWarning("[ItemSelector] BuildingController reference is missing.");
             }
