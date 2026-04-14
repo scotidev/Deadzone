@@ -87,7 +87,7 @@ public class PlayerProgress : MonoBehaviour {
     private void InitializeDefaults() {
         // Unlock the Pistol by default (starting weapon)
         UnlockWeapon("Pistol");
-        
+
         Debug.Log("[PlayerProgress] Initialized. Pistol unlocked by default.");
     }
 

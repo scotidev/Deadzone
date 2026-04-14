@@ -25,7 +25,7 @@ public class ShopUI : BaseUI {
     [SerializeField] private RectTransform itemsContainer;
     [SerializeField] private ShopItemCard shopItemCardPrefab;
     [SerializeField] private Button closeButton;
-    [SerializeField] private List<ShopItemData> shopItems = new List<ShopItemData>();
+    [SerializeField] private List<ShopItemDataSO> shopItems = new List<ShopItemDataSO>();
 
     [Header("Grid Layout")]
     [Tooltip("Forces the items grid to occupy only the left half of the shop panel.")]
@@ -101,7 +101,7 @@ public class ShopUI : BaseUI {
     [SerializeField] private TextMeshProUGUI currencyText;
 
     private GridLayoutGroup itemsGridLayout;
-    private ShopItemData selectedItemData;
+    private ShopItemDataSO selectedItemData;
     
     // CONCEITO: GameObject (Objeto 3D)
     // Um GameObject é como uma "marionete" 3D dentro da cena.
@@ -299,7 +299,7 @@ public class ShopUI : BaseUI {
         // Loop through each item in our list
         for (int index = 0; index < shopItems.Count; index++)
         {
-            ShopItemData itemData = shopItems[index];
+            ShopItemDataSO itemData = shopItems[index];
             
             // Skip null entries (empty slots)
             if (itemData == null)
@@ -437,10 +437,10 @@ public class ShopUI : BaseUI {
     /// Selects the first configured weapon so the right panel is populated when the shop opens.
     /// </summary>
     private void SelectInitialItem() {
-        ShopItemData fallbackItem = null;
+        ShopItemDataSO fallbackItem = null;
 
         for (int index = 0; index < shopItems.Count; index++) {
-            ShopItemData itemData = shopItems[index];
+            ShopItemDataSO itemData = shopItems[index];
             if (itemData == null) {
                 continue;
             }
@@ -449,7 +449,8 @@ public class ShopUI : BaseUI {
                 fallbackItem = itemData;
             }
 
-            if (itemData.IsWeapon) {
+            // Novo: seleciona primeiro item que for arma (WeaponDataSO)
+            if (itemData.ItemData is WeaponDataSO) {
                 HandleCardSelected(itemData);
                 return;
             }
@@ -470,7 +471,7 @@ public class ShopUI : BaseUI {
     /// 4. Modelo 3D da arma (instancia e posiciona)
     /// </summary>
     /// <param name="itemData">Data from the clicked card.</param>
-    private void HandleCardSelected(ShopItemData itemData) {
+    private void HandleCardSelected(ShopItemDataSO itemData) {
         // Armazenar qual item foi selecionado
         // Isso é importante porque precisamos desse dado em vários lugares
         selectedItemData = itemData;
@@ -494,7 +495,7 @@ public class ShopUI : BaseUI {
     /// Keeps right-side stats synchronized after purchases and upgrades on the selected card.
     /// </summary>
     /// <param name="itemData">Data from the card that changed state.</param>
-    private void HandleCardStateChanged(ShopItemData itemData) {
+    private void HandleCardStateChanged(ShopItemDataSO itemData) {
         if (selectedItemData == null || itemData == null || itemData != selectedItemData) {
             return;
         }
@@ -505,7 +506,7 @@ public class ShopUI : BaseUI {
     /// <summary>
     /// Handles unlock/upgrade button click from the card, delegating logic to right-panel action button.
     /// </summary>
-    private void HandleCardUnlockUpgrade(ShopItemData itemData) {
+    private void HandleCardUnlockUpgrade(ShopItemDataSO itemData) {
         selectedItemData = itemData;
         UpdateSelectedItemInfo();
         if (selectedItemActionButton != null) {
@@ -533,26 +534,18 @@ public class ShopUI : BaseUI {
 
         SetSelectedInfoTexts(itemName, description);
         
-        // Update stat blocks only for weapons
-        if (selectedItemData.IsWeapon && selectedItemData.WeaponData != null) {
+        // Novo: Atualiza stats só para armas (WeaponDataSO)
+        if (selectedItemData.ItemData is WeaponDataSO weaponData) {
             int level = 1;
             if (PlayerProgress.Instance != null) {
                 level = Mathf.Max(1, PlayerProgress.Instance.GetWeaponLevel(selectedItemData.ItemID));
             }
 
-            WeaponDataSO weaponData = selectedItemData.WeaponData;
-            
             // CONCEITO: Normalização de Stats
-            // Em vez de mostrar valores brutos (100 damage, 200 RPM), 
-            // convertemos para escala 0-5 barras usando WeaponStatsCalculator
-            // Isso torna a interface mais legível e intuitiva
-            
-            // Current level stats (normalized to 0-5 bars)
             float currentDamageNormalized = WeaponStatsCalculator.CalculateAndNormalizeDamage(weaponData, level);
             float currentFireRateNormalized = WeaponStatsCalculator.CalculateAndNormalizeFireRate(weaponData, level);
             float currentAmmoNormalized = WeaponStatsCalculator.CalculateAndNormalizeAmmo(weaponData, level);
 
-            // Get upgrade preview values (next level, normalized)
             float nextDamageNormalized = level < PlayerProgress.MAX_UPGRADE_LEVEL 
                 ? WeaponStatsCalculator.CalculateAndNormalizeDamage(weaponData, level + 1) 
                 : currentDamageNormalized;
@@ -563,11 +556,7 @@ public class ShopUI : BaseUI {
                 ? WeaponStatsCalculator.CalculateAndNormalizeAmmo(weaponData, level + 1) 
                 : currentAmmoNormalized;
 
-            // Display stat blocks with upgrade preview
-            // CONCEITO: StatBlockDisplay espera valores normalizados (0-5)
-            // Agora passamos valores já normalizados ao invés de valores brutos
             if (damageBlockDisplay != null) {
-                // Max stat value = 5 (normalized range)
                 damageBlockDisplay.SetMaxStatValue(WeaponStatsCalculator.STAT_BARS);
                 damageBlockDisplay.SetStatValues(currentDamageNormalized, nextDamageNormalized);
             }
@@ -582,8 +571,6 @@ public class ShopUI : BaseUI {
                 ammoBlockDisplay.SetStatValues(currentAmmoNormalized, nextAmmoNormalized);
             }
             
-            // CONCEITO: Atualizar Display de Munição
-            // Mostra a munição reserva atual do jogador para esta arma
             UpdateAmmoDisplay(selectedItemData.ItemID);
         } else {
             ClearStatBlocks();
@@ -683,7 +670,7 @@ public class ShopUI : BaseUI {
     /// <summary>
     /// Updates the right-side action button state (Unlock, Upgrade, Buy Ammo, etc).
     /// </summary>
-    private void UpdateActionButton(ShopItemData itemData, int dummy) {
+    private void UpdateActionButton(ShopItemDataSO itemData, int dummy) {
         if (selectedItemActionButton == null || itemData == null) {
             return;
         }
@@ -758,7 +745,7 @@ public class ShopUI : BaseUI {
     /// <summary>
     /// Handles unlock from the right-panel action button.
     /// </summary>
-    private void OnRightPanelUnlock(ShopItemData itemData) {
+    private void OnRightPanelUnlock(ShopItemDataSO itemData) {
         if (itemData == null || EconomyManager.Instance == null || PlayerProgress.Instance == null) {
             return;
         }
@@ -777,7 +764,7 @@ public class ShopUI : BaseUI {
     /// <summary>
     /// Handles upgrade from the right-panel action button.
     /// </summary>
-    private void OnRightPanelUpgrade(ShopItemData itemData) {
+    private void OnRightPanelUpgrade(ShopItemDataSO itemData) {
         if (itemData == null || UpgradeManager.Instance == null || PlayerProgress.Instance == null) {
             return;
         }
@@ -797,7 +784,7 @@ public class ShopUI : BaseUI {
     /// <summary>
     /// Helper to calculate upgrade cost for a given item at its current level.
     /// </summary>
-    private int CalculateUpgradeCostForItem(ShopItemData itemData, int currentLevel) {
+    private int CalculateUpgradeCostForItem(ShopItemDataSO itemData, int currentLevel) {
         return UpgradeManager.Instance != null ? UpgradeManager.Instance.GetNextUpgradeCost(itemData.ItemID, itemData.BaseUpgradeCost) : 0;
     }
 

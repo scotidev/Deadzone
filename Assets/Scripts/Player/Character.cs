@@ -1,4 +1,4 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
+// Copyright 2021, Infima Games. All Rights Reserved.
 
 using System;
 using System.Collections;
@@ -821,8 +821,9 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
+        /// <summary>
         /// Public method to request a weapon equip by index.
-        /// This is called by external systems like WeaponSelector.
+        /// This is called by external systems like ItemSelector.
         /// Validates that the weapon change is allowed before starting the equip coroutine.
         /// </summary>
         /// <param name="weaponIndex">Index of the weapon to equip in the inventory array</param>
@@ -833,13 +834,6 @@ namespace InfimaGames.LowPolyShooterPack {
             // Check if inventory exists
             if (inventory == null) {
                 Debug.LogWarning("[Character.TryEquipWeapon] Inventory is null!");
-                return false;
-            }
-
-            // ✅ VALIDATE INDEX BEFORE DOING ANYTHING
-            int maxIndex = inventory.GetLastIndex();
-            if (weaponIndex < 0 || weaponIndex > maxIndex) {
-                Debug.LogWarning($"[Character.TryEquipWeapon] Index {weaponIndex} is out of bounds (valid range: 0-{maxIndex}). Weapon does not exist.");
                 return false;
             }
 

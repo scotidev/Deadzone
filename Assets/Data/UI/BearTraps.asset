@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 54ff5c628e24e7b4da18cce067ddbe98, type: 3}
-  m_Name: Shotgun
+  m_Name: BearTraps
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemData
-  itemID: 3
-  itemName: Shotgun
-  itemDescription: Make these bullets count.
-  itemData: {fileID: 11400000, guid: f356051f1cfa288418127caeaa7c8422, type: 2}
-  icon: {fileID: 21300000, guid: 84b0ab639d0a07b41a8a562b8096bff7, type: 3}
+  itemID: 8
+  itemName: Bear Traps
+  itemDescription: Holds the enemies for a while, and does some damage.
+  itemData: {fileID: 11400000, guid: c56482c7c3f9f7b4791b0ca6b0010b75, type: 2}
+  icon: {fileID: 21300000, guid: 7a0ed12306f916b4e9780ef1485272ad, type: 3}
   previewPrefab: {fileID: 0}
-  unlockCost: 3000
-  baseUpgradeCost: 700
-  ammoCost: 300
-  ammoAmountPerPurchase: 8
+  unlockCost: 1000
+  baseUpgradeCost: 300
+  ammoCost: 200
+  ammoAmountPerPurchase: 1
   levelToUnlockExclusive: 9
   exclusiveUpgradeCost: 5000
-  exclusivePowerDescription: +30% Fire Rate
+  exclusivePowerDescription: Send enemies to space!

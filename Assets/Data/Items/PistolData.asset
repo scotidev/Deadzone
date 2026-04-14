@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98c757ab19163464f8313e1bcffe423c, type: 3}
+  m_Name: PistolData
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponDataSO
+  itemID: 1
+  itemName: Pistol
+  baseDamage: 100
+  baseFireRate: 10
+  baseMagazineCapacity: 12
+  maxReserveAmmo: 80
+  damageScaling: 0.1
+  fireRateScaling: 0.05
+  maxFireRate: 500
+  magazineScaling: 0.1
+  exclusivePowerID: 1

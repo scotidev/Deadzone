@@ -24,17 +24,17 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private Color unlockedColor = Color.white;
     [SerializeField] private Color maxLevelColor = new Color(1f, 0.84f, 0f, 1f);
 
-    private ShopItemData currentItemData;
-    private Action<ShopItemData> selectionCallback;
-    private Action<ShopItemData> stateChangedCallback;
-    private Action<ShopItemData> onUnlockUpgradeClick;
+    private ShopItemDataSO currentItemData;
+    private Action<ShopItemDataSO> selectionCallback;
+    private Action<ShopItemDataSO> stateChangedCallback;
+    private Action<ShopItemDataSO> onUnlockUpgradeClick;
 
     private void Awake() {
         if (unlockUpgradeButton != null)
             unlockUpgradeButton.onClick.AddListener(OnUnlockUpgradeClick);
     }
 
-    public void Setup(ShopItemData itemData) {
+    public void Setup(ShopItemDataSO itemData) {
         currentItemData = itemData;
         if (currentItemData == null) return;
 
@@ -50,7 +50,7 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
     /// <param name="onSelected">Callback fired when this card is selected by click.</param>
     /// <param name="onStateChanged">Callback fired after this card refreshes its state.</param>
     /// <param name="onUnlockUpgrade">Callback fired when the unlock/upgrade button is clicked.</param>
-    public void SetCallbacks(Action<ShopItemData> onSelected, Action<ShopItemData> onStateChanged, Action<ShopItemData> onUnlockUpgrade) {
+    public void SetCallbacks(Action<ShopItemDataSO> onSelected, Action<ShopItemDataSO> onStateChanged, Action<ShopItemDataSO> onUnlockUpgrade) {
         selectionCallback = onSelected;
         stateChangedCallback = onStateChanged;
         onUnlockUpgradeClick = onUnlockUpgrade;

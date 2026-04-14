@@ -12,20 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54ff5c628e24e7b4da18cce067ddbe98, type: 3}
   m_Name: Barricades
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemData
-  itemID: Barricades
+  itemID: 6
   itemName: Barricades
-  description: Defensive structures to block enemies
+  itemDescription: Block enemies, for some time at least...
+  itemData: {fileID: 11400000, guid: 83c9cb67eaa9ae740972afe1e131aa5f, type: 2}
   icon: {fileID: 21300000, guid: 7a0ed12306f916b4e9780ef1485272ad, type: 3}
   previewPrefab: {fileID: 0}
-  isWeapon: 0
-  isBuildable: 1
-  isVest: 0
-  damageDisplay: 0
-  fireRateDisplay: 0
-  ammoCapacityDisplay: 0
   unlockCost: 500
-  baseUpgradeCost: 100
-  ammoCost: 0
-  ammoAmountPerPurchase: 0
-  unitCost: 100
-  weaponData: {fileID: 0}
+  baseUpgradeCost: 500
+  ammoCost: 250
+  ammoAmountPerPurchase: 1
+  levelToUnlockExclusive: 9
+  exclusiveUpgradeCost: 5000
+  exclusivePowerDescription: 'Becomes an indestructible barricade. '

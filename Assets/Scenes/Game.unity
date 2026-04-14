@@ -18302,7 +18302,7 @@ PrefabInstance:
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
       propertyPath: shopItems.Array.size
-      value: 9
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
@@ -18411,12 +18411,12 @@ PrefabInstance:
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
       propertyPath: cameraZPositions.Array.data[0].weaponID
-      value: Pistol
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
       propertyPath: cameraZPositions.Array.data[1].weaponID
-      value: SMG
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
@@ -18749,6 +18749,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 21942733976301129, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
+      propertyPath: jumpForce
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 21942733976301129, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
       propertyPath: maxStepHeight
       value: 1
       objectReference: {fileID: 0}
@@ -18941,7 +18946,7 @@ PrefabInstance:
     - target: {fileID: 2768567120988589389, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -113.35
+      value: -114.92931
       objectReference: {fileID: 0}
     - target: {fileID: 2768567120988589389, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}

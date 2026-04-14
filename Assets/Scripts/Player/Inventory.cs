@@ -1,10 +1,10 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
+// Copyright 2021, Infima Games. All Rights Reserved.
 
 using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack
 {
-    public class Inventory : InventoryBehaviour
+    public class Inventory : InventoryBehaviour, ISelectableItem
     {
         #region FIELDS
         
@@ -129,17 +129,26 @@ namespace InfimaGames.LowPolyShooterPack
         /// Maps weapon array index to weapon ID for unlock checking.
         /// This mapping should match the shop item order.
         /// </summary>
-        private string GetWeaponIDForIndex(int index) {
+        public string GetWeaponIDForIndex(int index) {
             switch (index) {
-                case 0: return "Pistol";
-                case 1: return "SMG";
-                case 2: return "Shotgun";
-                case 3: return "Medkit";
-                case 4: return "Grenades";
-                // Indices 5-7 are buildables (handled by BuildingController)
-                case 8: return "SpecialWeapon";
+                case 0: return "1"; // Pistol
+                case 1: return "2"; // AK47
+                case 2: return "3"; // Shotgun
+                case 3: return "4"; // Medkit
+                case 4: return "5"; // Grenades
+                // Buildables (indices 5-7) are handled by BuildingController
+                case 8: return "9"; // SpecialWeapon
                 default: return null;
             }
+        }
+
+        /// <summary>
+        /// Selects the weapon at the currently equipped index.
+        /// This method is part of the ISelectableItem interface, allowing weapons to be selected generically.
+        /// </summary>
+        public void Select()
+        {
+            Equip(equippedIndex);
         }
 
         #endregion
