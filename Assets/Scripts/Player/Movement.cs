@@ -5,6 +5,7 @@ using UnityEngine;
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
     /// Controls character movement using Rigidbody.
+    /// Ensures the player interacts properly with the ground, including slopes and stairs, and handles jumping and crouching.
     /// </summary>
     [RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
     public class Movement : MovementBehaviour {
@@ -96,7 +97,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
-        #region UNITY FUNCTIONS
+        #region UNITY
 
         protected override void Awake() {
             playerCharacter = ServiceLocator.Current.Get<IGameModeService>().GetPlayerCharacter();
@@ -109,6 +110,7 @@ namespace InfimaGames.LowPolyShooterPack {
             capsule = GetComponent<CapsuleCollider>();
 
             audioSource = GetComponent<AudioSource>();
+            audioSource.volume = ServiceLocator.Current.Get<IAudioManagerService>().GetSFXVolume();
             audioSource.clip = audioClipWalking;
             audioSource.loop = true;
 
@@ -292,8 +294,10 @@ namespace InfimaGames.LowPolyShooterPack {
             if (grounded && rigidBody.linearVelocity.sqrMagnitude > 0.1f) {
                 audioSource.clip = playerCharacter.IsRunning() ? audioClipRunning : audioClipWalking;
 
-                if (!audioSource.isPlaying)
+                if (!audioSource.isPlaying) {
+                    audioSource.volume = ServiceLocator.Current.Get<IAudioManagerService>().GetSFXVolume();
                     audioSource.Play();
+                }
             }
 
             else if (audioSource.isPlaying)

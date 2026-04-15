@@ -1,6 +1,6 @@
+using InfimaGames.LowPolyShooterPack;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using InfimaGames.LowPolyShooterPack;
 
 /// <summary>
 /// Singleton that manages the game's pause state and related behaviour:
@@ -31,7 +31,7 @@ public class PauseManager : MonoBehaviour {
         if (playerCharacter != null)
             return;
 
-        playerCharacter = FindObjectOfType<Character>();
+        playerCharacter = FindFirstObjectByType<Character>();
     }
 
     private void Start() {

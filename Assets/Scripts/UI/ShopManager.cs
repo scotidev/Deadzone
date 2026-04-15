@@ -1,5 +1,5 @@
-using UnityEngine;
 using InfimaGames.LowPolyShooterPack;
+using UnityEngine;
 
 /// <summary>
 /// Manages the shop interface system in the game.
@@ -27,7 +27,7 @@ public class ShopManager : MonoBehaviour {
         if (playerCharacter != null)
             return;
 
-        playerCharacter = FindObjectOfType<Character>();
+        playerCharacter = FindFirstObjectByType<Character>();
     }
 
     /// <summary>

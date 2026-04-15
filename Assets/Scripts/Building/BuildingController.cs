@@ -1,11 +1,11 @@
+using InfimaGames.LowPolyShooterPack;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using InfimaGames.LowPolyShooterPack;
 
 /// <summary>
 /// Controls the building mode: selecting items, showing the ghost object, and placing the real object in the world.
 /// </summary>
-    public class BuildingController : MonoBehaviour, ISelectableItem {
+public class BuildingController : MonoBehaviour, ISelectableItem {
     /// <summary>Global access point to the single <see cref="BuildingController"/> instance.</summary>
     public static BuildingController Instance { get; private set; }
 
@@ -44,7 +44,7 @@ using InfimaGames.LowPolyShooterPack;
         if (playerCharacter != null)
             return;
 
-        playerCharacter = FindObjectOfType<Character>();
+        playerCharacter = FindFirstObjectByType<Character>();
     }
 
     private void Start() {
@@ -243,14 +243,12 @@ using InfimaGames.LowPolyShooterPack;
     /// Selects the currently chosen buildable item.
     /// This method is part of the ISelectableItem interface.
     /// </summary>
-    public void Select()
-    {
+    public void Select() {
         // The BuildingController's Select logic is handled by SelectItem(BuildableDataSO item),
         // which is called by SelectBuildableBySlot(int slotNumber).
         // For ISelectableItem, we need a way to select the currently *staged* buildable.
         // If there's a selectedItem, re-select it to potentially cancel placement if already selected.
-        if (selectedItem != null)
-        {
+        if (selectedItem != null) {
             SelectItem(selectedItem);
         }
     }
