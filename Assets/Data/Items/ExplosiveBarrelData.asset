@@ -12,15 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2427f7d62ea46094485afb7906e99b1a, type: 3}
   m_Name: ExplosiveBarrelData
   m_EditorClassIdentifier: Assembly-CSharp::BuildableDataSO
-  itemID: 
-  itemName: 
-  description: 
-  icon: {fileID: 0}
-  previewPrefab: {fileID: 0}
+  itemID: 7
+  itemName: Barrel
+  damage: 0
+  explosionRadius: 0
   resistance: 0
   length: 0
   maxAmount: 0
-  realPrefab: {fileID: 0}
-  ghostPrefab: {fileID: 0}
-  placementRotationEuler: {x: 0, y: 0, z: 0}
+  realPrefab: {fileID: 8426833715630008873, guid: a3d893de50bf5b0429696987e48b2ae7,
+    type: 3}
+  ghostPrefab: {fileID: 8426833715630008873, guid: 7161d50500b6a7e47aabcc60808d9bf1,
+    type: 3}
+  placementRotationEuler: {x: 270, y: 0, z: 0}
   overlapBoxSize: {x: 1, y: 1, z: 1}

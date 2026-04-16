@@ -3,30 +3,48 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Controls the building mode: selecting items, showing the ghost object, and placing the real object in the world.
+/// Controller responsible for managing the building mechanics in the game.
 /// </summary>
 public class BuildingController : MonoBehaviour, ISelectableItem {
+
+    #region STATIC
+
     /// <summary>Global access point to the single <see cref="BuildingController"/> instance.</summary>
     public static BuildingController Instance { get; private set; }
 
-    [Header("Buildable Items (keys 6 / 7 / 8)")]
-    [SerializeField] private BuildableDataSO itemSlot6; // Wall
-    [SerializeField] private BuildableDataSO itemSlot7; // Explosive Barrel
-    [SerializeField] private BuildableDataSO itemSlot8; // Beartrap
+    #endregion
+
+    #region SERIALIZED FIELDS
+
+    [Header("Buildable Items")]
+    [SerializeField] private BuildableDataSO barricade;
+    [SerializeField] private BuildableDataSO explosiveBarrel;
+    [SerializeField] private BuildableDataSO bearTrap;
 
     [Header("Detection Settings")]
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask wallLayer;
     [SerializeField] private LayerMask obstacleLayer;
-    [SerializeField] private float maxPlacementDistance = 8f;
     [SerializeField] private Character playerCharacter;
+    [SerializeField] private float maxPlacementDistance = 8f;
+
+    #endregion
+
+    #region FIELDS
 
     private Camera playerCamera;
     private GameObject currentGhost;
     private GhostObject currentGhostObject;
     private BuildableDataSO selectedItem;
 
+    #endregion
+
+    #region PROPERTIES
     public bool IsPlacing => currentGhost != null;
+
+    #endregion
+
+    #region UNITY
 
     private void Awake() {
         if (Instance == null)
@@ -35,6 +53,41 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
             Destroy(gameObject);
 
         ResolvePlayerCharacter();
+    }
+
+    private void Start() {
+        playerCamera = GetComponentInChildren<Camera>();
+
+        if (playerCamera == null)
+            playerCamera = Camera.main;
+    }
+
+    private void OnDestroy() {
+        if (Instance == this) Instance = null;
+        CancelPlacement();
+    }
+
+    private void Update() {
+        if (playerCamera == null) return;
+
+        if (IsPlacing) {
+            UpdateGhostPosition();
+            HandlePlacementInput();
+        }
+    }
+
+    #endregion
+
+    #region METHODS
+
+    /// <summary>
+    /// Selects the currently chosen buildable item.
+    /// This method is part of the ISelectableItem interface.
+    /// </summary>
+    public void Select() {
+        if (selectedItem != null) {
+            SelectItem(selectedItem);
+        }
     }
 
     /// <summary>
@@ -47,45 +100,24 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
         playerCharacter = FindFirstObjectByType<Character>();
     }
 
-    private void Start() {
-        playerCamera = GetComponentInChildren<Camera>();
-
-        if (playerCamera == null)
-            playerCamera = Camera.main;
-    }
-
-    private void Update() {
-        if (playerCamera == null) return;
-
-        if (IsPlacing) {
-            UpdateGhostPosition();
-            HandlePlacementInput();
-        }
-    }
-
-    // Legacy Input Actions removed: OnPlaceBuildable1, OnPlaceBuildable2, OnPlaceBuildable3.
-    // Buildable selection is now centralized in ItemSelector.cs through SelectBuildableBySlot().
-
     /// <summary>
-    /// Public method to select a buildable item by slot number (1, 2, or 3).
-    /// Called by the unified weapon selection system in Character.cs.
+    /// Public method to select a buildable item by slot number.
+    /// Called by the unified weapon selection system in ItemSelector.cs.
     /// This allows keys 6, 7, 8 to be handled through the OnSelectWeapon method.
     /// </summary>
-    /// <param name="slotNumber">The buildable slot to select (1 = Barricade/Key 6, 2 = Explosive Barrel/Key 7, 3 = Trap/Key 8)</param>
+    /// <param name="slotNumber">The buildable slot to select. </param>
     public void SelectBuildableBySlot(int slotNumber) {
-        // Based on the slot number, select the corresponding buildable item
         switch (slotNumber) {
-            case 1: // Key 6 - Barricade
-                SelectItem(itemSlot6);
+            case 1:
+                SelectItem(barricade);
                 break;
-            case 2: // Key 7 - Explosive Barrel
-                SelectItem(itemSlot7);
+            case 2:
+                SelectItem(explosiveBarrel);
                 break;
-            case 3: // Key 8 - Trap
-                SelectItem(itemSlot8);
+            case 3:
+                SelectItem(bearTrap);
                 break;
             default:
-                // Invalid slot number
                 Debug.LogWarning($"[BuildingController] Invalid buildable slot number: {slotNumber}. Must be 1, 2, or 3.");
                 break;
         }
@@ -98,14 +130,17 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
     /// <param name="item"></param>
     private void SelectItem(BuildableDataSO item) {
         ResolvePlayerCharacter();
+
         if (item == null) return;
 
-        // Check if player has this buildable in inventory
         if (PlayerProgress.Instance != null) {
             string buildableID = GetBuildableID(item);
+
             if (!string.IsNullOrEmpty(buildableID)) {
                 int quantity = PlayerProgress.Instance.GetBuildableQuantity(buildableID);
+
                 if (quantity <= 0) {
+                    //LINHA QUE APARECE NO LOG DO BUG DE NAO CONSEGUIR SELECIONAR OBJETO, PROVAVELMENTE PORQUE O PLAYERPROGRESS USA UNLOCKWEAPON EM VEZ DE AddBuildable , TAMBEM DEVERIA SER UNLOCKBUILDABE, MAS NAO SEI SE ISSO VAI CAUSAR OUTROS PROBLEMAS, ENTÃO POR ENQUANTO DEIXEI ASSIM. NO FUTURO NAO DEVE SER UM LOG MAS SIM UM AUDIO TOCADO PARA INFORMAR O JOGADOR QUE ELE NAO TEM MAIS DESSE OBJETO PARA COLOCAR
                     Debug.LogWarning($"[BuildingController] No {buildableID} in inventory! Purchase from shop first.");
                     return;
                 }
@@ -123,14 +158,14 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
 
         playerCharacter?.SetHolstered(true);
 
-        if (item.ghostPrefab == null) {
+        if (item.GhostPrefab == null) {
             Debug.LogWarning($"[BuildingController] ${item.name} não tem Ghost Prefab configurado no BuildableSO!");
             selectedItem = null;
             playerCharacter?.SetHolstered(false);
             return;
         }
 
-        currentGhost = Instantiate(item.ghostPrefab, Vector3.zero, Quaternion.identity);
+        currentGhost = Instantiate(item.GhostPrefab, Vector3.zero, Quaternion.identity);
 
         foreach (Collider col in currentGhost.GetComponentsInChildren<Collider>())
             col.enabled = false;
@@ -139,7 +174,6 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
 
         currentGhostObject = currentGhost.GetComponent<GhostObject>();
     }
-
 
     /// <summary>
     /// Updates the position and rotation of the ghost object to reflect the player's current camera view and the
@@ -163,17 +197,16 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
                 return;
             }
 
-            Vector3 placementPos = hit.point + Vector3.up * (selectedItem.overlapBoxSize.y * 0.5f);
+            Vector3 placementPos = hit.point + Vector3.up * (selectedItem.OverlapBoxSize.y * 0.5f);
 
             currentGhost.transform.position = placementPos;
 
-            currentGhost.transform.rotation = Quaternion.Euler(selectedItem.placementRotationEuler);
-
+            currentGhost.transform.rotation = Quaternion.Euler(selectedItem.PlacementRotationEuler);
             LayerMask overlapMask = wallLayer.value != 0 ? obstacleLayer | wallLayer : obstacleLayer;
 
             Collider[] collisions = Physics.OverlapBox(
                 placementPos,
-                selectedItem.overlapBoxSize * 0.5f,
+                selectedItem.OverlapBoxSize * 0.5f,
                 Quaternion.identity,
                 overlapMask
             );
@@ -208,11 +241,11 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
 
         if (currentGhostObject == null || !currentGhostObject.IsPlaceable()) return;
 
-        if (selectedItem.realPrefab == null) return;
+        if (selectedItem.RealPrefab == null) return;
 
-        // Check if player has this buildable in inventory and consume one
         if (PlayerProgress.Instance != null) {
             string buildableID = GetBuildableID(selectedItem);
+
             if (!string.IsNullOrEmpty(buildableID)) {
                 if (!PlayerProgress.Instance.ConsumeBuildable(buildableID)) {
                     Debug.LogWarning($"[BuildingController] Failed to consume {buildableID} - inventory empty!");
@@ -222,9 +255,9 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
             }
         }
 
-        Instantiate(selectedItem.realPrefab,
+        Instantiate(selectedItem.RealPrefab,
             currentGhost.transform.position,
-            Quaternion.Euler(selectedItem.placementRotationEuler));
+            Quaternion.Euler(selectedItem.PlacementRotationEuler));
 
         CancelPlacement();
     }
@@ -233,24 +266,11 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
     /// Maps BuildableSO to buildable ID for inventory tracking.
     /// </summary>
     public string GetBuildableID(BuildableDataSO buildable) {
-        if (buildable == itemSlot6) return "6"; // Barricades
-        if (buildable == itemSlot7) return "7"; // ExplosiveBarrels
-        if (buildable == itemSlot8) return "8"; // Traps
-        return null;
-    }
+        if (buildable == barricade) return "6";
+        if (buildable == explosiveBarrel) return "7";
+        if (buildable == bearTrap) return "8";
 
-    /// <summary>
-    /// Selects the currently chosen buildable item.
-    /// This method is part of the ISelectableItem interface.
-    /// </summary>
-    public void Select() {
-        // The BuildingController's Select logic is handled by SelectItem(BuildableDataSO item),
-        // which is called by SelectBuildableBySlot(int slotNumber).
-        // For ISelectableItem, we need a way to select the currently *staged* buildable.
-        // If there's a selectedItem, re-select it to potentially cancel placement if already selected.
-        if (selectedItem != null) {
-            SelectItem(selectedItem);
-        }
+        return null;
     }
 
     /// <summary>
@@ -277,8 +297,5 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
         playerCharacter?.SetHolstered(false);
     }
 
-    private void OnDestroy() {
-        if (Instance == this) Instance = null;
-        CancelPlacement();
-    }
+    #endregion
 }

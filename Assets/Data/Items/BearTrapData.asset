@@ -12,15 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2427f7d62ea46094485afb7906e99b1a, type: 3}
   m_Name: BearTrapData
   m_EditorClassIdentifier: Assembly-CSharp::BuildableDataSO
-  itemID: 
-  itemName: 
-  description: 
-  icon: {fileID: 0}
-  previewPrefab: {fileID: 0}
+  itemID: 8
+  itemName: Bear Traps
+  damage: 0
+  explosionRadius: 0
   resistance: 0
   length: 0
   maxAmount: 0
-  realPrefab: {fileID: 0}
-  ghostPrefab: {fileID: 0}
+  realPrefab: {fileID: 2098750606393556748, guid: d586bea722cf8174ab3f5f29394ebfc4,
+    type: 3}
+  ghostPrefab: {fileID: 2098750606393556748, guid: 4e0e7e27cdf88f048ab15b910a61cea8,
+    type: 3}
   placementRotationEuler: {x: 0, y: 0, z: 0}
   overlapBoxSize: {x: 1, y: 1, z: 1}

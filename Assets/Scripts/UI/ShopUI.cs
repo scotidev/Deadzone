@@ -1,11 +1,32 @@
-using UnityEngine;
-using UnityEngine.UI;
+using InfimaGames.LowPolyShooterPack;
+using NUnit.Framework.Interfaces;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System;
 using TMPro;
-using InfimaGames.LowPolyShooterPack;
+using UnityEngine;
+using UnityEngine.UI;
+
+/*BUG A SER CORRIGIDO: Estamos chamando     private void OnRightPanelUnlock(ShopItemDataSO itemData) {
+if (itemData == null || EconomyManager.Instance == null || PlayerProgress.Instance == null) {
+    return;
+}
+
+if (EconomyManager.Instance.TrySpendCurrency(itemData.UnlockCost)) {
+    PlayerProgress.Instance.UnlockWeapon(itemData.ItemID);
+    Debug.Log($"[ShopUI] Unlocked {itemData.ItemName}!");
+    WeaponUnlocked?.Invoke(itemData.ItemID);
+    RefreshAllCards();
+}
+else {
+    int missingAmount = itemData.UnlockCost - EconomyManager.Instance.GetCurrentCurrency();
+    Debug.LogWarning($"[ShopUI] Insufficient funds! Need {missingAmount} more coins.");
+}
+    } 
+tentando selecionar a arma independente de ser buildable ou arma sempre chamamos arma. Isso nao funciona, fazendo com que os buildables nao sejam selecionados. O ideal seria verificar o tipo do item selecionado e chamar a função correta para cada tipo (arma ou buildable).
+ */
+
 
 /// <summary>
 /// Manages the shop UI including item cards and shop panel interactions.
@@ -51,13 +72,13 @@ public class ShopUI : BaseUI {
     // Ele é como um "ponto de encontro" - qualquer objeto que criamos dentro dele
     // fica automaticamente alinhado com sua posição.
     [SerializeField] private Transform previewAnchor;
-    
+
     // CONCEITO: Float (Número com Decimais)
     // Um float é um número que pode ter casa decimal (ex: 35.5, 0.1, 100.0)
     // previewRotationSpeed controla QUANTOS GRAUS por segundo a arma gira.
     // Quanto maior o número, mais rápido ela gira.
     [SerializeField] private float previewRotationSpeed = 35f;
-    
+
     // CONCEITO: Escala e Proporção no Canvas
     // Canvases em Unity são gigantes comparados a objetos 3D normais.
     // Uma arma com scale 1 fica invisível dentro do Canvas!
@@ -65,7 +86,7 @@ public class ShopUI : BaseUI {
     // Você ajusta isso no Inspector até a arma ficar visível no preview.
     [SerializeField] private float previewModelScale = 100f;
     [Tooltip("Scale multiplier for the 3D preview model. Increase if model appears too small in the RawImage preview.")]
-    
+
     [Header("Camera Adjustment")]
     // CONCEITO: Ajuste Manual de Câmera por Arma
     // Diferentes armas têm tamanhos diferentes. Para que a câmera enquadre bem cada uma,
@@ -73,7 +94,7 @@ public class ShopUI : BaseUI {
     // Exemplo: Pistola (pequena) pode ficar mais perto, Shotgun (grande) mais longe.
     [SerializeField] private List<WeaponCameraZPosition> cameraZPositions = new List<WeaponCameraZPosition>();
     [Tooltip("Custom camera Z position for each weapon. Adjust manually in editor for each weapon.")]
-    
+
     // CONCEITO: Armazenar Z Original
     // Guardamos o Z original da câmera para restaurar após destruir o preview
     private float originalCameraZ;
@@ -102,7 +123,7 @@ public class ShopUI : BaseUI {
 
     private GridLayoutGroup itemsGridLayout;
     private ShopItemDataSO selectedItemData;
-    
+
     // CONCEITO: GameObject (Objeto 3D)
     // Um GameObject é como uma "marionete" 3D dentro da cena.
     // Pode ser uma arma, um inimigo, um efeito visual, qualquer coisa.
@@ -121,19 +142,19 @@ public class ShopUI : BaseUI {
         // Cache (store/save references to) the GridLayoutGroup component from the itemsContainer
         // We do this early so we don't have to search for it multiple times later
         CacheLayoutReferences();
-        
+
         // Configure the grid layout now so the editor values are set before the shop is shown
         // This happens in Awake so anchors and constraints are ready when the Canvas renders
         ConfigureItemGridLayout();
-        
+
         // Link button click events to their corresponding handler methods
         // This is how Unity knows what to do when a button is pressed
         BindButtons();
-        
+
         // Register this UI to receive currency change notifications
         // This is the Observer Pattern - we "subscribe" to currency events
         SubscribeToCurrencyEvents();
-        
+
         // CONCEITO: Caching de Valor Original
         // Guardamos a posição Z original da câmera para restaurar depois
         Camera previewCamera = GetWeaponPreviewCamera();
@@ -152,7 +173,7 @@ public class ShopUI : BaseUI {
     protected override void Update() {
         // Call parent Update for base functionality
         base.Update();
-        
+
         // Continuously rotate the 3D weapon preview so the player can see all angles
         // We do this every frame for smooth rotation animation
         RotatePreviewModel();
@@ -164,7 +185,7 @@ public class ShopUI : BaseUI {
     private void BindButtons() {
         if (closeButton != null)
             closeButton.onClick.AddListener(OnCloseClick);
-        
+
         // CONCEITO: Null Checking (Validação)
         // Verificamos se ammoButton não é null antes de usá-lo
         // Se for null, significa que o designer não atribuiu no Inspector
@@ -181,15 +202,15 @@ public class ShopUI : BaseUI {
     public override void Show() {
         // Call the parent Show() method to handle base UI visibility (makes panel active and visible)
         base.Show();
-        
+
         // Fill the shop grid with item cards by instantiating prefabs and binding callbacks
         // This creates all the visual buttons the player will click
         PopulateShopItems();
-        
+
         // Automatically select the first weapon so the right panel shows something when shop opens
         // Better UX than an empty right side
         SelectInitialItem();
-        
+
         // Update the currency text display to show how much money the player currently has
         UpdateCurrencyDisplay();
     }
@@ -202,7 +223,7 @@ public class ShopUI : BaseUI {
     public override void Hide() {
         // Call parent Hide() to handle base UI visibility (deactivates panel)
         base.Hide();
-        
+
         // Remove the currently displayed 3D weapon preview from the scene
         // This frees memory since we don't need to render it anymore
         DestroyPreviewModel();
@@ -240,7 +261,7 @@ public class ShopUI : BaseUI {
     /// <param name="newAmount">The new currency amount.</param>
     private void OnCurrencyChanged(int newAmount) {
         UpdateCurrencyDisplay();
-        
+
         // CONCEITO: Atualizar Estado do Botão
         // Quando a moeda muda, o botão pode ficar habilitado ou desabilitado
         // Por exemplo: jogador tinha $50, não podia fazer upgrade por $100
@@ -268,8 +289,7 @@ public class ShopUI : BaseUI {
     private void PopulateShopItems() {
         // Validate that we have the required references (itemsContainer and the prefab)
         // If either is missing, we can't create items
-        if (itemsContainer == null || shopItemCardPrefab == null)
-        {
+        if (itemsContainer == null || shopItemCardPrefab == null) {
             Debug.LogWarning($"{nameof(ShopUI)} has missing references for items container or card prefab.", this);
             return;
         }
@@ -277,7 +297,7 @@ public class ShopUI : BaseUI {
         // First, remove all old item cards from the grid
         // This ensures we don't have duplicates if PopulateShopItems is called multiple times
         ClearShopItems();
-        
+
         // Now create new card instances from our configured list
         CreateConfiguredItems();
     }
@@ -290,20 +310,17 @@ public class ShopUI : BaseUI {
     /// </summary>
     private void CreateConfiguredItems() {
         // Check if we have items to create
-        if (shopItems == null || shopItems.Count == 0)
-        {
+        if (shopItems == null || shopItems.Count == 0) {
             Debug.LogWarning($"{nameof(ShopUI)} has no configured shop items.", this);
             return;
         }
 
         // Loop through each item in our list
-        for (int index = 0; index < shopItems.Count; index++)
-        {
+        for (int index = 0; index < shopItems.Count; index++) {
             ShopItemDataSO itemData = shopItems[index];
-            
+
             // Skip null entries (empty slots)
-            if (itemData == null)
-            {
+            if (itemData == null) {
                 Debug.LogWarning($"{nameof(ShopUI)} has a null item entry at index {index}.", this);
                 continue;
             }
@@ -312,11 +329,11 @@ public class ShopUI : BaseUI {
             // The second parameter (itemsContainer) sets this copy as a child of itemsContainer
             // This makes the card appear inside the grid
             ShopItemCard card = Instantiate(shopItemCardPrefab, itemsContainer);
-            
+
             // Tell the card which methods to call when events happen
             // These are "callbacks" - functions we pass to another object so it can call us back
             card.SetCallbacks(HandleCardSelected, HandleCardStateChanged, HandleCardUnlockUpgrade);
-            
+
             // Give the card its data (name, description, price, etc.)
             card.Setup(itemData);
         }
@@ -330,7 +347,7 @@ public class ShopUI : BaseUI {
     private void ClearShopItems() {
         // Reset the selected item tracker since we're removing all cards
         selectedItemData = null;
-        
+
         // Loop through all child GameObjects of itemsContainer
         // Each child is a card from the previous population
         foreach (Transform child in itemsContainer) {
@@ -365,7 +382,7 @@ public class ShopUI : BaseUI {
     /// </summary>
     private void ConfigureItemGridLayout() {
         Debug.Log($"[ShopUI.ConfigureItemGridLayout] Starting configuration");
-        
+
         // Check if itemsContainer exists - if not, we can't configure anything
         // This is defensive programming: always validate your inputs
         if (itemsContainer == null) {
@@ -389,23 +406,23 @@ public class ShopUI : BaseUI {
         if (forceLeftHalfLayout) {
             Debug.Log($"[ShopUI.ConfigureItemGridLayout] Setting left-half layout");
             Debug.Log($"[ShopUI.ConfigureItemGridLayout] leftHalfOffsetMin: {leftHalfOffsetMin}, leftHalfOffsetMax: {leftHalfOffsetMax}");
-            
+
             // Anchor to bottom-left (0, 0) and extend to middle-right (0.5, 1)
             // This means: start at screen bottom-left, go to halfway across horizontally and full height vertically
             itemsContainer.anchorMin = new Vector2(0f, 0f);
             itemsContainer.anchorMax = new Vector2(0.5f, 1f);
-            
+
             // Pivot point is where the element rotates around - we set it to left-center
             itemsContainer.pivot = new Vector2(0f, 0.5f);
-            
+
             // offsetMin is the margin from bottom-left, offsetMax is the margin from top-right
             // Negative offsetMax values create inner margins
             itemsContainer.offsetMin = leftHalfOffsetMin;
             itemsContainer.offsetMax = leftHalfOffsetMax;
-            
+
             // Ensure the element is at the exact position we calculated with anchors/offsets
             itemsContainer.anchoredPosition = Vector2.zero;
-            
+
             Debug.Log($"[ShopUI.ConfigureItemGridLayout] After anchor/offset changes - Rect: {itemsContainer.rect}");
         }
 
@@ -414,19 +431,19 @@ public class ShopUI : BaseUI {
         // Only configure the grid layout constraint and alignment.
         // All other settings (cell size, spacing, padding) are configured in the Editor.
         Debug.Log($"[ShopUI.ConfigureItemGridLayout] Setting constraint to FixedColumnCount with {gridColumns} columns");
-        
+
         // Set constraint to Fixed Column Count - this locks the number of columns
         itemsGridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        
+
         // How many columns should show (3 means 3 items per row)
         itemsGridLayout.constraintCount = Mathf.Max(1, gridColumns);
-        
+
         // Align all items to the upper-left corner of the grid
         itemsGridLayout.childAlignment = TextAnchor.UpperLeft;
-        
+
         // Where the grid starts filling (upper-left = top-left corner)
         itemsGridLayout.startCorner = GridLayoutGroup.Corner.UpperLeft;
-        
+
         // Direction to fill: Horizontal = left-to-right, then wrap to next row
         itemsGridLayout.startAxis = GridLayoutGroup.Axis.Horizontal;
 
@@ -475,14 +492,14 @@ public class ShopUI : BaseUI {
         // Armazenar qual item foi selecionado
         // Isso é importante porque precisamos desse dado em vários lugares
         selectedItemData = itemData;
-        
+
         // Atualizar as informações do painel direito
         // UpdateSelectedItemInfo() cuida de:
         // - Textos (nome, descrição, preço)
         // - Barras de stats normalizadas (0-5)
         // - Callbacks do botão de ação (comprar/fazer upgrade)
         UpdateSelectedItemInfo();
-        
+
         // Instanciar e posicionar o modelo 3D da arma
         // RebuildPreviewModel() vai:
         // - Destruir o modelo anterior (se houver)
@@ -533,7 +550,7 @@ public class ShopUI : BaseUI {
         string priceText = string.Empty;
 
         SetSelectedInfoTexts(itemName, description);
-        
+
         // Novo: Atualiza stats só para armas (WeaponDataSO)
         if (selectedItemData.ItemData is WeaponDataSO weaponData) {
             int level = 1;
@@ -546,14 +563,14 @@ public class ShopUI : BaseUI {
             float currentFireRateNormalized = WeaponStatsCalculator.CalculateAndNormalizeFireRate(weaponData, level);
             float currentAmmoNormalized = WeaponStatsCalculator.CalculateAndNormalizeAmmo(weaponData, level);
 
-            float nextDamageNormalized = level < PlayerProgress.MAX_UPGRADE_LEVEL 
-                ? WeaponStatsCalculator.CalculateAndNormalizeDamage(weaponData, level + 1) 
+            float nextDamageNormalized = level < PlayerProgress.MAX_UPGRADE_LEVEL
+                ? WeaponStatsCalculator.CalculateAndNormalizeDamage(weaponData, level + 1)
                 : currentDamageNormalized;
-            float nextFireRateNormalized = level < PlayerProgress.MAX_UPGRADE_LEVEL 
-                ? WeaponStatsCalculator.CalculateAndNormalizeFireRate(weaponData, level + 1) 
+            float nextFireRateNormalized = level < PlayerProgress.MAX_UPGRADE_LEVEL
+                ? WeaponStatsCalculator.CalculateAndNormalizeFireRate(weaponData, level + 1)
                 : currentFireRateNormalized;
-            float nextAmmoNormalized = level < PlayerProgress.MAX_UPGRADE_LEVEL 
-                ? WeaponStatsCalculator.CalculateAndNormalizeAmmo(weaponData, level + 1) 
+            float nextAmmoNormalized = level < PlayerProgress.MAX_UPGRADE_LEVEL
+                ? WeaponStatsCalculator.CalculateAndNormalizeAmmo(weaponData, level + 1)
                 : currentAmmoNormalized;
 
             if (damageBlockDisplay != null) {
@@ -570,9 +587,10 @@ public class ShopUI : BaseUI {
                 ammoBlockDisplay.SetMaxStatValue(WeaponStatsCalculator.STAT_BARS);
                 ammoBlockDisplay.SetStatValues(currentAmmoNormalized, nextAmmoNormalized);
             }
-            
+
             UpdateAmmoDisplay(selectedItemData.ItemID);
-        } else {
+        }
+        else {
             ClearStatBlocks();
             ClearAmmoDisplay();
         }
@@ -607,11 +625,11 @@ public class ShopUI : BaseUI {
         // CONCEITO: Buscar Munição Reserva Atual
         // GetWeaponReserveAmmo retorna quantas balas o jogador tem dessa arma
         int currentAmmo = PlayerProgress.Instance.GetWeaponReserveAmmo(weaponID);
-        
+
         // CONCEITO: Buscar Configuração de Preço
         // GetWeaponAmmoPricing encontra as informações de preço/quantidade desta arma
         WeaponAmmoPricing ammoPricing = GetWeaponAmmoPricing(weaponID);
-        
+
         // Se não há configuração, não podemos mostrar preço
         if (string.IsNullOrEmpty(ammoPricing.weaponID)) {
             ClearAmmoDisplay();
@@ -634,17 +652,18 @@ public class ShopUI : BaseUI {
             if (ammoButton != null) {
                 ammoButton.interactable = false;
             }
-        } else {
+        }
+        else {
             // CONCEITO: Atualizar Preço de Compra
             // Mostra o preço para adicionar mais munição
             if (ammoPriceText != null) {
                 ammoPriceText.text = $"${ammoPricing.costPerPurchase:N0}";
             }
-            
+
             // CONCEITO: Habilitação Condicional do Botão
             // O botão só é clicável se o jogador tiver dinheiro suficiente
             if (ammoButton != null) {
-                ammoButton.interactable = EconomyManager.Instance != null && 
+                ammoButton.interactable = EconomyManager.Instance != null &&
                                          EconomyManager.Instance.CanAfford(ammoPricing.costPerPurchase);
             }
         }
@@ -687,7 +706,7 @@ public class ShopUI : BaseUI {
         }
 
         string itemID = itemData.ItemID;
-        
+
         // CONCEITO: Booleanos (True/False)
         // isUnlocked é true se a arma foi desbloqueada
         // isMaxLevel é true se chegou no nível máximo (10)
@@ -698,45 +717,47 @@ public class ShopUI : BaseUI {
         if (!isUnlocked) {
             // UNLOCK button - arma está bloqueada
             int cost = itemData.UnlockCost;
-            if (selectedItemActionButtonText != null) 
+            if (selectedItemActionButtonText != null)
                 selectedItemActionButtonText.text = "UNLOCK";
-            
+
             // CONCEITO: Exibir Preço
             // Mostramos o preço de desbloqueio no elemento de preço separado
             if (selectedItemPriceText != null)
                 selectedItemPriceText.text = $"${cost:N0}";
-            
+
             // CONCEITO: Habilitação Condicional de Botão
             // interactable = false desabilita o botão (fica cinza e não responde)
             // interactable = true o habilita (fica verde e clicável)
             selectedItemActionButton.interactable = EconomyManager.Instance.CanAfford(cost);
             selectedItemActionButton.onClick.AddListener(() => OnRightPanelUnlock(itemData));
-        } else if (isMaxLevel) {
+        }
+        else if (isMaxLevel) {
             // MAX LEVEL - arma chegou no nível máximo, não há mais upgrades
             // CONCEITO: "MAXED OUT" feedback visual
             // Mostramos "MAXED OUT" sem preço para indicar que não há mais ações disponíveis
-            if (selectedItemActionButtonText != null) 
+            if (selectedItemActionButtonText != null)
                 selectedItemActionButtonText.text = "MAXED OUT";
-            
+
             // Desabilita o botão porque não há mais ação disponível
             selectedItemActionButton.interactable = false;
-            
+
             // CONCEITO: Ocultar Preço (Limpar Texto)
             // Quando está maxed out, não há preço a mostrar
             // Atribuir empty string ("") faz o texto desaparecer
             if (selectedItemPriceText != null)
                 selectedItemPriceText.text = string.Empty;
-        } else {
+        }
+        else {
             // UPGRADE button - arma desbloqueada e pode fazer upgrade
             int cost = CalculateUpgradeCostForItem(itemData, currentLevel);
-            if (selectedItemActionButtonText != null) 
+            if (selectedItemActionButtonText != null)
                 selectedItemActionButtonText.text = "UPGRADE";
-            
+
             // CONCEITO: Exibir Preço
             // Mostramos o preço de upgrade no elemento de preço separado
             if (selectedItemPriceText != null)
                 selectedItemPriceText.text = $"${cost:N0}";
-            
+
             selectedItemActionButton.interactable = EconomyManager.Instance.CanAfford(cost);
             selectedItemActionButton.onClick.AddListener(() => OnRightPanelUpgrade(itemData));
         }
@@ -755,7 +776,8 @@ public class ShopUI : BaseUI {
             Debug.Log($"[ShopUI] Unlocked {itemData.ItemName}!");
             WeaponUnlocked?.Invoke(itemData.ItemID);
             RefreshAllCards();
-        } else {
+        }
+        else {
             int missingAmount = itemData.UnlockCost - EconomyManager.Instance.GetCurrentCurrency();
             Debug.LogWarning($"[ShopUI] Insufficient funds! Need {missingAmount} more coins.");
         }
@@ -774,7 +796,8 @@ public class ShopUI : BaseUI {
             int newLevel = PlayerProgress.Instance.GetWeaponLevel(itemData.ItemID);
             Debug.Log($"[ShopUI] Upgraded {itemData.ItemName} to level {newLevel}!");
             RefreshAllCards();
-        } else {
+        }
+        else {
             int cost = CalculateUpgradeCostForItem(itemData, currentLevel);
             int missingAmount = cost - EconomyManager.Instance.GetCurrentCurrency();
             Debug.LogWarning($"[ShopUI] Insufficient funds! Need {missingAmount} more coins.");
@@ -812,7 +835,7 @@ public class ShopUI : BaseUI {
         // CONCEITO: Guard Clauses (Validações Rápidas)
         // No início da função, checamos todas as pré-condições
         // Se qualquer uma falhar, retornamos cedo evitando lógica desnecessária
-        
+
         if (selectedItemData == null) {
             Debug.LogWarning("[ShopUI.OnAmmoButtonPressed] No weapon selected!");
             return;
@@ -827,7 +850,7 @@ public class ShopUI : BaseUI {
         // Buscamos as informações de preço/quantidade desta arma
         string itemID = selectedItemData.ItemID;
         WeaponAmmoPricing ammoPricing = GetWeaponAmmoPricing(itemID);
-        
+
         // Se não encontramos configuração (weaponID está vazio), significa que não há config
         if (string.IsNullOrEmpty(ammoPricing.weaponID)) {
             Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] No ammo pricing configuration found for weapon: {itemID}");
@@ -847,16 +870,16 @@ public class ShopUI : BaseUI {
         // Consultamos quanto de munição reserva o jogador já tem dessa arma
         int currentAmmo = PlayerProgress.Instance.GetWeaponReserveAmmo(itemID);
         int newAmmo = currentAmmo + ammoPricing.ammoPerPurchase;
-        
+
         // CONCEITO: Validação de Limite (Clamping)
         // Clamp garante que newAmmo não ultrapasse o máximo permitido
         // Se newAmmo = 950 e max = 500, Clamp(950, 0, 500) retorna 500
         newAmmo = Mathf.Clamp(newAmmo, 0, ammoPricing.maxReserveAmmo);
-        
+
         // CONCEITO: Calcular Quantidade Real Adicionada
         // Se havia 490 e o máx é 500, só adicionamos 10 (não os 60 pedidos)
         int actualAmmoAdded = newAmmo - currentAmmo;
-        
+
         // Se já está no máximo, não há nada a fazer
         if (actualAmmoAdded <= 0) {
             Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Weapon {itemID} already at max ammo ({ammoPricing.maxReserveAmmo})!");
@@ -868,19 +891,20 @@ public class ShopUI : BaseUI {
         // (10 / 60) * 300 = 50 moedas ao invés de 300
         float ammoProportion = (float)actualAmmoAdded / ammoPricing.ammoPerPurchase;
         int actualCost = Mathf.RoundToInt(ammoPricing.costPerPurchase * ammoProportion);
-        
+
         // CONCEITO: Transação de Moeda
         // Tenta descontar a moeda
         if (EconomyManager.Instance.TrySpendCurrency(actualCost)) {
             // Se bem-sucedido, adiciona a munição
             PlayerProgress.Instance.AddWeaponReserveAmmo(itemID, actualAmmoAdded);
-            
+
             Debug.Log($"[ShopUI.OnAmmoButtonPressed] Purchased {actualAmmoAdded} ammo for {itemID}. Cost: ${actualCost}. New total: {newAmmo}");
             AmmoPurchased?.Invoke(itemID, actualAmmoAdded);
-            
+
             // Atualiza o display para refletir a nova munição
             UpdateSelectedItemInfo();
-        } else {
+        }
+        else {
             Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Failed to spend currency!");
         }
     }
@@ -941,17 +965,17 @@ public class ShopUI : BaseUI {
         // (parametro 2) = Transform pai (a cópia vai ser filho desse Transform)
         // O modelo agora é filho do previewAnchor
         activePreviewModel = Instantiate(selectedItemData.PreviewPrefab, previewAnchor);
-        
+
         // CONCEITO: LocalPosition vs WorldPosition
         // localPosition = posição RELATIVA ao pai (previewAnchor)
         // Aqui resetamos para (0,0,0) para a arma ficar centrada no anchor
         activePreviewModel.transform.localPosition = Vector3.zero;
-        
+
         // CONCEITO: Quaternion.identity = Rotação Zero
         // identity significa "sem rotação" (0° em todos os eixos)
         // Começamos com a arma na rotação padrão
         activePreviewModel.transform.localRotation = Quaternion.identity;
-        
+
         // CONCEITO: Escala para Preview em Canvas
         // O Canvas é gigante comparado à cena 3D normal
         // Uma arma em scale 1,1,1 fica praticamente invisível no preview
@@ -972,7 +996,7 @@ public class ShopUI : BaseUI {
         Debug.Log($"[RebuildPreviewModel] ✓ Modelo instanciado: {activePreviewModel.name}");
         Debug.Log($"[RebuildPreviewModel] ✓ Renderers encontrados: {renderers.Length}");
         Debug.Log($"[RebuildPreviewModel] ✓ Layer assignment: {activePreviewModel.layer} (Weapon)");
-        
+
         if (renderers.Length == 0) {
             Debug.LogWarning("[RebuildPreviewModel] ⚠️  Modelo não tem Renderer! Pode não aparecer visualmente.");
         }
@@ -982,7 +1006,7 @@ public class ShopUI : BaseUI {
         Debug.Log($"[RebuildPreviewModel] ✓ Posição MUNDIAL: {activePreviewModel.transform.position}");
         Debug.Log($"[RebuildPreviewModel] ✓ Rotação local: {activePreviewModel.transform.localEulerAngles}");
         Debug.Log($"[RebuildPreviewModel] ✓ Scale local: {activePreviewModel.transform.localScale}");
-        
+
         // Debug: Informação sobre a câmera de preview
         Camera previewCamera = GetWeaponPreviewCamera();
         if (previewCamera != null) {
@@ -990,12 +1014,12 @@ public class ShopUI : BaseUI {
             Debug.Log($"[RebuildPreviewModel] 📷 Preview Camera rotação: {previewCamera.transform.eulerAngles}");
             Debug.Log($"[RebuildPreviewModel] 📷 Preview Camera FOV (ANTES): {previewCamera.fieldOfView}");
         }
-        
+
         // CONCEITO: Ajuste Dinâmico de Câmera
         // Após instanciar o modelo, ajustamos a posição Z da câmera para esta arma
         // Cada arma pode ter um Z diferente para enquadrar melhor
         AdjustCameraZPosition();
-        
+
         if (previewCamera != null) {
             Debug.Log($"[RebuildPreviewModel] 📷 Preview Camera Z (DEPOIS): {previewCamera.transform.position.z}");
         }
@@ -1069,7 +1093,7 @@ public class ShopUI : BaseUI {
             // Depois de destruir, colocamos null para indicar "não há modelo agora"
             activePreviewModel = null;
         }
-        
+
         // CONCEITO: Restaurar Posição Original da Câmera
         // Quando o preview é destruído, voltamos a câmera ao seu Z original
         // Assim, quando um novo weapon for selecionado, a câmera estará pronta
@@ -1101,7 +1125,7 @@ public class ShopUI : BaseUI {
         // LayerMask.NameToLayer("Weapon") converte "Weapon" (texto) para seu ID numérico
         // Isso é necessário porque o code só trabalha com números internamente
         int weaponLayerID = LayerMask.NameToLayer("Weapon");
-        
+
         // CONCEITO: Validação (Verificação de Erro)
         // Se LayerMask retorna -1, significa que a layer não foi criada ainda
         // Checamos isso antes de continuar para evitar erros silenciosos
@@ -1109,11 +1133,11 @@ public class ShopUI : BaseUI {
             Debug.LogError("[AssignWeaponLayer] ❌ Layer 'Weapon' does not exist! Create it in Edit → Project Settings → Tags and Layers");
             return;
         }
-        
+
         // Atribui a layer ao GameObject raiz
         // targetGameObject.layer = ID da layer
         targetGameObject.layer = weaponLayerID;
-        
+
         // CONCEITO: Chamada Recursiva
         // Recursão significa "uma função que chama a si mesma"
         // A arma pode ter filhos (mira, cano, etc) que também têm Renderers
@@ -1121,7 +1145,7 @@ public class ShopUI : BaseUI {
         // AssignWeaponLayerToChildren vai fazer isso recursivamente
         AssignWeaponLayerToChildren(targetGameObject.transform, weaponLayerID);
     }
-    
+
     /// <summary>
     /// Recursively assigns the "Weapon" layer to all child GameObjects.
     /// 
@@ -1145,7 +1169,7 @@ public class ShopUI : BaseUI {
             // Atribui a layer ao filho
             // child.gameObject pega o GameObject desse Transform
             child.gameObject.layer = layerID;
-            
+
             // CONCEITO: Recursão em Ação
             // Chamamos a própria função novamente, mas com "child" como novo parent
             // Se "child" tiver seus próprios filhos, eles vão ser processados também
@@ -1187,7 +1211,7 @@ public class ShopUI : BaseUI {
         // previewAnchor pode ser null se não foi atribuído no Inspector
         // Checamos antes de usá-lo para evitar erros
         if (previewAnchor == null) return null;
-        
+
         // CONCEITO: Transform.parent
         // Cada Transform tem um "pai" (parent)
         // Exemplo de hierarquia:
@@ -1209,7 +1233,7 @@ public class ShopUI : BaseUI {
             Camera cam = parent.GetComponentInChildren<Camera>();
             if (cam != null) return cam;
         }
-        
+
         // Se chegou aqui, não encontrou câmera
         return null;
     }
@@ -1222,16 +1246,16 @@ public class ShopUI : BaseUI {
         // CONCEITO: Guard Clause
         // Se não há dados da arma selecionada, não fazemos nada
         if (selectedItemData == null) return;
-        
+
         Camera previewCamera = GetWeaponPreviewCamera();
         if (previewCamera == null) return;
-        
+
         // CONCEITO: Busca em Lista com LINQ
         // FirstOrDefault procura o primeiro item que atende à condição
         // Se não encontrar, retorna um valor padrão (struct vazio)
         string weaponID = selectedItemData.ItemID;
         WeaponCameraZPosition foundConfig = cameraZPositions.FirstOrDefault(c => c.weaponID == weaponID);
-        
+
         // CONCEITO: Verificação de Existência com Structs
         // Como struct não pode ser null, verificamos se weaponID não está vazio
         if (!string.IsNullOrEmpty(foundConfig.weaponID)) {
@@ -1241,9 +1265,10 @@ public class ShopUI : BaseUI {
             Vector3 newPosition = previewCamera.transform.position;
             newPosition.z = foundConfig.cameraZPosition;
             previewCamera.transform.position = newPosition;
-            
+
             Debug.Log($"[ShopUI] Set camera Z to {foundConfig.cameraZPosition} for weapon: {weaponID}");
-        } else {
+        }
+        else {
             Debug.LogWarning($"[ShopUI] No camera Z configuration found for weapon: {weaponID}. Using current position.");
         }
     }
@@ -1269,11 +1294,11 @@ public struct WeaponCameraZPosition {
     // 1. Um ID de arma (texto)
     // 2. Uma posição Z da câmera (número com decimais)
     // Quando você quer salvar um par de informações relacionadas, use struct
-    
+
     [Tooltip("The unique identifier for the weapon (e.g., 'PISTOL_01', 'SMG', 'SHOTGUN').")]
     [SerializeField]
     public string weaponID;
-    
+
     [Tooltip("Camera Z position for this weapon (can be negative). Negative = camera farther away, Positive = camera closer.")]
     [SerializeField]
     public float cameraZPosition;
@@ -1289,19 +1314,19 @@ public struct WeaponAmmoPricing {
     // Este struct armazena as configurações de compra de munição para uma arma específica
     // Permite que diferentes armas tenham preços e quantidades diferentes
     // Exemplo: Pistola (+15 muni por $100) vs SMG (+60 muni por $300)
-    
+
     [Tooltip("The unique identifier for the weapon (e.g., 'Pistol', 'SMG', 'Shotgun').")]
     [SerializeField]
     public string weaponID;
-    
+
     [Tooltip("Amount of ammo added per purchase.")]
     [SerializeField]
     public int ammoPerPurchase;
-    
+
     [Tooltip("Cost in currency per ammo purchase.")]
     [SerializeField]
     public int costPerPurchase;
-    
+
     [Tooltip("Maximum reserve ammo this weapon can hold.")]
     [SerializeField]
     public int maxReserveAmmo;

@@ -5,18 +5,36 @@ using UnityEngine;
 /// </summary>
 public class GhostObject : MonoBehaviour {
 
-    [Header("Materials")]
+    #region SERIALIZED FIELDS
 
+    [Header("Materials")]
     [SerializeField] private Material validMaterial;
     [SerializeField] private Material invalidMaterial;
 
-    private Renderer[] renderers;
+    #endregion
 
+    #region FIELDS
+
+    private Renderer[] renderers;
     private bool isPlaceable = false;
+
+    #endregion
+
+    #region PROPERTIES
+
+    public bool IsPlaceable() => isPlaceable;
+
+    #endregion
+
+    #region UNITY
 
     private void Awake() {
         renderers = GetComponentsInChildren<Renderer>();
     }
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Updates the visual appearance of the ghost object to indicate whether the associated place is available or occupied.
@@ -34,5 +52,5 @@ public class GhostObject : MonoBehaviour {
             r.material = mat;
     }
 
-    public bool IsPlaceable() => isPlaceable;
+    #endregion
 }
