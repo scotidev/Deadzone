@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 185426, guid: ba67efa6dcab9a54aac7e607f17f759c, type: 3}
       propertyPath: m_Name
-      value: Barrel 1
+      value: GhostBarrel
       objectReference: {fileID: 0}
     - target: {fileID: 185426, guid: ba67efa6dcab9a54aac7e607f17f759c, type: 3}
       propertyPath: m_Layer
@@ -86,12 +86,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 5414722, guid: ba67efa6dcab9a54aac7e607f17f759c, type: 3}
+    - {fileID: 11415462, guid: ba67efa6dcab9a54aac7e607f17f759c, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 185426, guid: ba67efa6dcab9a54aac7e607f17f759c,
         type: 3}
-      insertIndex: -1
+      insertIndex: 3
       addedObject: {fileID: -9001078609747650168}
   m_SourcePrefab: {fileID: 100100000, guid: ba67efa6dcab9a54aac7e607f17f759c, type: 3}
 --- !u!1 &8426833715630008873 stripped

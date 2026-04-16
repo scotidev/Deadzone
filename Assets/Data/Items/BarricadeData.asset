@@ -12,15 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2427f7d62ea46094485afb7906e99b1a, type: 3}
   m_Name: BarricadeData
   m_EditorClassIdentifier: Assembly-CSharp::BuildableDataSO
-  itemID: 
-  itemName: 
-  description: 
-  icon: {fileID: 0}
-  previewPrefab: {fileID: 0}
+  itemID: 6
+  itemName: Barricades
+  damage: 0
+  explosionRadius: 0
   resistance: 0
   length: 0
   maxAmount: 0
-  realPrefab: {fileID: 0}
-  ghostPrefab: {fileID: 0}
+  realPrefab: {fileID: 6655631503875209216, guid: 479f383ee9ae21740a9eccfd474ddbdf,
+    type: 3}
+  ghostPrefab: {fileID: 6655631503875209216, guid: 83d7ecfc4543a4041a3821b0609c2850,
+    type: 3}
   placementRotationEuler: {x: 0, y: 0, z: 0}
   overlapBoxSize: {x: 1, y: 1, z: 1}
