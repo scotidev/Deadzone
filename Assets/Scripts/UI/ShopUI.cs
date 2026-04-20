@@ -549,6 +549,16 @@ public class ShopUI : BaseUI {
         string description = selectedItemData.Description;
         string priceText = string.Empty;
 
+        // Check if exclusive upgrade is unlocked at current level
+        if (PlayerProgress.Instance != null) {
+            int currentLevel = PlayerProgress.Instance.GetWeaponLevel(selectedItemData.ItemID);
+            // If current level is >= the level required to unlock exclusive
+            if (currentLevel >= selectedItemData.LevelToUnlockExclusive) {
+                // Update description to show exclusive power
+                description = selectedItemData.ExclusivePowerDescription;
+            }
+        }
+
         SetSelectedInfoTexts(itemName, description);
 
         // Novo: Atualiza stats só para armas (WeaponDataSO)

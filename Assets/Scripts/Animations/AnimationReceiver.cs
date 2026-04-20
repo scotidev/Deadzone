@@ -15,6 +15,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private void OnGrenade() {
         }
+
         private void OnSetActiveMagazine(int active) {
         }
 
