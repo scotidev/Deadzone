@@ -10,12 +10,11 @@ public class BuildableDataSO : ItemDataSO {
     #region SERIALIZED FIELDS
 
     [Header("Buildable Stats")]
+    [SerializeField] private int maxAmount;
     [SerializeField] private float damage;
     [SerializeField] private int explosionRadius;
-    [Tooltip("Health of the barricade when placed")]
     [SerializeField] private float health = 100f;
     [SerializeField] private float length;
-    [SerializeField] private int maxAmount;
 
     [Header("Prefabs")]
     [SerializeField] private GameObject realPrefab;

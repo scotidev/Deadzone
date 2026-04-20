@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Controller responsible for managing the building mechanics in the game.
 /// </summary>
-public class BuildingController : MonoBehaviour, ISelectableItem {
+public class BuildingController : MonoBehaviour {
 
     #region STATIC
 
@@ -32,10 +32,6 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
 
     #region FIELDS
 
-    public BuildableDataSO Barricade => barricade;
-    public BuildableDataSO ExplosiveBarrel => explosiveBarrel;
-    public BuildableDataSO BearTrap => bearTrap;
-
     private Camera playerCamera;
     private GameObject currentGhost;
     private GhostObject currentGhostObject;
@@ -44,8 +40,11 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
     #endregion
 
     #region PROPERTIES
-    public bool IsPlacing => currentGhost != null;
+    public BuildableDataSO Barricade => barricade;
+    public BuildableDataSO ExplosiveBarrel => explosiveBarrel;
+    public BuildableDataSO BearTrap => bearTrap;
     public BuildableDataSO CurrentSelectedItem => selectedItem;
+    public bool IsPlacing => currentGhost != null;
 
     #endregion
 
@@ -86,46 +85,10 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
     #region METHODS
 
     /// <summary>
-    /// Selects the currently chosen buildable item.
-    /// This method is part of the ISelectableItem interface.
-    /// </summary>
-    public void Select() {
-        if (selectedItem != null) {
-            SelectItem(selectedItem);
-        }
-    }
-
-    /// <summary>
     /// Starts placement mode for a buildable item.
     /// Called by Inventory when player selects a buildable.
     /// </summary>
     public void StartPlacement(BuildableDataSO item) {
-        SelectItem(item);
-    }
-
-    /// <summary>
-    /// Cancels the current placement mode.
-    /// </summary>
-    public void CancelCurrentPlacement() {
-        CancelPlacement();
-    }
-
-    /// <summary>
-    /// Ensures a valid reference to the player's character component.
-    /// </summary>
-    private void ResolvePlayerCharacter() {
-        if (playerCharacter != null)
-            return;
-
-        playerCharacter = FindFirstObjectByType<Character>();
-    }
-
-    /// <summary>
-    /// Receives the selected buildable item and sets up the ghost object for placement. If the same item is selected again, it cancels the placement mode.
-    /// Checks if player has any of this buildable in inventory before allowing placement.
-    /// </summary>
-    /// <param name="item"></param>
-    private void SelectItem(BuildableDataSO item) {
         ResolvePlayerCharacter();
 
         if (item == null) {
@@ -171,6 +134,23 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
         currentGhost.SetActive(false);
 
         currentGhostObject = currentGhost.GetComponent<GhostObject>();
+    }
+
+    /// <summary>
+    /// Cancels the current placement mode.
+    /// </summary>
+    public void CancelCurrentPlacement() {
+        CancelPlacement();
+    }
+
+    /// <summary>
+    /// Ensures a valid reference to the player's character component.
+    /// </summary>
+    private void ResolvePlayerCharacter() {
+        if (playerCharacter != null)
+            return;
+
+        playerCharacter = FindFirstObjectByType<Character>();
     }
 
     /// <summary>
