@@ -86,19 +86,58 @@ public class PlayerProgress : MonoBehaviour {
     /// </summary>
     private void InitializeDefaults() {
         // Unlock the Pistol by default (starting weapon)
-        UnlockWeapon("Pistol");
+        UnlockWeaponInternal("Pistol");
 
         Debug.Log("[PlayerProgress] Initialized. Pistol unlocked by default.");
     }
 
-    #region Weapon Unlocks
+    #region Item Unlocks and Additions
+
+    /// <summary>
+    /// Unlocks an item (weapon or buildable) based on its type.
+    /// For weapons, it calls UnlockWeaponInternal. For buildables, it adds to inventory.
+    /// This method consolidates the logic for unlocking weapons and adding buildables.
+    /// </summary>
+    /// <param name="itemData">The ShopItemDataSO containing item details.</param>
+    /// <param name="quantity">The quantity to add for buildable items (default is 1).</param>
+    public void UnlockItem(ShopItemDataSO itemData, int quantity = 1) {
+        if (itemData == null || itemData.ItemData == null) {
+            Debug.LogError("[PlayerProgress] Attempted to unlock or add item with null itemData or ItemData.");
+            return;
+        }
+
+        if (itemData.ItemData is WeaponDataSO) {
+            UnlockWeaponInternal(itemData.ItemID);
+            Debug.Log($"[PlayerProgress] Unlocked weapon: {itemData.ItemID}");
+        }
+        else if (itemData.ItemData is BuildableDataSO) {
+            // BUG CORRIGIDO: Antes, a ShopUI chamava UnlockWeapon para todos os itens,
+            // o que não adicionava buildables ao inventário. Agora, UnlockItem verifica
+            // o tipo do item e adiciona ao dicionário correto.
+            string buildableID = itemData.ItemID;
+            int currentQty = GetBuildableQuantity(buildableID);
+
+            if (currentQty >= MAX_BUILDABLE_QUANTITY) {
+                Debug.LogWarning($"[PlayerProgress] {buildableID} is already at max quantity ({MAX_BUILDABLE_QUANTITY}).");
+                return;
+            }
+
+            int newQty = Mathf.Min(currentQty + quantity, MAX_BUILDABLE_QUANTITY);
+            buildableQuantities[buildableID] = newQty;
+
+            Debug.Log($"[PlayerProgress] Added {quantity} {buildableID}. New total: {newQty}/{MAX_BUILDABLE_QUANTITY}");
+        }
+        else {
+            Debug.LogWarning($"[PlayerProgress] Unsupported item type for unlocking/adding: {itemData.ItemData.GetType().Name} (ID: {itemData.ItemID})");
+        }
+    }
 
     /// <summary>
     /// Unlocks a weapon, making it available for use.
     /// Also initializes its level to 1 if not already set.
     /// </summary>
     /// <param name="weaponID">The unique identifier of the weapon.</param>
-    public void UnlockWeapon(string weaponID) {
+    private void UnlockWeaponInternal(string weaponID) {
         // If not already in dictionary, add it
         if (!unlockedWeapons.ContainsKey(weaponID)) {
             unlockedWeapons[weaponID] = true;
@@ -118,7 +157,7 @@ public class PlayerProgress : MonoBehaviour {
             weaponReserveAmmo[weaponID] = 0;
         }
 
-        Debug.Log($"[PlayerProgress] Unlocked weapon: {weaponID}");
+        Debug.Log($"[PlayerProgress] Unlocked weapon (internal): {weaponID}");
     }
 
     /// <summary>
@@ -127,9 +166,34 @@ public class PlayerProgress : MonoBehaviour {
     /// <param name="weaponID">The weapon to check.</param>
     /// <returns>True if the weapon is unlocked.</returns>
     public bool IsWeaponUnlocked(string weaponID) {
-        // If key exists in dictionary and value is true, weapon is unlocked
-        // The TryGetValue pattern safely checks if key exists
         return unlockedWeapons.TryGetValue(weaponID, out bool unlocked) && unlocked;
+    }
+
+    /// <summary>
+    /// Gets the current quantity of a buildable item in inventory.
+    /// </summary>
+    /// <param name="buildableID">The buildable type ID.</param>
+    /// <returns>Current quantity (0-5).</returns>
+    public int GetBuildableQuantity(string buildableID) {
+        return buildableQuantities.TryGetValue(buildableID, out int qty) ? qty : 0;
+    }
+
+    /// <summary>
+    /// Consumes a buildable item (when placing it in the world).
+    /// </summary>
+    /// <param name="buildableID">The buildable type ID.</param>
+    /// <returns>True if an item was available to consume.</returns>
+    public bool ConsumeBuildable(string buildableID) {
+        int currentQty = GetBuildableQuantity(buildableID);
+
+        // Check if any available
+        if (currentQty <= 0) {
+            return false;
+        }
+
+        // Deduct one
+        buildableQuantities[buildableID] = currentQty - 1;
+        return true;
     }
 
     #endregion
@@ -260,60 +324,13 @@ public class PlayerProgress : MonoBehaviour {
         Debug.Log($"[PlayerProgress] Added {amount} reserve ammo to {weaponID}. New total: {weaponReserveAmmo[weaponID]}");
     }
 
-    #endregion
+#endregion
 
     #region Buildables
 
-    /// <summary>
-    /// Adds buildable items to inventory, respecting the max limit of 5.
-    /// </summary>
-    /// <param name="buildableID">The buildable type ID.</param>
-    /// <param name="amount">Amount to add (typically 1 per purchase).</param>
-    /// <returns>True if added successfully.</returns>
-    public bool AddBuildable(string buildableID, int amount) {
-        int currentQty = GetBuildableQuantity(buildableID);
-
-        // Check if already at max
-        if (currentQty >= MAX_BUILDABLE_QUANTITY) {
-            Debug.LogWarning($"[PlayerProgress] {buildableID} is already at max quantity ({MAX_BUILDABLE_QUANTITY}).");
-            return false;
-        }
-
-        // Add quantity, clamped to max
-        int newQty = Mathf.Min(currentQty + amount, MAX_BUILDABLE_QUANTITY);
-        buildableQuantities[buildableID] = newQty;
-
-        Debug.Log($"[PlayerProgress] Added {amount} {buildableID}. New total: {newQty}/{MAX_BUILDABLE_QUANTITY}");
-        return true;
-    }
-
-    /// <summary>
-    /// Consumes a buildable item (when placing it in the world).
-    /// </summary>
-    /// <param name="buildableID">The buildable type ID.</param>
-    /// <returns>True if an item was available to consume.</returns>
-    public bool ConsumeBuildable(string buildableID) {
-        int currentQty = GetBuildableQuantity(buildableID);
-
-        // Check if any available
-        if (currentQty <= 0) {
-            return false;
-        }
-
-        // Deduct one
-        buildableQuantities[buildableID] = currentQty - 1;
-        Debug.Log($"[PlayerProgress] Consumed 1 {buildableID}. Remaining: {buildableQuantities[buildableID]}");
-        return true;
-    }
-
-    /// <summary>
-    /// Gets the current quantity of a buildable item in inventory.
-    /// </summary>
-    /// <param name="buildableID">The buildable type ID.</param>
-    /// <returns>Current quantity (0-5).</returns>
-    public int GetBuildableQuantity(string buildableID) {
-        return buildableQuantities.TryGetValue(buildableID, out int qty) ? qty : 0;
-    }
+    // O método AddBuildable foi removido porque sua lógica foi integrada em UnlockItem.
+    // O método ConsumeBuildable foi movido para a região Item Unlocks and Additions.
+    // O método GetBuildableQuantity foi movido para a região Item Unlocks and Additions.
 
     #endregion
 

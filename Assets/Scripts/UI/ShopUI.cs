@@ -14,7 +14,7 @@ if (itemData == null || EconomyManager.Instance == null || PlayerProgress.Instan
 }
 
 if (EconomyManager.Instance.TrySpendCurrency(itemData.UnlockCost)) {
-    PlayerProgress.Instance.UnlockWeapon(itemData.ItemID);
+    PlayerProgress.Instance.UnlockItem(itemData);
     Debug.Log($"[ShopUI] Unlocked {itemData.ItemName}!");
     WeaponUnlocked?.Invoke(itemData.ItemID);
     RefreshAllCards();
@@ -772,9 +772,14 @@ public class ShopUI : BaseUI {
         }
 
         if (EconomyManager.Instance.TrySpendCurrency(itemData.UnlockCost)) {
-            PlayerProgress.Instance.UnlockWeapon(itemData.ItemID);
+            // BUG CORRIGIDO: Antes, a ShopUI llamaba UnlockWeapon para todos os itens,
+            // incluyendo buildables. Agora llama UnlockItem que verifica o tipo do item.
+            PlayerProgress.Instance.UnlockItem(itemData);
             Debug.Log($"[ShopUI] Unlocked {itemData.ItemName}!");
-            WeaponUnlocked?.Invoke(itemData.ItemID);
+            // We only invoke WeaponUnlocked for actual weapons, not buildables.
+            if (itemData.ItemData is WeaponDataSO) {
+                WeaponUnlocked?.Invoke(itemData.ItemID);
+            }
             RefreshAllCards();
         }
         else {

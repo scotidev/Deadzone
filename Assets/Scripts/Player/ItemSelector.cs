@@ -112,7 +112,7 @@ public class ItemSelector : MonoBehaviour {
         return keyNumber >= 6 && keyNumber <= 8;
     }
 
-    /// <summary>
+/// <summary>
     /// Delegates buildable selection to the BuildingController.
     /// </summary>
     private void HandleBuildableSelection(int keyNumber) {
@@ -123,10 +123,6 @@ public class ItemSelector : MonoBehaviour {
 
         int buildableSlot = keyNumber - 5; // Key 6 -> Slot 1, etc.
         buildingController.SelectBuildableBySlot(buildableSlot);
-
-        // Treat the BuildingController itself as the selectable item
-        ISelectableItem selectable = buildingController as ISelectableItem;
-        selectable?.Select();
     }
 
     /// <summary>
@@ -137,6 +133,14 @@ public class ItemSelector : MonoBehaviour {
             Debug.LogWarning("[ItemSelector] Inventory reference is missing! Cannot select weapon.");
             ValidateReferences();
             return;
+        }
+
+        // BUG CORRIGIDO: Quando o jogador estava no modo de construção e tentava
+        // selecionar uma arma que já estava equipada, o código simplesmente retornava
+        // sem fazer nada. Agora, verificamos se há um buildable selecionado e cancelamos
+        // o modo de construção antes de equipar a arma.
+        if (BuildingController.Instance != null && BuildingController.Instance.IsPlacing) {
+            BuildingController.Instance.CancelPlacement();
         }
 
         int weaponIndex = GetWeaponIndex(keyNumber);
@@ -152,7 +156,7 @@ public class ItemSelector : MonoBehaviour {
             string weaponID = inventory.GetWeaponIDForIndex(weaponIndex);
             if (!string.IsNullOrEmpty(weaponID) && !PlayerProgress.Instance.IsWeaponUnlocked(weaponID)) {
                 if (enableDebugLogs) {
-                    Debug.Log($"[ItemSelector] {itemNames[keyNumber - 1]} is locdaked!");
+                    Debug.Log($"[ItemSelector] {itemNames[keyNumber - 1]} is locked!");
                 }
                 return;
             }

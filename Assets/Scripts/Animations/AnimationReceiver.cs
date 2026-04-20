@@ -20,16 +20,19 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private void OnAnimationEndedBolt() {
         }
+
         private void OnAnimationEndedReload() {
         }
 
         private void OnAnimationEndedGrenadeThrow() {
         }
+
         private void OnAnimationEndedMelee() {
         }
 
         private void OnAnimationEndedInspect() {
         }
+
         private void OnAnimationEndedHolster() {
         }
 

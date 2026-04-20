@@ -131,7 +131,9 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
     private void SelectItem(BuildableDataSO item) {
         ResolvePlayerCharacter();
 
-        if (item == null) return;
+        if (item == null) {
+            return;
+        }
 
         if (PlayerProgress.Instance != null) {
             string buildableID = GetBuildableID(item);
@@ -140,7 +142,7 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
                 int quantity = PlayerProgress.Instance.GetBuildableQuantity(buildableID);
 
                 if (quantity <= 0) {
-                    //LINHA QUE APARECE NO LOG DO BUG DE NAO CONSEGUIR SELECIONAR OBJETO, PROVAVELMENTE PORQUE O PLAYERPROGRESS USA UNLOCKWEAPON EM VEZ DE AddBuildable , TAMBEM DEVERIA SER UNLOCKBUILDABE, MAS NAO SEI SE ISSO VAI CAUSAR OUTROS PROBLEMAS, ENTÃO POR ENQUANTO DEIXEI ASSIM. NO FUTURO NAO DEVE SER UM LOG MAS SIM UM AUDIO TOCADO PARA INFORMAR O JOGADOR QUE ELE NAO TEM MAIS DESSE OBJETO PARA COLOCAR
+                    //FUTURAMENTE DEVE TOCAR UM SOM DE ERRO AQUI PARA DAR FEEDBACK AUDITIVO AO JOGADOR
                     Debug.LogWarning($"[BuildingController] No {buildableID} in inventory! Purchase from shop first.");
                     return;
                 }
@@ -148,8 +150,7 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
         }
 
         if (selectedItem == item) {
-            CancelPlacement();
-            return;
+            DestroyCurrentGhost();
         }
 
         DestroyCurrentGhost();
@@ -159,7 +160,7 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
         playerCharacter?.SetHolstered(true);
 
         if (item.GhostPrefab == null) {
-            Debug.LogWarning($"[BuildingController] ${item.name} não tem Ghost Prefab configurado no BuildableSO!");
+            Debug.LogWarning($"[BuildingController] {item.name} não tem Ghost Prefab configurado no BuildableSO!");
             selectedItem = null;
             playerCharacter?.SetHolstered(false);
             return;
@@ -265,12 +266,11 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
     /// <summary>
     /// Maps BuildableSO to buildable ID for inventory tracking.
     /// </summary>
+    /// <param name="buildable">The BuildableDataSO to get the ID from.</param>
+    /// <returns>The itemID of the buildable.</returns>
     public string GetBuildableID(BuildableDataSO buildable) {
-        if (buildable == barricade) return "6";
-        if (buildable == explosiveBarrel) return "7";
-        if (buildable == bearTrap) return "8";
-
-        return null;
+        if (buildable == null) return null;
+        return buildable.itemID;
     }
 
     /// <summary>
@@ -290,7 +290,7 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
     /// <summary>
     /// Cancels the current placement mode, cleaning up all related objects and UI elements.
     /// </summary>
-    private void CancelPlacement() {
+    public void CancelPlacement() {
         ResolvePlayerCharacter();
         DestroyCurrentGhost();
         selectedItem = null;
