@@ -8074,6 +8074,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1389135629}
   m_CullTransparentMesh: 1
+--- !u!114 &1401717006 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8306842215324100105, guid: a20c4961b0655574e9f91c372538fa9f,
+    type: 3}
+  m_PrefabInstance: {fileID: 4545309492575171591}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34192f55e8b91f64297aabae70a9ff81, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingController
 --- !u!114 &1413941464 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 21942734028567878, guid: a20c4961b0655574e9f91c372538fa9f,
@@ -13920,6 +13932,29 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8211855974502300213, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: bearTrap
+      value: 
+      objectReference: {fileID: 11400000, guid: c56482c7c3f9f7b4791b0ca6b0010b75,
+        type: 2}
+    - target: {fileID: 8211855974502300213, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: barricade
+      value: 
+      objectReference: {fileID: 11400000, guid: 83c9cb67eaa9ae740972afe1e131aa5f,
+        type: 2}
+    - target: {fileID: 8211855974502300213, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: explosiveBarrel
+      value: 
+      objectReference: {fileID: 11400000, guid: 5459b9cf2e95280489f71eefa12d9aa7,
+        type: 2}
+    - target: {fileID: 8211855974502300213, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: buildingController
+      value: 
+      objectReference: {fileID: 1401717006}
     - target: {fileID: 8306842215324100105, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: bearTrap

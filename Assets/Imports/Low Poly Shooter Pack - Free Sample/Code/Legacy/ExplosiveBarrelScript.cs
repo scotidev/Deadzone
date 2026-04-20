@@ -27,6 +27,8 @@ public class ExplosiveBarrelScript : MonoBehaviour {
 	public float explosionRadius = 12.5f;
 	//How powerful the explosion is
 	public float explosionForce = 4000.0f;
+	//Damage dealt to zombies within the explosion radius
+	public float explosionDamage = 50f;
 	
 	private void Update () {
 		//Generate random time based on min and max time values
@@ -105,6 +107,13 @@ public class ExplosiveBarrelScript : MonoBehaviour {
 				//If gas tank is within radius, explode it
 				hit.gameObject.GetComponent<GasTankScript> ().isHit = true;
 				hit.gameObject.GetComponent<GasTankScript> ().explosionTimer = 0.05f;
+			}
+
+			//Aplica dano aos zumbis (inimigos) dentro do raio da explosão
+			EnemyBase enemy = hit.GetComponent<EnemyBase>();
+			if (enemy != null)
+			{
+				enemy.TakeDamage(explosionDamage);
 			}
 		}
 

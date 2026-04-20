@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 /// <summary>
 /// Controls the melee attack behavior for all enemy types.
@@ -6,8 +7,13 @@ using UnityEngine;
 /// When the player enters the attack range (attackRange), the enemy
 /// stops moving and applies damage periodically via IDamageable.
 /// When the player moves away, movement is automatically resumed.
+/// If a barricade blocks the path to the player, the enemy will attack and destroy it.
 /// </summary>
 public class EnemyAttack : MonoBehaviour {
+
+    [Header("Barricade Settings")]
+    [SerializeField] private float barricadeCheckDistance = 10f;
+    [SerializeField] private LayerMask barricadeLayer;
 
     private float attackDamage;
     private float attackRange;
@@ -18,6 +24,7 @@ public class EnemyAttack : MonoBehaviour {
     private EnemyFollow enemyFollow;
     private Transform playerTransform;
     private IDamageable playerDamageable;
+    private Barricade currentBarricade;
 
     private Animator animator;
 
@@ -40,6 +47,9 @@ public class EnemyAttack : MonoBehaviour {
 
         if (playerTransform != null)
             playerDamageable = playerTransform.GetComponent<IDamageable>();
+
+        if (barricadeLayer.value == 0)
+            barricadeLayer = LayerMask.GetMask("Obstacle");
     }
 
     private void Update() {
@@ -47,15 +57,65 @@ public class EnemyAttack : MonoBehaviour {
 
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
 
+        if (currentBarricade != null && !currentBarricade.IsDestroyed) {
+            HandleBarricadeAttack(distanceToPlayer);
+            return;
+        }
+
+        CheckForBarricadeOnPath();
+
         bool inAttackRange = distanceToPlayer <= attackRange;
 
         if (enemyFollow != null)
             enemyFollow.SetMovementEnabled(!inAttackRange);
 
         if (inAttackRange && Time.time - lastAttackTime >= attackCooldown) {
-            Attack();
+            AttackPlayer();
             lastAttackTime = Time.time;
         }
+    }
+
+    private void CheckForBarricadeOnPath() {
+        Vector3 directionToPlayer = (playerTransform.position - transform.position).normalized;
+        float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+        float checkDist = Mathf.Min(distanceToPlayer, barricadeCheckDistance);
+
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, directionToPlayer, out hit, checkDist, barricadeLayer)) {
+            Barricade barricade = hit.collider.GetComponent<Barricade>();
+            if (barricade != null && !barricade.IsDestroyed) {
+                currentBarricade = barricade;
+            }
+        }
+    }
+
+    private void HandleBarricadeAttack(float distanceToPlayer) {
+        if (currentBarricade.IsDestroyed) {
+            currentBarricade = null;
+            return;
+        }
+
+        if (enemyFollow != null)
+            enemyFollow.SetMovementEnabled(false);
+
+        if (Time.time - lastAttackTime >= attackCooldown) {
+            AttackBarricade();
+            lastAttackTime = Time.time;
+        }
+    }
+
+    private void AttackPlayer() {
+        if (animator != null)
+            animator.SetTrigger(HashAttack);
+
+        playerDamageable?.TakeDamage(attackDamage);
+    }
+
+    private void AttackBarricade() {
+        if (animator != null)
+            animator.SetTrigger(HashAttack);
+
+        currentBarricade?.TakeDamage(attackDamage);
     }
 
     /// <summary>
@@ -66,18 +126,5 @@ public class EnemyAttack : MonoBehaviour {
         attackDamage = damage;
         attackRange = range;
         attackCooldown = cooldown;
-    }
-
-    /// <summary>
-    /// Triggers the enemy's attack animation and applies damage to the player if the player is damageable.
-    /// </summary>
-    /// <remarks>This method activates the 'Attack' trigger in the associated Animator, which must be configured in
-    /// the Animator Controller. If the player implements the damageable interface, the method reduces the player's health
-    /// by the configured attack damage. No action is taken if the player does not support damage reception.</remarks>
-    private void Attack() {
-        if (animator != null)
-            animator.SetTrigger(HashAttack);
-
-        playerDamageable?.TakeDamage(attackDamage);
     }
 }

@@ -859,6 +859,19 @@ namespace InfimaGames.LowPolyShooterPack {
             return true;
         }
 
+        /// <summary>
+        /// Callback for unified item selection via numeric keys (1-9).
+        /// Delegates to Inventory to handle both weapons and buildables.
+        /// </summary>
+        public void OnSelectItem(UnityEngine.InputSystem.InputAction.CallbackContext context) {
+            if (context.phase != UnityEngine.InputSystem.InputActionPhase.Performed)
+                return;
+
+            if (inventory is Inventory inventoryScript) {
+                inventoryScript.OnSelectItem(context);
+            }
+        }
+
         public void OnLockCursor(InputAction.CallbackContext context) {
             //Switch.
             switch (context) {
