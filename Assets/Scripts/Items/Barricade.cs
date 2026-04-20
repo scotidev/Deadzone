@@ -21,24 +21,20 @@ public class Barricade : MonoBehaviour, IDamageable {
     public float HealthFraction => currentHealth / maxHealth;
     public bool IsDestroyed => currentHealth <= 0f;
 
-    private bool initialized = false;
-
     private void Awake() {
+        currentHealth = maxHealth;
+        
         if (barricadeRenderer == null)
             barricadeRenderer = GetComponent<Renderer>();
     }
 
     private void Start() {
-        if (!initialized) {
-            currentHealth = maxHealth;
-            UpdateBarricadeColor();
-        }
+        UpdateBarricadeColor();
     }
 
     public void Initialize(float health) {
         maxHealth = health;
         currentHealth = maxHealth;
-        initialized = true;
         UpdateBarricadeColor();
     }
 

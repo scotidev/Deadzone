@@ -32,6 +32,10 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
 
     #region FIELDS
 
+    public BuildableDataSO Barricade => barricade;
+    public BuildableDataSO ExplosiveBarrel => explosiveBarrel;
+    public BuildableDataSO BearTrap => bearTrap;
+
     private Camera playerCamera;
     private GameObject currentGhost;
     private GhostObject currentGhostObject;
@@ -41,6 +45,7 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
 
     #region PROPERTIES
     public bool IsPlacing => currentGhost != null;
+    public BuildableDataSO CurrentSelectedItem => selectedItem;
 
     #endregion
 
@@ -91,6 +96,21 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
     }
 
     /// <summary>
+    /// Starts placement mode for a buildable item.
+    /// Called by Inventory when player selects a buildable.
+    /// </summary>
+    public void StartPlacement(BuildableDataSO item) {
+        SelectItem(item);
+    }
+
+    /// <summary>
+    /// Cancels the current placement mode.
+    /// </summary>
+    public void CancelCurrentPlacement() {
+        CancelPlacement();
+    }
+
+    /// <summary>
     /// Ensures a valid reference to the player's character component.
     /// </summary>
     private void ResolvePlayerCharacter() {
@@ -98,29 +118,6 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
             return;
 
         playerCharacter = FindFirstObjectByType<Character>();
-    }
-
-    /// <summary>
-    /// Public method to select a buildable item by slot number.
-    /// Called by the unified weapon selection system in ItemSelector.cs.
-    /// This allows keys 6, 7, 8 to be handled through the OnSelectWeapon method.
-    /// </summary>
-    /// <param name="slotNumber">The buildable slot to select. </param>
-    public void SelectBuildableBySlot(int slotNumber) {
-        switch (slotNumber) {
-            case 1:
-                SelectItem(barricade);
-                break;
-            case 2:
-                SelectItem(explosiveBarrel);
-                break;
-            case 3:
-                SelectItem(bearTrap);
-                break;
-            default:
-                Debug.LogWarning($"[BuildingController] Invalid buildable slot number: {slotNumber}. Must be 1, 2, or 3.");
-                break;
-        }
     }
 
     /// <summary>
@@ -260,16 +257,7 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
             currentGhost.transform.position,
             Quaternion.Euler(selectedItem.PlacementRotationEuler));
 
-        InitializeBarricade(placedObject, selectedItem);
-
         CancelPlacement();
-    }
-
-    private void InitializeBarricade(GameObject placedObject, BuildableDataSO buildableData) {
-        Barricade barricade = placedObject.GetComponent<Barricade>();
-        if (barricade != null) {
-            barricade.Initialize(buildableData.Health);
-        }
     }
 
     /// <summary>

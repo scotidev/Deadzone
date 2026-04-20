@@ -131,7 +131,6 @@ namespace InfimaGames.LowPolyShooterPack
         /// </summary>
         private void SelectBuildable(int keyNumber) {
             if (buildingController == null) {
-                Debug.LogWarning("[Inventory.SelectBuildable] BuildingController is null!");
                 buildingController = FindFirstObjectByType<BuildingController>();
                 if (buildingController == null) {
                     Debug.LogError("[Inventory.SelectBuildable] Cannot find BuildingController!");
@@ -139,8 +138,48 @@ namespace InfimaGames.LowPolyShooterPack
                 }
             }
 
-            int buildableSlot = keyNumber - 5; // Key 6 -> Slot 1, Key 7 -> Slot 2, Key 8 -> Slot 3
-            buildingController.SelectBuildableBySlot(buildableSlot);
+            int buildableSlot = keyNumber - 5;
+            BuildableDataSO selectedBuildable = buildableSlot switch {
+                1 => buildingController.Barricade,
+                2 => buildingController.ExplosiveBarrel,
+                3 => buildingController.BearTrap,
+                _ => null
+            };
+
+            if (selectedBuildable == null) return;
+
+            SelectBuildableItem(selectedBuildable);
+        }
+
+        private void SelectBuildableItem(BuildableDataSO buildable) {
+            ResolvePlayerCharacter();
+
+            if (buildable == null) return;
+
+            if (PlayerProgress.Instance != null) {
+                string buildableID = buildingController.GetBuildableID(buildable);
+                if (!string.IsNullOrEmpty(buildableID)) {
+                    int quantity = PlayerProgress.Instance.GetBuildableQuantity(buildableID);
+                    if (quantity <= 0) {
+                        Debug.LogWarning($"[Inventory] No {buildableID} in inventory! Purchase from shop first.");
+                        return;
+                    }
+                }
+            }
+
+            if (buildingController.IsPlacing && buildingController.CurrentSelectedItem == buildable) {
+                buildingController.CancelCurrentPlacement();
+                return;
+            }
+
+            buildingController.StartPlacement(buildable);
+            character?.SetHolstered(true);
+        }
+
+        private void ResolvePlayerCharacter() {
+            if (character == null) {
+                character = GetComponent<Character>();
+            }
         }
 
         /// <summary>

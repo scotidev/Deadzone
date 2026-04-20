@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 5840469205003672634}
   - component: {fileID: 4505477289154828276}
   - component: {fileID: 6620132930600282068}
-  - component: {fileID: 5480079016176301721}
   - component: {fileID: 5866901180975809863}
   m_Layer: 6
   m_Name: Barricade
@@ -160,18 +159,6 @@ MonoBehaviour:
   greenColor: {r: 0, g: 1, b: 0, a: 1}
   yellowColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   redColor: {r: 1, g: 0, b: 0, a: 1}
---- !u!114 &5480079016176301721
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6655631503875209216}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 46b509842b8f9eb45b314357a3260e52, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BarricadeInitializer
 --- !u!208 &5866901180975809863
 NavMeshObstacle:
   m_ObjectHideFlags: 0
