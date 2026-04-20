@@ -19,19 +19,37 @@ public enum GameState {
 /// </summary>
 public class GameManager : MonoBehaviour {
 
+    #region STATIC
+
     /// <summary>Global access point to the single <see cref="GameManager"/> instance.</summary>
     public static GameManager Instance { get; private set; }
 
-    public GameState State { get; private set; } = GameState.Loader;
+    #endregion
+
+    #region SERIALIZED FIELDS
 
     [Header("Slow Motion Settings")]
     [Tooltip("Time scale factor during slow motion.")]
     [Range(0.01f, 0.9f)]
     [SerializeField] private float slowTimeScale = 0.2f;
 
+    #endregion
+
+    #region FIELDS
+
     private float _baseTimeScale = 1.0f;
 
     private Coroutine _slowMotionRoutine;
+
+    #endregion
+
+    #region PROPERTIES
+
+    public GameState State { get; private set; } = GameState.Loader;
+
+    #endregion
+
+    #region UNITY
 
     private void Awake() {
         if (Instance == null) {
@@ -42,6 +60,10 @@ public class GameManager : MonoBehaviour {
             Destroy(gameObject);
         }
     }
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Transitions the game into <paramref name="newState"/>.
@@ -136,4 +158,6 @@ public class GameManager : MonoBehaviour {
 
         _slowMotionRoutine = null;
     }
+
+    #endregion
 }

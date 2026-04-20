@@ -5,8 +5,15 @@ using UnityEngine.SceneManagement;
 /// Persistent manager responsible for all scene transitions in the game.
 /// </summary>
 public class SceneLoader : MonoBehaviour {
+
+    #region STATIC
+
     /// <summary>Global access point to the single <see cref="SceneLoader"/> instance.</summary>
     public static SceneLoader Instance { get; private set; }
+
+    #endregion
+
+    #region UNITY
 
     private void Awake() {
         if (Instance == null) {
@@ -18,6 +25,10 @@ public class SceneLoader : MonoBehaviour {
         }
     }
 
+    #endregion
+
+    #region METHODS
+
     /// <summary>
     /// Loads the main menu scene.
     /// </summary>
@@ -27,4 +38,6 @@ public class SceneLoader : MonoBehaviour {
     /// Loads the main game scene.
     /// </summary>
     public void LoadGame() => SceneManager.LoadScene("Game");
+
+    #endregion
 }
