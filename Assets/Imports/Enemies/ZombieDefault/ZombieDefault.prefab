@@ -204,6 +204,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fcc8d6ef9b7fbbe438314233f1e4c5a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAttack
+  barricadeCheckDistance: 10
+  barricadeLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!114 &4928547087654709194
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -256,11 +256,20 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
             }
         }
 
-        Instantiate(selectedItem.RealPrefab,
+        GameObject placedObject = Instantiate(selectedItem.RealPrefab,
             currentGhost.transform.position,
             Quaternion.Euler(selectedItem.PlacementRotationEuler));
 
+        InitializeBarricade(placedObject, selectedItem);
+
         CancelPlacement();
+    }
+
+    private void InitializeBarricade(GameObject placedObject, BuildableDataSO buildableData) {
+        BarricadeInitializer initializer = placedObject.GetComponent<BarricadeInitializer>();
+        if (initializer != null) {
+            initializer.Initialize(buildableData.Health);
+        }
     }
 
     /// <summary>

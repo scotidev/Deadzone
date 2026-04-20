@@ -12,7 +12,8 @@ public class BuildableDataSO : ItemDataSO {
     [Header("Buildable Stats")]
     [SerializeField] private float damage;
     [SerializeField] private int explosionRadius;
-    [SerializeField] private float resistance;
+    [Tooltip("Health of the barricade when placed")]
+    [SerializeField] private float health = 100f;
     [SerializeField] private float length;
     [SerializeField] private int maxAmount;
 
@@ -33,7 +34,7 @@ public class BuildableDataSO : ItemDataSO {
 
     public float Damage => damage;
     public int ExplosionRadius => explosionRadius;
-    public float Resistance => resistance;
+    public float Health => health;
     public float Length => length;
     public float MaxAmount => maxAmount;
     public GameObject RealPrefab => realPrefab;
@@ -45,8 +46,8 @@ public class BuildableDataSO : ItemDataSO {
 
     #region METHODS
 
-    public override string[] GetStatLabels() => new[] { "Damage", "Resistance", "Length", "Ammo", "Explosion Radius" };
-    public override float[] GetStatValues() => new[] { damage, resistance, length, maxAmount, explosionRadius };
+    public override string[] GetStatLabels() => new[] { "Damage", "Health", "Length", "Ammo", "Explosion Radius" };
+    public override float[] GetStatValues() => new[] { damage, health, length, maxAmount, explosionRadius };
 
     #endregion
 

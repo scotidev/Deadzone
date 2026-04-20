@@ -11,9 +11,11 @@ GameObject:
   - component: {fileID: 6933246757552969385}
   - component: {fileID: 2059235197362181482}
   - component: {fileID: 3571858063844239097}
-  - component: {fileID: 711946798891825604}
   - component: {fileID: 5840469205003672634}
   - component: {fileID: 4505477289154828276}
+  - component: {fileID: 6620132930600282068}
+  - component: {fileID: 5480079016176301721}
+  - component: {fileID: 5866901180975809863}
   m_Layer: 6
   m_Name: Barricade
   m_TagString: Untagged
@@ -92,27 +94,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &711946798891825604
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6655631503875209216}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!65 &5840469205003672634
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -161,3 +142,49 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &6620132930600282068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6655631503875209216}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e14c7979ef6ba54d93a1154e229a980, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Barricade
+  maxHealth: 100
+  currentHealth: 0
+  barricadeRenderer: {fileID: 3571858063844239097}
+  greenColor: {r: 0, g: 1, b: 0, a: 1}
+  yellowColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  redColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &5480079016176301721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6655631503875209216}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46b509842b8f9eb45b314357a3260e52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BarricadeInitializer
+--- !u!208 &5866901180975809863
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6655631503875209216}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.5, y: 0.5, z: 0.5}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5
