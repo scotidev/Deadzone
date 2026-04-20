@@ -266,9 +266,9 @@ public class BuildingController : MonoBehaviour, ISelectableItem {
     }
 
     private void InitializeBarricade(GameObject placedObject, BuildableDataSO buildableData) {
-        BarricadeInitializer initializer = placedObject.GetComponent<BarricadeInitializer>();
-        if (initializer != null) {
-            initializer.Initialize(buildableData.Health);
+        Barricade barricade = placedObject.GetComponent<Barricade>();
+        if (barricade != null) {
+            barricade.Initialize(buildableData.Health);
         }
     }
 
