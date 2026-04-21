@@ -6,6 +6,7 @@ using UnityEngine;
 /// Stores a customizable interaction prompt message that is displayed to the player.
 /// </summary>
 public abstract class Interactable : MonoBehaviour {
+
     [Header("Interaction Settings")]
     [SerializeField] private string interactionPrompt = "[E] Interact";
 

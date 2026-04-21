@@ -2,54 +2,49 @@
 
 using UnityEngine;
 
-namespace InfimaGames.LowPolyShooterPack
-{
+namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
-    /// Audio Settings used to interact with the AudioManagerService.
+    /// Audio Settings struct used to interact with the AudioManagerService.
     /// </summary>
     [System.Serializable]
-    public struct AudioSettings
-    {
-        /// <summary>
-        /// Automatic Cleanup Getter.
-        /// </summary>
-        public bool AutomaticCleanup => automaticCleanup;
-        /// <summary>
-        /// Volume Getter.
-        /// </summary>
-        public float Volume => volume;
-        /// <summary>
-        /// Spatial Blend Getter.
-        /// </summary>
-        public float SpatialBlend => spatialBlend;
+    public struct AudioSettings {
+
+        #region SERIALIZED FIELDS
 
         [Header("Settings")]
-        
+
         [Tooltip("If true, any AudioSource created will be removed after it has finished playing its clip.")]
         [SerializeField]
         private bool automaticCleanup;
 
-        [Tooltip("Volume.")]
         [Range(0.0f, 1.0f)]
         [SerializeField]
         private float volume;
 
-        [Tooltip("Spatial Blend.")]
+        [Tooltip("Spatial Blend. If 0, the sound is fully 2D. If 1, the sound is fully 3D.")]
         [Range(0.0f, 1.0f)]
         [SerializeField]
         private float spatialBlend;
 
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        public AudioSettings(float volume = 1.0f, float spatialBlend = 0.0f, bool automaticCleanup = true)
-        {
-            //Volume.
+        #endregion
+
+        #region PROPERTIES
+
+        public bool AutomaticCleanup => automaticCleanup;
+        public float Volume => volume;
+        public float SpatialBlend => spatialBlend;
+
+        #endregion
+
+        #region CONSTRUCTORS
+
+        public AudioSettings(float volume = 1.0f, float spatialBlend = 0.0f, bool automaticCleanup = true) {
             this.volume = volume;
-            //Spatial Blend.
             this.spatialBlend = spatialBlend;
-            //Automatic Cleanup.
             this.automaticCleanup = automaticCleanup;
         }
+
+        #endregion
+
     }
 }

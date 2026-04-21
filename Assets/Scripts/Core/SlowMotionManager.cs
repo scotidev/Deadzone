@@ -1,5 +1,7 @@
 using UnityEngine;
 
+// Refatoração: esse script deveria ser um Service do Service Locator? Analise mais profunda necessaria.
+
 /// <summary>
 /// Singleton facade for the slow motion system.
 /// <para>
@@ -10,11 +12,16 @@ using UnityEngine;
 /// </summary>
 public class SlowMotionManager : MonoBehaviour {
 
+    #region STATIC
+
     /// <summary>
     /// Global access point to the single <see cref="SlowMotionManager"/> instance.
     /// </summary>
     public static SlowMotionManager Instance { get; private set; }
 
+    #endregion
+
+    #region UNITY
     private void Awake() {
         if (Instance != null) {
             Destroy(gameObject);
@@ -22,6 +29,10 @@ public class SlowMotionManager : MonoBehaviour {
         }
         Instance = this;
     }
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Triggers a slow motion effect lasting <paramref name="realDuration"/>
@@ -37,4 +48,6 @@ public class SlowMotionManager : MonoBehaviour {
     public void TriggerSlowMotion(float realDuration) {
         GameManager.Instance?.TriggerSlowMotion(realDuration);
     }
+
+    #endregion
 }
