@@ -5,6 +5,7 @@ using UnityEngine;
 /// Abstract class representing an exclusive upgrade for a weapon. Inherits from ItemExclusive and provides a reference to the WeaponBehaviour component, allowing derived classes to implement specific exclusive effects related to weapons.
 /// </summary>
 public abstract class WeaponExclusive : ItemExclusive {
+
     protected WeaponBehaviour weaponBehaviour;
 
     protected override void Awake() {
@@ -24,7 +25,7 @@ public abstract class WeaponExclusive : ItemExclusive {
     /// </summary>
     /// <param name="level">The unlock level to assign. Must be a non-negative integer.</param>
     /// <param name="description">The description to associate with the exclusive mode. Cannot be null.</param>
-    public void SetupExclusive(int level, string description) {
+    public new void SetupExclusive(int level, string description) {
         SetUnlockLevel(level);
         SetExclusiveDescription(description);
     }

@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+// Refatoração: esse script deveria ser um Service do Service Locator? Analise mais profunda necessaria.
+
 /// <summary>
 /// Persistent manager responsible for all scene transitions in the game.
 /// </summary>

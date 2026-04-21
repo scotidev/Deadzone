@@ -1,5 +1,7 @@
 using UnityEngine;
 
+// Refatoração: esse script deveria ser um Service do Service Locator? Analise mais profunda necessaria.
+
 /// <summary>
 /// Singleton facade for the slow motion system.
 /// <para>

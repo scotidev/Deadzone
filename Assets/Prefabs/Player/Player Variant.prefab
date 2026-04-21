@@ -5077,7 +5077,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_ActionEvents.Array.data[17].m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 8879736832059506288}
+      objectReference: {fileID: 0}
     - target: {fileID: 601192529242639950, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: m_ActionEvents.Array.data[6].m_PersistentCalls.m_Calls.Array.data[1].m_CallState
@@ -5305,10 +5305,6 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 3200162001527162215}
-    - targetCorrespondingSourceObject: {fileID: 2751027687307977091, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8879736832059506288}
     - targetCorrespondingSourceObject: {fileID: 8195332293463410011, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       insertIndex: -1
@@ -5409,22 +5405,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerArmor
   maxArmor: 100
---- !u!114 &8879736832059506288
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2765326547094986479}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 845d8c00d2d7a964e88c528c8baa2925, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ItemSelector
-  character: {fileID: 21942734028567878}
-  inventory: {fileID: 8211855974502300213}
-  buildingController: {fileID: 0}
-  enableDebugLogs: 1
 --- !u!4 &2768567120988589389 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2748913124992463393, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
@@ -5441,18 +5421,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e55e7a428d82413e839adb23b9351c98, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &8211855974502300213 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8195332293463410009, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
-    type: 3}
-  m_PrefabInstance: {fileID: 21942734424932204}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8211855974502300215}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d3c368290cc3e914ab3a0cf540de2166, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &8211855974502300215 stripped
@@ -5473,9 +5441,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34192f55e8b91f64297aabae70a9ff81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingController
-  itemSlot6: {fileID: 11400000, guid: 83c9cb67eaa9ae740972afe1e131aa5f, type: 2}
-  itemSlot7: {fileID: 11400000, guid: 5459b9cf2e95280489f71eefa12d9aa7, type: 2}
-  itemSlot8: {fileID: 11400000, guid: c56482c7c3f9f7b4791b0ca6b0010b75, type: 2}
+  barricade: {fileID: 0}
+  explosiveBarrel: {fileID: 0}
+  bearTrap: {fileID: 0}
   groundLayer:
     serializedVersion: 2
     m_Bits: 65544
@@ -5485,8 +5453,8 @@ MonoBehaviour:
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 64
-  maxPlacementDistance: 8
   playerCharacter: {fileID: 21942734028567878}
+  maxPlacementDistance: 8
 --- !u!4 &8493848889635974000 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8479647377699197980, guid: 19eadcf8fbed56b4da77ca94c1b4145f,

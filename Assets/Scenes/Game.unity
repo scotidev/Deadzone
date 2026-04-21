@@ -2763,7 +2763,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cf52592fa637e743a5dd99f16e67f71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EconomyManager
-  startingCurrency: 0
+  startingCurrency: 50000
 --- !u!4 &392336156
 Transform:
   m_ObjectHideFlags: 0
@@ -13872,6 +13872,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[17].m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 1628012635517256272, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: enemyHealthBarUI
@@ -13973,7 +13978,8 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: 5459b9cf2e95280489f71eefa12d9aa7,
         type: 2}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8879736832059506288, guid: a20c4961b0655574e9f91c372538fa9f, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

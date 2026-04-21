@@ -1,7 +1,8 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewBuildable", menuName = "Deadzone/Buildable Item")]
+// REFATORAÇÃO: maxAmount deve ser unificado em um único contador para armas e  buildables e medkits, granadas... qualquer item deve conter um contador de quantidade chamado de ammoAmount, e cada item tem um currentAmount que é atualizado quando o item é usado ou recarregado. Isso simplifica a lógica de gerenciamento de quantidade e evita confusão entre diferentes tipos de itens.
 
+[CreateAssetMenu(fileName = "NewBuildable", menuName = "Deadzone/Buildable Item")]
 ///<summary> 
 /// ScriptableObject that represents a buildable item in the game.
 ///</summary>

@@ -1,6 +1,8 @@
 using System.Collections;
 using UnityEngine;
 
+// REFATORAÇÃO: Esse script deveria ser um Service do Service Locator? Analise mais profunda necessaria.
+
 /// <summary>
 /// Enum that represents every top-level state the game can be in.
 /// </summary>

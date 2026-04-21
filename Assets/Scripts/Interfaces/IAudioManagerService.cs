@@ -7,6 +7,7 @@ namespace InfimaGames.LowPolyShooterPack {
     /// Sound Manager Service Interface.
     /// </summary>
     public interface IAudioManagerService : IGameService {
+
         #region Legacy Methods 
 
         /// <summary>

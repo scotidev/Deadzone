@@ -2,6 +2,9 @@ using InfimaGames.LowPolyShooterPack;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+// REFATORAÇÃO: Esse script deveria ser um Service do ServiceLocator? Talvez. 
+// REFATORAÇÃO: Adicionar feedbacks para o player StartPlacement por exemplo: tocar um som de erro se não tiver o item, ou um som de confirmação quando começar a colocar.
+
 /// <summary>
 /// Controller responsible for managing the building mechanics in the game.
 /// </summary>
