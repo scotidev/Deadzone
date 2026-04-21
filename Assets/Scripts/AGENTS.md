@@ -48,9 +48,7 @@ Contains scripts related to player character logic, movement, inventory, health,
 
 /// Inventory Behaviour. Contains data for inventory slots and item management.
 
-### /Player/ItemSelector.cs
 
-/// Item Selector. Handles item selection logic when scrolling through inventory.
 
 ### /Player/PlayerInteraction.cs
 
@@ -440,9 +438,7 @@ Contains interface definitions used throughout the project.
 
 /// Interactable. Interface for objects that can be interacted with.
 
-### /Interfaces/ISelectableItem.cs
 
-/// ISelectable Item. Interface for items that can be selected in inventory.
 
 ### /Interfaces/IAudioManagerService.cs
 

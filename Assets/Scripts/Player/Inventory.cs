@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace InfimaGames.LowPolyShooterPack
 {
-    public class Inventory : InventoryBehaviour, ISelectableItem
+    public class Inventory : InventoryBehaviour
     {
         #region FIELDS
 
@@ -330,9 +330,10 @@ namespace InfimaGames.LowPolyShooterPack
 
         /// <summary>
         /// Selects the weapon at the currently equipped index.
-        /// This method is part of the ISelectableItem interface, allowing weapons to be selected generically.
+        /// <summary>
+        /// Re-equips the currently selected item.
         /// </summary>
-        public void Select()
+        public void ReEquipCurrentItem()
         {
             Equip(equippedIndex);
         }
