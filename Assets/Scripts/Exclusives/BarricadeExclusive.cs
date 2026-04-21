@@ -1,15 +1,14 @@
 using UnityEngine;
 
-public class BarricadeExclusive : ItemExclusive
-{
-    private void Awake()
-    {
-        SetupExclusive(5, "Barricades become indestructible.");
+/// <summary>
+/// Implements the Barricade Exclusive.
+/// </summary>
+public class BarricadeExclusive : ItemExclusive {
+    protected override void Awake() {
+        SetupExclusive(5, "Indestructible barricades!");
     }
 
-    protected override void ApplyExclusiveEffects()
-    {
-        // Lógica para tornar a barricada indestrutível.
+    protected override void ApplyExclusiveEffects() {
         Debug.Log("Barricade Exclusive Activated: Barricades are now indestructible.");
     }
 }

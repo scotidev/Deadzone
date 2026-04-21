@@ -1,22 +1,20 @@
 using UnityEngine;
 
-public class PistolExclusive : WeaponExclusive
-{
-    [Header("Pistol Exclusive Settings")]
-    [SerializeField] private float criticalChanceIncrease = 0.30f; // +30% chance de crítico
+/// <summary>
+/// Implements the Pistol Exlusive effect.
+/// </summary>
+public class PistolExclusive : WeaponExclusive {
 
-    private void Awake()
-    {
-        base.Awake(); // Chama o Awake da classe base primeiro
-        SetupExclusive(9, "+30% Critical Chance"); 
+    [Header("Pistol Exclusive Settings")]
+    [SerializeField] private float criticalChanceIncrease = 0.30f;
+
+    protected override void Awake() {
+        base.Awake();
+        SetupExclusive(9, "+30% Critical Chance");
     }
 
-    protected override void ApplyExclusiveEffects()
-    {
-        if (weaponBehaviour != null)
-        {
-            // Aplica o bônus de chance de crítico
-            // Exemplo: weaponBehaviour.AddCriticalChance(criticalChanceIncrease);
+    protected override void ApplyExclusiveEffects() {
+        if (weaponBehaviour != null) {
             Debug.Log($"Pistol Exclusive Activated: +{criticalChanceIncrease * 100}% Critical Chance.");
         }
     }
