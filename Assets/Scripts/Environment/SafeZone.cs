@@ -5,19 +5,25 @@ using UnityEngine;
 /// </summary>
 public class SafeZone : MonoBehaviour {
 
+    #region SERIALIZED FIELDS
+
     [Header("Settings")]
-    [Tooltip("Check TRUE if the player starts outside the safezone at the beginning of the scene.")]
     [SerializeField] private bool playerStartsOutside = false;
 
+    #endregion
+
+    #region FIELDS
+
     private PlayerHealth health;
+
+    #endregion
+
+    #region UNITY
 
     private void Start() {
         GameObject player = GameObject.FindWithTag("Player");
         if (player != null) {
             health = player.GetComponentInParent<PlayerHealth>();
-        }
-        else {
-            Debug.LogWarning("[SafeZone] Player not found in the scene!");
         }
 
         if (playerStartsOutside && health != null) {
@@ -35,9 +41,6 @@ public class SafeZone : MonoBehaviour {
         if (health != null) {
             health.StopPoisonDamage();
         }
-        else {
-            Debug.LogWarning("[SafeZone] Player entered safezone but health not found.");
-        }
     }
 
     /// <summary>
@@ -49,9 +52,6 @@ public class SafeZone : MonoBehaviour {
 
         if (health != null) {
             health.StartPoisonDamage();
-        }
-        else {
-            Debug.LogWarning("[SafeZone] Player left the safezone but health not found.");
         }
     }
 
@@ -66,4 +66,6 @@ public class SafeZone : MonoBehaviour {
         Gizmos.color = new Color(0f, 0f, 1f, 0.6f);
         Gizmos.DrawWireCube(box.center, box.size);
     }
+
+    #endregion
 }

@@ -1,19 +1,19 @@
 using UnityEngine;
-using UnityEngine.AI;
 
 /// <summary>
 /// Controls the melee attack behavior for all enemy types.
-///
-/// When the player enters the attack range (attackRange), the enemy
-/// stops moving and applies damage periodically via IDamageable.
-/// When the player moves away, movement is automatically resumed.
-/// If a barricade blocks the path to the player, the enemy will attack and destroy it.
 /// </summary>
 public class EnemyAttack : MonoBehaviour {
+
+    #region SERIALIZED FIELDS
 
     [Header("Barricade Settings")]
     [SerializeField] private float barricadeCheckDistance = 10f;
     [SerializeField] private LayerMask barricadeLayer;
+
+    #endregion
+
+    #region FIELDS
 
     private float attackDamage;
     private float attackRange;
@@ -29,6 +29,10 @@ public class EnemyAttack : MonoBehaviour {
     private Animator animator;
 
     private static readonly int HashAttack = Animator.StringToHash("Attack");
+
+    #endregion
+
+    #region UNITY
 
     private void Awake() {
         enemyFollow = GetComponent<EnemyFollow>();
@@ -57,12 +61,12 @@ public class EnemyAttack : MonoBehaviour {
 
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
 
+        CheckForBarricadeOnPath();
+
         if (currentBarricade != null && !currentBarricade.IsDestroyed) {
             HandleBarricadeAttack(distanceToPlayer);
             return;
         }
-
-        CheckForBarricadeOnPath();
 
         bool inAttackRange = distanceToPlayer <= attackRange;
 
@@ -75,6 +79,14 @@ public class EnemyAttack : MonoBehaviour {
         }
     }
 
+    #endregion
+
+    #region METHODS
+
+    /// <summary>
+    /// Checks for the presence of an undestroyed barricade along the path between the current object and the player,
+    /// and updates the current barricade reference if one is detected.
+    /// </summary>
     private void CheckForBarricadeOnPath() {
         Vector3 directionToPlayer = (playerTransform.position - transform.position).normalized;
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
@@ -89,6 +101,12 @@ public class EnemyAttack : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Handles the logic for attacking the current barricade when the enemy is within range and the attack cooldown has
+    /// elapsed.
+    /// </summary>
+    /// <param name="distanceToPlayer">The distance, in world units, between the enemy and the player. Used to determine if the enemy is close enough
+    /// to attack the barricade.</param>
     private void HandleBarricadeAttack(float distanceToPlayer) {
         if (currentBarricade.IsDestroyed) {
             currentBarricade = null;
@@ -104,6 +122,9 @@ public class EnemyAttack : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Attack the player by triggering the attack animation and applying damage through the IDamageable interface.
+    /// </summary>
     private void AttackPlayer() {
         if (animator != null)
             animator.SetTrigger(HashAttack);
@@ -111,6 +132,9 @@ public class EnemyAttack : MonoBehaviour {
         playerDamageable?.TakeDamage(attackDamage);
     }
 
+    /// <summary>
+    /// Performs an attack action on the current barricade, applying damage if a barricade is present.
+    /// </summary>
     private void AttackBarricade() {
         if (animator != null)
             animator.SetTrigger(HashAttack);
@@ -127,4 +151,6 @@ public class EnemyAttack : MonoBehaviour {
         attackRange = range;
         attackCooldown = cooldown;
     }
+
+    #endregion
 }

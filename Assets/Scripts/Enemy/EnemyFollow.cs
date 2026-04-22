@@ -8,8 +8,9 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyFollow : MonoBehaviour {
 
-    private NavMeshAgent agent;
+    #region FIELDS
 
+    private NavMeshAgent agent;
     private Transform playerTransform;
 
     private NavMeshAgent Agent {
@@ -18,6 +19,10 @@ public class EnemyFollow : MonoBehaviour {
             return agent;
         }
     }
+
+    #endregion
+
+    #region UNITY
 
     private void Awake() {
         agent = GetComponent<NavMeshAgent>();
@@ -30,6 +35,10 @@ public class EnemyFollow : MonoBehaviour {
 
         Agent.SetDestination(playerTransform.position);
     }
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Public API for Enemy to set the NavMeshAgent's movement speed after stats are initialized.
@@ -69,4 +78,6 @@ public class EnemyFollow : MonoBehaviour {
         else
             return;
     }
+
+    #endregion
 }

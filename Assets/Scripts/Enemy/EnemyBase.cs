@@ -3,13 +3,14 @@ using UnityEngine;
 
 /// <summary>
 /// Abstract base class for all enemy types in the game.
-/// Subclasses must implement InitializeStats() to set their own stats.
 /// Static event OnAnyEnemyDied allows the WaveManager to count deaths without
 /// needing a direct reference to each individual enemy.
 /// </summary>
 [RequireComponent(typeof(EnemyFollow))]
 [RequireComponent(typeof(EnemyAttack))]
 public abstract class EnemyBase : MonoBehaviour {
+
+    #region FIELDS
 
     protected float maxHealth = 100f;
     protected float moveSpeed = 3.5f;
@@ -27,6 +28,10 @@ public abstract class EnemyBase : MonoBehaviour {
     /// Triggered by any Enemy when it dies. The WaveManager listens to this to decrement the count of alive enemies.
     /// </summary>
     public static event Action OnAnyEnemyDied;
+
+    #endregion
+
+    #region UNITY
 
     protected virtual void Awake() {
         enemyFollow = GetComponent<EnemyFollow>();
@@ -46,6 +51,10 @@ public abstract class EnemyBase : MonoBehaviour {
         if (enemyAttack != null)
             enemyAttack.Configure(attackDamage, attackRange, attackCooldown);
     }
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Called during Awake(). Each subclass defines its stats here.
@@ -78,8 +87,6 @@ public abstract class EnemyBase : MonoBehaviour {
 
         if (enemyAttack != null) enemyAttack.enabled = false;
 
-        // Award currency to the player for killing this enemy
-        // Each enemy killed gives 100 currency
         if (EconomyManager.Instance != null) {
             EconomyManager.Instance.AddCurrency(100);
         }
@@ -93,4 +100,7 @@ public abstract class EnemyBase : MonoBehaviour {
     /// Returns the current health fraction between 0 (dead) and 1 (full).
     /// </summary>
     public float GetHealthFraction() => currentHealth / maxHealth;
+
+    #endregion
+
 }
