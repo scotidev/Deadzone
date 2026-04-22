@@ -1,5 +1,7 @@
 using UnityEngine;
 
+// REFATORAÇÃO: maxReserveAmmo respeita maxAmount ou está de acordo com o que foi dito no script de PlayerProgress? Ou deveriamos ter maxReserveAmmo para armas e maxAmount para itens de progresso? Mais uma coisa, é necessario referenciar o ID de exclusivo? o proprio script de exclusivo colocado na arma já não seria o suficiente para saber que aquela arma tem um exclusivo?
+
 /// <summary>
 /// ScriptableObject that defines a weapon's base stats and how they scale with upgrades.
 /// Each weapon has one of these assets.
@@ -7,37 +9,34 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "WeaponData", menuName = "Deadzone/Weapon Data")]
 public class WeaponDataSO : ItemDataSO {
 
+    #region FIELDS
+
     [Header("Base Stats")]
     public float baseDamage = 10f;
-
-    [Tooltip("Base fire rate in rounds per minute.")]
     public float baseFireRate = 200f;
-
-    [Tooltip("Base magazine capacity (ammo per clip).")]
     public int baseMagazineCapacity = 30;
-
-    [Tooltip("Maximum reserve ammo the player can carry for this weapon.")]
     public int maxReserveAmmo = 300;
 
     [Header("Upgrade Scaling")]
-    [Tooltip("Percentage increase in damage per upgrade level (e.g., 0.1 = +10% per level).")]
+
     [Range(0f, 0.5f)]
     public float damageScaling = 0.1f;
 
-    [Tooltip("Percentage increase in fire rate per upgrade level.")]
     [Range(0f, 0.5f)]
     public float fireRateScaling = 0.05f;
 
-    [Tooltip("Maximum fire rate cap (prevents fire rate from going too high with upgrades).")]
     public float maxFireRate = 500f;
 
-    [Tooltip("Percentage increase in magazine capacity per upgrade level.")]
     [Range(0f, 0.5f)]
     public float magazineScaling = 0.1f;
 
     [Header("Exclusive Power")]
-    [Tooltip("Reference to the exclusive power script for this weapon at max level.")]
+
     public string exclusivePowerID;
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Calculates the damage stat for a given upgrade level.
@@ -91,4 +90,6 @@ public class WeaponDataSO : ItemDataSO {
 
     public override string[] GetStatLabels() => new[] { "Damage", "Fire Rate", "Ammo" };
     public override float[] GetStatValues() => new[] { baseDamage, baseFireRate, baseMagazineCapacity };
+
+    #endregion
 }
