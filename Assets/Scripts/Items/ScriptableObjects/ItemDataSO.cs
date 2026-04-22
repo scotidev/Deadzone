@@ -1,9 +1,12 @@
 using UnityEngine;
 
+// RFATORAÇÃO: de onde sai e pra onde vai os stats reais das armas? daqui?
+
 /// <summary>
 /// Base ScriptableObject for all items.
 /// </summary>
 public abstract class ItemDataSO : ScriptableObject {
+
     [Header("Identification")]
     public string itemID;
     public string itemName;

@@ -9,11 +9,21 @@ using UnityEngine.InputSystem;
 /// </summary>
 public class PauseManager : MonoBehaviour {
 
+    #region STATIC
+
     /// <summary>Global access point to the single <see cref="PauseManager"/> instance.</summary>
     public static PauseManager Instance { get; private set; }
 
+    #endregion
+
+    #region FIELDS
+
     private bool isPaused = false;
     [SerializeField] private Character playerCharacter;
+
+    #endregion
+
+    #region UNITY
 
     private void Awake() {
         if (Instance == null)
@@ -23,6 +33,18 @@ public class PauseManager : MonoBehaviour {
 
         ResolvePlayerCharacter();
     }
+
+    private void Start() {
+        GameManager.Instance?.SetState(GameState.Playing);
+    }
+
+    private void Update() {
+        HandlePauseInput();
+    }
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Ensures a valid reference to the player's character component.
@@ -34,17 +56,8 @@ public class PauseManager : MonoBehaviour {
         playerCharacter = FindFirstObjectByType<Character>();
     }
 
-    private void Start() {
-        GameManager.Instance?.SetState(GameState.Playing);
-    }
-
-    private void Update() {
-        HandlePauseInput();
-    }
-
     /// <summary>
-    /// Reads keyboard input each frame and toggles or closes menus
-    /// when the Escape key is pressed.
+    /// Reads keyboard input each frame and toggles or closes menus when the Escape key is pressed.
     /// </summary>
     private void HandlePauseInput() {
         if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame)
@@ -59,8 +72,7 @@ public class PauseManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Toggles between paused and unpaused states based on
-    /// the current value of <see cref="isPaused"/>.
+    /// Toggles between paused and unpaused states based on the current value of <see cref="isPaused"/>.
     /// </summary>
     private void TogglePause() {
         if (isPaused)
@@ -70,8 +82,7 @@ public class PauseManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Pauses the game: freezes time via <see cref="GameManager.PauseTime"/>,
-    /// shows the pause menu, and unlocks the cursor.
+    /// Pauses the game: freezes time via <see cref="GameManager.PauseTime"/>, shows the pause menu, and unlocks the cursor.
     /// </summary>
     public void PauseGame() {
         ResolvePlayerCharacter();
@@ -92,8 +103,7 @@ public class PauseManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Resumes the game: restores time via <see cref="GameManager.ResumeTime"/>,
-    /// hides all menus, and locks the cursor back to the viewport.
+    /// Resumes the game: restores time via <see cref="GameManager.ResumeTime"/>, hides all menus, and locks the cursor back to the viewport.
     /// </summary>
     public void ResumeGame() {
         ResolvePlayerCharacter();
@@ -121,8 +131,7 @@ public class PauseManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Sets cursor visibility and lock state together so they never
-    /// get out of sync.
+    /// Sets cursor visibility and lock state together so they never get out of sync.
     /// </summary>
     /// <param name="visible">
     /// <c>true</c> to show and free the cursor (menus);
@@ -135,4 +144,7 @@ public class PauseManager : MonoBehaviour {
 
     /// <summary>Returns <c>true</c> if the game is currently paused.</summary>
     public bool IsPaused() => isPaused;
+
+    #endregion
+
 }
