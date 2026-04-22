@@ -1,14 +1,19 @@
+using InfimaGames.LowPolyShooterPack;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using InfimaGames.LowPolyShooterPack;
+
+/* REFATORAÇÃO: A melhor forma de implementar o que está no PDF é separar os Dados (as falas) da Lógica (o player de áudio).
+
+ScriptableObjects para Seções: Em vez de uma struct simples, você pode criar um arquivo para cada categoria do PDF. Um ScriptableObject chamado DialogueCategory que contém uma lista de MerchantDialogueLine. E aí tocar as falas pelo script NPCAudio. Isso torna mais fácil para os designers editarem as falas sem mexer no código.
+
+Mapeamento por ID: Para os desbloqueios de armas, você já usa um weaponID. Você pode expandir isso para os upgrades, permitindo que a robô diga frases específicas para o "Pente de 100 rounds" da SMG ou para as "Barricadas Indestrutíveis" */
 
 /// <summary>
 /// Represents one merchant dialogue line with manually authored subtitle text.
 /// </summary>
 [System.Serializable]
-public struct MerchantDialogueLine
-{
+public struct MerchantDialogueLine {
     [Tooltip("Audio clip that will be played for this line.")]
     public AudioClip clip;
 
@@ -28,8 +33,7 @@ public struct MerchantDialogueLine
 /// Maps a weapon identifier to its pool of merchant dialogue lines.
 /// </summary>
 [System.Serializable]
-public struct WeaponUnlockDialoguePool
-{
+public struct WeaponUnlockDialoguePool {
     [Tooltip("Weapon ID used by ShopItemData and PlayerProgress (for example: Pistol, SMG, Shotgun).")]
     public string weaponID;
 
@@ -41,8 +45,7 @@ public struct WeaponUnlockDialoguePool
 /// Handles merchant dialogue playback and subtitle display for shop-related events.
 /// </summary>
 [DisallowMultipleComponent]
-public class NPCAudio : MonoBehaviour
-{
+public class NPCAudio : MonoBehaviour {
     [Header("Dialogue Pools - Shop Open")]
     [Tooltip("Random lines used when the player opens the shop.")]
     [SerializeField] private List<MerchantDialogueLine> shopOpenDialogues = new List<MerchantDialogueLine>();
@@ -91,8 +94,7 @@ public class NPCAudio : MonoBehaviour
     /// <summary>
     /// Resolves dependencies before interaction starts.
     /// </summary>
-    private void Awake()
-    {
+    private void Awake() {
         ResolveAudioService();
         ResolveSubtitleUI();
     }
@@ -100,8 +102,7 @@ public class NPCAudio : MonoBehaviour
     /// <summary>
     /// Subscribes to shop events used to trigger contextual dialogue.
     /// </summary>
-    private void OnEnable()
-    {
+    private void OnEnable() {
         ShopUI.WeaponUnlocked += HandleWeaponUnlocked;
         ShopUI.AmmoPurchased += HandleAmmoPurchased;
     }
@@ -109,8 +110,7 @@ public class NPCAudio : MonoBehaviour
     /// <summary>
     /// Unsubscribes from shop events to prevent stale callbacks.
     /// </summary>
-    private void OnDisable()
-    {
+    private void OnDisable() {
         ShopUI.WeaponUnlocked -= HandleWeaponUnlocked;
         ShopUI.AmmoPurchased -= HandleAmmoPurchased;
     }
@@ -118,32 +118,28 @@ public class NPCAudio : MonoBehaviour
     /// <summary>
     /// Plays a random dialogue line for shop opening.
     /// </summary>
-    public void PlayRandomShopOpenDialogue()
-    {
+    public void PlayRandomShopOpenDialogue() {
         TryPlayRandomDialogue(shopOpenDialogues, "shop-open");
     }
 
     /// <summary>
     /// Legacy compatibility method mapped to random shop-open dialogue.
     /// </summary>
-    public void PlayInteractionDialogue()
-    {
+    public void PlayInteractionDialogue() {
         PlayRandomShopOpenDialogue();
     }
 
     /// <summary>
     /// Legacy compatibility method mapped to random shop-open dialogue.
     /// </summary>
-    public void PlayOpenShopDialogue()
-    {
+    public void PlayOpenShopDialogue() {
         PlayRandomShopOpenDialogue();
     }
 
     /// <summary>
     /// Plays a random dialogue line for ammo purchases.
     /// </summary>
-    public void PlayRandomAmmoPurchaseDialogue()
-    {
+    public void PlayRandomAmmoPurchaseDialogue() {
         TryPlayRandomDialogue(ammoPurchaseDialogues, "ammo-purchase");
     }
 
@@ -151,10 +147,8 @@ public class NPCAudio : MonoBehaviour
     /// Plays a random dialogue line associated with a specific weapon unlock.
     /// </summary>
     /// <param name="weaponID">Unlocked weapon identifier.</param>
-    public void PlayRandomWeaponUnlockDialogue(string weaponID)
-    {
-        if (!TryGetWeaponUnlockPool(weaponID, out List<MerchantDialogueLine> pool))
-        {
+    public void PlayRandomWeaponUnlockDialogue(string weaponID) {
+        if (!TryGetWeaponUnlockPool(weaponID, out List<MerchantDialogueLine> pool)) {
             if (logMissingDialoguePools)
                 Debug.LogWarning($"[NPCAudio] No unlock dialogue pool configured for weapon '{weaponID}'.");
             return;
@@ -168,8 +162,7 @@ public class NPCAudio : MonoBehaviour
     /// </summary>
     /// <param name="weaponID">Weapon that received ammo.</param>
     /// <param name="amountPurchased">Purchased reserve amount.</param>
-    private void HandleAmmoPurchased(string weaponID, int amountPurchased)
-    {
+    private void HandleAmmoPurchased(string weaponID, int amountPurchased) {
         PlayRandomAmmoPurchaseDialogue();
     }
 
@@ -177,24 +170,21 @@ public class NPCAudio : MonoBehaviour
     /// Handles weapon unlock notifications from ShopUI.
     /// </summary>
     /// <param name="weaponID">Unlocked weapon identifier.</param>
-    private void HandleWeaponUnlocked(string weaponID)
-    {
+    private void HandleWeaponUnlocked(string weaponID) {
         PlayRandomWeaponUnlockDialogue(weaponID);
     }
 
     /// <summary>
     /// Resolves the unified audio service from the Service Locator.
     /// </summary>
-    private void ResolveAudioService()
-    {
+    private void ResolveAudioService() {
         audioService ??= ServiceLocator.Current.Get<IAudioManagerService>();
     }
 
     /// <summary>
     /// Resolves the subtitle UI reference.
     /// </summary>
-    private void ResolveSubtitleUI()
-    {
+    private void ResolveSubtitleUI() {
         subtitleUI ??= MerchantSubtitleUI.Instance;
     }
 
@@ -204,14 +194,12 @@ public class NPCAudio : MonoBehaviour
     /// <param name="pool">Candidate dialogue pool.</param>
     /// <param name="contextLabel">Context label used in logs.</param>
     /// <returns>True if a line was started.</returns>
-    private bool TryPlayRandomDialogue(IReadOnlyList<MerchantDialogueLine> pool, string contextLabel)
-    {
+    private bool TryPlayRandomDialogue(IReadOnlyList<MerchantDialogueLine> pool, string contextLabel) {
         // First principle: we avoid overlapping dialogue to keep voice and subtitles understandable.
         if (isDialoguePlaying)
             return false;
 
-        if (!TryGetRandomPlayableLine(pool, out MerchantDialogueLine selectedLine))
-        {
+        if (!TryGetRandomPlayableLine(pool, out MerchantDialogueLine selectedLine)) {
             if (logMissingDialoguePools)
                 Debug.LogWarning($"[NPCAudio] No playable dialogue line configured for context '{contextLabel}'.");
             return false;
@@ -227,16 +215,14 @@ public class NPCAudio : MonoBehaviour
     /// <param name="pool">Candidate dialogue pool.</param>
     /// <param name="line">Selected line output.</param>
     /// <returns>True if a valid line was found.</returns>
-    private bool TryGetRandomPlayableLine(IReadOnlyList<MerchantDialogueLine> pool, out MerchantDialogueLine line)
-    {
+    private bool TryGetRandomPlayableLine(IReadOnlyList<MerchantDialogueLine> pool, out MerchantDialogueLine line) {
         line = default;
 
         if (pool == null || pool.Count == 0)
             return false;
 
         int startIndex = Random.Range(0, pool.Count);
-        for (int offset = 0; offset < pool.Count; offset++)
-        {
+        for (int offset = 0; offset < pool.Count; offset++) {
             MerchantDialogueLine candidate = pool[(startIndex + offset) % pool.Count];
             if (candidate.clip == null)
                 continue;
@@ -254,17 +240,14 @@ public class NPCAudio : MonoBehaviour
     /// <param name="weaponID">Unlocked weapon identifier.</param>
     /// <param name="pool">Resolved pool output.</param>
     /// <returns>True if a matching pool was found.</returns>
-    private bool TryGetWeaponUnlockPool(string weaponID, out List<MerchantDialogueLine> pool)
-    {
+    private bool TryGetWeaponUnlockPool(string weaponID, out List<MerchantDialogueLine> pool) {
         pool = null;
         if (string.IsNullOrWhiteSpace(weaponID) || weaponUnlockDialogues == null)
             return false;
 
-        for (int index = 0; index < weaponUnlockDialogues.Count; index++)
-        {
+        for (int index = 0; index < weaponUnlockDialogues.Count; index++) {
             WeaponUnlockDialoguePool configuredPool = weaponUnlockDialogues[index];
-            if (string.Equals(configuredPool.weaponID, weaponID, System.StringComparison.OrdinalIgnoreCase))
-            {
+            if (string.Equals(configuredPool.weaponID, weaponID, System.StringComparison.OrdinalIgnoreCase)) {
                 pool = configuredPool.lines;
                 return pool != null && pool.Count > 0;
             }
@@ -277,8 +260,7 @@ public class NPCAudio : MonoBehaviour
     /// Plays one dialogue line using the dialogue audio channel and subtitle UI.
     /// </summary>
     /// <param name="line">Dialogue line to play.</param>
-    private void PlayDialogueLine(MerchantDialogueLine line)
-    {
+    private void PlayDialogueLine(MerchantDialogueLine line) {
         ResolveAudioService();
         ResolveSubtitleUI();
 
@@ -297,8 +279,7 @@ public class NPCAudio : MonoBehaviour
     /// Shows the subtitle text for the current dialogue line.
     /// </summary>
     /// <param name="line">Current dialogue line.</param>
-    private void ShowSubtitle(MerchantDialogueLine line)
-    {
+    private void ShowSubtitle(MerchantDialogueLine line) {
         if (subtitleUI == null || string.IsNullOrWhiteSpace(line.subtitle))
             return;
 
@@ -313,8 +294,7 @@ public class NPCAudio : MonoBehaviour
     /// Starts a temporary lock window to avoid overlapping merchant lines.
     /// </summary>
     /// <param name="clipLength">Current clip length in seconds.</param>
-    private void BeginDialogueLock(float clipLength)
-    {
+    private void BeginDialogueLock(float clipLength) {
         if (dialogueLockCoroutine != null)
             StopCoroutine(dialogueLockCoroutine);
 
@@ -327,8 +307,7 @@ public class NPCAudio : MonoBehaviour
     /// </summary>
     /// <param name="delay">Delay in seconds.</param>
     /// <returns>Coroutine enumerator.</returns>
-    private IEnumerator ReleaseDialogueLockAfterDelay(float delay)
-    {
+    private IEnumerator ReleaseDialogueLockAfterDelay(float delay) {
         isDialoguePlaying = true;
         yield return new WaitForSeconds(delay);
         isDialoguePlaying = false;
