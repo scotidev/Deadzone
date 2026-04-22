@@ -1,5 +1,10 @@
 using UnityEngine;
 
+// RFATORAÇÃO: de onde sai e pra onde vai os stats reais das armas? daqui?
+
+/// <summary>
+/// Scriptable Object that defines the data for a medkit item, including its heal amount, heal speed, and maximum ammo capacity.
+/// </summary>
 [CreateAssetMenu(fileName = "MedkitData", menuName = "Deadzone/Medkit Data")]
 public class MedkitDataSO : ItemDataSO {
     [Header("Medkit Stats")]
