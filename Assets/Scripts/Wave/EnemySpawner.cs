@@ -6,20 +6,23 @@ using UnityEngine.AI;
 /// <summary>
 /// Enemy Spawn Point. Placed in the scene by the designer.
 /// Receives from the WaveManager the list of available prefabs and the
-/// quantity to spawn, then instantiates the enemies in valid NavMesh positions
-/// near itself.
+/// quantity to spawn, then instantiates the enemies in valid NavMesh positions near itself.
 /// </summary>
 public class EnemySpawner : MonoBehaviour {
 
-    [Header("Spawn Settings")]
-    [Tooltip("Maximum distance from the spawner center where enemies can appear.")]
-    [SerializeField] private float spawnRadius = 3f;
+    #region SERIALIZED FIELDS
 
-    [Tooltip("Seconds of interval between each enemy instantiated in the batch.")]
+    [Header("Spawn Settings")]
+
+    [SerializeField] private float spawnRadius = 3f;
     [SerializeField] private float spawnDelay = 0.3f;
 
+    #endregion
+
+    #region METHODS
+
     /// <summary>
-    /// Spawns EXACTLY ONE enemy immediately near this spawner.
+    /// Spawns exactly one enemy immediately near this spawner.
     /// Called by the WaveManager in the throttle system: each time
     /// an enemy dies and opens a slot, the WaveManager calls this method
     /// on a randomly chosen spawner.
@@ -32,6 +35,11 @@ public class EnemySpawner : MonoBehaviour {
         Instantiate(prefab, spawnPos, Quaternion.identity);
     }
 
+    /// <summary>
+    /// Coroutine that spawns a burst of enemies, one every spawnDelay seconds.
+    /// </summary>
+    /// <param name="availableTypes">List of available enemy types to spawn.</param>
+    /// <param name="count">Number of enemies to spawn.</param>
     private IEnumerator SpawnRoutine(List<EnemySpawnConfig> availableTypes, int count) {
         for (int i = 0; i < count; i++) {
             GameObject prefab = PickWeightedRandom(availableTypes);
@@ -43,6 +51,12 @@ public class EnemySpawner : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Selects a random enemy prefab from the provided configurations, using each configuration's spawn weight to
+    /// determine selection probability.
+    /// </summary>
+    /// <param name="configs">A list of enemy spawn configurations, each containing a prefab and its associated spawn weight. Must contain at least one element. Each spawn weight should be non-negative.</param>
+    /// <returns>The prefab of the selected enemy, chosen based on weighted probability from the provided configurations.</returns>
     private GameObject PickWeightedRandom(List<EnemySpawnConfig> configs) {
         float totalWeight = 0f;
         foreach (var config in configs)
@@ -76,8 +90,15 @@ public class EnemySpawner : MonoBehaviour {
         return transform.position;
     }
 
+    #endregion
+
+    #region DEBUG
+
     private void OnDrawGizmosSelected() {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, spawnRadius);
     }
+
+    #endregion
+
 }

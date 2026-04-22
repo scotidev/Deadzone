@@ -1,44 +1,38 @@
+using InfimaGames.LowPolyShooterPack;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using InfimaGames.LowPolyShooterPack;
+
 /// <summary>
 /// Singleton manager responsible for the entire wave lifecycle.
-/// 
-/// Migrado para usar IAudioManagerService para sons de início de wave.
-/// Mantém o singleton para o WaveManager em si (gerenciamento de waves),
-/// mas usa o serviço para áudio.
 /// </summary>
 public class WaveManager : MonoBehaviour {
+
+    #region STATIC
+
     /// <summary>Global access point to the single <see cref="WaveManager"/> instance.</summary>
     public static WaveManager Instance { get; private set; }
 
+    #endregion
+
+    #region SERIALIZED FIELDS
+
     [Header("Enemy Types")]
-    [Tooltip("List of all enemy types.")]
+
     [SerializeField] private List<EnemySpawnConfig> enemyTypes;
 
     [Header("Wave Start SFX")]
-    [Tooltip("Sound played for early waves.")]
+
     [SerializeField] private AudioClip lightWaveClip;
-
-    [Tooltip("Sound played after the initial waves.")]
     [SerializeField] private AudioClip mediumWaveClip;
-
-    [Tooltip("Sound played for late-game waves.")]
     [SerializeField] private AudioClip hardWaveClip;
-
-    [Tooltip("Sound played when the wave includes a boss enemy.")]
     [SerializeField] private AudioClip bossWaveClip;
 
-    [Tooltip("Last wave that still counts as Light.")]
-    [Min(1)]
     [SerializeField] private int lastLightWave = 3;
-
-    [Tooltip("Last wave that still counts as Medium.")]
-    [Min(1)]
     [SerializeField] private int lastMediumWave = 7;
 
-    [Header("Wave Scaling")]
+    [Header("Wave")]
+
     [Tooltip("Growth rate from wave 1 to 2.")]
     [Range(0.05f, 1f)]
     [SerializeField] private float initialGrowthRate = 0.25f;
@@ -51,20 +45,19 @@ public class WaveManager : MonoBehaviour {
     [Range(0.01f, 0.2f)]
     [SerializeField] private float minGrowthRate = 0.05f;
 
-    [Tooltip("Maximum number of enemies that can exist in a wave.")]
     [SerializeField] private int maxEnemiesPerWave = 500;
-
-    [Header("Spawners")]
-    [Tooltip("Drag ALL GameObjects with EnemySpawner in the scene here.")]
-    [SerializeField] private List<EnemySpawner> spawners;
-
-    [Header("Simultaneous Enemies Limit")]
-    [Tooltip("Maximum number of enemies alive at the same time in the scene.")]
     [SerializeField] private int maxEnemiesAliveAtOnce = 15;
 
+    [Header("Spawners")]
+
+    [SerializeField] private List<EnemySpawner> spawners;
+
     [Header("HUD")]
-    [Tooltip("Reference to the WaveUI component in the scene.")]
     [SerializeField] private WaveUI waveUI;
+
+    #endregion
+
+    #region FIELDS
 
     private int currentWave = 0;
     private int totalEnemiesForWave = 0;
@@ -74,25 +67,24 @@ public class WaveManager : MonoBehaviour {
     private bool isWaveActive = false;
 
     private List<EnemySpawnConfig> currentWaveEnemyTypes;
-    
-    /// <summary>
-    /// Referência ao serviço de áudio obtida do Service Locator.
-    /// Usada para tocar sons de início de wave de forma consistente.
-    /// </summary>
     private IAudioManagerService audioService;
 
+    #endregion
+
+    #region PROPERTIES
     public bool IsWaveActive => isWaveActive;
     public int CurrentWave => currentWave;
 
+    #endregion
+
+    #region UNITY
+
     private void Awake() {
-        // Padrão Singleton: garante que só existe uma instância do WaveManager
         if (Instance == null)
             Instance = this;
         else
             Destroy(gameObject);
-        
-        // Obtém o serviço de áudio do Service Locator
-        // ServiceLocator é inicializado no Bootstraper antes de qualquer cena carregar
+
         audioService = ServiceLocator.Current.Get<IAudioManagerService>();
     }
 
@@ -103,6 +95,10 @@ public class WaveManager : MonoBehaviour {
     private void OnDisable() {
         EnemyBase.OnAnyEnemyDied -= HandleEnemyDied;
     }
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Starts the next enemy wave.
@@ -206,12 +202,9 @@ public class WaveManager : MonoBehaviour {
         if (waveUI != null)
             waveUI.ShowWaveClearAnnouncement();
 
-        // Award currency for completing the wave
-        // Wave 1 = 1000, Wave 2 = 1500, Wave 3 = 2000, etc.
         if (EconomyManager.Instance != null) {
             int waveReward = 1000 + (500 * (currentWave - 1));
             EconomyManager.Instance.AddCurrency(waveReward);
-            Debug.Log($"[WaveManager] Wave {currentWave} completed! Rewarded {waveReward} currency.");
         }
     }
 
@@ -245,9 +238,6 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Chooses the wave-start sound and plays it immediately or with the existing delay rule.
-    /// 
-    /// Agora usa o serviço de áudio unificado para tocar sons 2D (UI/Feedback).
-    /// Sons de início de wave são considerados feedback/UI, não sons posicionais.
     /// </summary>
     private void PlayWaveStartSound() {
         AudioClip clip = GetWaveStartClip();
@@ -257,21 +247,17 @@ public class WaveManager : MonoBehaviour {
         if (ShouldDelayWaveStartSound())
             StartCoroutine(PlayWaveStartSoundDelayed(clip));
         else
-            // Usa PlaySFX2D porque é um som de feedback/UI, não posicional no mundo 3D
             audioService?.PlaySFX2D(clip);
     }
 
     /// <summary>
     /// Plays the selected start clip after a short delay.
-    /// 
-    /// Cria tensão dramática com um pequeno delay antes do som de impacto.
-    /// Coroutine permite executar código após um delay sem travar o jogo.
     /// </summary>
     private IEnumerator PlayWaveStartSoundDelayed(AudioClip clip) {
         // Waves médias e hard recebem um pequeno atraso antes do som principal.
         // A ideia é dar um pequeno respiro dramático antes do impacto sonoro.
         yield return new WaitForSeconds(0.5f);
-        
+
         // ?. só chama o método se audioService não for null (null-conditional operator)
         audioService?.PlaySFX2D(clip);
     }
@@ -313,4 +299,6 @@ public class WaveManager : MonoBehaviour {
 
         return false;
     }
+
+    #endregion
 }
