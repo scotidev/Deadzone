@@ -5,40 +5,31 @@ using UnityEngine.InputSystem;
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
-    /// Developer debug tool that allows real-time adjustment of
-    /// <c>Time.timeScale</c> via keyboard input.
+    /// Developer debug tool that allows real-time adjustment of Time.timeScale via keyboard input.
     /// <para>
     /// All time scale writes are delegated to <see cref="GameManager"/>
     /// to respect the project's Single Source of Truth principle.
     /// </para>
     /// </summary>
     public class TimeHandler : MonoBehaviour {
+
+        #region FIELDS
+
         [Header("Settings")]
 
         [Tooltip("Value the time scale gets updated by every time.")]
-        [SerializeField]
-        private float increment = 0.1f;
+        [SerializeField] private float increment = 0.1f;
 
-        /// <summary>
-        /// Whether time has been manually stopped via <see cref="Pause"/>.
-        /// </summary>
         private bool paused;
-
-        /// <summary>
-        /// The last time scale value requested while not paused.
-        /// Restored when <see cref="Unpause"/> is called.
-        /// </summary>
         private float current = 1.0f;
+
+        #endregion
+
+        #region METHODS
 
         /// <summary>
         /// Applies <see cref="current"/> as the active time scale by
         /// delegating to <see cref="GameManager.SetTimeScale"/>.
-        /// <para>
-        /// <b>Modified:</b> previously wrote <c>Time.timeScale = current</c>
-        /// directly. Now routes through GameManager so the single source
-        /// of truth rule is respected and <c>fixedDeltaTime</c> is also
-        /// updated automatically.
-        /// </para>
         /// </summary>
         private void Scale() {
             GameManager.Instance?.SetTimeScale(current);
@@ -156,5 +147,8 @@ namespace InfimaGames.LowPolyShooterPack {
                     break;
             }
         }
+
+        #endregion
     }
+
 }

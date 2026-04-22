@@ -7,14 +7,12 @@ using UnityEngine;
 [System.Serializable]
 public class EnemySpawnConfig {
 
-    [Tooltip("Enemy Prefab. Must have the components Enemy, EnemyFollow, EnemyAttack, and NavMeshAgent.")]
     public GameObject prefab;
 
     [Tooltip("The minimum wave this enemy can appear.")]
-    [Min(1)]
     public int minimumWave = 1;
 
-    [Tooltip("Spawn weight is relative. Higher = more frequente.")]
+    [Tooltip("Spawn weight is relative. Higher = more frequent.")]
     [Range(0.01f, 20f)]
     public float spawnWeight = 1f;
 

@@ -1,6 +1,7 @@
 using UnityEngine;
 
 // REFATORAÇÃO: as cores na verdade vão ser texturas, ou pinturas diferentes, precisamos de rachaduras progressivas.
+// REFATORAÇÃO: esse script deveria fazer parte do BuildableDataSO ou nao? Analise necessaria
 
 /// <summary>
 /// Represents a barricade that blocks enemy path to the player.
