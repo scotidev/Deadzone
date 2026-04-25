@@ -354,7 +354,7 @@ MonoBehaviour:
   timeBetweenBursts: {x: 2, y: 5}
   flickersPerBurst: {x: 3, y: 8}
   flickerSpeed: 0.05
-  flickerAudioKey: LightFlicker_Soft
+  flickerAudio: {fileID: 0}
 --- !u!1001 &130869223
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3309,7 +3309,7 @@ MonoBehaviour:
   timeBetweenBursts: {x: 2, y: 5}
   flickersPerBurst: {x: 3, y: 8}
   flickerSpeed: 0.05
-  flickerAudioKey: LightFlicker_Soft
+  flickerAudio: {fileID: 0}
 --- !u!4 &1105305010 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7366455850136631752, guid: 745cb631ee747894e994759bb0458a8d,
@@ -9969,7 +9969,7 @@ MonoBehaviour:
   timeBetweenBursts: {x: 2, y: 5}
   flickersPerBurst: {x: 3, y: 8}
   flickerSpeed: 0.05
-  flickerAudioKey: LightFlicker_Soft
+  flickerAudio: {fileID: 0}
 --- !u!1001 &1663782640
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10462,6 +10462,7 @@ MonoBehaviour:
   optionsUI: {fileID: 1973519631}
   controlsUI: {fileID: 340695732}
   creditsUI: {fileID: 511376732}
+  menuBGM: {fileID: 8300000, guid: 82c51919cd6525648ab07cd26d373b33, type: 3}
 --- !u!4 &1794309278 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7366455850136631752, guid: 745cb631ee747894e994759bb0458a8d,
@@ -11011,7 +11012,7 @@ MonoBehaviour:
   timeBetweenBursts: {x: 3, y: 10}
   flickersPerBurst: {x: 5, y: 10}
   flickerSpeed: 0.05
-  flickerAudioKey: LightFlicker_Soft
+  flickerAudio: {fileID: 0}
 --- !u!1001 &1931188173
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11622,7 +11623,7 @@ MonoBehaviour:
   timeBetweenBursts: {x: 3, y: 10}
   flickersPerBurst: {x: 5, y: 10}
   flickerSpeed: 0.05
-  flickerAudioKey: LightFlicker_Soft
+  flickerAudio: {fileID: 0}
 --- !u!4 &1989563487 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 366398508269011731, guid: 5334360cd0cfad84bbf6855beaf10de4,

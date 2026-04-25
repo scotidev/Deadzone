@@ -1,66 +1,45 @@
 ﻿// Copyright 2021, Infima Games. All Rights Reserved.
 
+//  REFATORAÇÃO: scripts de colete, vida, munição, etc, podem herdar dessa classe, evitando código repetido? Precisamos atualizar? analise necessaria..(playerarmor)
+
+// equippedWeapon veririca se estamos segurando buildables? ou medkit, grenade?
+
+// Falta importar dentro de fields algum serviço como buildingcontroller?
+
+// Precisamos colocar o hitmarker herdando daqui
+
 using UnityEngine;
 
-namespace InfimaGames.LowPolyShooterPack.Interface
-{
+namespace InfimaGames.LowPolyShooterPack.Interface {
     /// <summary>
-    /// Interface Element.
+    /// Interface Element that can be used as a base for all other elements. It also has a Tick method that is called every frame, so you can use it to update the element's state.
     /// </summary>
-    public abstract class Element : MonoBehaviour
-    {
-        #region FIELDS
-        
-        /// <summary>
-        /// Game Mode Service.
-        /// </summary>
-        protected IGameModeService gameModeService;
-        
-        /// <summary>
-        /// Player Character.
-        /// </summary>
-        protected CharacterBehaviour playerCharacter;
-        /// <summary>
-        /// Player Character Inventory.
-        /// </summary>
-        protected InventoryBehaviour playerCharacterInventory;
+    public abstract class Element : MonoBehaviour {
 
-        /// <summary>
-        /// Equipped Weapon.
-        /// </summary>
+        #region FIELDS
+
+        protected IGameModeService gameModeService;
+        protected CharacterBehaviour playerCharacter;
+        protected InventoryBehaviour playerCharacterInventory;
         protected WeaponBehaviour equippedWeapon;
-        
+
         #endregion
 
         #region UNITY
 
-        /// <summary>
-        /// Awake.
-        /// </summary>
-        protected virtual void Awake()
-        {
-            //Get Game Mode Service. Very useful to get Game Mode references.
+        protected virtual void Awake() {
             gameModeService = ServiceLocator.Current.Get<IGameModeService>();
-            
-            //Get Player Character.
+
             playerCharacter = gameModeService.GetPlayerCharacter();
-            //Get Player Character Inventory.
             playerCharacterInventory = playerCharacter.GetInventory();
         }
-        
-        /// <summary>
-        /// Update.
-        /// </summary>
-        private void Update()
-        {
-            //Ignore if we don't have an Inventory.
+
+        private void Update() {
             if (Equals(playerCharacterInventory, null))
                 return;
 
-            //Get Equipped Weapon.
             equippedWeapon = playerCharacterInventory.GetEquipped();
-            
-            //Tick.
+
             Tick();
         }
 
@@ -69,9 +48,9 @@ namespace InfimaGames.LowPolyShooterPack.Interface
         #region METHODS
 
         /// <summary>
-        /// Tick.
+        /// Tick. Called every frame. Use it to update the element's state.
         /// </summary>
-        protected virtual void Tick() {}
+        protected virtual void Tick() { }
 
         #endregion
     }
