@@ -2,20 +2,19 @@
 
 using UnityEngine;
 
-namespace InfimaGames.LowPolyShooterPack.Interface
-{
+// REFATORAÇÃO: esse script nao é necessario, nao mostraremoso mais o timescale na tela.
+
+namespace InfimaGames.LowPolyShooterPack.Interface {
     /// <summary>
     /// Component that changes a text to match the current time scale.
     /// </summary>
-    public class TextTimescale : ElementText
-    {
+    public class TextTimescale : ElementText {
         #region METHODS
 
-        protected override void Tick()
-        {
+        protected override void Tick() {
             //Change text to match the time scale!
             textMesh.text = "Timescale : " + Time.timeScale;
-        }        
+        }
 
         #endregion
     }
