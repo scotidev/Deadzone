@@ -55,6 +55,12 @@ public class WaveManager : MonoBehaviour {
     [Header("HUD")]
     [SerializeField] private WaveUI waveUI;
 
+    [Header("Music Settings")]
+    // Referência para a música calma que toca entre as hordas (preparação).
+    [SerializeField] private AudioClip ambientBGM;
+    // Referência para a música intensa que toca durante a luta com os zumbis.
+    [SerializeField] private AudioClip combatBGM;
+
     #endregion
 
     #region FIELDS
@@ -86,6 +92,15 @@ public class WaveManager : MonoBehaviour {
             Destroy(gameObject);
 
         audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+    }
+
+    /// <summary>
+    /// O Start é usado aqui para iniciar a música ambiente assim que a cena de jogo carregar.
+    /// Isso substitui automaticamente a música que estava tocando no Menu.
+    /// </summary>
+    private void Start() {
+        // Iniciamos a música ambiente com um fade suave de 1.5 segundos.
+        audioService?.PlayBGM(ambientBGM, true, 1.5f);
     }
 
     private void OnEnable() {
@@ -126,6 +141,10 @@ public class WaveManager : MonoBehaviour {
 
         currentWaveEnemyTypes = GetAvailableEnemyTypes(currentWave);
         PlayWaveStartSound();
+
+        // TROCA DINÂMICA: Quando a wave começa, pedimos ao serviço para trocar para a música de combate.
+        // O fade de 1 segundo garante que a transição entre calmaria e tensão seja fluida.
+        audioService?.PlayBGM(combatBGM, true, 1.0f);
 
         StartCoroutine(SpawnInitialBatch());
 
@@ -206,6 +225,10 @@ public class WaveManager : MonoBehaviour {
             int waveReward = 1000 + (500 * (currentWave - 1));
             EconomyManager.Instance.AddCurrency(waveReward);
         }
+
+        // TROCA DINÂMICA: Assim que a horda é eliminada, voltamos para a música ambiente.
+        // Usamos um fade mais longo (2 segundos) para dar aquela sensação de "alívio" após a batalha.
+        audioService?.PlayBGM(ambientBGM, true, 2.0f);
     }
 
     /// <summary>

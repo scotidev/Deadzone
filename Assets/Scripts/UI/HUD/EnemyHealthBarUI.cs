@@ -1,11 +1,15 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+// refatoração: Esse script deveria implementar Element.cs
+
 /// <summary>
 /// Manages a single reusable health bar that displays above the currently targeted enemy.
 /// Shows only when the player's aim is on an enemy.
 /// </summary>
 public class EnemyHealthBarUI : MonoBehaviour {
+
+    #region SERIALIZED FIELDS
 
     [Header("UI References")]
     [Tooltip("The Image component that represents current health (green bar).")]
@@ -25,10 +29,16 @@ public class EnemyHealthBarUI : MonoBehaviour {
     [Tooltip("Extra offset in screen space pixels above enemy head.")]
     [SerializeField] private float screenOffsetY = 20f;
 
+    #endregion
+
+    #region FIELDS
+
     private Camera mainCamera;
     private RectTransform rectTransform;
-
     private EnemyBase currentTargetEnemy;
+
+    #endregion
+
 
     private void Awake() {
         rectTransform = GetComponent<RectTransform>();
@@ -61,8 +71,7 @@ public class EnemyHealthBarUI : MonoBehaviour {
             canvasGroup.alpha = 1f;
             gameObject.SetActive(true);
             healthFillImage.fillAmount = currentTargetEnemy.GetHealthFraction();
-        }
-        else {
+        } else {
             canvasGroup.alpha = 0f;
             gameObject.SetActive(false);
         }
@@ -81,8 +90,7 @@ public class EnemyHealthBarUI : MonoBehaviour {
         if (screenPos.z > 0) {
             Vector2 targetPosition = new Vector2(screenPos.x, screenPos.y + screenOffsetY);
             rectTransform.position = Vector2.Lerp(rectTransform.position, targetPosition, Time.deltaTime * positionSmoothSpeed);
-        }
-        else {
+        } else {
             gameObject.SetActive(false);
         }
     }

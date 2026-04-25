@@ -42,12 +42,11 @@ public class HitmarkerManager : MonoBehaviour {
     /// sem depender de singletons, facilitando testes e manutenção.
     /// </summary>
     private IAudioManagerService audioService;
-    
+
     private WaitForSeconds hitmarkerDelay;
 
     private void Awake() {
         hitmarkerDelay = new WaitForSeconds(displayDuration);
-        
         // Obtém o serviço de áudio do Service Locator
         // ServiceLocator.Current.Get<T>() busca o serviço registrado do tipo T
         audioService = ServiceLocator.Current.Get<IAudioManagerService>();

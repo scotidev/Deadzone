@@ -3,31 +3,26 @@
 using TMPro;
 using UnityEngine;
 
-namespace InfimaGames.LowPolyShooterPack.Interface
-{
+// REFATORAÇÃO: precisamos arrumar os scripts de HUD de texto para herdarem desse script, como CurrencyUI por exemplo ou ShopUI, ou qualquer outro que esteja usando TextMeshProUGUI. Assim, evitamos ter que ficar pegando o componente toda hora e deixamos o código mais limpo.
+
+namespace InfimaGames.LowPolyShooterPack.Interface {
     /// <summary>
-    /// Text Interface Element.
+    /// Text Interface Element. Inherits from Element and adds a TextMeshProUGUI component for displaying text in the HUD.
     /// </summary>
     [RequireComponent(typeof(TextMeshProUGUI))]
-    public abstract class ElementText : Element
-    {
+    public abstract class ElementText : Element {
+
         #region FIELDS
 
-        /// <summary>
-        /// Text Mesh.
-        /// </summary>
         protected TextMeshProUGUI textMesh;
 
         #endregion
 
         #region UNITY
 
-        protected override void Awake()
-        {
-            //Base.
+        protected override void Awake() {
             base.Awake();
 
-            //Get Text Mesh.
             textMesh = GetComponent<TextMeshProUGUI>();
         }
 
