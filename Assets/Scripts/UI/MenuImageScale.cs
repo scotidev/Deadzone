@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+// REFATORAÇAÕ: esse script é necessario? Nao seria possivel unir ele ao MenuButtonAudio? assim seria possivel remover todos esses PointerEvents? Talvez criar um novo script chamado MenuButtonController? que unifique a logica visual e que toque os sons usando o IAudioManagerService, para garantir que o sistema de audio seja respeitado e funcione em todas as cenas do jogo, sem depender de singletons ou implementações específicas.
+
 /// <summary>
 /// Animates the local scale of a UI element in response to pointer
 /// and selection events. Works for both mouse and gamepad navigation.

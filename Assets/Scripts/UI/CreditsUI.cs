@@ -5,18 +5,29 @@ using UnityEngine.UI;
 /// Manages the credits panel UI.
 /// </summary>
 public class CreditsUI : BaseUI {
+
+    #region FIELDS
+
+    [Header("Credits Elements")]
+    [SerializeField] private Button backButton;
+
     /// <summary>
     /// Enables Escape-close behavior for this panel.
     /// </summary>
     protected override bool CloseOnEscape => true;
 
-    [Header("Credits Elements")]
-    [SerializeField] private Button backButton;
+    #endregion
+
+    #region UNITY
 
     protected override void Awake() {
         base.Awake();
         BindButtons();
     }
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Binds button click events to their handlers.
@@ -39,4 +50,6 @@ public class CreditsUI : BaseUI {
     protected override void OnEscapePressed() {
         OnBackClick();
     }
+
+    #endregion
 }

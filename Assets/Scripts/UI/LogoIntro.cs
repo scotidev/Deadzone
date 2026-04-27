@@ -8,14 +8,22 @@ using UnityEngine;
 /// </summary>
 public class LogoIntro : MonoBehaviour {
 
-    [Tooltip("Total intro duration in seconds.")]
+    #region SERIALIZED FIELDS
+
     [SerializeField] private float duration = 4f;
 
     [Tooltip("If true, pressing any key or mouse click skips the intro and goes to menu.")]
     [SerializeField] private bool allowSkip = true;
 
+    #endregion
+
+    #region FIELDS
+
     private bool skipped = false;
 
+    #endregion
+
+    #region UNITY
     private void Start() {
         GameManager.Instance?.SetState(GameState.Loader);
 
@@ -26,6 +34,10 @@ public class LogoIntro : MonoBehaviour {
         if (allowSkip && !skipped && Input.anyKeyDown)
             SkipIntro();
     }
+
+    #endregion
+
+    #region METHODS
 
     private IEnumerator WaitAndLoad() {
         yield return new WaitForSeconds(duration);
@@ -42,4 +54,6 @@ public class LogoIntro : MonoBehaviour {
     private void GoToMenu() {
         SceneLoader.Instance?.LoadMenu();
     }
+
+    #endregion
 }

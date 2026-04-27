@@ -2,12 +2,11 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using InfimaGames.LowPolyShooterPack;
 
+// refatoração: esse script é necessario? ele Implementa IAudioManagerService? eke resoeuta o sistema de audio atual do projeto cm o ServiceLocator? ele esta sendo usado para tocar o som dos botões ao dar hover no menu, ou clicar, mas ele está respeitando o sistema atual? Se não estiver, temos que implementar uma lógica para fazer o que esse script faz (tocar som de hover e click) usando o IAudioManagerService, para garantir que o som seja tocado corretamente em qualquer cena do jogo, sem depender de um singleton específico. Talvez seja preciso deletar esse script e implementar a lógica de áudio diretamente no MenuImageScale, ou em algum outro script como MenuManager, analise necessaria para decidir a melhor abordagem. O importante é garantir que o sistema de áudio seja consistente e funcione em todas as cenas, sem depender de implementações específicas ou singletons que possam não estar presentes em todas as partes do jogo.
+
 /// <summary>
 /// Plays UI audio feedback (hover and click sounds) for menu buttons.
 /// Designed to be used alongside <see cref="MenuImageScale"/> on the same GameObject.
-/// 
-/// Migrado para usar IAudioManagerService ao invés do singleton AudioManager.
-/// Isso garante consistência e funciona em qualquer cena.
 /// </summary>
 public class MenuButtonAudio : MonoBehaviour,
     IPointerEnterHandler, IPointerExitHandler,
@@ -23,7 +22,7 @@ public class MenuButtonAudio : MonoBehaviour,
     /// Evita tocar o som múltiplas vezes enquanto o mouse está parado sobre o botão.
     /// </summary>
     private bool isHovered;
-    
+
     /// <summary>
     /// Referência ao serviço de áudio.
     /// Obtida no Awake através do Service Locator.

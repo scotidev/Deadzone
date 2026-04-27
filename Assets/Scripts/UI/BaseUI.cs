@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 /// Provides common functionality for showing and hiding panels.
 /// </summary>
 public abstract class BaseUI : MonoBehaviour {
+
+    #region FIELDS
     [SerializeField] protected GameObject panel;
 
     private bool _showCalledBeforeStart = false;
@@ -14,6 +16,10 @@ public abstract class BaseUI : MonoBehaviour {
     /// Gets whether this panel should close when Escape is pressed.
     /// </summary>
     protected virtual bool CloseOnEscape => false;
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Shows the UI panel.
@@ -85,4 +91,6 @@ public abstract class BaseUI : MonoBehaviour {
     protected virtual void OnEscapePressed() {
         Hide();
     }
+
+    #endregion
 }

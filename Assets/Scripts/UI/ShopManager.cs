@@ -1,15 +1,34 @@
 using InfimaGames.LowPolyShooterPack;
 using UnityEngine;
 
+// REFATORAÇÃO: esse script deve eu nao deve ser um Serviço do ServiceLocator? analise necessaria
+// REFATORAÇÃO: a lógica de desbloquear items, atualizar o inventario etc deve ser feita aqui? atualmente ou ela está em ShopItemCard ou ShopUI. analise necessaria, precisamos dar a responsabilidade de gerenciar o sistema de loja para um único script, evitando que a lógica fique espalhada por vários componentes, o que pode dificultar a manutenção e evolução do código.
+
 /// <summary>
 /// Manages the shop interface system in the game.
 /// </summary>
 public class ShopManager : MonoBehaviour {
+
+    #region STATIC
+
     /// <summary>Global access point to the single <see cref="ShopManager"/> instance.</summary>
     public static ShopManager Instance { get; private set; }
 
-    private bool isShopOpen = false;
+    #endregion
+
+    #region SERIALIZED FIELDS
+
     [SerializeField] private Character playerCharacter;
+
+    #endregion
+
+    #region FIELDS
+
+    private bool isShopOpen = false;
+
+    #endregion
+
+    #region UNITY
 
     private void Awake() {
         if (Instance == null)
@@ -19,6 +38,10 @@ public class ShopManager : MonoBehaviour {
 
         ResolvePlayerCharacter();
     }
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Ensures a valid reference to the player's character component.
@@ -82,4 +105,6 @@ public class ShopManager : MonoBehaviour {
     /// </summary>
     /// <returns>True if the shop is currently open, false otherwise.</returns>
     public bool IsShopOpen() => isShopOpen;
+
+    #endregion
 }
