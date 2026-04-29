@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// refatoração: Esse script deveria implementar Element.cs
+// refatoração: Esse script deveria implementar Element.cs?
 
 /// <summary>
 /// Manages a single reusable health bar that displays above the currently targeted enemy.
@@ -12,21 +12,14 @@ public class EnemyHealthBarUI : MonoBehaviour {
     #region SERIALIZED FIELDS
 
     [Header("UI References")]
-    [Tooltip("The Image component that represents current health (green bar).")]
     [SerializeField] private Image healthFillImage;
-
-    [Tooltip("CanvasGroup for controlling fade in/out alpha.")]
     [SerializeField] private CanvasGroup canvasGroup;
 
     [Header("Animation Settings")]
-    [Tooltip("Speed of health bar fill animation.")]
     [SerializeField] private float fillSpeed = 10f;
-
-    [Tooltip("Speed of position follow smoothing.")]
     [SerializeField] private float positionSmoothSpeed = 15f;
 
     [Header("Positioning")]
-    [Tooltip("Extra offset in screen space pixels above enemy head.")]
     [SerializeField] private float screenOffsetY = 20f;
 
     #endregion
@@ -39,6 +32,7 @@ public class EnemyHealthBarUI : MonoBehaviour {
 
     #endregion
 
+    #region UNITY
 
     private void Awake() {
         rectTransform = GetComponent<RectTransform>();
@@ -60,6 +54,10 @@ public class EnemyHealthBarUI : MonoBehaviour {
         UpdatePosition();
         UpdateHealthFill();
     }
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Sets the enemy to display health for. Pass null to hide the bar.
@@ -100,6 +98,7 @@ public class EnemyHealthBarUI : MonoBehaviour {
     /// </summary>
     private Vector3 GetEnemyHeadPosition() {
         Renderer renderer = currentTargetEnemy.GetComponentInChildren<Renderer>();
+
         if (renderer != null) {
             return new Vector3(
                 currentTargetEnemy.transform.position.x,
@@ -109,6 +108,7 @@ public class EnemyHealthBarUI : MonoBehaviour {
         }
 
         Collider collider = currentTargetEnemy.GetComponent<Collider>();
+
         if (collider != null) {
             return new Vector3(
                 currentTargetEnemy.transform.position.x,
@@ -136,4 +136,6 @@ public class EnemyHealthBarUI : MonoBehaviour {
     public bool IsVisible() {
         return canvasGroup.alpha > 0.1f;
     }
+
+    #endregion
 }

@@ -4,25 +4,33 @@ using UnityEngine.UI;
 /// <summary>
 /// Manages the pause menu UI and its button interactions.
 /// </summary>
-public class PauseUI : BaseUI
-{
+public class PauseUI : BaseUI {
+
+    #region SERIALIZED FIELDS
+
     [Header("Pause Buttons")]
     [SerializeField] private Button resumeButton;
     [SerializeField] private Button optionsButton;
     [SerializeField] private Button controlsButton;
     [SerializeField] private Button backToMenuButton;
 
-    protected override void Awake()
-    {
+    #endregion
+
+    #region UNITY
+
+    protected override void Awake() {
         base.Awake();
         BindButtons();
     }
 
+    #endregion
+
+    #region METHODS
+
     /// <summary>
     /// Binds all button click events to their respective handlers.
     /// </summary>
-    private void BindButtons()
-    {
+    private void BindButtons() {
         if (resumeButton != null)
             resumeButton.onClick.AddListener(OnResumeClick);
 
@@ -39,8 +47,7 @@ public class PauseUI : BaseUI
     /// <summary>
     /// Handles the Resume button click event.
     /// </summary>
-    private void OnResumeClick()
-    {
+    private void OnResumeClick() {
         if (PauseManager.Instance != null)
             PauseManager.Instance.ResumeGame();
     }
@@ -48,8 +55,7 @@ public class PauseUI : BaseUI
     /// <summary>
     /// Handles the Options button click event.
     /// </summary>
-    private void OnOptionsClick()
-    {
+    private void OnOptionsClick() {
         if (UIManager.Instance != null)
             UIManager.Instance.ShowOptions();
     }
@@ -57,8 +63,7 @@ public class PauseUI : BaseUI
     /// <summary>
     /// Handles the Controls button click event.
     /// </summary>
-    private void OnControlsClick()
-    {
+    private void OnControlsClick() {
         if (UIManager.Instance != null)
             UIManager.Instance.ShowControls();
     }
@@ -66,9 +71,10 @@ public class PauseUI : BaseUI
     /// <summary>
     /// Handles the Back to Menu button click event.
     /// </summary>
-    private void OnBackToMenuClick()
-    {
+    private void OnBackToMenuClick() {
         if (PauseManager.Instance != null)
             PauseManager.Instance.BackToMainMenu();
     }
+
+    #endregion
 }

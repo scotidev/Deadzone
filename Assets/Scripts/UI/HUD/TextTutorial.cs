@@ -1,17 +1,18 @@
 ﻿using TMPro;
 using UnityEngine;
 
-namespace InfimaGames.LowPolyShooterPack.Interface
-{
+// REFATORAÇÃO: esse script é necessario? eu importei o pacotde low poly shooter pack e ele tinha uma demo scene, nao entendo como esse script mostra um tutorial, talvez seja bom deletar ele.
+
+namespace InfimaGames.LowPolyShooterPack.Interface {
     /// <summary>
     /// Interface component that hides or shows the tutorial text based on input.
     /// </summary>
-    public class TextTutorial : ElementText
-    {
+    public class TextTutorial : ElementText {
+
         #region FIELDS SERIALIZED
-        
+
         [Header("References")]
-        
+
         [Tooltip("Tutorial prompt text.")]
         [SerializeField]
         private TextMeshProUGUI prompt;
@@ -24,8 +25,7 @@ namespace InfimaGames.LowPolyShooterPack.Interface
 
         #region UNITY
 
-        protected override void Awake()
-        {
+        protected override void Awake() {
             //Base.
             base.Awake();
 
@@ -39,8 +39,7 @@ namespace InfimaGames.LowPolyShooterPack.Interface
 
         #region METHODS
 
-        protected override void Tick()
-        {
+        protected override void Tick() {
             //Get whether we should be showing the tutorial text, or not.
             bool isVisible = playerCharacter.IsTutorialTextVisible();
             //Hide the prompt if the tutorial is visible.

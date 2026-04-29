@@ -13457,6 +13457,11 @@ PrefabInstance:
       objectReference: {fileID: 562866462}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
+      propertyPath: weaponAmmoPricings.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
       propertyPath: fovOverrides.Array.data[0].fovValue
       value: 30
       objectReference: {fileID: 0}
@@ -13517,6 +13522,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}
+      propertyPath: weaponAmmoPricings.Array.data[0].weaponID
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
       propertyPath: cameraZPositions.Array.data[0].cameraZPosition
       value: -1000
       objectReference: {fileID: 0}
@@ -13554,6 +13564,21 @@ PrefabInstance:
         type: 3}
       propertyPath: cameraZPositions.Array.data[7].cameraZPosition
       value: -200
+      objectReference: {fileID: 0}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
+      propertyPath: weaponAmmoPricings.Array.data[0].maxReserveAmmo
+      value: 5000
+      objectReference: {fileID: 0}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
+      propertyPath: weaponAmmoPricings.Array.data[0].ammoPerPurchase
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
+        type: 3}
+      propertyPath: weaponAmmoPricings.Array.data[0].costPerPurchase
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 5334385605530644135, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}

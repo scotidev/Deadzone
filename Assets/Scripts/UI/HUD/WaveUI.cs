@@ -2,57 +2,49 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
+// Legacy entry point kept for existing callers.
+// O QUE A LIINHA  quer dizer? esse método está obsoleto? analise necessaria
+
 /// <summary>
 /// Persistent HUD panel that displays wave information during gameplay.
 /// </summary>
 public class WaveUI : BaseUI {
 
-    [Header("Wave Information Texts")]
-    [Tooltip("Temporary label that appears when a new wave starts. Example: 'Wave 3'.")]
+    #region SERIALIZED FIELDS
+
+    [Header("Wave Information")]
     [SerializeField] private TMP_Text waveNumberText;
-
-    [Tooltip("Temporary label that appears when a wave is completed.")]
     [SerializeField] private TMP_Text waveClearText;
-
-    [Tooltip("Displays how many enemies are still alive in this wave.")]
     [SerializeField] private TMP_Text enemiesRemainingText;
 
     [Header("Wave Announcement Animation")]
-    [Tooltip("Duration (in seconds) for fade in.")]
-    [Min(0f)]
     [SerializeField] private float announcementFadeInSeconds = 0.2f;
-
-    [Tooltip("Duration (in seconds) to keep the label fully visible.")]
-    [Min(0f)]
     [SerializeField] private float announcementVisibleSeconds = 1.5f;
-
-    [Tooltip("Duration (in seconds) for fade out.")]
-    [Min(0f)]
     [SerializeField] private float announcementFadeOutSeconds = 0.25f;
+
+    #endregion
+
+    #region FIELDS
 
     private Coroutine waveStartAnnouncementRoutine;
     private Coroutine waveClearAnnouncementRoutine;
 
-    /// <summary>
-    /// Initializes the HUD and prepares temporary announcement labels hidden by default.
-    /// </summary>
+    #endregion
+
+    #region UNITY
+
     protected override void Start() {
         base.Start();
         Show();
-
-        if (waveNumberText == null)
-            Debug.LogError("[WaveUI] 'Wave Number Text' not assigned in the Inspector!");
-
-        if (waveClearText == null)
-            Debug.LogError("[WaveUI] 'Wave Clear Text' not assigned in the Inspector!");
-
-        if (enemiesRemainingText == null)
-            Debug.LogError("[WaveUI] 'Enemies Remaining Text' not assigned in the Inspector!");
 
         HideAnnouncementText(waveNumberText);
         HideAnnouncementText(waveClearText);
         UpdateEnemiesRemaining(0);
     }
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Legacy entry point kept for existing callers.
@@ -72,7 +64,6 @@ public class WaveUI : BaseUI {
         StopWaveClearAnnouncement();
         StopWaveStartAnnouncement();
 
-        // The coroutine runs over multiple frames so alpha transitions happen smoothly.
         waveStartAnnouncementRoutine = StartCoroutine(
             PlayAnnouncementSequence(waveNumberText, $"Wave {wave}", OnWaveStartAnnouncementFinished));
     }
@@ -87,7 +78,6 @@ public class WaveUI : BaseUI {
         StopWaveStartAnnouncement();
         StopWaveClearAnnouncement();
 
-        // Reusing the same sequence keeps both announcements consistent and maintainable.
         waveClearAnnouncementRoutine = StartCoroutine(
             PlayAnnouncementSequence(waveClearText, "Wave Clear", OnWaveClearAnnouncementFinished));
     }
@@ -98,7 +88,7 @@ public class WaveUI : BaseUI {
     /// </summary>
     public void UpdateEnemiesRemaining(int count) {
         if (enemiesRemainingText != null)
-            enemiesRemainingText.text = $"Enemies {count}";
+            enemiesRemainingText.text = $"ENEMIES {count}";
     }
 
     /// <summary>
@@ -109,13 +99,11 @@ public class WaveUI : BaseUI {
         targetText.gameObject.SetActive(true);
         SetTextAlpha(targetText, 0f);
 
-        // Fade-in uses interpolation, which converts elapsed time into smooth alpha progression.
         yield return FadeTextAlpha(targetText, 0f, 1f, announcementFadeInSeconds);
 
         if (announcementVisibleSeconds > 0f)
             yield return new WaitForSecondsRealtime(announcementVisibleSeconds);
 
-        // Fade-out mirrors fade-in so the element exits without abrupt visual jumps.
         yield return FadeTextAlpha(targetText, 1f, 0f, announcementFadeOutSeconds);
 
         targetText.gameObject.SetActive(false);
@@ -199,4 +187,6 @@ public class WaveUI : BaseUI {
     private void OnWaveClearAnnouncementFinished() {
         waveClearAnnouncementRoutine = null;
     }
+
+    #endregion
 }

@@ -1,10 +1,12 @@
 using UnityEngine;
-using InfimaGames.LowPolyShooterPack; // Namespace necessário para acessar o IAudioManagerService.
+using InfimaGames.LowPolyShooterPack;
 
 /// <summary>
 /// Manages the main menu UI and navigation.
 /// </summary>
 public class MenuManager : MonoBehaviour {
+
+    #region SERIALIZED FIELDS
 
     [Header("UI Panels")]
     [SerializeField] private OptionsUI optionsUI;
@@ -12,18 +14,20 @@ public class MenuManager : MonoBehaviour {
     [SerializeField] private CreditsUI creditsUI;
 
     [Header("Audio")]
-    // AudioClip que armazenará a música de fundo do menu.
     [SerializeField] private AudioClip menuBGM;
 
-    /// <summary>
-    /// O Start inicializa a música do menu assim que o objeto é ativado na cena.
-    /// </summary>
+    #endregion
+
+    #region UNITY
+
     private void Start() {
-        // Obtemos o serviço de áudio global.
         var audioService = ServiceLocator.Current.Get<IAudioManagerService>();
-        // Reproduz a música com fade-in de 1 segundo para suavizar o início.
         audioService?.PlayBGM(menuBGM, true, 1.0f);
     }
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Loads the game scene.
@@ -59,4 +63,6 @@ public class MenuManager : MonoBehaviour {
     public void OnExitClick() {
         Application.Quit();
     }
+
+    #endregion
 }

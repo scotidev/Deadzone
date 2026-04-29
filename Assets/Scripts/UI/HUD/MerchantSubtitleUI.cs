@@ -2,39 +2,41 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
+// REFATORAÇÃO: esse script deveria implementar Element.cs? analise necessaria
+// REFATORAÇÃO: esse script precisa ser um serviço do ServiceLocator? analise necessaria
+
 /// <summary>
 /// Displays temporary subtitle text for merchant dialogue lines.
 /// </summary>
-public class MerchantSubtitleUI : MonoBehaviour
-{
-    /// <summary>
-    /// Global access to the subtitle presenter.
-    /// </summary>
+public class MerchantSubtitleUI : MonoBehaviour {
+
+    #region STATIC
+
+    /// <summary>Global access point to the single <see cref="MerchantSubtitleUI"/> instance.</summary>
     public static MerchantSubtitleUI Instance { get; private set; }
 
-    [Header("References")]
-    [Tooltip("Root object that contains the subtitle visuals (panel/background/text).")]
-    [SerializeField] private GameObject subtitleRoot;
+    #endregion
 
-    [Tooltip("Text field used to display subtitle content.")]
+    #region SERIALIZED FIELDS
+
+    [Header("References")]
+    [SerializeField] private GameObject subtitleRoot;
     [SerializeField] private TextMeshProUGUI subtitleText;
 
-    /// <summary>
-    /// Active coroutine handling timed hide behavior.
-    /// </summary>
+    #endregion
+
+    #region FIELDS
+
     private Coroutine hideCoroutine;
 
-    /// <summary>
-    /// Initializes singleton and starts hidden.
-    /// </summary>
-    private void Awake()
-    {
-        if (Instance == null)
-        {
+    #endregion
+
+    #region UNITY
+
+    private void Awake() {
+        if (Instance == null) {
             Instance = this;
-        }
-        else if (Instance != this)
-        {
+        } else if (Instance != this) {
             Destroy(gameObject);
             return;
         }
@@ -42,26 +44,25 @@ public class MerchantSubtitleUI : MonoBehaviour
         HideImmediate();
     }
 
-    /// <summary>
-    /// Clears singleton when this instance is destroyed.
-    /// </summary>
-    private void OnDestroy()
-    {
+    private void OnDestroy() {
         if (Instance == this)
             Instance = null;
     }
+
+    #endregion
+
+    #region METHODS
+
 
     /// <summary>
     /// Shows a subtitle for a fixed duration.
     /// </summary>
     /// <param name="subtitle">Subtitle text to display.</param>
     /// <param name="duration">Display duration in seconds.</param>
-    public void ShowSubtitle(string subtitle, float duration)
-    {
+    public void ShowSubtitle(string subtitle, float duration) {
         if (subtitleRoot == null || subtitleText == null)
             return;
 
-        // First principle: always reset pending hide timers so each new subtitle owns the full visibility window.
         if (hideCoroutine != null)
             StopCoroutine(hideCoroutine);
 
@@ -75,10 +76,8 @@ public class MerchantSubtitleUI : MonoBehaviour
     /// <summary>
     /// Hides subtitle visuals immediately.
     /// </summary>
-    public void HideImmediate()
-    {
-        if (hideCoroutine != null)
-        {
+    public void HideImmediate() {
+        if (hideCoroutine != null) {
             StopCoroutine(hideCoroutine);
             hideCoroutine = null;
         }
@@ -95,9 +94,10 @@ public class MerchantSubtitleUI : MonoBehaviour
     /// </summary>
     /// <param name="delay">Delay in seconds.</param>
     /// <returns>Coroutine enumerator.</returns>
-    private IEnumerator HideAfterDelay(float delay)
-    {
+    private IEnumerator HideAfterDelay(float delay) {
         yield return new WaitForSeconds(delay);
         HideImmediate();
     }
+
+    #endregion
 }

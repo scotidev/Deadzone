@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 
 // REFATORAÇÃO: o audio deve tocar por aqui implementando o Service de Audio, e não por script separado. Usar o AudioManagerService de dentro do dicionário de serviçoos para tocar o som de falha de luz, por exemplo, quando a luz "falha" e não pisca naquele intervalo, usar som 3D
+// REFATORAÇÃO: isFlickering é necesasrio?
 
 /// <summary>
 /// This VFX script simulates a flickering light effect, used to represent faulty or unstable light sources in the game. It randomly changes the light's intensity at varying intervals to create a dynamic and unpredictable flickering pattern.

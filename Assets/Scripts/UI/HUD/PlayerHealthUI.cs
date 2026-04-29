@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+// REFATORAÇÃO: esse script deveria herdar de Element.cs? ANALISE NECESSARIA.
+//REFATORAÇÃO: esse script poderia ser unido ao script PlayerArmorUI, já que ambos são barras de status? ANALISE NECESSARIA.
+
 /// <summary>
 /// Manages the player health bar UI. Subscribes to PlayerHealth events and updates
 /// the green bar fill amount in real-time when the player takes damage or heals.
@@ -8,49 +11,30 @@ using UnityEngine.UI;
 /// </summary>
 public class PlayerHealthUI : MonoBehaviour {
 
+    #region SERIALIZED FIELDS
+
     [Header("Health References")]
-    [Tooltip("Reference to the PlayerHealth script on the player GameObject.")]
     [SerializeField] private PlayerHealth playerHealth;
-
-    [Tooltip("The Image component that represents current health (green bar).")]
     [SerializeField] private Image greenBar;
-
-    [Tooltip("The Image component that represents missing health (red background).")]
     [SerializeField] private Image redBar;
-
-    [Tooltip("Optional decorative health icon image.")]
     [SerializeField] private Image plusIcon;
 
     [Header("Animation Settings")]
-    [Tooltip("Speed of health bar fill animation when using smooth transitions.")]
     [SerializeField] private float lerpSpeed = 5f;
-
-    [Tooltip("Enable smooth lerp transitions instead of instant updates.")]
     [SerializeField] private bool useSmoothTransition = true;
 
-    private float targetFillAmount;
+    #endregion
 
+    #region FIELDS
+
+    private float targetFillAmount;
     private bool hasInitialized;
 
+    #endregion
+
+    #region UNITY
+
     private void Awake() {
-        if (playerHealth == null) {
-            Debug.LogError("[PlayerHealthUI] PlayerHealth reference is missing! Assign it in the Inspector.");
-            enabled = false;
-            return;
-        }
-
-        if (greenBar == null) {
-            Debug.LogError("[PlayerHealthUI] GreenBar Image reference is missing! Assign it in the Inspector.");
-            enabled = false;
-            return;
-        }
-
-        if (redBar == null) {
-            Debug.LogError("[PlayerHealthUI] RedBar Image reference is missing! Assign it in the Inspector.");
-            enabled = false;
-            return;
-        }
-
         playerHealth.OnHealthChanged += OnHealthChanged;
         playerHealth.OnPlayerDied += OnPlayerDeath;
 
@@ -80,11 +64,13 @@ public class PlayerHealthUI : MonoBehaviour {
         }
     }
 
+    #endregion
+
+    #region METHODS
+
     /// <summary>
     /// Called whenever PlayerHealth.OnHealthChanged is invoked.
     /// This method receives the health fraction (0.0 to 1.0) and updates the bar accordingly.
-    /// If smooth transitions are enabled, it sets the target and lets Update lerp to it.
-    /// If smooth transitions are disabled, it updates the bar instantly.
     /// </summary>
     private void OnHealthChanged(float healthFraction) {
         if (useSmoothTransition) {
@@ -93,8 +79,7 @@ public class PlayerHealthUI : MonoBehaviour {
             if (Mathf.Abs(greenBar.fillAmount - targetFillAmount) > 0.1f) {
                 greenBar.fillAmount = healthFraction;
             }
-        }
-        else {
+        } else {
             greenBar.fillAmount = healthFraction;
         }
     }
@@ -148,4 +133,6 @@ public class PlayerHealthUI : MonoBehaviour {
     public float GetTargetFillAmount() {
         return targetFillAmount;
     }
+
+    #endregion
 }

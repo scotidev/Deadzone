@@ -4,11 +4,17 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+// REFATORAÇÃO: a lógica de desbloquear items nao deveria ser chamada por aqui? ela está em SHopUI
+// refatoarção: ajustar cores para refletir melhor os estados 
+// REFATORAAR: referencias no unity editor de acordo com o layout necessario.
+
 /// <summary>
 /// Represents a compact shop item card showing icon, name, and level.
-/// Unlock/Upgrade logic is handled by the parent ShopUI, not the card itself.
 /// </summary>
 public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
+
+    #region SERIALIZED FIELDS
+
     [Header("UI Elements")]
     [SerializeField] private Image itemIcon;
     [SerializeField] private TextMeshProUGUI itemNameText;
@@ -24,23 +30,39 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private Color unlockedColor = Color.white;
     [SerializeField] private Color maxLevelColor = new Color(1f, 0.84f, 0f, 1f);
 
+    #endregion
+
+    #region FIELDS
+
     private ShopItemDataSO currentItemData;
     private Action<ShopItemDataSO> selectionCallback;
     private Action<ShopItemDataSO> stateChangedCallback;
     private Action<ShopItemDataSO> onUnlockUpgradeClick;
+
+    #endregion
+
+    #region UNITY
 
     private void Awake() {
         if (unlockUpgradeButton != null)
             unlockUpgradeButton.onClick.AddListener(OnUnlockUpgradeClick);
     }
 
+    #endregion
+
+    #region METHODS
+
+    /// <summary>
+    /// Initializes the card with the given item data, setting up visuals and state based on player progress.
+    /// </summary>
+    /// <param name="itemData"></param>
     public void Setup(ShopItemDataSO itemData) {
         currentItemData = itemData;
         if (currentItemData == null) return;
 
         if (itemIcon != null) itemIcon.sprite = currentItemData.Icon;
         if (itemNameText != null) itemNameText.text = currentItemData.ItemName;
-        
+
         InternalRefreshCardState();
     }
 
@@ -71,62 +93,55 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
         InternalRefreshCardState();
     }
 
-    /// MÉTODO PRINCIPAL: Atualiza o estado visual do card baseado no progresso do jogador
-    /// Este método é chamado toda vez que algo muda (compra, upgrade, etc)
-    /// CONCEITO: State-based UI - a interface reflete o estado do jogo
+    /// <summary>
+    /// Internal method that updates the card's visuals and interactivity based on the current item data and player progress.
+    /// This method is called whenever the card needs to refresh its state (e.g., after an unlock or upgrade).
+    /// </summary>
     private void InternalRefreshCardState() {
-        // EARLY RETURN: Se dados essenciais estão faltando, sai da função imediatamente
-        // Isso previne NullReferenceException (erro muito comum em Unity)
         if (currentItemData == null || PlayerProgress.Instance == null) return;
 
-        // CACHE DE VALORES: Armazenamos valores usados múltiplas vezes em variáveis locais
-        // Isso evita chamar os mesmos métodos repetidamente (mais eficiente)
         string itemID = currentItemData.ItemID;
         bool isUnlocked = PlayerProgress.Instance.IsWeaponUnlocked(itemID);
         int currentLevel = PlayerProgress.Instance.GetWeaponLevel(itemID);
         bool isMaxLevel = currentLevel >= PlayerProgress.MAX_UPGRADE_LEVEL;
 
-        // ATUALIZAÇÃO DE TEXTO DO NÍVEL
-        // OPERADOR TERNÁRIO ANINHADO: condição ? verdadeiro : falso
-        // Lê-se: "Se não desbloqueado, mostra LOCKED; senão, se max level, mostra MAX LEVEL; senão, mostra Level X/10"
         if (itemLevelText != null) {
-            itemLevelText.text = !isUnlocked ? "LOCKED" : isMaxLevel ? "MAX LEVEL" : $"Level {currentLevel}/{PlayerProgress.MAX_UPGRADE_LEVEL}";
+            itemLevelText.text = !isUnlocked ? "Locked" : isMaxLevel ? "Maxed Out" : $"Level {currentLevel}";
         }
 
-        // FEEDBACK VISUAL: Cor de fundo muda baseado no estado
-        // CINZA = locked, BRANCO = unlocked, DOURADO = max level
         if (cardBackground != null) {
             cardBackground.color = !isUnlocked ? lockedColor : isMaxLevel ? maxLevelColor : unlockedColor;
         }
 
-        // BOTÃO UNLOCK/UPGRADE - Lógica de State Machine
-        // O botão muda seu comportamento baseado no estado atual
         if (unlockUpgradeButton != null) {
             if (!isUnlocked) {
-                // ESTADO 1: LOCKED - Botão mostra "UNLOCK"
-                if (unlockUpgradeButtonText != null) unlockUpgradeButtonText.text = "UNLOCK";
+                if (unlockUpgradeButtonText != null) unlockUpgradeButtonText.text = "Unlock";
                 unlockUpgradeButton.interactable = EconomyManager.Instance != null && EconomyManager.Instance.CanAfford(currentItemData.UnlockCost);
             } else if (isMaxLevel) {
-                // ESTADO 2: MAX LEVEL - Botão desabilitado
-                if (unlockUpgradeButtonText != null) unlockUpgradeButtonText.text = "MAX LEVEL";
+                if (unlockUpgradeButtonText != null) unlockUpgradeButtonText.text = "Maxed Out";
                 unlockUpgradeButton.interactable = false;
             } else {
-                // ESTADO 3: UNLOCKED (1-9) - Botão mostra "UPGRADE"
                 int cost = CalculateUpgradeCost(currentLevel);
-                if (unlockUpgradeButtonText != null) unlockUpgradeButtonText.text = $"UPGRADE";
+                if (unlockUpgradeButtonText != null) unlockUpgradeButtonText.text = $"Upgrade";
                 unlockUpgradeButton.interactable = EconomyManager.Instance != null && EconomyManager.Instance.CanAfford(cost);
             }
         }
 
-        // Notify the parent UI so right-side details stay in sync after unlock/upgrade/ammo changes.
         stateChangedCallback?.Invoke(currentItemData);
     }
 
+    /// <summary>
+    /// Handles clicks on the unlock/upgrade button, notifying the parent shop UI to attempt the unlock or upgrade action for this item.
+    /// </summary>
     private void OnUnlockUpgradeClick() {
         NotifySelected();
         onUnlockUpgradeClick?.Invoke(currentItemData);
     }
 
+    /// <summary>
+    /// Calculates the cost for the next upgrade based on the current level of the item. This method uses the UpgradeManager to determine the cost, ensuring that it reflects any scaling or special rules defined in the upgrade system.
+    /// </summary>
+    /// <param name="currentLevel">The current level of the item.</param>
     private int CalculateUpgradeCost(int currentLevel) {
         return UpgradeManager.Instance != null ? UpgradeManager.Instance.GetNextUpgradeCost(currentItemData.ItemID, currentItemData.BaseUpgradeCost) : 0;
     }
@@ -137,4 +152,6 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
     private void NotifySelected() {
         selectionCallback?.Invoke(currentItemData);
     }
+
+    #endregion
 }

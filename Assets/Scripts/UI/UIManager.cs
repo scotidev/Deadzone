@@ -1,12 +1,23 @@
 using UnityEngine;
 
+// refatoração: o UI  da wave deve ficar aqui? se parar pra analisar, o HUD do player vem do Element.cs e ElementText.cs, o que é um pouco inconsistente. Talvez seja melhor criar um HUDManager para lidar com os elementos do HUD, e deixar o UIManager apenas para os painéis de menu e interação. Assim, o UIManager fica mais focado em gerenciar as interfaces de usuário relacionadas a menus e interações, enquanto o HUDManager cuida dos elementos do HUD durante o jogo. ai pra isso precisariamos analisar como está feita o HUD do player todo, como as armas são mostradas, os icones, a vida, e unificar tudo em um HUD só, e o UIManager só cuida dos painéis de menu e interação. isso deixaria a arquitetura mais limpa e organizada, com responsabilidades bem definidas para cada manager.
+
+//REFATORAÇÃO: dá pracolocar a lógica d einicialização do singleton no awake. A nao ser que, após analise, decidimos que  o UIManager na verdade deveria ser um serviço do Service locator, é preciso uma analise profunda
+
 /// <summary>
 /// Central coordinator for UI. Manages all game panels in the game.
 /// Acts as a mediator between game systems and UI components.
 /// </summary>
 public class UIManager : MonoBehaviour {
+
+    #region STATIC
+
     /// <summary>Global access point to the single <see cref="UIManager"/> instance.</summary>
     public static UIManager Instance { get; private set; }
+
+    #endregion
+
+    #region SERIALIZED FIELDS
 
     [Header("UI Panels")]
     [SerializeField] private PauseUI pauseUI;
@@ -16,12 +27,19 @@ public class UIManager : MonoBehaviour {
     [SerializeField] private InteractionPromptUI interactionPromptUI;
 
     [Header("HUD")]
-    [Tooltip("Wave information HUD. NOT hidden by HideAllPanels.")]
     [SerializeField] private WaveUI waveUI;
+
+    #endregion
+
+    #region UNITY
 
     private void Awake() {
         InitializeSingleton();
     }
+
+    #endregion
+
+    #region METHODS
 
     private void InitializeSingleton() {
         if (Instance == null)
@@ -124,4 +142,6 @@ public class UIManager : MonoBehaviour {
         else
             HideInteractionPrompt();
     }
+
+    #endregion
 }

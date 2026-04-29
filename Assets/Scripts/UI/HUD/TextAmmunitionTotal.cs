@@ -2,27 +2,19 @@
 
 using System.Globalization;
 
-namespace InfimaGames.LowPolyShooterPack.Interface
-{
+namespace InfimaGames.LowPolyShooterPack.Interface {
     /// <summary>
     /// Total Ammunition Text.
     /// </summary>
-    public class TextAmmunitionTotal : ElementText
-    {
+    public class TextAmmunitionTotal : ElementText {
         #region METHODS
-        
-        /// <summary>
-        /// Tick.
-        /// </summary>
-        protected override void Tick()
-        {
-            //Total Ammunition.
+
+        protected override void Tick() {
             float ammunitionTotal = equippedWeapon.GetAmmunitionTotal();
-            
-            //Update Text.
+
             textMesh.text = ammunitionTotal.ToString(CultureInfo.InvariantCulture);
         }
-        
+
         #endregion
     }
 }

@@ -3,77 +3,63 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace InfimaGames.LowPolyShooterPack.Interface
-{
+//FEATURE: como adicionar novas armas?
+
+// REFATORAÇÃo: é mesmo necessario mostrar o pente, magazine, scope? talvez seja melhor mostrar apenas a arma, e não os detalhes, ou seja, o sprite da arma já com o pente, scope, etc...
+
+namespace InfimaGames.LowPolyShooterPack.Interface {
     /// <summary>
     /// Weapon Image. Handles assigning the proper sprites to the weapon images.
     /// </summary>
-    public class ImageWeapon : Element
-    {
-        #region FIELDS SERIALIZED
+    public class ImageWeapon : Element {
+
+        #region SERIALIZED FIELDS
 
         [Header("Settings")]
-        
-        [Tooltip("Weapon Body Image.")]
-        [SerializeField]
-        private Image imageWeaponBody;
-        
-        [Tooltip("Weapon Magazine Image.")]
-        [SerializeField]
-        private Image imageWeaponMagazine;
-        
-        [Tooltip("Weapon Scope Default Image.")]
-        [SerializeField]
-        private Image imageWeaponScopeDefault;
+
+        [SerializeField] private Image imageWeaponBody;
+        [SerializeField] private Image imageWeaponMagazine;
+        [SerializeField] private Image imageWeaponScopeDefault;
 
         #endregion
 
         #region FIELDS
 
-        /// <summary>
-        /// Weapon Attachment Manager.
-        /// </summary>
         private WeaponAttachmentManagerBehaviour attachmentManagerBehaviour;
 
         #endregion
 
         #region METHODS
 
-        protected override void Tick()
-        {
-            //Get Attachment Manager.
+        /// <summary>
+        /// Updates the element. Assigns the proper sprites to the weapon images.
+        /// </summary>
+        protected override void Tick() {
             attachmentManagerBehaviour = equippedWeapon.GetAttachmentManager();
-            //Update the weapon's body sprite!
             imageWeaponBody.sprite = equippedWeapon.GetSpriteBody();
 
-            //Sprite.
             Sprite sprite = default;
 
-            //Scope Default.
             ScopeBehaviour scopeDefaultBehaviour = attachmentManagerBehaviour.GetEquippedScopeDefault();
-            //Get Sprite.
+
             if (scopeDefaultBehaviour != null)
                 sprite = scopeDefaultBehaviour.GetSprite();
-            //Assign Sprite!
+
             AssignSprite(imageWeaponScopeDefault, sprite, scopeDefaultBehaviour == null);
 
-            //Magazine.
             MagazineBehaviour magazineBehaviour = attachmentManagerBehaviour.GetEquippedMagazine();
-            //Get Sprite.
+
             if (magazineBehaviour != null)
                 sprite = magazineBehaviour.GetSprite();
-            //Assign Sprite!
+
             AssignSprite(imageWeaponMagazine, sprite, magazineBehaviour == null);
         }
 
         /// <summary>
         /// Assigns a sprite to an image.
         /// </summary>
-        private static void AssignSprite(Image image, Sprite sprite, bool forceHide = false)
-        {
-            //Update.
+        private static void AssignSprite(Image image, Sprite sprite, bool forceHide = false) {
             image.sprite = sprite;
-            //Disable image if needed.
             image.enabled = sprite != null && !forceHide;
         }
 
