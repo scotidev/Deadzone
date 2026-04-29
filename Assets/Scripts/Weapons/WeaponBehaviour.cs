@@ -2,31 +2,17 @@
 
 using UnityEngine;
 
-namespace InfimaGames.LowPolyShooterPack
-{
-    public abstract class WeaponBehaviour : MonoBehaviour
-    {
+namespace InfimaGames.LowPolyShooterPack {
+    public abstract class WeaponBehaviour : MonoBehaviour {
         #region UNITY
 
-        /// <summary>
-        /// Awake.
-        /// </summary>
-        protected virtual void Awake(){}
+        protected virtual void Awake() { }
 
-        /// <summary>
-        /// Start.
-        /// </summary>
-        protected virtual void Start(){}
+        protected virtual void Start() { }
 
-        /// <summary>
-        /// Update.
-        /// </summary>
-        protected virtual void Update(){}
+        protected virtual void Update() { }
 
-        /// <summary>
-        /// Late Update.
-        /// </summary>
-        protected virtual void LateUpdate(){}
+        protected virtual void LateUpdate() { }
 
         #endregion
 
@@ -65,7 +51,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// Returns the fire audio clip.
         /// </summary>
         public abstract AudioClip GetAudioClipFire();
-        
+
         /// <summary>
         /// Returns Current Ammunition. 
         /// </summary>
@@ -79,7 +65,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// Returns the Weapon's Animator component.
         /// </summary>
         public abstract Animator GetAnimator();
-        
+
         /// <summary>
         /// Returns true if this weapon shoots in automatic.
         /// </summary>
@@ -106,7 +92,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// Returns the weapon's attachment manager component.
         /// </summary>
         public abstract WeaponAttachmentManagerBehaviour GetAttachmentManager();
-        
+
         #endregion
 
         #region METHODS

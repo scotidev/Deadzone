@@ -3,25 +3,21 @@
 using System;
 using UnityEngine;
 
-namespace InfimaGames.LowPolyShooterPack
-{
+namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
     /// Weapon Scope.
     /// </summary>
-    public class Scope : ScopeBehaviour
-    {
-        #region FIELDS SERIALIZED
+    public class Scope : ScopeBehaviour {
+        #region SERIALIZED FIELDS
 
         [Header("Interface")]
 
-        [Tooltip("Interface Sprite.")]
-        [SerializeField]
-        private Sprite sprite;
-        
+        [SerializeField] private Sprite sprite;
+
         #endregion
 
         #region GETTERS
-        
+
         public override Sprite GetSprite() => sprite;
 
         #endregion

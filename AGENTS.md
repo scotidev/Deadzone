@@ -11,6 +11,7 @@ This file contains the rules and guidelines for working on the AGENTS module of 
 - Use the new Unity input system.
 - In all scripts, maintain the good practice of not putting logic inside the Update method, use Update only to call functions, and the logic should be inside those functions.
 - Using Unity Engine 6000.2.10f1. When needed, consult the documentation for this version using context7 MCP.
+- ALWAYS, whenever adding a new feature or making maintance in the code, review the current architecture and systems that already exists in the project, and respect it.
 
 # TEACHING RULES:
 
