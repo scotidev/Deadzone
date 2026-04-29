@@ -9,7 +9,8 @@ namespace InfimaGames.LowPolyShooterPack {
     /// </summary>
     [RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
     public class Movement : MovementBehaviour {
-        #region FIELDS SERIALIZED
+
+        #region SERIALIZED FIELDS
 
         [Header("Audio Clips")]
 
@@ -37,11 +38,7 @@ namespace InfimaGames.LowPolyShooterPack {
         [Header("Grounding")]
 
         [SerializeField] private float groundProbeDistance = 0.2f;
-
-        [Tooltip("Maximum walkable angle.")]
         [SerializeField] private float maxGroundAngle = 60.0f;
-
-        [Tooltip("Keeps the body glued to the ground while grounded.")]
         [SerializeField] private float groundStickForce = 25.0f;
 
         [Tooltip("Extra damping applied when idle on slopes to prevent sliding.")]
@@ -55,8 +52,6 @@ namespace InfimaGames.LowPolyShooterPack {
         [SerializeField] private bool stairStepping = true;
         [SerializeField] private float maxStepHeight = 0.35f;
         [SerializeField] private float stepCheckDistance = 0.35f;
-
-        [Tooltip("How smoothly the body is moved up while climbing steps.")]
         [SerializeField] private float stepSmooth = 0.12f;
 
         #endregion
@@ -205,14 +200,11 @@ namespace InfimaGames.LowPolyShooterPack {
 
             if (playerCharacter.IsAiming()) {
                 movement *= speedAiming;
-            }
-            else if (playerCharacter.IsCrouching()) {
+            } else if (playerCharacter.IsCrouching()) {
                 movement *= speedCrouching;
-            }
-            else if (playerCharacter.IsRunning()) {
+            } else if (playerCharacter.IsRunning()) {
                 movement *= speedRunning;
-            }
-            else {
+            } else {
                 movement *= speedWalking;
             }
 
@@ -298,9 +290,7 @@ namespace InfimaGames.LowPolyShooterPack {
                     audioSource.volume = ServiceLocator.Current.Get<IAudioManagerService>().GetSFXVolume();
                     audioSource.Play();
                 }
-            }
-
-            else if (audioSource.isPlaying)
+            } else if (audioSource.isPlaying)
                 audioSource.Pause();
         }
 
@@ -320,8 +310,7 @@ namespace InfimaGames.LowPolyShooterPack {
                 targetRootY = originalRootY + crouchCameraOffset;
 
                 targetCameraY = originalCameraY;
-            }
-            else {
+            } else {
                 targetCapsuleHeight = originalCapsuleHeight;
                 targetCapsuleCenterY = originalCapsuleCenterY;
                 targetRootY = originalRootY;

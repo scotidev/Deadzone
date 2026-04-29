@@ -2,37 +2,23 @@
 
 using UnityEngine;
 
-namespace InfimaGames.LowPolyShooterPack
-{
+namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
     /// Weapon Attachment Manager Behaviour.
     /// </summary>
-    public abstract class WeaponAttachmentManagerBehaviour : MonoBehaviour
-    {
-        #region UNITY FUNCTIONS
+    public abstract class WeaponAttachmentManagerBehaviour : MonoBehaviour {
+        #region UNITY
 
-        /// <summary>
-        /// Awake.
-        /// </summary>
-        protected virtual void Awake(){}
+        protected virtual void Awake() { }
 
-        /// <summary>
-        /// Start.
-        /// </summary>
-        protected virtual void Start(){}
+        protected virtual void Start() { }
 
-        /// <summary>
-        /// Update.
-        /// </summary>
-        protected virtual void Update(){}
+        protected virtual void Update() { }
 
-        /// <summary>
-        /// Late Update.
-        /// </summary>
-        protected virtual void LateUpdate(){}
+        protected virtual void LateUpdate() { }
 
         #endregion
-        
+
         #region GETTERS
 
         /// <summary>
@@ -43,7 +29,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// Returns the equipped scope default.
         /// </summary>
         public abstract ScopeBehaviour GetEquippedScopeDefault();
-        
+
         /// <summary>
         /// Returns the equipped magazine.
         /// </summary>
@@ -52,7 +38,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// Returns the equipped muzzle.
         /// </summary>
         public abstract MuzzleBehaviour GetEquippedMuzzle();
-        
+
         #endregion
     }
 }
