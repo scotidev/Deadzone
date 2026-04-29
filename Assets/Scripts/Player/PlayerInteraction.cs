@@ -8,20 +8,28 @@ using UnityEngine.InputSystem;
 /// Also detects enemies for the health bar UI system.
 /// </summary>
 public class PlayerInteraction : MonoBehaviour {
+
+    #region SERIALIZED FIELDS
+
     [Header("Interaction Settings")]
     [SerializeField] private float interactionDistance = 3f;
     [SerializeField] private LayerMask interactableLayer;
 
     [Header("Enemy Detection")]
-    [Tooltip("Maximum distance to detect enemies for health bar display.")]
     [SerializeField] private float enemyDetectionDistance = 50f;
-
-    [Tooltip("Reference to the EnemyHealthBarUI component.")]
     [SerializeField] private EnemyHealthBarUI enemyHealthBarUI;
+
+    #endregion
+
+    #region FIELDS
 
     private Camera playerCamera;
     private Interactable currentInteractable;
     private EnemyBase currentTargetedEnemy;
+
+    #endregion
+
+    #region UNITY
 
     private void Start() {
         playerCamera = GetComponent<Camera>();
@@ -37,6 +45,10 @@ public class PlayerInteraction : MonoBehaviour {
         CheckForEnemy();
         HandleInteractionInput();
     }
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Handles blocking of interaction detection when the shop is open or the player is placing a building item.
@@ -135,4 +147,6 @@ public class PlayerInteraction : MonoBehaviour {
             enemyHealthBarUI.SetTargetEnemy(null);
         }
     }
+
+    #endregion
 }

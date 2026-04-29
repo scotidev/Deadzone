@@ -9,24 +9,12 @@ namespace InfimaGames.LowPolyShooterPack {
     public abstract class CharacterBehaviour : MonoBehaviour {
         #region UNITY
 
-        /// <summary>
-        /// Awake.
-        /// </summary>
         protected virtual void Awake() { }
 
-        /// <summary>
-        /// Start.
-        /// </summary>
         protected virtual void Start() { }
 
-        /// <summary>
-        /// Update.
-        /// </summary>
         protected virtual void Update() { }
 
-        /// <summary>
-        /// Late Update.
-        /// </summary>
         protected virtual void LateUpdate() { }
 
         #endregion
