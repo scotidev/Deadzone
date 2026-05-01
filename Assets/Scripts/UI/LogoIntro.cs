@@ -50,7 +50,7 @@ public class LogoIntro : MonoBehaviour {
 
         if (videoPlayer != null) {
             videoPlayer.source = VideoSource.Url;
-            videoPlayer.url = System.IO.Path.Combine(Application.streamingAssetsPath, "IntroScotiDev.mp4");
+            videoPlayer.url = System.IO.Path.Combine(Application.streamingAssetsPath, "Intro.mp4");
             videoPlayer.Play();
         }
 

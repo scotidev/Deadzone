@@ -222,7 +222,7 @@ GameObject:
   - component: {fileID: 1332893275}
   - component: {fileID: 1332893277}
   m_Layer: 5
-  m_Name: ScotiDev
+  m_Name: VideoPlayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -432,7 +432,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42c149dc2e7c3db48963be1a9874e437, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LogoIntro
-  duration: 8
+  duration: 13.5
   allowSkip: 1
   audioSettings:
     automaticCleanup: 1
@@ -440,8 +440,8 @@ MonoBehaviour:
     spatialBlend: 0
   audioLogoScotiDev: {fileID: 8300000, guid: 7f477b75f7c3413458668ea4d4e285b6, type: 3}
   delayScoti: 0
-  audioLogoLary: {fileID: 0}
-  delayLary: 1.5
+  audioLogoLary: {fileID: 8300000, guid: 7ff76a78fa0ec6e44b542919c4638bb5, type: 3}
+  delayLary: 4.8
 --- !u!1 &2039212040
 GameObject:
   m_ObjectHideFlags: 0
