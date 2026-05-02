@@ -13863,6 +13863,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_ActionEvents.Array.data[17].m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
+      objectReference: {fileID: 1413941464}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[17].m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnSelectItem
+      objectReference: {fileID: 0}
+    - target: {fileID: 583824900845482274, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[17].m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: InfimaGames.LowPolyShooterPack.Character, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 1628012635517256272, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}

@@ -42,8 +42,7 @@ public class PlayerProgress : MonoBehaviour {
         if (Instance == null) {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-        }
-        else {
+        } else {
             Destroy(gameObject);
             return;
         }
@@ -94,8 +93,7 @@ public class PlayerProgress : MonoBehaviour {
             buildableQuantities[buildableID] = newQty;
 
             Debug.Log($"[PlayerProgress] Added {quantity} {buildableID}. New total: {newQty}/{MAX_BUILDABLE_QUANTITY}");
-        }
-        else {
+        } else {
             Debug.LogWarning($"[PlayerProgress] Unsupported item type for unlocking/adding: {itemData.ItemData.GetType().Name} (ID: {itemData.ItemID})");
         }
     }
@@ -108,8 +106,7 @@ public class PlayerProgress : MonoBehaviour {
     private void UnlockWeaponInternal(string weaponID) {
         if (!unlockedWeapons.ContainsKey(weaponID)) {
             unlockedWeapons[weaponID] = true;
-        }
-        else {
+        } else {
             unlockedWeapons[weaponID] = true;
         }
 
