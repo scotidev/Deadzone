@@ -3,22 +3,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// RESOLVER BUG: seleção de items nao esta funcionando corretamente. Temos que garantir que funcione tanto para armas quanto para itens de consturção, medkits, granadas, ... TUDO. e deve funcionar asssim: temos um gameobject prefab desativado aninhado ao game object Inventory que está aninhado em Player. Ai quando selecionarmos o item, seja ele independente d equal for, esse gameobject é ativado, e o item aparece na mão do player etc. Como nao temos modelo para todos os items 3d ainda, eu coloco placeholders como cubos e cilindros, e depois substituo pelos modelos 3d. O importante é garantir que a lógica de seleção funcione para todos os tipos de itens, e que o sistema seja flexível para acomodar diferentes categorias de itens (armas, consumíveis, buildables) sem bugs.
+// RESOLVER BUG: seleção de items nao esta funcionando corretamente. Temos que garantir que funcione tanto para armas quanto para itens de consturção, medkits, granadas, ... TUDO. e deve funcionar asssim: temos um gameobject prefab desativado aninhado ao game object Inventory que está aninhado em Player. Ai quando selecionarmos o item, seja ele independente d equal for, esse gameobject é ativado, e o item aparece na mão do player etc. Como nao temos modelo para todos os items 3d ainda, eu coloco placeholders como cubos e cilindron. O importante é garantir que a lógica de seleção funcione para todos os tipos de itens, e que o sistema seja flexível para acomodar diferentes categorias de itens (armas, consumíveis, buildables) sem bugs.
 // LEMBRANDO: SÃO 8 ITEMS! o item 9 na verdade é o colete, que nao pode ser segurando na mao, é so uma vestimenta.
-/* 
-A lista de como deve ser a seleção: 
-        private readonly string[] itemNames = {
-            "Pistol",         // Key 1 (Index 0)
-            "AK47",           // Key 2 (Index 1)
-            "Shotgun",        // Key 3 (Index 2)
-            "Med Kit",        // Key 4 (Index 3)
-            "Grenade",       // Key 4 (Index 4)
-            "Barricade",     // Key 6 (Buildable 1)
-            "Explosive Barrel", // Key 7 (Buildable 2)
-            "Bear Trap",     // Key 8 (Buildable 3)
-        };
-*/
-// REMOVER OS DEBUGS
 
 namespace InfimaGames.LowPolyShooterPack {
     public class Inventory : InventoryBehaviour {
@@ -44,7 +30,7 @@ namespace InfimaGames.LowPolyShooterPack {
             "AK47",           // Key 2 (Index 1)
             "Shotgun",        // Key 3 (Index 2)
             "Med Kit",        // Key 4 (Index 3)
-            "Grenade",       // Key 4 (Index 4)
+            "Grenade",       // Key 5 (Index 4)
             "Barricade",     // Key 6 (Buildable 1)
             "Explosive Barrel", // Key 7 (Buildable 2)
             "Bear Trap",     // Key 8 (Buildable 3)
@@ -52,12 +38,10 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
-        #region METHODS
-
         #region UNITY
 
         private void Awake() {
-            character = GetComponent<Character>();
+            ResolvePlayerCharacter();
         }
 
         #endregion
@@ -107,14 +91,10 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Unified item selection by key number (1-8).
         /// Keys 1-5 select weapons, NOTA: SO TEM 3 ARMAS, 1. PISTOL 2. AK47 3.SHOTGUN, O 4. É MEDKIT E O 5. É GRANADA. Keys 6-8 select buildables.
         /// </summary>
-        public void SelectByKeyNumber(int keyNumber) {
+        private void SelectByKeyNumber(int keyNumber) {
             if (keyNumber < 1 || keyNumber > 8) {
                 Debug.LogWarning($"[Inventory.SelectByKeyNumber] Invalid key number: {keyNumber}. Expected 1-8.");
                 return;
-            }
-
-            if (enableDebugLogs) {
-                Debug.Log($"[Inventory.SelectByKeyNumber] Key {keyNumber} pressed: {itemNames[keyNumber - 1]}");
             }
 
             if (keyNumber >= 6 && keyNumber <= 8) {
@@ -178,6 +158,12 @@ namespace InfimaGames.LowPolyShooterPack {
             if (character == null) {
                 character = GetComponent<Character>();
             }
+            if (character == null) {
+                character = FindFirstObjectByType<Character>();
+            }
+            if (character == null) {
+                Debug.LogWarning("[Inventory.ResolvePlayerCharacter] Could not find Character!");
+            }
         }
 
         /// <summary>
@@ -196,35 +182,24 @@ namespace InfimaGames.LowPolyShooterPack {
             }
 
             if (equippedIndex == weaponIndex) {
-                if (enableDebugLogs) {
-                    Debug.Log($"[Inventory.SelectWeapon] {itemNames[keyNumber - 1]} is already equipped.");
-                }
                 return;
             }
 
             if (weaponIndex != 0 && PlayerProgress.Instance != null) {
                 string weaponID = GetWeaponIDForIndex(weaponIndex);
                 if (!string.IsNullOrEmpty(weaponID) && !PlayerProgress.Instance.IsWeaponUnlocked(weaponID)) {
-                    if (enableDebugLogs) {
-                        Debug.Log($"[Inventory.SelectWeapon] {itemNames[keyNumber - 1]} is locked!");
-                    }
                     return;
                 }
             }
 
             if (character != null) {
-                bool success = character.TryEquipWeapon(weaponIndex);
-                if (success && enableDebugLogs) {
-                    Debug.Log($"[Inventory.SelectWeapon] Equipped {itemNames[keyNumber - 1]} at index {weaponIndex}.");
-                }
+                character.TryEquipWeapon(weaponIndex);
             } else {
                 Equip(weaponIndex);
             }
         }
 
         public override WeaponBehaviour Equip(int index) {
-            Debug.Log($"[Inventory.Equip] Called with index = {index}, current equippedIndex = {equippedIndex}");
-
             if (weapons == null) {
                 Debug.LogWarning("[Inventory.Equip] weapons array is null!");
                 return equipped;
@@ -236,28 +211,23 @@ namespace InfimaGames.LowPolyShooterPack {
             }
 
             if (equippedIndex == index) {
-                Debug.Log($"[Inventory.Equip] Weapon at index {index} is already equipped. Skipping.");
                 return equipped;
             }
 
             if (index != 0 && PlayerProgress.Instance != null) {
                 string weaponID = GetWeaponIDForIndex(index);
                 if (!string.IsNullOrEmpty(weaponID) && !PlayerProgress.Instance.IsWeaponUnlocked(weaponID)) {
-                    Debug.LogWarning($"[Inventory.Equip] Weapon at index {index} ({weaponID}) is locked!");
                     return equipped;
                 }
             }
 
             if (equipped != null) {
-                Debug.Log($"[Inventory.Equip] Disabling current weapon: {equipped.name}");
                 equipped.gameObject.SetActive(false);
             }
 
             equippedIndex = index;
             equipped = weapons[equippedIndex];
             equipped.gameObject.SetActive(true);
-
-            Debug.Log($"[Inventory.Equip] Successfully equipped: {equipped.name} at index {equippedIndex}");
 
             return equipped;
         }
@@ -296,15 +266,13 @@ namespace InfimaGames.LowPolyShooterPack {
                 case 2: return "3"; // Shotgun
                 case 3: return "4"; // Medkit
                 case 4: return "5"; // Grenades
-                // Buildables (indices 5-7) are handled by BuildingController: PQ ISSO? PQ NAO PODEMOS SELECIONAR TUDO POR AQUI?? TEM ALGUM PROBLEMA MAIOR? ANALISE NECESSARIA, O IDEAL SERIA ESCOLHER TUDO PELO INVENTORY
+                // Buildables (indices 5-7) are handled by BuildingController
                 default: return null;
             }
         }
 
         /// <summary>
         /// Selects the weapon at the currently equipped index.
-        /// <summary>
-        /// Re-equips the currently selected item.
         /// </summary>
         public void ReEquipCurrentItem() {
             Equip(equippedIndex);
@@ -312,6 +280,4 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
     }
-
-    #endregion
 }

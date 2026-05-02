@@ -245,7 +245,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         private void RefreshWeaponSetup() {
 
-            if ((equippedWeapon = inventory.GetEquipped()) == null)
+            equippedWeapon = inventory.GetEquipped();
+            if (equippedWeapon == null)
                 return;
 
             characterAnimator.runtimeAnimatorController = equippedWeapon.GetAnimatorController();
@@ -569,7 +570,6 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <param name="weaponIndex">Index of the weapon to equip in the inventory array</param>
         /// <returns>True if the equip was started, false if blocked</returns>
         public bool TryEquipWeapon(int weaponIndex) {
-
             int currentIndex = inventory.GetEquippedIndex();
 
             if (currentIndex == weaponIndex) {
