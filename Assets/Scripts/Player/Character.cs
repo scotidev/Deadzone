@@ -244,7 +244,6 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Refresh all weapon things to make sure we're all set up!
         /// </summary>
         private void RefreshWeaponSetup() {
-
             equippedWeapon = inventory.GetEquipped();
             if (equippedWeapon == null)
                 return;
@@ -256,7 +255,6 @@ namespace InfimaGames.LowPolyShooterPack {
                 return;
 
             equippedWeaponScope = weaponAttachmentManager.GetEquippedScope();
-
             equippedWeaponMagazine = weaponAttachmentManager.GetEquippedMagazine();
         }
 
@@ -572,13 +570,11 @@ namespace InfimaGames.LowPolyShooterPack {
         public bool TryEquipWeapon(int weaponIndex) {
             int currentIndex = inventory.GetEquippedIndex();
 
-            if (currentIndex == weaponIndex) {
+            if (currentIndex == weaponIndex)
                 return false;
-            }
 
-            if (!CanChangeWeapon()) {
+            if (!CanChangeWeapon())
                 return false;
-            }
 
             StartCoroutine(nameof(Equip), weaponIndex);
             return true;

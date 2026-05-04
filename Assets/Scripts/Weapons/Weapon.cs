@@ -1,4 +1,4 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
+// Copyright 2021, Infima Games. All Rights Reserved.
 
 using UnityEngine;
 
@@ -62,31 +62,18 @@ namespace InfimaGames.LowPolyShooterPack {
 
         protected override void Awake() {
             animator = GetComponent<Animator>();
-            if (animator == null) {
-                Debug.LogWarning($"[Weapon.Awake] No Animator found on {gameObject.name}! Animation will not work.");
-            }
-            
             attachmentManager = GetComponent<WeaponAttachmentManagerBehaviour>();
-            if (attachmentManager == null) {
-                Debug.LogWarning($"[Weapon.Awake] No WeaponAttachmentManager found on {gameObject.name}! Attachments will not work.");
-            }
 
             gameModeService = ServiceLocator.Current.Get<IGameModeService>();
             characterBehaviour = gameModeService.GetPlayerCharacter();
             playerCamera = characterBehaviour.GetCameraWorld().transform;
         }
+        
         protected override void Start() {
-            if (attachmentManager != null) {
-                magazineBehaviour = attachmentManager.GetEquippedMagazine();
-                muzzleBehaviour = attachmentManager.GetEquippedMuzzle();
-            }
+            magazineBehaviour = attachmentManager.GetEquippedMagazine();
+            muzzleBehaviour = attachmentManager.GetEquippedMuzzle();
 
-            if (magazineBehaviour != null) {
-                ammunitionCurrent = magazineBehaviour.GetAmmunitionTotal();
-            } else {
-                Debug.LogWarning($"[Weapon.Start] No magazineBehaviour on {gameObject.name}! Ammunition will be 0.");
-                ammunitionCurrent = 0;
-            }
+            ammunitionCurrent = magazineBehaviour.GetAmmunitionTotal();
         }
 
         #endregion
@@ -105,16 +92,16 @@ namespace InfimaGames.LowPolyShooterPack {
 
         public override AudioClip GetAudioClipFireEmpty() => audioClipFireEmpty;
 
-        public override AudioClip GetAudioClipFire() => muzzleBehaviour != null ? muzzleBehaviour.GetAudioClipFire() : null;
+        public override AudioClip GetAudioClipFire() => muzzleBehaviour.GetAudioClipFire();
 
         public override int GetAmmunitionCurrent() => ammunitionCurrent;
 
-        public override int GetAmmunitionTotal() => magazineBehaviour != null ? magazineBehaviour.GetAmmunitionTotal() : 0;
+        public override int GetAmmunitionTotal() => magazineBehaviour.GetAmmunitionTotal();
 
         public override bool IsAutomatic() => automatic;
         public override float GetRateOfFire() => roundsPerMinutes;
 
-        public override bool IsFull() => magazineBehaviour != null && ammunitionCurrent == magazineBehaviour.GetAmmunitionTotal();
+        public override bool IsFull() => ammunitionCurrent == magazineBehaviour.GetAmmunitionTotal();
         public override bool HasAmmunition() => ammunitionCurrent > 0;
 
         public override RuntimeAnimatorController GetAnimatorController() => controller;
@@ -125,17 +112,10 @@ namespace InfimaGames.LowPolyShooterPack {
         #region METHODS
 
         public override void Reload() {
-            if (animator == null || !animator.enabled)
-                return;
-                
             animator.Play(HasAmmunition() ? "Reload" : "Reload Empty", 0, 0.0f);
         }
+        
         public override void Fire(float spreadMultiplier = 1.0f) {
-            if (animator == null || !animator.enabled || !gameObject.activeInHierarchy) {
-                Debug.LogWarning($"[Weapon.Fire] Cannot fire - animator is null, disabled, or game object is inactive on {gameObject.name}");
-                return;
-            }
-
             if (muzzleBehaviour == null)
                 return;
 
@@ -143,14 +123,10 @@ namespace InfimaGames.LowPolyShooterPack {
                 return;
 
             Transform muzzleSocket = muzzleBehaviour.GetSocket();
-            if (muzzleSocket == null) {
-                Debug.LogWarning($"[Weapon.Fire] No muzzle socket on {gameObject.name}");
-                return;
-            }
 
             const string stateName = "Fire";
             animator.Play(stateName, 0, 0.0f);
-            ammunitionCurrent = Mathf.Clamp(ammunitionCurrent - 1, 0, magazineBehaviour != null ? magazineBehaviour.GetAmmunitionTotal() : 0);
+            ammunitionCurrent = Mathf.Clamp(ammunitionCurrent - 1, 0, magazineBehaviour.GetAmmunitionTotal());
 
             muzzleBehaviour.Effect();
 
@@ -170,8 +146,8 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         public override void FillAmmunition(int amount) {
-            int maxAmmo = magazineBehaviour != null ? magazineBehaviour.GetAmmunitionTotal() : 0;
-            ammunitionCurrent = amount != 0 ? Mathf.Clamp(ammunitionCurrent + amount, 0, maxAmmo) : maxAmmo;
+            ammunitionCurrent = amount != 0 ? Mathf.Clamp(ammunitionCurrent + amount,
+                0, GetAmmunitionTotal()) : magazineBehaviour.GetAmmunitionTotal();
         }
 
         public override void EjectCasing() {
