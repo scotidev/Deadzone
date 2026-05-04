@@ -14,9 +14,6 @@ namespace InfimaGames.LowPolyShooterPack {
         [Tooltip("Reference to the BuildingController for placement logic.")]
         [SerializeField] private BuildingController buildingController;
 
-        [Header("Debug")]
-        [SerializeField] private bool enableDebugLogs = true;
-
         #endregion
 
         #region FIELDS
@@ -49,23 +46,11 @@ namespace InfimaGames.LowPolyShooterPack {
         #region METHODS
 
         public override void Init(int equippedAtStart = 0) {
-
             weapons = GetComponentsInChildren<WeaponBehaviour>(true);
-
-            if (enableDebugLogs) {
-                Debug.Log($"[Inventory.Init] Called with equippedAtStart = {equippedAtStart}");
-                Debug.Log($"[Inventory.Init] Found {weapons.Length} weapons:");
-                for (int i = 0; i < weapons.Length; i++) {
-                    Debug.Log($"  [{i}] {weapons[i].name}");
-                }
-            }
 
             foreach (WeaponBehaviour weapon in weapons)
                 weapon.gameObject.SetActive(false);
 
-            if (enableDebugLogs) {
-                Debug.Log($"[Inventory.Init] Now calling Equip({equippedAtStart})");
-            }
             Equip(equippedAtStart);
         }
 
@@ -89,13 +74,11 @@ namespace InfimaGames.LowPolyShooterPack {
 
         /// <summary>
         /// Unified item selection by key number (1-8).
-        /// Keys 1-5 select weapons, NOTA: SO TEM 3 ARMAS, 1. PISTOL 2. AK47 3.SHOTGUN, O 4. É MEDKIT E O 5. É GRANADA. Keys 6-8 select buildables.
+        /// Keys 1-5 select weapons, Keys 6-8 select buildables.
         /// </summary>
         private void SelectByKeyNumber(int keyNumber) {
-            if (keyNumber < 1 || keyNumber > 8) {
-                Debug.LogWarning($"[Inventory.SelectByKeyNumber] Invalid key number: {keyNumber}. Expected 1-8.");
+            if (keyNumber < 1 || keyNumber > 8)
                 return;
-            }
 
             if (keyNumber >= 6 && keyNumber <= 8) {
                 SelectBuildable(keyNumber);
@@ -110,10 +93,8 @@ namespace InfimaGames.LowPolyShooterPack {
         private void SelectBuildable(int keyNumber) {
             if (buildingController == null) {
                 buildingController = FindFirstObjectByType<BuildingController>();
-                if (buildingController == null) {
-                    Debug.LogError("[Inventory.SelectBuildable] Cannot find BuildingController!");
+                if (buildingController == null)
                     return;
-                }
             }
 
             int buildableSlot = keyNumber - 5;
@@ -138,10 +119,8 @@ namespace InfimaGames.LowPolyShooterPack {
                 string buildableID = buildingController.GetBuildableID(buildable);
                 if (!string.IsNullOrEmpty(buildableID)) {
                     int quantity = PlayerProgress.Instance.GetBuildableQuantity(buildableID);
-                    if (quantity <= 0) {
-                        Debug.LogWarning($"[Inventory] No {buildableID} in inventory! Purchase from shop first.");
+                    if (quantity <= 0)
                         return;
-                    }
                 }
             }
 
@@ -154,22 +133,23 @@ namespace InfimaGames.LowPolyShooterPack {
             character?.SetHolstered(true);
         }
 
+        /// <summary>
+        /// Resolves the Character reference needed for weapon selection.
+        /// Uses GetComponentInParent to find Character in the parent hierarchy.
+        /// </summary>
         private void ResolvePlayerCharacter() {
             if (character == null) {
-                character = GetComponent<Character>();
-            }
-            if (character == null) {
-                character = FindFirstObjectByType<Character>();
-            }
-            if (character == null) {
-                Debug.LogWarning("[Inventory.ResolvePlayerCharacter] Could not find Character!");
+                character = GetComponentInParent<Character>();
             }
         }
 
         /// <summary>
         /// Handles weapon/item selection.
+        /// This is called when the player presses keys 1-5 to select a weapon.
         /// </summary>
         private void SelectWeapon(int keyNumber) {
+            ResolvePlayerCharacter();
+            
             if (BuildingController.Instance != null && BuildingController.Instance.IsPlacing) {
                 BuildingController.Instance.CancelPlacement();
             }
@@ -181,15 +161,13 @@ namespace InfimaGames.LowPolyShooterPack {
                 weaponIndex = 8;
             }
 
-            if (equippedIndex == weaponIndex) {
+            if (equippedIndex == weaponIndex)
                 return;
-            }
 
             if (weaponIndex != 0 && PlayerProgress.Instance != null) {
                 string weaponID = GetWeaponIDForIndex(weaponIndex);
-                if (!string.IsNullOrEmpty(weaponID) && !PlayerProgress.Instance.IsWeaponUnlocked(weaponID)) {
+                if (!string.IsNullOrEmpty(weaponID) && !PlayerProgress.Instance.IsWeaponUnlocked(weaponID))
                     return;
-                }
             }
 
             if (character != null) {
@@ -200,30 +178,17 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         public override WeaponBehaviour Equip(int index) {
-            if (weapons == null) {
-                Debug.LogWarning("[Inventory.Equip] weapons array is null!");
+            if (weapons == null || index > weapons.Length - 1 || equippedIndex == index)
                 return equipped;
-            }
-
-            if (index > weapons.Length - 1) {
-                Debug.LogWarning($"[Inventory.Equip] Index {index} is out of bounds (max = {weapons.Length - 1})");
-                return equipped;
-            }
-
-            if (equippedIndex == index) {
-                return equipped;
-            }
 
             if (index != 0 && PlayerProgress.Instance != null) {
                 string weaponID = GetWeaponIDForIndex(index);
-                if (!string.IsNullOrEmpty(weaponID) && !PlayerProgress.Instance.IsWeaponUnlocked(weaponID)) {
+                if (!string.IsNullOrEmpty(weaponID) && !PlayerProgress.Instance.IsWeaponUnlocked(weaponID))
                     return equipped;
-                }
             }
 
-            if (equipped != null) {
+            if (equipped != null)
                 equipped.gameObject.SetActive(false);
-            }
 
             equippedIndex = index;
             equipped = weapons[equippedIndex];
@@ -240,7 +205,6 @@ namespace InfimaGames.LowPolyShooterPack {
             int newIndex = equippedIndex - 1;
             if (newIndex < 0)
                 newIndex = weapons.Length - 1;
-
             return newIndex;
         }
 
@@ -248,7 +212,6 @@ namespace InfimaGames.LowPolyShooterPack {
             int newIndex = equippedIndex + 1;
             if (newIndex > weapons.Length - 1)
                 newIndex = 0;
-
             return newIndex;
         }
 
@@ -266,7 +229,6 @@ namespace InfimaGames.LowPolyShooterPack {
                 case 2: return "3"; // Shotgun
                 case 3: return "4"; // Medkit
                 case 4: return "5"; // Grenades
-                // Buildables (indices 5-7) are handled by BuildingController
                 default: return null;
             }
         }
