@@ -325,6 +325,7 @@ public class ShopUI : BaseUI {
 
         if (PlayerProgress.Instance != null) {
             int currentLevel = PlayerProgress.Instance.GetWeaponLevel(selectedItemData.ItemID);
+            int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(selectedItemData.ItemID);
 
             if (currentLevel >= selectedItemData.LevelToUnlockExclusive) {
                 description = selectedItemData.ExclusivePowerDescription;
@@ -340,17 +341,20 @@ public class ShopUI : BaseUI {
                 level = Mathf.Max(1, PlayerProgress.Instance.GetWeaponLevel(selectedItemData.ItemID));
             }
 
+            int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(selectedItemData.ItemID);
+            bool canUpgrade = level < maxLevel;
+
             float currentDamageNormalized = WeaponStatsCalculator.CalculateAndNormalizeDamage(weaponData, level);
             float currentFireRateNormalized = WeaponStatsCalculator.CalculateAndNormalizeFireRate(weaponData, level);
             float currentAmmoNormalized = WeaponStatsCalculator.CalculateAndNormalizeAmmo(weaponData, level);
 
-            float nextDamageNormalized = level < PlayerProgress.MAX_UPGRADE_LEVEL
+            float nextDamageNormalized = canUpgrade
                 ? WeaponStatsCalculator.CalculateAndNormalizeDamage(weaponData, level + 1)
                 : currentDamageNormalized;
-            float nextFireRateNormalized = level < PlayerProgress.MAX_UPGRADE_LEVEL
+            float nextFireRateNormalized = canUpgrade
                 ? WeaponStatsCalculator.CalculateAndNormalizeFireRate(weaponData, level + 1)
                 : currentFireRateNormalized;
-            float nextAmmoNormalized = level < PlayerProgress.MAX_UPGRADE_LEVEL
+            float nextAmmoNormalized = canUpgrade
                 ? WeaponStatsCalculator.CalculateAndNormalizeAmmo(weaponData, level + 1)
                 : currentAmmoNormalized;
 
@@ -551,7 +555,9 @@ public class ShopUI : BaseUI {
         // IsItemUnlocked() checks all dictionaries (weapons, buildables, consumables)
         bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(itemID);
         int currentLevel = PlayerProgress.Instance.GetItemLevel(itemID);
-        bool isMaxLevel = currentLevel >= PlayerProgress.MAX_UPGRADE_LEVEL;
+        // CONCEITO: Use dynamic max level from item's ScriptableObject
+        int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(itemID);
+        bool isMaxLevel = currentLevel >= maxLevel;
 
         if (!isUnlocked) {
             int cost = itemData.UnlockCost;
@@ -569,6 +575,7 @@ public class ShopUI : BaseUI {
 
             selectedItemActionButton.interactable = false;
 
+            // Hide price text when at max level
             if (selectedItemPriceText != null)
                 selectedItemPriceText.text = string.Empty;
         } else {
@@ -577,9 +584,9 @@ public class ShopUI : BaseUI {
                 selectedItemActionButtonText.text = "Upgrade";
 
             if (selectedItemPriceText != null)
-                selectedItemPriceText.text = $"${cost:N0}";
+                selectedItemPriceText.text = cost > 0 ? $"${cost:N0}" : string.Empty;
 
-            selectedItemActionButton.interactable = EconomyManager.Instance.CanAfford(cost);
+            selectedItemActionButton.interactable = cost > 0 && EconomyManager.Instance.CanAfford(cost);
             selectedItemActionButton.onClick.AddListener(() => OnRightPanelUpgrade(itemData));
         }
         
@@ -645,19 +652,29 @@ public class ShopUI : BaseUI {
         }
 
         int currentLevel = PlayerProgress.Instance.GetItemLevel(itemData.ItemID);
-        if (UpgradeManager.Instance.TryUpgradeWeapon(itemData.ItemID, itemData.BaseUpgradeCost)) {
+        
+        // Use TryUpgradeItem for ALL item types (works for Vest, weapons, etc.)
+        if (UpgradeManager.Instance.TryUpgradeItem(itemData.ItemID, itemData.BaseUpgradeCost)) {
             int newLevel = PlayerProgress.Instance.GetItemLevel(itemData.ItemID);
-            Debug.Log($"[ShopUI] Upgradei {itemData.ItemName} para nível {newLevel}!");
+            int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(itemData.ItemID);
+            Debug.Log($"[ShopUI] Upgraded {itemData.ItemName} para nível {newLevel}!");
             
-            // Se for Vest, além de fazer upgrade, reparamos e mostrado HUD
+            // Se for Vest, além de fazer upgrade, reparamos armor
             if (itemData.ItemData is VestDataSO) {
                 PlayerArmor playerArmor = GetPlayerArmor();
                 if (playerArmor != null) {
-                    // Reparar (como se fosse +ammo)
                     playerArmor.RepairVest();
                 }
-                // Tocar som
                 PlayVestEquippedSound();
+                
+                // If reached max level (level 5), enable regeneration exclusive
+                if (newLevel >= maxLevel) {
+                    Debug.Log($"[ShopUI] {itemData.ItemName} reached MAX LEVEL! Enabling regeneration!");
+                    PlayerArmor playerArmor2 = GetPlayerArmor();
+                    if (playerArmor2 != null) {
+                        playerArmor2.EnableRegeneration();
+                    }
+                }
                 
                 // Mostrar UI (se estava escondida)
                 PlayerArmorUI armorUI = FindObjectOfType<PlayerArmorUI>();

@@ -106,6 +106,94 @@ public class UpgradeManager : MonoBehaviour {
     // REFATORAÇÃO: aqui precisamos pensar que existem diferentes stats, por exemplo existe o stats de radius para o explosive barrel e para grenades... existe Heal para o medkit, existe o HP para barricades, existe HP para vest... entao também precisa ser escalável.
 
     /// <summary>
+    /// Generic upgrade method that works for ANY item type (weapon, buildable, consumable, vest).
+    /// Replaces TryUpgradeWeapon for items other than weapons.
+    /// </summary>
+    /// <param name="itemID">The unique identifier of the item to upgrade.</param>
+    /// <param name="baseUpgradeCost">The base upgrade cost from ShopItemData.</param>
+    /// <returns>True if upgrade succeeded, false if failed (insufficient funds or max level).</returns>
+    public bool TryUpgradeItem(string itemID, int baseUpgradeCost) {
+        if (PlayerProgress.Instance == null) {
+            Debug.LogWarning("[UpgradeManager] TryUpgradeItem: PlayerProgress.Instance is NULL!");
+            return false;
+        }
+
+        if (!PlayerProgress.Instance.IsItemUnlocked(itemID)) {
+            Debug.LogWarning($"[UpgradeManager] TryUpgradeItem: {itemID} is not unlocked!");
+            return false;
+        }
+
+        int currentLevel = PlayerProgress.Instance.GetItemLevel(itemID);
+        int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(itemID);
+
+        if (currentLevel >= maxLevel) {
+            Debug.LogWarning($"[UpgradeManager] {itemID} is already at max level ({maxLevel})!");
+            return false;
+        }
+
+        int upgradeCost = CalculateUpgradeCost(baseUpgradeCost, currentLevel);
+
+        if (EconomyManager.Instance == null) {
+            Debug.LogWarning("[UpgradeManager] TryUpgradeItem: EconomyManager.Instance is NULL!");
+            return false;
+        }
+
+        bool purchaseSuccess = EconomyManager.Instance.TrySpendCurrency(upgradeCost);
+
+        if (!purchaseSuccess) {
+            Debug.Log($"[UpgradeManager] Failed to upgrade {itemID} - insufficient funds. Cost: {upgradeCost}");
+            return false;
+        }
+
+        bool upgradeSuccess = PlayerProgress.Instance.UpgradeItem(itemID);
+
+        if (upgradeSuccess) {
+            int newLevel = PlayerProgress.Instance.GetItemLevel(itemID);
+            Debug.Log($"[UpgradeManager] {itemID} upgraded to level {newLevel} for {upgradeCost} currency.");
+
+            int newMaxLevel = PlayerProgress.Instance.GetItemMaxLevel(itemID);
+            if (newLevel >= newMaxLevel) {
+                Debug.Log($"[UpgradeManager] {itemID} reached MAX LEVEL {newMaxLevel}! Exclusive power unlocked!");
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the next upgrade cost for an item without performing the upgrade.
+    /// Useful for UI to display the price.
+    /// </summary>
+    /// <param name="itemID">The item to check.</param>
+    /// <param name="baseUpgradeCost">The base upgrade cost.</param>
+    /// <returns>The cost to upgrade to the next level, or -1 if at max level.</returns>
+    public int GetNextUpgradeCost(string itemID, int baseUpgradeCost) {
+        if (PlayerProgress.Instance == null) return -1;
+
+        int currentLevel = PlayerProgress.Instance.GetItemLevel(itemID);
+        int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(itemID);
+
+        if (currentLevel >= maxLevel) {
+            return -1;
+        }
+
+        return CalculateUpgradeCost(baseUpgradeCost, currentLevel);
+    }
+
+    /// <summary>
+    /// Checks if an item can be upgraded (not at max level).
+    /// </summary>
+    /// <param name="itemID">The item to check.</param>
+    /// <returns>True if the item can be upgraded further.</returns>
+    public bool CanUpgradeItem(string itemID) {
+        if (PlayerProgress.Instance == null) return false;
+
+        return !PlayerProgress.Instance.IsItemMaxLevel(itemID);
+    }
+
+    /// <summary>
     /// Applies upgraded stats to a weapon instance based on its current level and WeaponData.
     /// Call this after upgrading it.
     /// </summary>
@@ -136,25 +224,6 @@ public class UpgradeManager : MonoBehaviour {
         // TODO: Apply these stats to the weapon instance
         // This will require modifying the Weapon.cs script to expose setters
         // or storing these values in a way the weapon can read them, maybe use the weapondata as a source of truth and the weapon instance reads from it every time it needs to calculate damage, fire rate, etc, based on the current level stored in player progress. This way we avoid having to set these values directly on the weapon instance and keep the logic centralized in the data and player progress. It is something to think about.
-    }
-
-    /// <summary>
-    /// Gets the next upgrade cost for a weapon without performing the upgrade.
-    /// Useful for UI to display the price.
-    /// </summary>
-    /// <param name="weaponID">The weapon to check.</param>
-    /// <param name="baseUpgradeCost">The base upgrade cost.</param>
-    /// <returns>The cost to upgrade to the next level, or -1 if at max level.</returns>
-    public int GetNextUpgradeCost(string weaponID, int baseUpgradeCost) {
-        if (PlayerProgress.Instance == null) return -1;
-
-        int currentLevel = PlayerProgress.Instance.GetWeaponLevel(weaponID);
-
-        if (currentLevel >= PlayerProgress.MAX_UPGRADE_LEVEL) {
-            return -1;
-        }
-
-        return CalculateUpgradeCost(baseUpgradeCost, currentLevel);
     }
 
     /// <summary>

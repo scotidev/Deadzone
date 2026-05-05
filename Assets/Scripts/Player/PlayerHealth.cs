@@ -151,5 +151,10 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
     /// </summary>
     public float GetMaxHealth() => maxHealth;
 
+    /// <summary>
+    /// Checks if the player is currently alive.
+    /// </summary>
+    public bool IsAlive() => currentHealth > 0f;
+
     #endregion
 }

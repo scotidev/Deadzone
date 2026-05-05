@@ -107,7 +107,9 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
         // allows this to work for all item types (weapons, consumables, buildables).
         bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(itemID);
         int currentLevel = PlayerProgress.Instance.GetItemLevel(itemID);
-        bool isMaxLevel = currentLevel >= PlayerProgress.MAX_UPGRADE_LEVEL;
+        // CONCEITO: Use dynamic max level from item's ScriptableObject (not hardcoded 10)
+        int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(itemID);
+        bool isMaxLevel = currentLevel >= maxLevel;
 
         if (itemLevelText != null) {
             itemLevelText.text = !isUnlocked ? "Locked" : isMaxLevel ? "Maxed Out" : $"Level {currentLevel}";

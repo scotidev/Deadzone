@@ -28,37 +28,46 @@ namespace InfimaGames.LowPolyShooterPack {
     /// </summary>
     public class Vest : ItemBehaviour {
         
-        #region SERIALIZED FIELDS
-        /*-----------------------------------------------------------------------------
-            SERIALIZED FIELDS são variáveis que aparecem no Inspector do Unity.
-            Usamos [SerializeField] para forçar Unity a mostrar variáveis private.
-        -----------------------------------------------------------------------------*/
-        
-        [SerializeField] private VestDataSO vestData;
-        [SerializeField] private float damageReductionPercentage = 0.1f;  // 10% reduction base
-        [SerializeField] private float exclusiveDamageReductionPercentage = 0.2f;  // 20% reduction exclusive
-        
-        /*-----------------------------------------------------------------------------
-            Audio Clips - Aqui você arrasta os arquivos de áudio no Inspector.
-            Esses sons tocarão em momentos específicos do jogo.
-        -----------------------------------------------------------------------------*/
-        [Header("Audio Clips")]
-        [SerializeField] private AudioClip vestEquippedClip;    // Som quando equipar/equipar
-        [SerializeField] private AudioClip vestDestroyedClip; // Som quando o colete quebra
-        
-        #endregion
-        
-        #region FIELDS
-        /*-----------------------------------------------------------------------------
-            FIELDS são variáveis privadas que não aparecem no Inspector.
-            Usamos para guardar referências necessárias no código.
-        -----------------------------------------------------------------------------*/
-        
-        // IAudioManagerService é a interface do sistema de áudio do jogo.
-        // Permite tocar sons de forma centralizada usando ServiceLocator.
-        private IAudioManagerService audioService;
-        
-        #endregion
+#region SERIALIZED FIELDS
+    /*-----------------------------------------------------------------------------
+        SERIALIZED FIELDS são variáveis que aparecem no Inspector do Unity.
+        Usamos [SerializeField] para forçar Unity a mostrar variáveis private.
+    -----------------------------------------------------------------------------*/
+    
+    [SerializeField] private VestDataSO vestData;
+    [SerializeField] private float damageReductionPercentage = 0.1f;  // 10% reduction base
+    [SerializeField] private float exclusiveDamageReductionPercentage = 0.2f;  // 20% reduction exclusive
+    
+    /*-----------------------------------------------------------------------------
+        Audio Clips - Aqui você arrasta os arquivos de áudio no Inspector.
+        Esses sons tocarão em momentos específicos do jogo.
+    -----------------------------------------------------------------------------*/
+    [Header("Audio Clips")]
+    [SerializeField] private AudioClip vestEquippedClip;    // Som quando equipar/equipar
+    [SerializeField] private AudioClip vestDestroyedClip; // Som quando o colete quebra
+    
+    #endregion
+    
+    #region FIELDS
+    /*-----------------------------------------------------------------------------
+        FIELDS são variáveis privadas que não aparecem no Inspector.
+        Usamos para guardar referências necessárias no código.
+    -----------------------------------------------------------------------------*/
+
+    // IAudioManagerService é a interface do sistema de áudio do jogo.
+    // Permite tocar sons de forma centralizada usando ServiceLocator.
+    private IAudioManagerService audioService;
+    
+    #endregion
+
+    #region PROPERTIES
+
+    /// <summary>
+    /// Public accessor to vest data for other scripts (like PlayerArmor).
+    /// </summary>
+    public VestDataSO VestData => vestData;
+
+    #endregion
         
         #region EVENTS
         /*-----------------------------------------------------------------------------
@@ -160,7 +169,7 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Verifica se Vest tem upgrade exclusive (nível 9+).
+        /// Verifica se Vest tem upgrade exclusive (máximo nível).
         /// </summary>
         public override bool HasExclusiveUnlocked() {
             if (PlayerProgress.Instance == null) {
@@ -168,7 +177,8 @@ namespace InfimaGames.LowPolyShooterPack {
             }
             
             int level = PlayerProgress.Instance.GetItemLevel(GetItemID());
-            return level >= 9;
+            int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(GetItemID());
+            return level >= maxLevel;
         }
 
         /// <summary>
@@ -176,7 +186,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Used by PlayerHealth or PlayerArmor to reduce incoming damage.
         /// </summary>
         public float GetDamageReductionPercentage() {
-            // Se nivel >= 9, usa redução exclusive (20%), senão usa normal (10%)
+            // If at max level, use exclusive reduction, otherwise use normal
             return HasExclusiveUnlocked() ? exclusiveDamageReductionPercentage : damageReductionPercentage;
         }
         

@@ -378,34 +378,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 47282072}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &100431611 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5492095703435533001, guid: a20c4961b0655574e9f91c372538fa9f,
-    type: 3}
-  m_PrefabInstance: {fileID: 4545309492575171591}
-  m_PrefabAsset: {fileID: 0}
---- !u!95 &100431621
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100431611}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: bfda376b0f658a748870ea8f7c2c7c03, type: 3}
-  m_Controller: {fileID: 22100000, guid: 290925d56c590904889ea4825dd212b8, type: 2}
-  m_CullingMode: 2
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &117093002
 GameObject:
   m_ObjectHideFlags: 0
@@ -2911,12 +2883,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02c19abacb0cbc2469d89d3af9aeed40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerArmor
---- !u!4 &1776962849 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2768567120988589389, guid: a20c4961b0655574e9f91c372538fa9f,
-    type: 3}
-  m_PrefabInstance: {fileID: 4545309492575171591}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1882224570
 GameObject:
   m_ObjectHideFlags: 0
@@ -3263,55 +3229,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2072789623
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2072789624}
-  - component: {fileID: 2072789625}
-  m_Layer: 9
-  m_Name: Vest
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2072789624
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2072789623}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.6188496, y: -0.38913602, z: -0.06954104, w: 0.67879486}
-  m_LocalPosition: {x: 0.56645966, y: 1.3103716, z: -0.018270016}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1776962849}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2072789625
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2072789623}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 735c09a5faee88f4398674df6bf9f68c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InfimaGames.LowPolyShooterPack.Vest
-  vestData: {fileID: 11400000, guid: e44b5bda533ab7a4180840811c517de1, type: 2}
-  damageReductionPercentage: 0.1
-  exclusiveDamageReductionPercentage: 0.2
-  vestEquippedClip: {fileID: 8300000, guid: 10fa542f1fb435240a7bc968216ef86a, type: 3}
-  vestDestroyedClip: {fileID: 8300000, guid: 15c9c146e43bcb94cb53089888f1fb10, type: 3}
 --- !u!1 &2094587876
 GameObject:
   m_ObjectHideFlags: 0
@@ -3515,21 +3432,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 263053213399994758, guid: a20c4961b0655574e9f91c372538fa9f,
+    - target: {fileID: 37842020074818094, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
-      propertyPath: explosionPrefab
-      value: 
-      objectReference: {fileID: 4296680985399300, guid: ca26d7307564ff848b29e32bbe6279ef,
-        type: 3}
-    - target: {fileID: 263053213399994758, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: destroyedBarrelPrefab
-      value: 
-      objectReference: {fileID: 483574, guid: 69583eba87a3a60449692cb2c09f4706, type: 3}
-    - target: {fileID: 935434444836986458, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_CullingMask.m_Bits
-      value: 101887
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1628012635517256272, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
@@ -3591,18 +3497,15 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6158473262601081821, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 24c825d48a2aea24e873cf3b76cd37ad, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 2768567120988589389, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2072789624}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5492095703435533001, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      insertIndex: 3
-      addedObject: {fileID: 100431621}
+    m_AddedGameObjects: []
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a20c4961b0655574e9f91c372538fa9f, type: 3}
 --- !u!1001 &8804758483903302830
 PrefabInstance:
@@ -3924,6 +3827,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_SizeDelta.y
       value: -1080
+      objectReference: {fileID: 0}
+    - target: {fileID: 5390587702527942804, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_Name
+      value: ItemStats
       objectReference: {fileID: 0}
     - target: {fileID: 5672036851175475973, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
