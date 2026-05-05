@@ -1,5 +1,25 @@
 using System;
 using UnityEngine;
+using InfimaGames.LowPolyShooterPack;
+
+/*============================================================================
+    PlayerArmor.cs - Script de Armadura do Jogador
+    
+    Este script gerencia a "barra de armadura" do jogador, que funciona como um escudo.
+    Quando você recebe dano, primeiro a armadura absorve, e só depois o dano
+    vai para a barra devida (HP).
+    
+    FLUXO DE DANO:
+    1. Jogador recebe 30 de dano
+    2. Se armadura >= 30, armadura absorve tudo (ainda sobram 0)
+    3. Se armadura < 30 (ex: 20), armadura absorve 20, resto vai para HP (10)
+    4. Se armadura = 0, todo dano vai para HP
+    
+    POR QUE USAMOS EVENTOS?
+    - Eventos permitem que scripts diferentes "conversem" sem se conhecerem
+    - PlayerArmorUI escuta "OnArmorChanged" para atualizar a barra visual
+    - ShopUI escuta para habilitar/desabilitar botão de reparo
+============================================================================*/
 
 /// <summary>
 /// Manages the player's armor (vest). Acts as a shield that absorbs damage before health.
@@ -8,22 +28,75 @@ using UnityEngine;
 /// </summary>
 public class PlayerArmor : MonoBehaviour {
 
-    #region FIELDS
+    #region SERIALIZED FIELDS
 
     [Header("Armor Settings")]
-    [SerializeField] private float maxArmor = 100f;
+    [SerializeField] private float maxArmor = 100f;  // Armadura máxima (100 = cheia)
 
+    #endregion
+
+    #region FIELDS
+
+    // Armadura atual do jogador
     private float currentArmor;
+    
+    // Referência ao script da Vest (para tocar sons)
+    // Precisamos procurar porque pode estar em outro GameObject
+    private Vest vestComponent;
 
-    public event Action<float> OnArmorChanged;
-    public event Action OnArmorDepleted;
+    // EVENTOS: permitem que outros scripts saibam quando algo mudar
+    // Isso é usado pelo PlayerArmorUI para atualizar a barra
+    public event Action<float> OnArmorChanged;    // Disparado quando armadura muda
+    public event Action OnArmorDepleted;       // Disparado quando armadura chega a 0
 
     #endregion
 
     #region UNITY
 
+    /*-----------------------------------------------------------------------------
+        Awake() é chamado uma vez quando o objeto é criado.
+        Inicializamos a armadura aqui.
+    -----------------------------------------------------------------------------*/
     private void Awake() {
+        // O jogador COMEÇA sem armadura (0)
+        // Só vai ter armadura quando desbloquear na loja
+        currentArmor = 0f;
+        
+        // Procurar o componente Vest no jogador ou seus filhos
+        // Primeiro tenta no mesmo GameObject
+        if (GetComponent<Vest>() != null) {
+            vestComponent = GetComponent<Vest>();
+        } else {
+            // Se não encontrou, procurar nos filhos do Character
+            vestComponent = GetComponentInParent<Character>()?.GetComponentInChildren<Vest>();
+        }
+    }
+
+    #endregion
+    
+    #region MÉTODOS PÚBLICOS
+    /*-----------------------------------------------------------------------------
+        Métodos públicos que outros scripts podem chamar.
+        São o que chamamos de "API" do script.
+    -----------------------------------------------------------------------------*/
+    
+    /// <summary>
+    /// Equipa o colete quando o jogador desbloqueia na loja.
+    /// Define armadura para o máximo e notifica a UI.
+    /// </summary>
+    public void EquipVest() {
         currentArmor = maxArmor;
+        // OnArmorChanged Notifica a UI que armadura mudou
+        // A UI vai atualizar a barra e mostrar se estava invisível
+        OnArmorChanged?.Invoke(currentArmor / maxArmor);
+    }
+    
+    /// <summary>
+    /// Repara o colete quando o jogador usa botão +ammo na loja.
+    /// </summary>
+    public void RepairVest() {
+        currentArmor = maxArmor;
+        OnArmorChanged?.Invoke(currentArmor / maxArmor);
     }
 
     #endregion
@@ -32,26 +105,41 @@ public class PlayerArmor : MonoBehaviour {
 
     /// <summary>
     /// Absorbs damage from the armor. Returns the remaining damage that wasn't absorbed.
-    /// If armor absorbs all damage, returns 0. If armor is depleted, returns the overflow damage.
+    /// Se armadura absorve todo dano, retorna 0. Se armadura é destruída, retorna o dano excedente.
+    /// 
+    /// Exemplo: currentArmor = 20, incomingDamage = 30
+    /// absorbedDamage = min(20, 30) = 20
+    /// remainingDamage = 30 - 20 = 10 (esse 10 vai para a barra de vida)
     /// </summary>
-    /// <param name="incomingDamage">The amount of damage to absorb</param>
-    /// <returns>The amount of damage that wasn't absorbed by armor</returns>
     public float AbsorbDamage(float incomingDamage) {
+        // Se armadura já está vazia, todo dano vai para HP
         if (currentArmor <= 0f) {
             return incomingDamage;
         }
 
+        // Mathf.Min pega o menor valor entre armadura atual e dano recebido
+        // Isso garante que não tiramos mais armadura do que temos
         float absorbedDamage = Mathf.Min(currentArmor, incomingDamage);
 
+        // Subtrai o dano absorvido da armadura atual
         currentArmor -= absorbedDamage;
 
+        // Calcula quanto dano sobrou (vai para HP)
         float remainingDamage = incomingDamage - absorbedDamage;
 
+        // Notifica a UI que armadura mudou (atualiza a barra visual)
+        // Dividimos por maxArmor para получить fração entre 0 e 1
         OnArmorChanged?.Invoke(currentArmor / maxArmor);
 
+        // Se armadura chegou a 0, dispara evento especial
         if (currentArmor <= 0f) {
             currentArmor = 0f;
             OnArmorDepleted?.Invoke();
+            
+            // Se temos referência ao script Vest, toca som de destruir
+            if (vestComponent != null) {
+                vestComponent.PlayDestroyedSound();
+            }
         }
 
         return remainingDamage;
@@ -59,9 +147,10 @@ public class PlayerArmor : MonoBehaviour {
 
     /// <summary>
     /// Adds armor points without exceeding maxArmor.
-    /// Can be called when purchasing armor from the shop.
+    /// Called when purchasing armor from the shop.
     /// </summary>
     public void AddArmor(float amount) {
+        // Mathf.Min garante que não passa de 100
         currentArmor = Mathf.Min(maxArmor, currentArmor + amount);
 
         OnArmorChanged?.Invoke(currentArmor / maxArmor);
@@ -92,6 +181,7 @@ public class PlayerArmor : MonoBehaviour {
 
     /// <summary>
     /// Checks if the player currently has any armor.
+    /// Usado para verificar se pode usar colete.
     /// </summary>
     public bool HasArmor() => currentArmor > 0f;
 

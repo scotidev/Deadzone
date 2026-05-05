@@ -57,14 +57,32 @@ namespace InfimaGames.LowPolyShooterPack {
             // CONCEITO: GetComponentsInChildren<ItemBehaviour>(true) busca TODOS os components ItemBehaviour
             // nos GameObjects filhos, independente de qual tipo específico (WeaponBehaviour, ConsumableBehaviour, BuildableBehaviour).
             // Isso unifica a busca de todos os 8 items em uma única operação.
-            selectableItems = GetComponentsInChildren<ItemBehaviour>(true);
+            ItemBehaviour[] allItems = GetComponentsInChildren<ItemBehaviour>(true);
+            
+            // CONCEITO: Filtrar para incluir APENAS itens que não são Vest.
+            // Vest é um item passivo que fica sempre equipado e não participa da seleção 1-8.
+            var filteredItems = new List<ItemBehaviour>();
+            for (int i = 0; i < allItems.Length; i++) {
+                if (allItems[i] is Vest) {
+                    Debug.Log($"  [Skipped] {allItems[i].GetDisplayName()} (Vest - passive, not selectable)");
+                    continue;
+                }
+                filteredItems.Add(allItems[i]);
+            }
+            selectableItems = filteredItems.ToArray();
 
             for (int i = 0; i < selectableItems.Length; i++) {
                 Debug.Log($"  [{i}] {selectableItems[i].GetDisplayName()} (ID: {selectableItems[i].GetItemID()})");
             }
 
             // COMPATIBILIDADE: Também buscamos WeaponBehaviour para manter compatibilidade com Character
-            weapons = GetComponentsInChildren<WeaponBehaviour>(true);
+            // Mas aqui também precisamos ignorar a Vest (já que WeaponBehaviour ≠ Vest)
+            WeaponBehaviour[] allWeapons = GetComponentsInChildren<WeaponBehaviour>(true);
+            var filteredWeapons = new List<WeaponBehaviour>();
+            for (int i = 0; i < allWeapons.Length; i++) {
+                filteredWeapons.Add(allWeapons[i]);
+            }
+            weapons = filteredWeapons.ToArray();
 
             // Desativa todos os items no início
             foreach (ItemBehaviour item in selectableItems)
