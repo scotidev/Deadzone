@@ -44,10 +44,21 @@ public class PlayerArmor : MonoBehaviour {
     // Precisamos procurar porque pode estar em outro GameObject
     private Vest vestComponent;
 
+    // Referência ao PlayerHealth para verificar se o player está vivo
+    private PlayerHealth playerHealth;
+
     // EVENTOS: permitem que outros scripts saibam quando algo mudar
     // Isso é usado pelo PlayerArmorUI para atualizar a barra
     public event Action<float> OnArmorChanged;    // Disparado quando armadura muda
     public event Action OnArmorDepleted;       // Disparado quando armadura chega a 0
+
+    // Regeneration system for Vest exclusive (level 5+)
+    private bool canRegenerate;
+    private float lastDamageTime;
+    private float lastRegenTime;
+    private const float REGEN_DELAY = 5f;          // Seconds without damage before regeneration starts
+    private const float REGEN_RATE = 2f;          // Armor regenerated per second
+    private const float REGEN_INTERVAL = 0.5f;    // How often to apply regeneration
 
     #endregion
 
@@ -70,6 +81,12 @@ public class PlayerArmor : MonoBehaviour {
             // Se não encontrou, procurar nos filhos do Character
             vestComponent = GetComponentInParent<Character>()?.GetComponentInChildren<Vest>();
         }
+
+        // Procurar oPlayerHealth
+        playerHealth = GetComponent<PlayerHealth>();
+        if (playerHealth == null) {
+            playerHealth = GetComponentInParent<Character>()?.GetComponentInChildren<PlayerHealth>();
+        }
     }
 
     #endregion
@@ -82,12 +99,12 @@ public class PlayerArmor : MonoBehaviour {
     
     /// <summary>
     /// Equipa o colete quando o jogador desbloqueia na loja.
-    /// Define armadura para o máximo e notifica a UI.
+    /// Define armadura para o máximo baseado no nível do Vest e notifica a UI.
     /// </summary>
     public void EquipVest() {
-        currentArmor = maxArmor;
-        // OnArmorChanged Notifica a UI que armadura mudou
-        // A UI vai atualizar a barra e mostrar se estava invisível
+        float maxArmorValue = GetMaxArmorFromVest();
+        currentArmor = maxArmorValue;
+        maxArmor = maxArmorValue;
         OnArmorChanged?.Invoke(currentArmor / maxArmor);
     }
     
@@ -95,8 +112,29 @@ public class PlayerArmor : MonoBehaviour {
     /// Repara o colete quando o jogador usa botão +ammo na loja.
     /// </summary>
     public void RepairVest() {
-        currentArmor = maxArmor;
+        float maxArmorValue = GetMaxArmorFromVest();
+        currentArmor = maxArmorValue;
+        maxArmor = maxArmorValue;
         OnArmorChanged?.Invoke(currentArmor / maxArmor);
+    }
+
+    /// <summary>
+    /// Gets the maximum armor value based on Vest's current level.
+    /// </summary>
+    private float GetMaxArmorFromVest() {
+        if (PlayerProgress.Instance == null || vestComponent == null) {
+            return 100f;
+        }
+        
+        string vestID = vestComponent.GetItemID();
+        int level = PlayerProgress.Instance.GetItemLevel(vestID);
+        
+        var vestData = vestComponent.VestData;
+        if (vestData != null) {
+            return vestData.GetResistanceAtLevel(level);
+        }
+        
+        return 100f;
     }
 
     #endregion
@@ -127,6 +165,14 @@ public class PlayerArmor : MonoBehaviour {
         // Calcula quanto dano sobrou (vai para HP)
         float remainingDamage = incomingDamage - absorbedDamage;
 
+        // If we took any damage, track it and disable regeneration
+        if (absorbedDamage > 0f) {
+            lastDamageTime = Time.time;
+            if (canRegenerate) {
+                Debug.Log("[PlayerArmor] Damage taken - regeneration paused");
+            }
+        }
+
         // Notifica a UI que armadura mudou (atualiza a barra visual)
         // Dividimos por maxArmor para получить fração entre 0 e 1
         OnArmorChanged?.Invoke(currentArmor / maxArmor);
@@ -136,9 +182,12 @@ public class PlayerArmor : MonoBehaviour {
             currentArmor = 0f;
             OnArmorDepleted?.Invoke();
             
-            // Se temos referência ao script Vest, toca som de destruir
-            if (vestComponent != null) {
-                vestComponent.PlayDestroyedSound();
+            // TOCAR som APENAS se a vest está desbloqueada (não apenas existir no prefab)
+            if (vestComponent != null && PlayerProgress.Instance != null) {
+                string vestID = vestComponent.GetItemID();
+                if (PlayerProgress.Instance.IsItemUnlocked(vestID)) {
+                    vestComponent.PlayDestroyedSound();
+                }
             }
         }
 
@@ -184,6 +233,63 @@ public class PlayerArmor : MonoBehaviour {
     /// Usado para verificar se pode usar colete.
     /// </summary>
     public bool HasArmor() => currentArmor > 0f;
+
+    /// <summary>
+    /// Enables the automatic regeneration feature for Vest exclusive (level 5+).
+    /// Called when Vest reaches max upgrade level.
+    /// </summary>
+    public void EnableRegeneration() {
+        canRegenerate = true;
+        Debug.Log("[PlayerArmor] Regeneration enabled!");
+    }
+
+    /// <summary>
+    /// Disables the automatic regeneration feature.
+    /// Called when player takes damage while regenerating.
+    /// </summary>
+    public void DisableRegeneration() {
+        canRegenerate = false;
+        lastRegenTime = 0f;
+    }
+
+    /// <summary>
+    /// Returns whether regeneration is currently enabled.
+    /// </summary>
+    public bool IsRegeneratingEnabled() => canRegenerate;
+
+    #endregion
+
+    #region REGENERATION
+
+    private void Update() {
+        // Don't regenerate if player is dead
+        if (playerHealth != null && !playerHealth.IsAlive()) {
+            return;
+        }
+
+        // Don't regenerate if regeneration is not enabled or armor is full
+        if (!canRegenerate || currentArmor <= 0f || currentArmor >= maxArmor) {
+            return;
+        }
+
+        float timeSinceDamage = Time.time - lastDamageTime;
+
+        // If 5 seconds passed without taking damage, start regenerating
+        if (timeSinceDamage >= REGEN_DELAY) {
+            // Apply regeneration at regular intervals
+            if (Time.time - lastRegenTime >= REGEN_INTERVAL) {
+                lastRegenTime = Time.time;
+                float armorToAdd = REGEN_RATE * REGEN_INTERVAL;
+                currentArmor = Mathf.Min(maxArmor, currentArmor + armorToAdd);
+                OnArmorChanged?.Invoke(currentArmor / maxArmor);
+
+                // If fully regenerated, stop regenerating
+                if (currentArmor >= maxArmor) {
+                    Debug.Log("[PlayerArmor] Armor fully regenerated!");
+                }
+            }
+        }
+    }
 
     #endregion
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using InfimaGames.LowPolyShooterPack;
 
 // REFATORAÇÃO: playerporogress deve estar ciente e atualizar  aquantidade de munição, o SO dos itens tem um valor não utilizado, seria a weaponReserveAmmo e buildableQuantities possiveis de serem unificadas para todos os items possuírem somente uma quantidade? porque filosoficamente falando, items colocáveis também tem "munição" ou seja quantidade limitada para usar, assim como armas tem munição. Fora que items colocáveis também tem niveis de upgrade, e podem ser variaveis como as armas.
 // REFATORAÇÃO: playerprogress deveria ser um service de ServiceLocator? Analise profunda necessaria.
@@ -334,13 +335,59 @@ public class PlayerProgress : MonoBehaviour {
     }
 
     // REFATORAÇÃO: o check deve ser se a arma está no maximo nivel mas isso deve ser dinamico, barricadas por exemplo pode ir até o nivel 5, a pistola até o nivel 10. O nível máximo de upgrade para cada item pode ser definido no ScriptableObject do item, permitindo que diferentes tipos de itens tenham diferentes limites de upgrade. O método IsItemMaxLevel(string itemID) pode verificar o tipo do item e comparar o nível atual com o nível máximo definido no SO do item para determinar se o item está no nível máximo.
-    /// <summary>
+/// <summary>
     /// Checks if a weapon is at maximum level.
     /// </summary>
     /// <param name="weaponID">The weapon to check.</param>
     /// <returns>True if at level 10.</returns>
     public bool IsWeaponMaxLevel(string weaponID) {
         return GetWeaponLevel(weaponID) >= MAX_UPGRADE_LEVEL;
+    }
+
+    /// <summary>
+    /// Gets the maximum upgrade level for any item by reading from its ScriptableObject.
+    /// This makes the max level configurable per item type.
+    /// </summary>
+    /// <param name="itemID">The item to check.</param>
+    /// <returns>Maximum upgrade level (defaults to MAX_UPGRADE_LEVEL if not found).</returns>
+    public int GetItemMaxLevel(string itemID) {
+        // Try to find the ShopItemDataSO to get the max level from its ItemData
+        var shopItemData = GetShopItemData(itemID);
+        
+        if (shopItemData != null && shopItemData.ItemData != null) {
+            // Check different item types for their max level - use base class MaxUpgradeLevel from ItemDataSO
+            // For VestDataSO, the MaxUpgradeLevel is set to 5 in the inspector (inherits from ItemDataSO)
+            if (shopItemData.ItemData != null) {
+                return shopItemData.ItemData.MaxUpgradeLevel;
+            }
+        }
+
+        // Default fallback
+        return MAX_UPGRADE_LEVEL;
+    }
+
+    /// <summary>
+    /// Checks if an item is at its maximum level using dynamic max level.
+    /// </summary>
+    /// <param name="itemID">The item to check.</param>
+    /// <returns>True if at maximum level for this specific item.</returns>
+    public bool IsItemMaxLevel(string itemID) {
+        return GetItemLevel(itemID) >= GetItemMaxLevel(itemID);
+    }
+
+    /// <summary>
+    /// Helper to find ShopItemDataSO by item ID.
+    /// </summary>
+    private ShopItemDataSO GetShopItemData(string itemID) {
+        // This uses Resources.FindObjectsOfTypeAll which is expensive, but called infrequently
+        // For better performance, consider caching this
+        var allShopItems = UnityEngine.Resources.FindObjectsOfTypeAll<ShopItemDataSO>();
+        foreach (var shopItem in allShopItems) {
+            if (shopItem.ItemID == itemID) {
+                return shopItem;
+            }
+        }
+        return null;
     }
 
     #endregion

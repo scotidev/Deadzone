@@ -11,6 +11,15 @@ public abstract class ItemDataSO : ScriptableObject {
     public string itemID;
     public string itemName;
 
+    [Header("Upgrade Settings")]
+    [Tooltip("Maximum upgrade level for this item. Default is 10 for weapons.")]
+    [SerializeField] private int maxUpgradeLevel = 10;
+
+    /// <summary>
+    /// Gets the maximum upgrade level for this item. Can be overridden by derived classes.
+    /// </summary>
+    public virtual int MaxUpgradeLevel => maxUpgradeLevel;
+
     /// <summary>
     /// Gets an array of strings representing the labels for the statistical values calculated by the implementing class.
     /// </summary>
