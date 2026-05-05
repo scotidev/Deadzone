@@ -275,6 +275,16 @@ public class BuildingController : MonoBehaviour {
         DestroyCurrentGhost();
         selectedItem = null;
         playerCharacter?.SetHolstered(false);
+        
+        // CRITICAL: Restore the last equipped weapon after placement is canceled
+        // Otherwise the weapon stays invisible (holstered) but never actually re-selected
+        Debug.Log($"[BuildingController] CancelPlacement: Restoring last weapon");
+        Inventory inventory = playerCharacter?.GetComponentInChildren<Inventory>();
+        if (inventory != null) {
+            inventory.RestoreLastWeapon();
+        } else {
+            Debug.LogWarning($"[BuildingController] CancelPlacement: Could not find Inventory component!");
+        }
     }
 
     #endregion

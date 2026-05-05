@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c5a88350b350884291d825a29b39298, type: 3}
+  m_Name: ShopItem_Medkit
+  m_EditorClassIdentifier: Assembly-CSharp::ShopItemDataSO
+  itemID: 4
+  itemName: Medkit
+  itemDescription: 'The Medkit item. Type: Consumable'
+  itemData: {fileID: 11400000, guid: 9edddb426f160634a93fcd956ead4fc0, type: 2}
+  icon: {fileID: 0}
+  previewPrefab: {fileID: 5236713190237981952, guid: 01288bca9e4d3554a8f2244985236692,
+    type: 3}
+  unlockCost: 0
+  baseUpgradeCost: 100
+  ammoCost: 50
+  ammoAmountPerPurchase: 30
+  levelToUnlockExclusive: 9
+  exclusiveUpgradeCost: 5000
+  exclusivePowerDescription: 

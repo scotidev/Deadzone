@@ -33,9 +33,17 @@ namespace InfimaGames.LowPolyShooterPack.Interface {
 
         /// <summary>
         /// Updates the element. Assigns the proper sprites to the weapon images.
+        /// First principles: We verify that the weapon and its attachment manager are ready.
         /// </summary>
         protected override void Tick() {
+            // Early exit if no weapon is equipped
+            if (equippedWeapon == null) return;
+
             attachmentManagerBehaviour = equippedWeapon.GetAttachmentManager();
+            
+            // Safety check for attachment manager
+            if (attachmentManagerBehaviour == null) return;
+
             imageWeaponBody.sprite = equippedWeapon.GetSpriteBody();
 
             Sprite sprite = default;

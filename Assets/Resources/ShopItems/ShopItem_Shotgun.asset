@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c5a88350b350884291d825a29b39298, type: 3}
+  m_Name: ShopItem_Shotgun
+  m_EditorClassIdentifier: Assembly-CSharp::ShopItemDataSO
+  itemID: 3
+  itemName: Shotgun
+  itemDescription: 'The Shotgun item. Type: Weapon'
+  itemData: {fileID: 11400000, guid: f356051f1cfa288418127caeaa7c8422, type: 2}
+  icon: {fileID: 21300000, guid: 84b0ab639d0a07b41a8a562b8096bff7, type: 3}
+  previewPrefab: {fileID: 4697019799200834468, guid: 9dd553242b4c8e842a7f2200408e946b,
+    type: 3}
+  unlockCost: 0
+  baseUpgradeCost: 100
+  ammoCost: 50
+  ammoAmountPerPurchase: 30
+  levelToUnlockExclusive: 9
+  exclusiveUpgradeCost: 5000
+  exclusivePowerDescription: 

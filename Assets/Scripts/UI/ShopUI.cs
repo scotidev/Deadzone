@@ -69,7 +69,7 @@ public class ShopUI : BaseUI {
     [SerializeField] private List<WeaponCameraZPosition> cameraZPositions = new List<WeaponCameraZPosition>();
     [Header("Ammo Purchase")]
     // Aqui essa região também precisa ser refatorada, a lógica de preço e limite de munição deve ir para outro script, talvez ShopManager ou dentro do próprio ScriptableObject do item, questão de análise. O que deve ficar aqui: o botão acionando a compra d emunição, mostrar o preço e a munição atual, e atualizar isso quando o jogador clicar em um card diferente, ou seja, quando mudar a arma selecionada.
-    [SerializeField] private List<WeaponAmmoPricing> weaponAmmoPricings = new List<WeaponAmmoPricing>();
+    [SerializeField] private List<ItemPricingConfig> itemPricingConfigs = new List<ItemPricingConfig>();
 
 
     #endregion
@@ -271,7 +271,13 @@ public class ShopUI : BaseUI {
             }
         }
 
-        HandleCardSelected(fallbackItem);
+        // CONCEITO: Safety check. If no items were found, log warning instead of crashing.
+        // This happens when shop isn't configured in Inspector yet.
+        if (fallbackItem != null) {
+            HandleCardSelected(fallbackItem);
+        } else {
+            Debug.LogWarning($"{nameof(ShopUI)}.{nameof(SelectInitialItem)}: No valid shop items found. Configure shop items in Inspector.", this);
+        }
     }
 
     /// <summary>
@@ -390,8 +396,10 @@ public class ShopUI : BaseUI {
     }
 
     /// <summary>
-    /// Updates ammo purchase display for the selected weapon.
-    /// Shows current reserve ammo and the cost to purchase more.
+    /// Updates ammo/quantity display for the selected item.
+    /// Shows current reserve quantity and the cost to purchase more.
+    /// CONCEITO: Works for all item types (weapons, buildables, consumables)
+    /// by using generic GetItemPricingConfig() and checking IsItemUnlocked().
     /// </summary>
     private void UpdateAmmoDisplay(string weaponID) {
         if (string.IsNullOrEmpty(weaponID) || PlayerProgress.Instance == null) {
@@ -401,32 +409,35 @@ public class ShopUI : BaseUI {
 
         int currentAmmo = PlayerProgress.Instance.GetWeaponReserveAmmo(weaponID);
 
-        WeaponAmmoPricing ammoPricing = GetWeaponAmmoPricing(weaponID);
+        ItemPricingConfig pricingConfig = GetItemPricingConfig(weaponID);
 
-        if (string.IsNullOrEmpty(ammoPricing.weaponID)) {
+        if (string.IsNullOrEmpty(pricingConfig.itemID)) {
             ClearAmmoDisplay();
             return;
         }
 
         if (currentAmmoText != null) {
-            currentAmmoText.text = $"{currentAmmo}/{ammoPricing.maxReserveAmmo}";
+            currentAmmoText.text = $"{currentAmmo}/{pricingConfig.maxReserveQuantity}";
         }
 
-        if (currentAmmo >= ammoPricing.maxReserveAmmo) {
+        if (currentAmmo >= pricingConfig.maxReserveQuantity) {
             if (ammoPriceText != null) {
-                ammoPriceText.text = "FULL AMMO";
+                ammoPriceText.text = "FULL";
             }
             if (ammoButton != null) {
                 ammoButton.interactable = false;
             }
         } else {
             if (ammoPriceText != null) {
-                ammoPriceText.text = $"${ammoPricing.costPerPurchase:N0}";
+                ammoPriceText.text = $"${pricingConfig.costPerPurchase:N0}";
             }
 
+            // CONCEITO: Enable button only if item is unlocked AND player has funds
+            bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(weaponID);
             if (ammoButton != null) {
-                ammoButton.interactable = EconomyManager.Instance != null &&
-                                         EconomyManager.Instance.CanAfford(ammoPricing.costPerPurchase);
+                ammoButton.interactable = isUnlocked &&
+                                         EconomyManager.Instance != null &&
+                                         EconomyManager.Instance.CanAfford(pricingConfig.costPerPurchase);
             }
         }
     }
@@ -450,6 +461,9 @@ public class ShopUI : BaseUI {
 
     /// <summary>
     /// Updates the right-side action button state (Unlock, Upgrade, Buy Ammo, etc).
+    /// CONCEITO: Generic check using IsItemUnlocked() instead of IsWeaponUnlocked()
+    /// allows this to work for all item types (weapons, consumables, buildables).
+    /// This ensures all 9 items behave consistently.
     /// </summary>
     private void UpdateActionButton(ShopItemDataSO itemData, int dummy) {
         if (selectedItemActionButton == null || itemData == null) {
@@ -465,8 +479,10 @@ public class ShopUI : BaseUI {
 
         string itemID = itemData.ItemID;
 
-        bool isUnlocked = PlayerProgress.Instance.IsWeaponUnlocked(itemID);
-        int currentLevel = PlayerProgress.Instance.GetWeaponLevel(itemID);
+        // CONCEITO: Use IsItemUnlocked() instead of IsWeaponUnlocked()
+        // IsItemUnlocked() checks all dictionaries (weapons, buildables, consumables)
+        bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(itemID);
+        int currentLevel = PlayerProgress.Instance.GetItemLevel(itemID);
         bool isMaxLevel = currentLevel >= PlayerProgress.MAX_UPGRADE_LEVEL;
 
         if (!isUnlocked) {
@@ -498,6 +514,11 @@ public class ShopUI : BaseUI {
             selectedItemActionButton.interactable = EconomyManager.Instance.CanAfford(cost);
             selectedItemActionButton.onClick.AddListener(() => OnRightPanelUpgrade(itemData));
         }
+        
+        // CONCEITO: After unlock, immediately enable the ammo button
+        // if this item has ammo/quantity configuration. This allows players
+        // to buy ammo immediately after unlocking without needing to reopen the shop.
+        UpdateAmmoDisplay(itemID);
     }
 
     /// <summary>
@@ -505,16 +526,32 @@ public class ShopUI : BaseUI {
     /// </summary>
     private void OnRightPanelUnlock(ShopItemDataSO itemData) {
         if (itemData == null || EconomyManager.Instance == null || PlayerProgress.Instance == null) {
+            Debug.LogWarning($"[ShopUI] OnRightPanelUnlock: null reference detected!");
             return;
         }
 
+        Debug.Log($"[ShopUI] OnRightPanelUnlock called for '{itemData.ItemName}' (ID: {itemData.ItemID}, Cost: {itemData.UnlockCost})");
+
         if (EconomyManager.Instance.TrySpendCurrency(itemData.UnlockCost)) {
+            Debug.Log($"[ShopUI] Currency spent successfully. Now unlocking item...");
             PlayerProgress.Instance.UnlockItem(itemData);
             Debug.Log($"[ShopUI] Unlocked {itemData.ItemName}!");
+            
             // REFATORAÇÃO: precisamos mesmo ter 2 chamadas diferentes? nao deveriamos ter só um méetodo para desbloquear qualquer item, sendo arma ou medkit, buildable, qualquer um?
             if (itemData.ItemData is WeaponDataSO) {
+                Debug.Log($"[ShopUI] WeaponDataSO detected, invoking WeaponUnlocked event");
                 WeaponUnlocked?.Invoke(itemData.ItemID);
+            } else if (itemData.ItemData is BuildableDataSO) {
+                Debug.Log($"[ShopUI] BuildableDataSO detected for '{itemData.ItemName}'");
+                // BuildableDataSO unlock is handled directly by PlayerProgress.UnlockItem()
+            } else if (itemData.ItemData is MedkitDataSO) {
+                Debug.Log($"[ShopUI] MedkitDataSO detected");
+            } else if (itemData.ItemData is GrenadeDataSO) {
+                Debug.Log($"[ShopUI] GrenadeDataSO detected");
+            } else if (itemData.ItemData is VestDataSO) {
+                Debug.Log($"[ShopUI] VestDataSO detected - auto-equipping Vest");
             }
+            
             RefreshAllCards();
         } else {
             int missingAmount = itemData.UnlockCost - EconomyManager.Instance.GetCurrentCurrency();
@@ -524,15 +561,20 @@ public class ShopUI : BaseUI {
 
     /// <summary>
     /// Handles upgrade from the right-panel action button.
+    /// CONCEITO: Use generic GetItemLevel() and TryUpgradeWeapon() 
+    /// to support all 9 items (weapons, consumables, buildables).
+    /// UpgradeManager.TryUpgradeWeapon() works for all items now.
     /// </summary>
     private void OnRightPanelUpgrade(ShopItemDataSO itemData) {
         if (itemData == null || UpgradeManager.Instance == null || PlayerProgress.Instance == null) {
             return;
         }
 
-        int currentLevel = PlayerProgress.Instance.GetWeaponLevel(itemData.ItemID);
+        // CONCEITO: Use GetItemLevel() instead of GetWeaponLevel()
+        // GetItemLevel() checks all dictionaries (weapons, buildables, consumables)
+        int currentLevel = PlayerProgress.Instance.GetItemLevel(itemData.ItemID);
         if (UpgradeManager.Instance.TryUpgradeWeapon(itemData.ItemID, itemData.BaseUpgradeCost)) {
-            int newLevel = PlayerProgress.Instance.GetWeaponLevel(itemData.ItemID);
+            int newLevel = PlayerProgress.Instance.GetItemLevel(itemData.ItemID);
             Debug.Log($"[ShopUI] Upgraded {itemData.ItemName} to level {newLevel}!");
             RefreshAllCards();
         } else {
@@ -550,56 +592,58 @@ public class ShopUI : BaseUI {
     }
 
     /// <summary>
-    /// Finds the ammo pricing configuration for the specified weapon ID.
-    /// Returns a default struct if not found (weaponID will be empty string).
+    /// Finds the pricing configuration for the specified item ID.
+    /// Returns a default struct if not found (itemID will be empty string).
+    /// CONCEITO: Renamed from GetWeaponAmmoPricing to GetItemPricingConfig
+    /// to support all item types (weapons, consumables, buildables).
     /// </summary>
-    private WeaponAmmoPricing GetWeaponAmmoPricing(string weaponID) {
-        return weaponAmmoPricings.FirstOrDefault(w => w.weaponID == weaponID);
+    private ItemPricingConfig GetItemPricingConfig(string itemID) {
+        return itemPricingConfigs.FirstOrDefault(c => c.itemID == itemID);
     }
 
     /// <summary>
-    /// Handles ammo purchase button click.
-    /// Validates funds, adds ammo to reserve, and deducts currency.
+    /// Handles ammo/quantity purchase button click.
+    /// Validates funds, adds quantity to reserve, and deducts currency.
+    /// CONCEITO: Works for all item types (weapons, buildables, consumables).
+    /// Gets pricing from unified ItemPricingConfig.
     /// </summary>
     private void OnAmmoButtonPressed() {
 
         string itemID = selectedItemData.ItemID;
-        WeaponAmmoPricing ammoPricing = GetWeaponAmmoPricing(itemID);
+        ItemPricingConfig pricingConfig = GetItemPricingConfig(itemID);
 
-        // Se não encontramos configuração (weaponID está vazio), significa que não há config
-        if (string.IsNullOrEmpty(ammoPricing.weaponID)) {
-            Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] No ammo pricing configuration found for weapon: {itemID}");
+        // Se não encontramos configuração (itemID está vazio), significa que não há config
+        if (string.IsNullOrEmpty(pricingConfig.itemID)) {
+            Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] No pricing configuration found for item: {itemID}");
             return;
         }
 
-        if (!EconomyManager.Instance.CanAfford(ammoPricing.costPerPurchase)) {
-            int missingAmount = ammoPricing.costPerPurchase - EconomyManager.Instance.GetCurrentCurrency();
+        if (!EconomyManager.Instance.CanAfford(pricingConfig.costPerPurchase)) {
+            int missingAmount = pricingConfig.costPerPurchase - EconomyManager.Instance.GetCurrentCurrency();
             Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Insufficient funds! Need {missingAmount} more coins.");
-            // Aqui poderíamos tocar um som de erro ou mostrar uma mensagem visual
             return;
         }
 
-        int currentAmmo = PlayerProgress.Instance.GetWeaponReserveAmmo(itemID);
-        int newAmmo = currentAmmo + ammoPricing.ammoPerPurchase;
+        int currentQuantity = PlayerProgress.Instance.GetWeaponReserveAmmo(itemID);
+        int newQuantity = currentQuantity + pricingConfig.quantityPerPurchase;
 
-        newAmmo = Mathf.Clamp(newAmmo, 0, ammoPricing.maxReserveAmmo);
+        newQuantity = Mathf.Clamp(newQuantity, 0, pricingConfig.maxReserveQuantity);
 
-        int actualAmmoAdded = newAmmo - currentAmmo;
+        int actualQuantityAdded = newQuantity - currentQuantity;
 
-        if (actualAmmoAdded <= 0) {
-            Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Weapon {itemID} already at max ammo ({ammoPricing.maxReserveAmmo})!");
-            //mais um som de  erro
+        if (actualQuantityAdded <= 0) {
+            Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Item {itemID} already at max quantity ({pricingConfig.maxReserveQuantity})!");
             return;
         }
 
-        float ammoProportion = (float)actualAmmoAdded / ammoPricing.ammoPerPurchase;
-        int actualCost = Mathf.RoundToInt(ammoPricing.costPerPurchase * ammoProportion);
+        float quantityProportion = (float)actualQuantityAdded / pricingConfig.quantityPerPurchase;
+        int actualCost = Mathf.RoundToInt(pricingConfig.costPerPurchase * quantityProportion);
 
         if (EconomyManager.Instance.TrySpendCurrency(actualCost)) {
-            PlayerProgress.Instance.AddWeaponReserveAmmo(itemID, actualAmmoAdded);
+            PlayerProgress.Instance.AddWeaponReserveAmmo(itemID, actualQuantityAdded);
 
-            Debug.Log($"[ShopUI.OnAmmoButtonPressed] Purchased {actualAmmoAdded} ammo for {itemID}. Cost: ${actualCost}. New total: {newAmmo}");
-            AmmoPurchased?.Invoke(itemID, actualAmmoAdded);
+            Debug.Log($"[ShopUI.OnAmmoButtonPressed] Purchased {actualQuantityAdded} quantity for {itemID}. Cost: ${actualCost}. New total: {newQuantity}");
+            AmmoPurchased?.Invoke(itemID, actualQuantityAdded);
 
             UpdateSelectedItemInfo();
         }
@@ -623,6 +667,13 @@ public class ShopUI : BaseUI {
     /// Recreates the 3D preview model for the currently selected shop item.
     /// </summary>
     private void RebuildPreviewModel() {
+        // CONCEITO: Safety check. If selectedItemData or PreviewPrefab is null,
+        // skip preview creation. This prevents crashes when shop isn't configured yet.
+        if (selectedItemData == null || selectedItemData.PreviewPrefab == null) {
+            Debug.LogWarning($"{nameof(ShopUI)}.{nameof(RebuildPreviewModel)}: selectedItemData or PreviewPrefab is null. Shop may not be configured.", this);
+            return;
+        }
+
         DestroyPreviewModel();
 
         activePreviewModel = Instantiate(selectedItemData.PreviewPrefab, previewAnchor);
@@ -761,26 +812,43 @@ public struct WeaponCameraZPosition {
 }
 
 /// <summary>
-/// Serializable struct to configure ammo purchase pricing and limits for each weapon.
-/// This defines how much ammo is added per purchase, the cost, and maximum reserve ammo.
-/// precisa ser refatorado!!
+/// Serializable struct to configure purchase pricing and limits for items (weapons, buildables, consumables).
+/// Defines how much quantity/ammo is added per purchase, the cost, and maximum reserve.
+/// CONCEITO: Renamed from WeaponAmmoPricing to ItemPricingConfig to support all item types.
+/// All items work the same way: buy quantity, add to reserve, respect max limit.
 /// </summary>
 [System.Serializable]
-public struct WeaponAmmoPricing {
+public struct ItemPricingConfig {
 
-    [Tooltip("The unique identifier for the weapon (e.g., 'Pistol', 'SMG', 'Shotgun').")]
+    [Tooltip("The unique identifier for the item (e.g., 'Pistol', 'Barricade', 'Medkit').")]
     [SerializeField]
-    public string weaponID;
+    public string itemID;
 
-    [Tooltip("Amount of ammo added per purchase.")]
+    [Tooltip("Amount of quantity/ammo added per purchase.")]
     [SerializeField]
-    public int ammoPerPurchase;
+    public int quantityPerPurchase;
 
-    [Tooltip("Cost in currency per ammo purchase.")]
+    [Tooltip("Cost in currency per purchase.")]
     [SerializeField]
     public int costPerPurchase;
 
-    [Tooltip("Maximum reserve ammo this weapon can hold.")]
+    [Tooltip("Maximum reserve quantity/ammo this item can hold.")]
     [SerializeField]
+    public int maxReserveQuantity;
+}
+
+// Legacy alias for backwards compatibility
+public struct WeaponAmmoPricing {
+
+    public string weaponID;
+    public int ammoPerPurchase;
+    public int costPerPurchase;
     public int maxReserveAmmo;
+
+    public WeaponAmmoPricing(ItemPricingConfig config) {
+        weaponID = config.itemID;
+        ammoPerPurchase = config.quantityPerPurchase;
+        costPerPurchase = config.costPerPurchase;
+        maxReserveAmmo = config.maxReserveQuantity;
+    }
 }

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c5a88350b350884291d825a29b39298, type: 3}
+  m_Name: ShopItem_ExplosiveBarrel
+  m_EditorClassIdentifier: Assembly-CSharp::ShopItemDataSO
+  itemID: 7
+  itemName: ExplosiveBarrel
+  itemDescription: 'The ExplosiveBarrel item. Type: Buildable'
+  itemData: {fileID: 11400000, guid: 5459b9cf2e95280489f71eefa12d9aa7, type: 2}
+  icon: {fileID: 0}
+  previewPrefab: {fileID: 8426833715630008873, guid: a3d893de50bf5b0429696987e48b2ae7,
+    type: 3}
+  unlockCost: 0
+  baseUpgradeCost: 100
+  ammoCost: 50
+  ammoAmountPerPurchase: 30
+  levelToUnlockExclusive: 9
+  exclusiveUpgradeCost: 5000
+  exclusivePowerDescription: 

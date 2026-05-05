@@ -46,6 +46,11 @@ namespace InfimaGames.LowPolyShooterPack {
         public abstract void SetHolstered(bool value);
 
         /// <summary>
+        /// Returns true if the character is currently performing a melee attack.
+        /// </summary>
+        public abstract bool IsAttackingMelee();
+
+        /// <summary>
         /// Returns true if the Crosshair should be visible.
         /// </summary>
         public abstract bool IsCrosshairVisible();

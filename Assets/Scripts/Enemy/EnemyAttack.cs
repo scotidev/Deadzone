@@ -1,4 +1,5 @@
 using UnityEngine;
+using InfimaGames.LowPolyShooterPack;
 
 /// <summary>
 /// Controls the melee attack behavior for all enemy types.

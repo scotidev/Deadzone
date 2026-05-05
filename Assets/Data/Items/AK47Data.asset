@@ -9,23 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98c757ab19163464f8313e1bcffe423c, type: 3}
+  m_Script: {fileID: 11500000, guid: c60cffecc0c4b084cb06ee8be7b1b61c, type: 3}
   m_Name: AK47Data
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDataSO
   itemID: 2
   itemName: AK47
-  description: 
-  icon: {fileID: 0}
-  previewPrefab: {fileID: 0}
-  weaponID: SMG
-  weaponName: Submachine Gun
-  baseDamage: 15
+  baseDamage: 10
   baseFireRate: 200
   baseMagazineCapacity: 30
-  maxReserveAmmo: 200
+  maxReserveAmmo: 300
   damageScaling: 0.1
   fireRateScaling: 0.05
-  maxFireRate: 1000
+  maxFireRate: 500
   magazineScaling: 0.1
   exclusivePowerID: 2
-  exclusivePowerDescription: Bullet storm - fires 3x faster for 5 seconds
