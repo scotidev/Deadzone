@@ -62,15 +62,9 @@ public class ShopUI : BaseUI {
     [Header("Action Button")]
     [SerializeField] private Button selectedItemActionButton;
     [SerializeField] private TextMeshProUGUI selectedItemActionButtonText;
-    [SerializeField] private float previewModelScale = 100f; //deve ser refatorado, decidiremos a escala do preview no próprio ScriptableObject do item ou no script responsavel por isso.
 
     [SerializeField] private List<ShopItemDataSO> shopItems = new List<ShopItemDataSO>();
 
-    [Header("Camera Adjustment")]
-    // Diferentes armas têm tamanhos diferentes. Para que a câmera enquadre bem cada uma,
-    // você pode customizar a posição Z da câmera por arma.
-    // Tinhamos feito desse jeito ajustando a camera, mas agora vamos fazer ajustando o tamanho de cada preview, então isso pode ser removido pra dar lugar a um campo de escala no ScriptableObject do item ou no script responsavel por isso.
-    [SerializeField] private List<WeaponCameraZPosition> cameraZPositions = new List<WeaponCameraZPosition>();
     [Header("Ammo Purchase")]
     // Aqui essa região também precisa ser refatorada, a lógica de preço e limite de munição deve ir para outro script, talvez ShopManager ou dentro do próprio ScriptableObject do item, questão de análise. O que deve ficar aqui: o botão acionando a compra d emunição, mostrar o preço e a munição atual, e atualizar isso quando o jogador clicar em um card diferente, ou seja, quando mudar a arma selecionada.
     [SerializeField] private List<ItemPricingConfig> itemPricingConfigs = new List<ItemPricingConfig>();
@@ -82,7 +76,6 @@ public class ShopUI : BaseUI {
 
     private ShopItemDataSO selectedItemData;
     private GameObject activePreviewModel;
-    private float originalCameraZ; // deve  ser removido na refatoração, a ideia é não mexer mais na câmera, mas sim ajustar a escala do modelo 3d para que ele fique visível no canvas, e isso pode ser configurado por item no ScriptableObject ou em outro script.
 
     #endregion
 
@@ -107,11 +100,6 @@ public class ShopUI : BaseUI {
         BindButtons();
 
         SubscribeToCurrencyEvents();
-
-        Camera previewCamera = GetWeaponPreviewCamera();
-        if (previewCamera != null) {
-            originalCameraZ = previewCamera.transform.position.z;
-        }
     }
 
     /// </summary>
@@ -912,16 +900,14 @@ public class ShopUI : BaseUI {
 
         activePreviewModel = Instantiate(selectedItemData.PreviewPrefab, previewAnchor);
 
-        activePreviewModel.transform.localPosition = Vector3.zero;
+        activePreviewModel.transform.localPosition = selectedItemData.PreviewPositionOffset;
 
-        activePreviewModel.transform.localRotation = Quaternion.identity;
+        Quaternion rotationOffset = Quaternion.Euler(selectedItemData.PreviewRotationOffset);
+        activePreviewModel.transform.localRotation = rotationOffset;
 
-        Vector3 scaledSize = Vector3.one * previewModelScale;
-        activePreviewModel.transform.localScale = scaledSize;
+        activePreviewModel.transform.localScale = selectedItemData.PreviewScale;
 
         AssignWeaponLayer(activePreviewModel);
-
-        AdjustCameraZPosition();
     }
 
     /// <summary>
@@ -939,17 +925,9 @@ public class ShopUI : BaseUI {
     /// Destroys the active instantiated preview model, if any.
     /// </summary>
     private void DestroyPreviewModel() {
-
         if (activePreviewModel != null) {
             Destroy(activePreviewModel);
             activePreviewModel = null;
-        }
-
-        Camera previewCamera = GetWeaponPreviewCamera();
-        if (previewCamera != null) {
-            Vector3 newPosition = previewCamera.transform.position;
-            newPosition.z = originalCameraZ;
-            previewCamera.transform.position = newPosition;
         }
     }
 
@@ -981,42 +959,6 @@ public class ShopUI : BaseUI {
     }
 
     /// <summary>
-    /// Helper method to find the weapon preview camera in the hierarchy.
-    /// Returns the first Camera component found as a child of previewAnchor or null.
-    /// </summary>
-    private Camera GetWeaponPreviewCamera() {
-        if (previewAnchor == null) return null;
-
-        Transform parent = previewAnchor.parent;
-        if (parent != null) {
-            Camera cam = parent.GetComponentInChildren<Camera>();
-            if (cam != null) return cam;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Dynamically adjusts the preview camera Z position based on the selected weapon.
-    /// This prevents smaller weapons from appearing too close and larger weapons from being cut off.
-    /// </summary>
-    private void AdjustCameraZPosition() {
-        if (selectedItemData == null) return;
-
-        Camera previewCamera = GetWeaponPreviewCamera();
-        if (previewCamera == null) return;
-
-        string weaponID = selectedItemData.ItemID;
-        WeaponCameraZPosition foundConfig = cameraZPositions.FirstOrDefault(c => c.weaponID == weaponID);
-
-        if (!string.IsNullOrEmpty(foundConfig.weaponID)) {
-            Vector3 newPosition = previewCamera.transform.position;
-            newPosition.z = foundConfig.cameraZPosition;
-            previewCamera.transform.position = newPosition;
-
-        }
-    }
-
     /// <summary>
     /// Handles the close button click event.
     /// </summary>
@@ -1027,23 +969,6 @@ public class ShopUI : BaseUI {
 }
 
     #endregion
-
-/// <summary>
-/// Serializable struct to store custom camera Z position for specific weapons.
-/// This allows designers to adjust camera depth per weapon type for optimal framing.
-/// PRECISA SER REFATORADO
-/// </summary>
-[System.Serializable]
-public struct WeaponCameraZPosition {
-
-    [Tooltip("The unique identifier for the weapon (e.g., 'PISTOL_01', 'SMG', 'SHOTGUN').")]
-    [SerializeField]
-    public string weaponID;
-
-    [Tooltip("Camera Z position for this weapon (can be negative). Negative = camera farther away, Positive = camera closer.")]
-    [SerializeField]
-    public float cameraZPosition;
-}
 
 /// <summary>
 /// Serializable struct to configure purchase pricing and limits for items (weapons, buildables, consumables).
