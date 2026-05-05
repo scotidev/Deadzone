@@ -23,6 +23,11 @@ public class ShopItemDataSO : ScriptableObject {
     [SerializeField] private Sprite icon;
     [SerializeField] private GameObject previewPrefab;
 
+    [Header("Preview Configuration")]
+    [SerializeField] private Vector3 previewScale = Vector3.one;
+    [SerializeField] private Vector3 previewPositionOffset;
+    [SerializeField] private Vector3 previewRotationOffset;
+
     [Header("Economy")]
     [SerializeField] private int unlockCost = 0;
     [SerializeField] private int baseUpgradeCost = 100;
@@ -47,6 +52,9 @@ public class ShopItemDataSO : ScriptableObject {
     public ItemDataSO ItemData => itemData;
     public Sprite Icon => icon;
     public GameObject PreviewPrefab => previewPrefab;
+    public Vector3 PreviewScale => previewScale;
+    public Vector3 PreviewPositionOffset => previewPositionOffset;
+    public Vector3 PreviewRotationOffset => previewRotationOffset;
     public int UnlockCost => unlockCost;
     public int BaseUpgradeCost => baseUpgradeCost;
     public int AmmoCost => ammoCost;

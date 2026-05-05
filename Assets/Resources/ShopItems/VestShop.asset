@@ -10,15 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8c5a88350b350884291d825a29b39298, type: 3}
-  m_Name: ShopItem_Vest
+  m_Name: VestShop
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemDataSO
   itemID: 9
   itemName: Vest
   itemDescription: 'The Vest item. Type: Armor'
   itemData: {fileID: 11400000, guid: e44b5bda533ab7a4180840811c517de1, type: 2}
   icon: {fileID: 0}
-  previewPrefab: {fileID: 4697019799200834468, guid: 9dd553242b4c8e842a7f2200408e946b,
+  previewPrefab: {fileID: 3776562469562309635, guid: 5e08c517b491fc143b3b296bb55d5300,
     type: 3}
+  previewScale: {x: 500, y: 500, z: 500}
+  previewPositionOffset: {x: 0, y: -750, z: 0}
+  previewRotationOffset: {x: 0, y: 0, z: 0}
   unlockCost: 0
   baseUpgradeCost: 100
   ammoCost: 50
