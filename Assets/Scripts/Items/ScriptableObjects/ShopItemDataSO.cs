@@ -56,5 +56,51 @@ public class ShopItemDataSO : ScriptableObject {
     public string ExclusivePowerDescription => exclusivePowerDescription;
 
     #endregion
+
+    #region SETTERS
+
+    /// <summary>
+    /// Set the item ID (for editor configuration only).
+    /// </summary>
+    public void SetItemID(string newID) {
+        itemID = newID;
+    }
+
+    /// <summary>
+    /// Set the item name (for editor configuration only).
+    /// </summary>
+    public void SetItemName(string newName) {
+        itemName = newName;
+    }
+
+    /// <summary>
+    /// Set the item description (for editor configuration only).
+    /// </summary>
+    public void SetItemDescription(string newDescription) {
+        itemDescription = newDescription;
+    }
+
+    /// <summary>
+    /// Set the item data reference (for editor configuration only).
+    /// </summary>
+    public void SetItemData(ItemDataSO newItemData) {
+        itemData = newItemData;
+    }
+
+    /// <summary>
+    /// Set the item icon (for editor configuration only).
+    /// </summary>
+    public void SetIcon(Sprite newIcon) {
+        icon = newIcon;
+    }
+
+    /// <summary>
+    /// Set the preview prefab (for editor configuration only).
+    /// </summary>
+    public void SetPreviewPrefab(GameObject newPrefab) {
+        previewPrefab = newPrefab;
+    }
+
+    #endregion
 }
 

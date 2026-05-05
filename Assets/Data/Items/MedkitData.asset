@@ -9,11 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 426332e586fd1454e885fa5610477e42, type: 3}
+  m_Script: {fileID: 11500000, guid: e777051c182bf6141a87a29ac568306f, type: 3}
   m_Name: MedkitData
   m_EditorClassIdentifier: Assembly-CSharp::MedkitDataSO
   itemID: 4
   itemName: Medkit
-  healAmount: 0
-  healSpeed: 0
-  maxAmount: 0
+  healAmount: 100
+  healSpeed: 5
+  maxAmount: 5

@@ -30,7 +30,21 @@ namespace InfimaGames.LowPolyShooterPack.Interface {
         protected virtual void Awake() {
             gameModeService = ServiceLocator.Current.Get<IGameModeService>();
 
+            // CONCEITO: Null checks are essential. Services may not be initialized yet.
+            // If gameModeService is null, the canvas spawned too early (before game mode ready).
+            if (gameModeService == null) {
+                Debug.LogWarning("[Element] IGameModeService not found. Canvas may have spawned before initialization.", gameObject);
+                return;
+            }
+
             playerCharacter = gameModeService.GetPlayerCharacter();
+            
+            // Additional safety check
+            if (playerCharacter == null) {
+                Debug.LogWarning("[Element] Player character not found. Game mode may not be initialized.", gameObject);
+                return;
+            }
+
             playerCharacterInventory = playerCharacter.GetInventory();
         }
 

@@ -1,10 +1,15 @@
 // Copyright 2021, Infima Games. All Rights Reserved.
 
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// RESOLVER BUG: seleção de items nao esta funcionando corretamente. Temos que garantir que funcione tanto para armas quanto para itens de consturção, medkits, granadas, ... TUDO. e deve funcionar asssim: temos um gameobject prefab desativado aninhado ao game object Inventory que está aninhado em Player. Ai quando selecionarmos o item, seja ele independente d equal for, esse gameobject é ativado, e o item aparece na mão do player etc. Como nao temos modelo para todos os items 3d ainda, eu coloco placeholders como cubos e cilindron. O importante é garantir que a lógica de seleção funcione para todos os tipos de itens, e que o sistema seja flexível para acomodar diferentes categorias de itens (armas, consumíveis, buildables) sem bugs.
-// LEMBRANDO: SÃO 8 ITEMS! o item 9 na verdade é o colete, que nao pode ser segurando na mao, é so uma vestimenta.
+// funcionam com o mesmo padrão: GameObjects filhos de Inventory, cada um com seu ItemBehaviour.
+// Seleção funciona para TODOS os tipos de itens (armas, consumíveis, buildables) apertando 1-8.
+// Sistema segue padrão Infima Games mantendo GameObjects filhos + components reutilizáveis.
+
+// LEMBRANDO: SÃO 8 ITEMS! o item 9 na verdade é o colete (Vest), que nao pode ser segurando na mao, 
+// é só uma vestimenta. Vest é equipado automaticamente e não está nesta seleção.
 
 namespace InfimaGames.LowPolyShooterPack {
     public class Inventory : InventoryBehaviour {
@@ -18,19 +23,22 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #region FIELDS
 
+        // REFATORAÇÃO: ItemBehaviour[] unifica todos os tipos de items (weapons, consumables, buildables)
+        private ItemBehaviour[] selectableItems;
+        private ItemBehaviour currentlySelected;
+        private int currentSelectionIndex = -1;
+
+        // Para compatibilidade com Character.TryEquipWeapon() - mantém referência às armas
         private WeaponBehaviour[] weapons;
         private WeaponBehaviour equipped;
         private int equippedIndex = -1;
+
         private Character character;
-        private readonly string[] itemNames = {
-            "Pistol",         // Key 1 (Index 0)
-            "AK47",           // Key 2 (Index 1)
-            "Shotgun",        // Key 3 (Index 2)
-            "Med Kit",        // Key 4 (Index 3)
-            "Grenade",       // Key 5 (Index 4)
-            "Barricade",     // Key 6 (Buildable 1)
-            "Explosive Barrel", // Key 7 (Buildable 2)
-            "Bear Trap",     // Key 8 (Buildable 3)
+
+        // Mapeia teclas 1-8 aos índices no array selectableItems
+        private readonly Dictionary<int, int> keyToIndex = new() {
+            { 1, 0 }, { 2, 1 }, { 3, 2 }, { 4, 3 },
+            { 5, 4 }, { 6, 5 }, { 7, 6 }, { 8, 7 }
         };
 
         #endregion
@@ -46,17 +54,47 @@ namespace InfimaGames.LowPolyShooterPack {
         #region METHODS
 
         public override void Init(int equippedAtStart = 0) {
-            weapons = GetComponentsInChildren<WeaponBehaviour>(true);
+            // CONCEITO: GetComponentsInChildren<ItemBehaviour>(true) busca TODOS os components ItemBehaviour
+            // nos GameObjects filhos, independente de qual tipo específico (WeaponBehaviour, ConsumableBehaviour, BuildableBehaviour).
+            // Isso unifica a busca de todos os 8 items em uma única operação.
+            ItemBehaviour[] allItems = GetComponentsInChildren<ItemBehaviour>(true);
+            
+            // CONCEITO: Filtrar para incluir APENAS itens que não são Vest.
+            // Vest é um item passivo que fica sempre equipado e não participa da seleção 1-8.
+            var filteredItems = new List<ItemBehaviour>();
+            for (int i = 0; i < allItems.Length; i++) {
+                if (allItems[i] is Vest) {
+                    Debug.Log($"  [Skipped] {allItems[i].GetDisplayName()} (Vest - passive, not selectable)");
+                    continue;
+                }
+                filteredItems.Add(allItems[i]);
+            }
+            selectableItems = filteredItems.ToArray();
 
-            foreach (WeaponBehaviour weapon in weapons)
-                weapon.gameObject.SetActive(false);
+            for (int i = 0; i < selectableItems.Length; i++) {
+                Debug.Log($"  [{i}] {selectableItems[i].GetDisplayName()} (ID: {selectableItems[i].GetItemID()})");
+            }
 
-            Equip(equippedAtStart);
+            // COMPATIBILIDADE: Também buscamos WeaponBehaviour para manter compatibilidade com Character
+            // Mas aqui também precisamos ignorar a Vest (já que WeaponBehaviour ≠ Vest)
+            WeaponBehaviour[] allWeapons = GetComponentsInChildren<WeaponBehaviour>(true);
+            var filteredWeapons = new List<WeaponBehaviour>();
+            for (int i = 0; i < allWeapons.Length; i++) {
+                filteredWeapons.Add(allWeapons[i]);
+            }
+            weapons = filteredWeapons.ToArray();
+
+            // Desativa todos os items no início
+            foreach (ItemBehaviour item in selectableItems)
+                item.gameObject.SetActive(false);
+
+            // Seleciona o primeiro item (Pistola por padrão)
+            SelectItem(equippedAtStart);
         }
 
         /// <summary>
         /// Called by Input System when any numeric key (1-8) is pressed.
-        /// Handles both weapons and buildables in a unified way.
+        /// Unified handling for all item types (weapons, consumables, buildables).
         /// </summary>
         public void OnSelectItem(InputAction.CallbackContext context) {
             if (context.phase != InputActionPhase.Performed)
@@ -65,6 +103,8 @@ namespace InfimaGames.LowPolyShooterPack {
             if (character != null && character.IsInterfaceMode())
                 return;
 
+            // CONCEITO: Extrai o número da tecla do caminho do Input System.
+            // Exemplo: "<Keyboard>/1" → pega último char '1' → converte para int 1
             string path = context.control.path;
             char digitChar = path[path.Length - 1];
             int keyNumber = digitChar - '0';
@@ -73,64 +113,108 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Unified item selection by key number (1-8).
-        /// Keys 1-5 select weapons, Keys 6-8 select buildables.
+        /// Select item by key number (1-8). Unified logic for all item types.
         /// </summary>
         private void SelectByKeyNumber(int keyNumber) {
-            if (keyNumber < 1 || keyNumber > 8)
+            // Valida se a tecla está no range 1-8
+            if (!keyToIndex.TryGetValue(keyNumber, out int itemIndex)) {
                 return;
+            }
 
-            if (keyNumber >= 6 && keyNumber <= 8) {
-                SelectBuildable(keyNumber);
-            } else {
-                SelectWeapon(keyNumber);
+            if (itemIndex < 0 || itemIndex >= selectableItems.Length) {
+                return;
+            }
+
+            SelectItem(itemIndex);
+        }
+
+        /// <summary>
+        /// Select item by index. Deselects previous item and selects new one.
+        /// REFATORAÇÃO: Método unificado que funciona para armas, consumíveis e buildables.
+        /// </summary>
+        private void SelectItem(int index) {
+            if (selectableItems == null || index < 0 || index >= selectableItems.Length) {
+                return;
+            }
+
+            ItemBehaviour newItem = selectableItems[index];
+
+            if (newItem == null) {
+                return;
+            }
+
+            // SAFETY: Always allow first item (Pistol/index 0) to be selected, even during Init()
+            // This ensures player always has a weapon equipped at game start.
+            // For other items, validate via CanBeUsed() check.
+            if (index != 0 && !newItem.CanBeUsed()) {
+                return;
+            }
+
+
+            // Deseleciona item atual (se houver)
+            if (currentlySelected != null) {
+                currentlySelected.OnDeselected();
+                currentlySelected.gameObject.SetActive(false);
+            }
+
+            // Seleciona novo item
+            currentlySelected = newItem;
+            currentSelectionIndex = index;
+            currentlySelected.gameObject.SetActive(true);
+            currentlySelected.OnSelected();
+
+            // Se for arma, também atualiza compatibilidade com Character
+            if (newItem is WeaponBehaviour weapon) {
+                UpdateEquippedWeapon(weapon);
             }
         }
 
         /// <summary>
-        /// Handles buildable item selection.
+        /// Updates equipped weapon reference for Character compatibility.
+        /// Mantém compatibilidade com Character.TryEquipWeapon() e sistema de armas existente.
         /// </summary>
-        private void SelectBuildable(int keyNumber) {
-            if (buildingController == null) {
-                buildingController = FindFirstObjectByType<BuildingController>();
-                if (buildingController == null)
-                    return;
-            }
-
-            int buildableSlot = keyNumber - 5;
-            BuildableDataSO selectedBuildable = buildableSlot switch {
-                1 => buildingController.Barricade,
-                2 => buildingController.ExplosiveBarrel,
-                3 => buildingController.BearTrap,
-                _ => null
-            };
-
-            if (selectedBuildable == null) return;
-
-            SelectBuildableItem(selectedBuildable);
-        }
-
-        private void SelectBuildableItem(BuildableDataSO buildable) {
-            ResolvePlayerCharacter();
-
-            if (buildable == null) return;
-
-            if (PlayerProgress.Instance != null) {
-                string buildableID = buildingController.GetBuildableID(buildable);
-                if (!string.IsNullOrEmpty(buildableID)) {
-                    int quantity = PlayerProgress.Instance.GetBuildableQuantity(buildableID);
-                    if (quantity <= 0)
-                        return;
-                }
-            }
-
-            if (buildingController.IsPlacing && buildingController.CurrentSelectedItem == buildable) {
-                buildingController.CancelCurrentPlacement();
+        /// <summary>
+        /// Updates equipped weapon reference for Character compatibility.
+        /// Mantém compatibilidade com Character.TryEquipWeapon() e sistema de armas existente.
+        /// </summary>
+        private void UpdateEquippedWeapon(WeaponBehaviour weapon) {
+            if (weapons == null) {
                 return;
             }
 
-            buildingController.StartPlacement(buildable);
-            character?.SetHolstered(true);
+
+            // Encontra o índice da arma no array weapons
+            for (int i = 0; i < weapons.Length; i++) {
+                if (weapons[i] == weapon) {
+                    equippedIndex = i;
+                    equipped = weapon;
+
+                    // SINCRONIZAÇÃO: Força o Character a atualizar suas referências imediatamente
+                    if (character != null) {
+                        character.RefreshWeaponSetup();
+                    } else {
+                    }
+                    return;
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Restores the last equipped weapon after buildable placement is canceled.
+        /// Called by BuildingController when player finishes placing a buildable.
+        /// </summary>
+        public void RestoreLastWeapon() {
+            // Find the first weapon that is unlocked and select it
+            // Priority: Try Pistol (index 0) first, then other weapons
+            for (int i = 0; i < selectableItems.Length; i++) {
+                ItemBehaviour item = selectableItems[i];
+                if (item is WeaponBehaviour weapon && (i == 0 || weapon.CanBeUsed())) {
+                    SelectItem(i);
+                    return;
+                }
+            }
+
         }
 
         /// <summary>
@@ -143,39 +227,10 @@ namespace InfimaGames.LowPolyShooterPack {
             }
         }
 
-        /// <summary>
-        /// Handles weapon/item selection.
-        /// This is called when the player presses keys 1-5 to select a weapon.
-        /// </summary>
-        private void SelectWeapon(int keyNumber) {
-            ResolvePlayerCharacter();
-            
-            if (BuildingController.Instance != null && BuildingController.Instance.IsPlacing) {
-                BuildingController.Instance.CancelPlacement();
-            }
-
-            int weaponIndex;
-            if (keyNumber <= 5) {
-                weaponIndex = keyNumber - 1;
-            } else {
-                weaponIndex = 8;
-            }
-
-            if (equippedIndex == weaponIndex)
-                return;
-
-            if (weaponIndex != 0 && PlayerProgress.Instance != null) {
-                string weaponID = GetWeaponIDForIndex(weaponIndex);
-                if (!string.IsNullOrEmpty(weaponID) && !PlayerProgress.Instance.IsWeaponUnlocked(weaponID))
-                    return;
-            }
-
-            if (character != null) {
-                character.TryEquipWeapon(weaponIndex);
-            } else {
-                Equip(weaponIndex);
-            }
-        }
+        // OBSOLETO: SelectBuildable(), SelectBuildableItem(), SelectWeapon() - PODEM SER DELETADOS
+        // Estes métodos foram substituídos pelo sistema unificado SelectItem().
+        // A lógica de buildables agora é gerenciada por BuildableBehaviour.OnSelected().
+        // A lógica de armas agora é gerenciada por WeaponBehaviour.OnSelected().
 
         public override WeaponBehaviour Equip(int index) {
             if (weapons == null || index > weapons.Length - 1 || equippedIndex == index)
