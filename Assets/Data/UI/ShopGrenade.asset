@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8c5a88350b350884291d825a29b39298, type: 3}
-  m_Name: ShopItem_Pistol
+  m_Name: ShopGrenade
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemDataSO
-  itemID: 1
-  itemName: Pistol
-  itemDescription: 'The Pistol item. Type: Weapon'
-  itemData: {fileID: 11400000, guid: 41adb49d70ee55a47916910a6a68c0d5, type: 2}
-  icon: {fileID: 21300000, guid: 74db8f47f97906a44a4461b1d19d466f, type: 3}
-  previewPrefab: {fileID: 189091626145577203, guid: 464d2b315a1ed6b408948cc2fc04e8f7,
+  itemID: 5
+  itemName: Grenade
+  itemDescription: 'The Grenade item. Type: Consumable'
+  itemData: {fileID: 11400000, guid: 17364a04fbc054749b78bfe16ea4ebcd, type: 2}
+  icon: {fileID: 0}
+  previewPrefab: {fileID: 1415792643396714694, guid: f694e7b468bd5d74fa3b963ff27d0038,
     type: 3}
   unlockCost: 0
   baseUpgradeCost: 100

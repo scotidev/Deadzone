@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDataSO
   itemID: 3
   itemName: Shotgun
-  baseDamage: 10
+  maxUpgradeLevel: 10
+  baseDamage: 40
   baseFireRate: 200
   baseMagazineCapacity: 30
   maxReserveAmmo: 300

@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8c5a88350b350884291d825a29b39298, type: 3}
-  m_Name: ShopItem_Barricade
+  m_Name: ShopExplosiveBarrel
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemDataSO
-  itemID: 6
-  itemName: Barricade
-  itemDescription: 'The Barricade item. Type: Buildable'
-  itemData: {fileID: 11400000, guid: 83c9cb67eaa9ae740972afe1e131aa5f, type: 2}
-  icon: {fileID: 21300000, guid: bbb6fd533c55976419f5b9e687a53c7d, type: 3}
-  previewPrefab: {fileID: 6655631503875209216, guid: 479f383ee9ae21740a9eccfd474ddbdf,
+  itemID: 7
+  itemName: ExplosiveBarrel
+  itemDescription: 'The ExplosiveBarrel item. Type: Buildable'
+  itemData: {fileID: 11400000, guid: 5459b9cf2e95280489f71eefa12d9aa7, type: 2}
+  icon: {fileID: 0}
+  previewPrefab: {fileID: 8426833715630008873, guid: a3d893de50bf5b0429696987e48b2ae7,
     type: 3}
   unlockCost: 0
   baseUpgradeCost: 100
