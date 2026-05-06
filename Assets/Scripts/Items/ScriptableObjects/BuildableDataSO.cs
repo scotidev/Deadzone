@@ -1,11 +1,16 @@
 using UnityEngine;
 
-// REFATORAÇÃO: maxAmount deve ser unificado em um único contador para armas e  buildables e medkits, granadas... qualquer item deve conter um contador de quantidade chamado de ammoAmount, e cada item tem um currentAmount que é atualizado quando o item é usado ou recarregado. Isso simplifica a lógica de gerenciamento de quantidade e evita confusão entre diferentes tipos de itens.
+public enum BuildableStatType {
+    Damage,
+    Resistance,
+    Ammo,
+    Radius
+}
 
 [CreateAssetMenu(fileName = "NewBuildable", menuName = "Deadzone/Buildable Item")]
-///<summary> 
+/// <summary> 
 /// ScriptableObject that represents a buildable item in the game.
-///</summary>
+/// </summary>
 public class BuildableDataSO : ItemDataSO {
 
     #region SERIALIZED FIELDS
@@ -14,7 +19,18 @@ public class BuildableDataSO : ItemDataSO {
     [SerializeField] private int maxAmount;
     [SerializeField] private float damage;
     [SerializeField] private int explosionRadius;
-    [SerializeField] private float resistance = 100f;
+    [Tooltip("Renamed from 'health' to 'resistance'")]
+    [SerializeField] private float health = 100f;
+
+    [Header("Stats Display")]
+    [Tooltip("Select which stats to display in the shop UI for this buildable.")]
+    [SerializeField] private BuildableStatType[] displayStats;
+
+    [Header("Upgrade Scaling")]
+    [Tooltip("Damage increase per level. 0.1f = +10% per level.")]
+    [SerializeField] private float damageScaling = 0.1f;
+    [Tooltip("Resistance increase per level. 0.1f = +10% per level.")]
+    [SerializeField] private float resistanceScaling = 0.1f;
 
     [Header("Prefabs")]
     [SerializeField] private GameObject realPrefab;
@@ -27,35 +43,77 @@ public class BuildableDataSO : ItemDataSO {
     [Header("Space Check Size")]
     [Tooltip("Size of the box used to check for overlapping objects when placing the buildable item. Adjust this to ensure proper placement and avoid collisions with other objects.")]
     [SerializeField] private Vector3 overlapBoxSize = new Vector3(1f, 1f, 1f);
+
     #endregion
 
     #region PROPERTIES
 
     public float Damage => damage;
     public int ExplosionRadius => explosionRadius;
-    public float Resistance => resistance;
-    public float MaxAmount => maxAmount;
+    public float Resistance => health;
+    public int MaxAmount => maxAmount;
     public GameObject RealPrefab => realPrefab;
     public GameObject GhostPrefab => ghostPrefab;
     public Vector3 PlacementRotationEuler => placementRotationEuler;
     public Vector3 OverlapBoxSize => overlapBoxSize;
+    public BuildableStatType[] DisplayStats => displayStats;
 
     #endregion
 
     #region METHODS
 
-    public override string[] GetStatLabels() => new[] { "Damage", "Resistance", "Ammo", "Explosion Radius" };
+    private string GetStatLabel(BuildableStatType stat) {
+        switch (stat) {
+            case BuildableStatType.Damage: return "Damage";
+            case BuildableStatType.Resistance: return "Resistance";
+            case BuildableStatType.Ammo: return "Ammo";
+            case BuildableStatType.Radius: return "Radius";
+            default: return "Unknown";
+        }
+    }
 
-    public override float[] GetStatValues() => new[] { damage, resistance, maxAmount, explosionRadius };
+    public override string[] GetStatLabels() {
+        if (displayStats == null || displayStats.Length == 0) {
+            return new[] { "Ammo" };
+        }
+        
+        string[] labels = new string[displayStats.Length];
+        for (int i = 0; i < displayStats.Length; i++) {
+            labels[i] = GetStatLabel(displayStats[i]);
+        }
+        return labels;
+    }
+
+    public override float[] GetStatValues() => GetStatValues(1);
 
     public override float[] GetStatValues(int level) {
+        level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
         float levelFactor = 1f + (level - 1) * 0.1f;
-        return new[] { 
-            damage * levelFactor, 
-            resistance * levelFactor, 
-            maxAmount, 
-            explosionRadius 
-        };
+
+        if (displayStats == null || displayStats.Length == 0) {
+            return new[] { (float)maxAmount };
+        }
+
+        float[] values = new float[displayStats.Length];
+        
+        for (int i = 0; i < displayStats.Length; i++) {
+            switch (displayStats[i]) {
+                case BuildableStatType.Damage:
+                    values[i] = damage * (1f + damageScaling * (level - 1));
+                    break;
+                case BuildableStatType.Resistance:
+                    values[i] = health * (1f + resistanceScaling * (level - 1));
+                    break;
+                case BuildableStatType.Ammo:
+                    values[i] = maxAmount;
+                    break;
+                case BuildableStatType.Radius:
+                    values[i] = explosionRadius;
+                    break;
+            }
+        }
+        
+        return values;
     }
 
     #endregion

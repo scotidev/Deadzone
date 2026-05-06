@@ -19,7 +19,9 @@ MonoBehaviour:
   damage: 0
   explosionRadius: 0
   health: 100
-  length: 0
+  displayStats: 0100000002000000
+  damageScaling: 0.1
+  resistanceScaling: 0.1
   realPrefab: {fileID: 6655631503875209216, guid: 479f383ee9ae21740a9eccfd474ddbdf,
     type: 3}
   ghostPrefab: {fileID: 6655631503875209216, guid: 83d7ecfc4543a4041a3821b0609c2850,

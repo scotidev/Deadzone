@@ -52,7 +52,7 @@ public class ShopUI : BaseUI {
 
     [Header("Dynamic Stats")]
     [SerializeField] private Transform statsContainer;
-    [SerializeField] private StatBlockDisplay statBlockPrefab;
+    [SerializeField] private GameObject statBarPrefab;
 
     [Header("Ammo Button")]
     [SerializeField] private Button ammoButton;
@@ -72,7 +72,7 @@ public class ShopUI : BaseUI {
 
     private ShopItemDataSO selectedItemData;
     private GameObject activePreviewModel;
-    private List<StatBlockDisplay> activeStatBlocks = new List<StatBlockDisplay>();
+    private List<StatBarDisplay> activeStatBars = new List<StatBarDisplay>();
 
     #endregion
 
@@ -305,12 +305,12 @@ public class ShopUI : BaseUI {
     }
 
     /// <summary>
-    /// Writes the selected item's stats to the right-side panel fields using stat blocks.
+    /// Writes the selected item's stats to the right-side panel fields using stat bars.
     /// </summary>
     private void UpdateSelectedItemInfo() {
         if (selectedItemData == null) {
             SetSelectedInfoTexts(string.Empty, string.Empty);
-            ClearStatBlocks();
+            ClearStatBars();
             UpdateActionButton(null, 0);
             ClearAmmoDisplay();
             return;
@@ -339,43 +339,60 @@ public class ShopUI : BaseUI {
     }
 
     private void BuildDynamicStats() {
-        ClearStatBlocks();
+        foreach (Transform child in statsContainer) {
+            Destroy(child.gameObject);
+        }
+        
+        activeStatBars.Clear();
 
-        if (selectedItemData?.ItemData == null || statsContainer == null || statBlockPrefab == null) {
+        if (selectedItemData?.ItemData == null || statsContainer == null || statBarPrefab == null) {
             return;
         }
 
         ItemDataSO itemData = selectedItemData.ItemData;
         string[] labels = itemData.GetStatLabels();
 
-        int currentLevel = 1;
-        int maxLevel = 10;
-        if (PlayerProgress.Instance != null) {
-            currentLevel = PlayerProgress.Instance.GetItemLevel(selectedItemData.ItemID);
-            maxLevel = PlayerProgress.Instance.GetItemMaxLevel(selectedItemData.ItemID);
-        }
+        int currentLevel = PlayerProgress.Instance != null 
+            ? PlayerProgress.Instance.GetItemLevel(selectedItemData.ItemID) 
+            : 1;
+        
+        int maxLevel = PlayerProgress.Instance != null 
+            ? PlayerProgress.Instance.GetItemMaxLevel(selectedItemData.ItemID) 
+            : 10;
 
         int nextLevel = (currentLevel >= maxLevel) ? currentLevel : currentLevel + 1;
 
         float[] currentValues = itemData.GetStatValues(currentLevel);
         float[] nextValues = itemData.GetStatValues(nextLevel);
 
-        for (int i = 0; i < labels.Length; i++) {
-            StatBlockDisplay block = Instantiate(statBlockPrefab, statsContainer);
-            block.SetMaxStatValue(WeaponStatsCalculator.STAT_BARS);
-            block.SetStatValues(currentValues[i], nextValues[i]);
-            activeStatBlocks.Add(block);
+        for (int i = 0; i < labels.Length && i < 4; i++) {
+            GameObject barObj = Instantiate(statBarPrefab, statsContainer);
+            RectTransform rt = barObj.GetComponent<RectTransform>();
+            StatBarDisplay bar = barObj.GetComponent<StatBarDisplay>();
+            
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(1f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = Vector2.zero;
+            rt.sizeDelta = new Vector2(0f, 30f);
+            
+            float maxValue = WeaponStatsCalculator.GetMaxValueForStat(labels[i]);
+            
+            bar.Setup(labels[i], maxValue, i);
+            bar.SetValues(currentValues[i], nextValues[i]);
+            
+            activeStatBars.Add(bar);
         }
     }
 
     /// <summary>
-    /// Clears dynamically created stat block displays.
+    /// Clears dynamically created stat bar displays.
     /// </summary>
-    private void ClearStatBlocks() {
-        foreach (var block in activeStatBlocks) {
-            if (block != null) Destroy(block.gameObject);
+    private void ClearStatBars() {
+        foreach (var bar in activeStatBars) {
+            if (bar != null) Destroy(bar.gameObject);
         }
-        activeStatBlocks.Clear();
+        activeStatBars.Clear();
     }
 
     /// <summary>

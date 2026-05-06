@@ -1,118 +1,70 @@
 using UnityEngine;
 
-//ATUALIZAÇÃO NECESSARIA: ter as  barras de HP, radius,resistance, heal etc... para os itens de medkit, vest, grenande, buildables...
+public static class WeaponStatsCalculator {
 
-/// <summary>
-/// Utility class that normalizes weapon stats to a 0-5 bar display system.
-/// Converts raw stat values from WeaponDataSO into proportional bar fills for UI.
-/// </summary>
-public class WeaponStatsCalculator {
+    #region WEAPON CONSTANTS
 
-    #region CONSTANTS
+    public const float MAX_DAMAGE_WEAPON = 44f;
+    public const float MAX_FIRE_RATE = 500f;
+    public const float MAX_AMMO_WEAPON = 33f;
+    public const float MAX_CRIT = 25f;
 
-    /// <summary>Maximum damage value that fits in 5 bars (each bar = 20 damage).</summary>
-    public const float MAX_DAMAGE = 100f;
+    #endregion
 
-    /// <summary>Maximum fire rate value that fits in 5 bars (each bar = 2 fire rate).</summary>
-    public const float MAX_FIRE_RATE = 10f;
+    #region MEDKIT CONSTANTS
 
-    /// <summary>Maximum ammo capacity that fits in 5 bars (each bar = 40 ammo).</summary>
-    public const float MAX_AMMO_CAPACITY = 200f;
+    public const float MAX_HEAL = 110f;
+    public const float MAX_AMMO_MEDKIT = 3f;
 
-    /// <summary>Number of display bars for stats.</summary>
-    public const int STAT_BARS = 5;
+    #endregion
+
+    #region GRENADE CONSTANTS
+
+    public const float MAX_GRENADE_DAMAGE = 55f;
+    public const float MAX_GRENADE_RADIUS = 22f;
+    public const float MAX_AMMO_GRENADE = 10f;
+
+    #endregion
+
+    #region VEST CONSTANTS
+
+    public const float MAX_VEST_RESISTANCE = 130f;
+
+    #endregion
+
+    #region BUILDABLE CONSTANTS
+
+    public const float MAX_BUILDABLE_DAMAGE = 110f;
+    public const float MAX_BUILDABLE_RESISTANCE = 110f;
+    public const float MAX_BUILDABLE_RADIUS = 55f;
+    public const float MAX_AMMO_BUILDABLE = 5f;
 
     #endregion
 
     #region METHODS
 
-    /// <summary>
-    /// Converts a raw damage value to normalized bar count (0-5).
-    /// Uses clamping to ensure the value never exceeds MAX_DAMAGE.
-    /// </summary>
-    /// <param name="damageValue">Raw damage value from weapon.</param>
-    /// <returns>Normalized value in range 0-5 bars.</returns>
-    public static float NormalizeDamage(float damageValue) {
-        float clamped = Mathf.Clamp(damageValue, 0f, MAX_DAMAGE);
-
-        float normalized = (clamped / MAX_DAMAGE) * STAT_BARS;
-
-        return normalized;
+    public static float Normalize(float value, float maxValue) {
+        if (maxValue <= 0f) return 0f;
+        return Mathf.Clamp01(value / maxValue);
     }
 
-    /// <summary>
-    /// Converts a raw fire rate value to normalized bar count (0-5).
-    /// Fire rate is clamped to MAX_FIRE_RATE to prevent UI overflow.
-    /// </summary>
-    /// <param name="fireRateValue">Raw fire rate value from weapon.</param>
-    /// <returns>Normalized value in range 0-5 bars.</returns>
-    public static float NormalizeFireRate(float fireRateValue) {
-        float clamped = Mathf.Clamp(fireRateValue, 0f, MAX_FIRE_RATE);
+    public static float GetMaxValueForStat(string statName) {
+        string lowerName = statName.ToLower().Replace(" ", "").Replace("/", "");
 
-        float normalized = (clamped / MAX_FIRE_RATE) * STAT_BARS;
+        if (lowerName.Contains("damage")) return MAX_DAMAGE_WEAPON;
+        if (lowerName.Contains("firerate") || lowerName.Contains("fire rate")) return MAX_FIRE_RATE;
+        if (lowerName.Contains("ammo")) return MAX_AMMO_WEAPON;
+        if (lowerName.Contains("crit")) return MAX_CRIT;
+        if (lowerName.Contains("heal")) return MAX_HEAL;
+        if (lowerName.Contains("resistance")) return MAX_VEST_RESISTANCE;
+        if (lowerName.Contains("radius")) return MAX_GRENADE_RADIUS;
 
-        return normalized;
+        return 100f;
     }
 
-    /// <summary>
-    /// Converts a raw ammo capacity value to normalized bar count (0-5).
-    /// Ammo is clamped to MAX_AMMO_CAPACITY.
-    /// </summary>
-    /// <param name="ammoValue">Raw ammo capacity value from weapon.</param>
-    /// <returns>Normalized value in range 0-5 bars.</returns>
-    public static float NormalizeAmmo(float ammoValue) {
-        float clamped = Mathf.Clamp(ammoValue, 0f, MAX_AMMO_CAPACITY);
-
-        float normalized = (clamped / MAX_AMMO_CAPACITY) * STAT_BARS;
-
-        return normalized;
-    }
-
-    /// <summary>
-    /// Calculates the damage value for a given upgrade level using WeaponDataSO.
-    /// Then normalizes it to bar count (0-5).
-    /// </summary>
-    /// <param name="weaponData">Reference to the weapon's data asset.</param>
-    /// <param name="level">Current upgrade level (1-10).</param>
-    /// <returns>Normalized damage value in range 0-5 bars.</returns>
-    public static float CalculateAndNormalizeDamage(WeaponDataSO weaponData, int level) {
-        if (weaponData == null) return 0f;
-
-        float damageAtLevel = weaponData.GetDamageAtLevel(level);
-
-        return NormalizeDamage(damageAtLevel);
-    }
-
-    /// <summary>
-    /// Calculates the fire rate value for a given upgrade level using WeaponDataSO.
-    /// Then normalizes it to bar count (0-5).
-    /// </summary>
-    /// <param name="weaponData">Reference to the weapon's data asset.</param>
-    /// <param name="level">Current upgrade level (1-10).</param>
-    /// <returns>Normalized fire rate value in range 0-5 bars.</returns>
-    public static float CalculateAndNormalizeFireRate(WeaponDataSO weaponData, int level) {
-        if (weaponData == null) return 0f;
-
-        float fireRateAtLevel = weaponData.GetFireRateAtLevel(level);
-
-        float fireRateUnits = fireRateAtLevel / 100f;
-
-        return NormalizeFireRate(fireRateUnits);
-    }
-
-    /// <summary>
-    /// Calculates the ammo capacity for a given upgrade level using WeaponDataSO.
-    /// Then normalizes it to bar count (0-5).
-    /// </summary>
-    /// <param name="weaponData">Reference to the weapon's data asset.</param>
-    /// <param name="level">Current upgrade level (1-10).</param>
-    /// <returns>Normalized ammo value in range 0-5 bars.</returns>
-    public static float CalculateAndNormalizeAmmo(WeaponDataSO weaponData, int level) {
-        if (weaponData == null) return 0f;
-
-        int ammoAtLevel = weaponData.GetMagazineCapacityAtLevel(level);
-
-        return NormalizeAmmo(ammoAtLevel);
+    public static float NormalizeByStatName(string statName, float value) {
+        float maxValue = GetMaxValueForStat(statName);
+        return Normalize(value, maxValue);
     }
 
     #endregion

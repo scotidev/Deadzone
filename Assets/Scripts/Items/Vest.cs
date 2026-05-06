@@ -2,6 +2,33 @@ using UnityEngine;
 using InfimaGames.LowPolyShooterPack;
 
 /*============================================================================
+    [BUG VEST] - CORREÇÃO DO BUG DE REGENERAÇÃO DO EXCLUSIVO DA VEST
+    
+    PROBLEMA ORIGINAL:
+    O PlayerArmor consegue re-equipar a vest automaticamente após 5 segundos
+    fora da zona de dano, MAS o HUD não voltava a aparecer e o som não
+    tocava porque não havia comunicação entre o sistema de regeneração e
+    o sistema de UI.
+    
+    SOLUÇÃO IMPLEMENTADA:
+    1. Criamos um NOVO evento estático: Vest.OnVestRegenerated
+    2. Criamos um método público: TriggerRegeneratedEvent()
+    3. O PlayerArmor chama TriggerRegeneratedEvent() quando re-equipa a vest
+    4. Este método dispara o evento estático OnVestRegenerated
+    5. O PlayerArmorUI se inscreve neste evento e responde mostrando o HUD + som
+    
+    FLUXO COMPLETO:
+    PlayerArmor.Update()
+        → detecta 5s fora da zona de dano com armor = 0
+        → chama ReEquipVest()
+        → chama vestComponent.TriggerRegeneratedEvent()
+        → TriggerRegeneratedEvent() dispara Vest.OnVestRegenerated
+        → PlayerArmorUI.OnVestRegenerated() é chamado
+        → Mostramos HUD + tocamos som
+    
+============================================================================*/
+
+/*============================================================================
     Vest.cs - Script do Item Colete (Armor)
     
     Este script controla o item "Colete" do jogo (Item 9).
@@ -78,7 +105,11 @@ namespace InfimaGames.LowPolyShooterPack {
         // Evento estático - usado quando o colete é destruído
         // Outros scripts podem ouvir isso para atualizar a UI, por exemplo
         public static event System.Action OnVestDestroyed;
-        
+
+        // Evento estático - usado quando o colete se regenera após ter sido destruído
+        // Disparado pelo PlayerArmor quando a regeneração começa do zero
+        public static event System.Action OnVestRegenerated;
+
         #endregion
 
         #region UNITY
@@ -211,6 +242,14 @@ namespace InfimaGames.LowPolyShooterPack {
                 // Isso é usado para sons de UI e feedback do jogador
                 audioService.PlaySFX2D(vestEquippedClip);
             }
+        }
+
+        /// <summary>
+        /// Triggers the vest regenerated event. Called by PlayerArmor when armor
+        /// regenerates from 0 due to exclusive upgrade.
+        /// </summary>
+        public void TriggerRegeneratedEvent() {
+            OnVestRegenerated?.Invoke();
         }
         
         /// <summary>
