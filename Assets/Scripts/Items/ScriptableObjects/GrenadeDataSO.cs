@@ -13,5 +13,15 @@ public class GrenadeDataSO : ItemDataSO {
     public int maxAmount;
 
     public override string[] GetStatLabels() => new[] { "Damage", "Radius", "Ammo" };
+
     public override float[] GetStatValues() => new[] { damage, radius, maxAmount };
+
+    public override float[] GetStatValues(int level) {
+        float levelFactor = 1f + (level - 1) * 0.1f;
+        return new[] { 
+            damage * levelFactor, 
+            radius * levelFactor, 
+            maxAmount 
+        };
+    }
 }

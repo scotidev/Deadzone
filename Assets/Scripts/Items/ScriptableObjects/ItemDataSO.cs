@@ -34,4 +34,12 @@ public abstract class ItemDataSO : ScriptableObject {
     /// <returns>An array of floating-point numbers representing the calculated statistical values. The array may be empty if no
     /// values are available.</returns>
     public abstract float[] GetStatValues();
+
+    /// <summary>
+    /// Gets an array of statistical values for a specific upgrade level.
+    /// Used to show current stats and preview stats after upgrade.
+    /// </summary>
+    /// <param name="level">The upgrade level (1-based).</param>
+    /// <returns>An array of statistical values at the specified level.</returns>
+    public abstract float[] GetStatValues(int level);
 }

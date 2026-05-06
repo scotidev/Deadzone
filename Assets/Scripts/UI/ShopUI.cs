@@ -49,14 +49,14 @@ public class ShopUI : BaseUI {
     [SerializeField] private float previewRotationSpeed = 35f;
     [SerializeField] private TextMeshProUGUI selectedItemNameText;
     [SerializeField] private TextMeshProUGUI selectedItemDescriptionText;
-    [SerializeField] private StatBlockDisplay damageBlockDisplay;
-    [SerializeField] private StatBlockDisplay fireRateBlockDisplay;
-    [SerializeField] private StatBlockDisplay ammoBlockDisplay;
+
+    [Header("Dynamic Stats")]
+    [SerializeField] private Transform statsContainer;
+    [SerializeField] private StatBlockDisplay statBlockPrefab;
 
     [Header("Ammo Button")]
     [SerializeField] private Button ammoButton;
     [SerializeField] private TextMeshProUGUI ammoPriceText;
-    [SerializeField] private TextMeshProUGUI currentAmmoText;
 
     [Header("Action Button")]
     [SerializeField] private Button selectedItemActionButton;
@@ -66,17 +66,13 @@ public class ShopUI : BaseUI {
 
     [SerializeField] private List<ShopItemDataSO> shopItems = new List<ShopItemDataSO>();
 
-    [Header("Ammo Purchase")]
-    // Aqui essa região também precisa ser refatorada, a lógica de preço e limite de munição deve ir para outro script, talvez ShopManager ou dentro do próprio ScriptableObject do item, questão de análise. O que deve ficar aqui: o botão acionando a compra d emunição, mostrar o preço e a munição atual, e atualizar isso quando o jogador clicar em um card diferente, ou seja, quando mudar a arma selecionada.
-    [SerializeField] private List<ItemPricingConfig> itemPricingConfigs = new List<ItemPricingConfig>();
-
-
     #endregion
 
     #region FIELDS
 
     private ShopItemDataSO selectedItemData;
     private GameObject activePreviewModel;
+    private List<StatBlockDisplay> activeStatBlocks = new List<StatBlockDisplay>();
 
     #endregion
 
@@ -335,97 +331,77 @@ public class ShopUI : BaseUI {
 
         SetSelectedInfoTexts(itemName, description);
 
-        // REFATORAÇÃO: isso tudo nao deveria ser responsabilidade do ShopUI, precisamos encontrar qual script deve ser responsavel por processar essa lógica e mover para ele, e chamar aqui somente  a função  
-        if (selectedItemData.ItemData is WeaponDataSO weaponData) {
-            int level = 1;
-            if (PlayerProgress.Instance != null) {
-                level = Mathf.Max(1, PlayerProgress.Instance.GetWeaponLevel(selectedItemData.ItemID));
-            }
+        BuildDynamicStats();
 
-            int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(selectedItemData.ItemID);
-            bool canUpgrade = level < maxLevel;
-
-            float currentDamageNormalized = WeaponStatsCalculator.CalculateAndNormalizeDamage(weaponData, level);
-            float currentFireRateNormalized = WeaponStatsCalculator.CalculateAndNormalizeFireRate(weaponData, level);
-            float currentAmmoNormalized = WeaponStatsCalculator.CalculateAndNormalizeAmmo(weaponData, level);
-
-            float nextDamageNormalized = canUpgrade
-                ? WeaponStatsCalculator.CalculateAndNormalizeDamage(weaponData, level + 1)
-                : currentDamageNormalized;
-            float nextFireRateNormalized = canUpgrade
-                ? WeaponStatsCalculator.CalculateAndNormalizeFireRate(weaponData, level + 1)
-                : currentFireRateNormalized;
-            float nextAmmoNormalized = canUpgrade
-                ? WeaponStatsCalculator.CalculateAndNormalizeAmmo(weaponData, level + 1)
-                : currentAmmoNormalized;
-
-            if (damageBlockDisplay != null) {
-                damageBlockDisplay.SetMaxStatValue(WeaponStatsCalculator.STAT_BARS);
-                damageBlockDisplay.SetStatValues(currentDamageNormalized, nextDamageNormalized);
-            }
-
-            if (fireRateBlockDisplay != null) {
-                fireRateBlockDisplay.SetMaxStatValue(WeaponStatsCalculator.STAT_BARS);
-                fireRateBlockDisplay.SetStatValues(currentFireRateNormalized, nextFireRateNormalized);
-            }
-
-            if (ammoBlockDisplay != null) {
-                ammoBlockDisplay.SetMaxStatValue(WeaponStatsCalculator.STAT_BARS);
-                ammoBlockDisplay.SetStatValues(currentAmmoNormalized, nextAmmoNormalized);
-            }
-
-            UpdateAmmoDisplay(selectedItemData.ItemID);
-        } else {
-            ClearStatBlocks();
-            ClearAmmoDisplay();
-        }
+        UpdateAmmoDisplay(selectedItemData.ItemID);
 
         UpdateActionButton(selectedItemData, 0);
     }
 
+    private void BuildDynamicStats() {
+        ClearStatBlocks();
+
+        if (selectedItemData?.ItemData == null || statsContainer == null || statBlockPrefab == null) {
+            return;
+        }
+
+        ItemDataSO itemData = selectedItemData.ItemData;
+        string[] labels = itemData.GetStatLabels();
+
+        int currentLevel = 1;
+        int maxLevel = 10;
+        if (PlayerProgress.Instance != null) {
+            currentLevel = PlayerProgress.Instance.GetItemLevel(selectedItemData.ItemID);
+            maxLevel = PlayerProgress.Instance.GetItemMaxLevel(selectedItemData.ItemID);
+        }
+
+        int nextLevel = (currentLevel >= maxLevel) ? currentLevel : currentLevel + 1;
+
+        float[] currentValues = itemData.GetStatValues(currentLevel);
+        float[] nextValues = itemData.GetStatValues(nextLevel);
+
+        for (int i = 0; i < labels.Length; i++) {
+            StatBlockDisplay block = Instantiate(statBlockPrefab, statsContainer);
+            block.SetMaxStatValue(WeaponStatsCalculator.STAT_BARS);
+            block.SetStatValues(currentValues[i], nextValues[i]);
+            activeStatBlocks.Add(block);
+        }
+    }
+
     /// <summary>
-    /// Clears stat block displays (resets to empty).
+    /// Clears dynamically created stat block displays.
     /// </summary>
     private void ClearStatBlocks() {
-        if (damageBlockDisplay != null) damageBlockDisplay.SetStatValues(0f, 0f);
-        if (fireRateBlockDisplay != null) fireRateBlockDisplay.SetStatValues(0f, 0f);
-        if (ammoBlockDisplay != null) ammoBlockDisplay.SetStatValues(0f, 0f);
+        foreach (var block in activeStatBlocks) {
+            if (block != null) Destroy(block.gameObject);
+        }
+        activeStatBlocks.Clear();
     }
 
     /// <summary>
     /// Updates ammo/quantity display for the selected item.
     /// Shows current reserve quantity and the cost to purchase more.
-    /// CONCEITO: Works for all item types (weapons, buildables, consumables)
-    /// by using generic GetItemPricingConfig() and checking IsItemUnlocked().
-    /// SPECIAL CASE: For Vest, button repairs the vest instead of buying ammo.
+    /// Uses ShopItemDataSO pricing data directly.
     /// </summary>
-    private void UpdateAmmoDisplay(string weaponID) {
-        if (string.IsNullOrEmpty(weaponID) || PlayerProgress.Instance == null) {
+    private void UpdateAmmoDisplay(string itemID) {
+        if (string.IsNullOrEmpty(itemID) || PlayerProgress.Instance == null || selectedItemData == null) {
             ClearAmmoDisplay();
             return;
         }
 
-        ItemPricingConfig pricingConfig = GetItemPricingConfig(weaponID);
-
-        if (string.IsNullOrEmpty(pricingConfig.itemID)) {
-            ClearAmmoDisplay();
-            return;
-        }
-
-        bool isVestItem = selectedItemData != null && selectedItemData.ItemData is VestDataSO;
+        bool isVestItem = selectedItemData.ItemData is VestDataSO;
 
         if (isVestItem) {
-            UpdateAmmoDisplayForVest(pricingConfig);
+            UpdateAmmoDisplayForVest();
             return;
         }
 
-        int currentAmmo = PlayerProgress.Instance.GetWeaponReserveAmmo(weaponID);
+        int currentAmount = PlayerProgress.Instance.GetWeaponReserveAmmo(itemID);
+        int maxAmount = selectedItemData.MaxReserveQuantity;
+        int cost = selectedItemData.CostPerPurchase;
+        bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(itemID);
 
-        if (currentAmmoText != null) {
-            currentAmmoText.text = $"{currentAmmo}/{pricingConfig.maxReserveQuantity}";
-        }
-
-        if (currentAmmo >= pricingConfig.maxReserveQuantity) {
+        if (currentAmount >= maxAmount) {
             if (ammoPriceText != null) {
                 ammoPriceText.text = "FULL";
             }
@@ -434,14 +410,12 @@ public class ShopUI : BaseUI {
             }
         } else {
             if (ammoPriceText != null) {
-                ammoPriceText.text = $"${pricingConfig.costPerPurchase:N0}";
+                ammoPriceText.text = $"${cost:N0}";
             }
-
-            bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(weaponID);
             if (ammoButton != null) {
                 ammoButton.interactable = isUnlocked &&
                                          EconomyManager.Instance != null &&
-                                         EconomyManager.Instance.CanAfford(pricingConfig.costPerPurchase);
+                                         EconomyManager.Instance.CanAfford(cost);
             }
         }
     }
@@ -464,11 +438,10 @@ public class ShopUI : BaseUI {
         
         Estados posibles:
         - LOCKED: ainda não foi desbloqueada
-        - X%: Porcentagem atual de armadura
         - FULL: armadura em 100% (botão desabilitado)
         - $XX: preço para reparo
     =========================================================================*/
-    private void UpdateAmmoDisplayForVest(ItemPricingConfig pricingConfig) {
+    private void UpdateAmmoDisplayForVest() {
         PlayerArmor playerArmor = GetPlayerArmor();
 
         if (playerArmor == null || ammoButton == null) {
@@ -479,39 +452,26 @@ public class ShopUI : BaseUI {
         float armorFraction = playerArmor.GetArmorFraction();
         bool isFull = armorFraction >= 1f;
         bool isUnlocked = PlayerProgress.Instance != null && PlayerProgress.Instance.IsItemUnlocked(selectedItemData.ItemID);
-        //bool isBroken = armorFraction <= 0f; // Variável não usada - podemos remover
 
-        if (currentAmmoText != null) {
-            if (!isUnlocked) {
-                currentAmmoText.text = "LOCKED";
-            } else {
-                int currentArmor = Mathf.RoundToInt(armorFraction * 100f);
-                currentAmmoText.text = $"{currentArmor}%";
-            }
-        }
-
-        // Se não está desbloqueado, mostrar "LOCKED" e desabilitar botão
         if (!isUnlocked) {
             if (ammoPriceText != null) {
                 ammoPriceText.text = "LOCKED";
             }
             ammoButton.interactable = false;
         }
-        // Se está cheia, mostrar "FULL"
         else if (isFull) {
             if (ammoPriceText != null) {
                 ammoPriceText.text = "FULL";
             }
             ammoButton.interactable = false;
         }
-        // Se está quebrada ou danificada, mostrar preço e habilitar botão
         else {
             if (ammoPriceText != null) {
-                ammoPriceText.text = $"${pricingConfig.costPerPurchase:N0}";
+                ammoPriceText.text = $"${selectedItemData.CostPerPurchase:N0}";
             }
 
             ammoButton.interactable = EconomyManager.Instance != null &&
-                                     EconomyManager.Instance.CanAfford(pricingConfig.costPerPurchase);
+                                     EconomyManager.Instance.CanAfford(selectedItemData.CostPerPurchase);
         }
     }
 
@@ -519,7 +479,6 @@ public class ShopUI : BaseUI {
     /// Clears ammo display texts (resets to empty).
     /// </summary>
     private void ClearAmmoDisplay() {
-        if (currentAmmoText != null) currentAmmoText.text = string.Empty;
         if (ammoPriceText != null) ammoPriceText.text = string.Empty;
         if (ammoButton != null) ammoButton.interactable = false;
     }
@@ -700,59 +659,44 @@ public class ShopUI : BaseUI {
     }
 
     /// <summary>
-    /// Finds the pricing configuration for the specified item ID.
-    /// Returns a default struct if not found (itemID will be empty string).
-    /// CONCEITO: Renamed from GetWeaponAmmoPricing to GetItemPricingConfig
-    /// to support all item types (weapons, consumables, buildables).
-    /// </summary>
-    private ItemPricingConfig GetItemPricingConfig(string itemID) {
-        return itemPricingConfigs.FirstOrDefault(c => c.itemID == itemID);
-    }
-
-    /// <summary>
     /// Handles ammo/quantity purchase button click.
     /// Validates funds, adds quantity to reserve, and deducts currency.
-    /// CONCEITO: Works for all item types (weapons, buildables, consumables).
-    /// Gets pricing from unified ItemPricingConfig.
     /// </summary>
     private void OnAmmoButtonPressed() {
         if (selectedItemData == null) return;
 
         string itemID = selectedItemData.ItemID;
-        ItemPricingConfig pricingConfig = GetItemPricingConfig(itemID);
-
-        if (string.IsNullOrEmpty(pricingConfig.itemID)) {
-            Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] No pricing configuration found for item: {itemID}");
-            return;
-        }
+        int cost = selectedItemData.CostPerPurchase;
+        int quantity = selectedItemData.QuantityPerPurchase;
+        int maxAmount = selectedItemData.MaxReserveQuantity;
 
         bool isVestItem = selectedItemData.ItemData is VestDataSO;
 
         if (isVestItem) {
-            RepairVest(pricingConfig);
+            RepairVest();
             return;
         }
 
-        if (!EconomyManager.Instance.CanAfford(pricingConfig.costPerPurchase)) {
-            int missingAmount = pricingConfig.costPerPurchase - EconomyManager.Instance.GetCurrentCurrency();
+        if (!EconomyManager.Instance.CanAfford(cost)) {
+            int missingAmount = cost - EconomyManager.Instance.GetCurrentCurrency();
             Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Insufficient funds! Need {missingAmount} more coins.");
             return;
         }
 
         int currentQuantity = PlayerProgress.Instance.GetWeaponReserveAmmo(itemID);
-        int newQuantity = currentQuantity + pricingConfig.quantityPerPurchase;
+        int newQuantity = currentQuantity + quantity;
 
-        newQuantity = Mathf.Clamp(newQuantity, 0, pricingConfig.maxReserveQuantity);
+        newQuantity = Mathf.Clamp(newQuantity, 0, maxAmount);
 
         int actualQuantityAdded = newQuantity - currentQuantity;
 
         if (actualQuantityAdded <= 0) {
-            Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Item {itemID} already at max quantity ({pricingConfig.maxReserveQuantity})!");
+            Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Item {itemID} already at max quantity ({maxAmount})!");
             return;
         }
 
-        float quantityProportion = (float)actualQuantityAdded / pricingConfig.quantityPerPurchase;
-        int actualCost = Mathf.RoundToInt(pricingConfig.costPerPurchase * quantityProportion);
+        float quantityProportion = (float)actualQuantityAdded / quantity;
+        int actualCost = Mathf.RoundToInt(cost * quantityProportion);
 
         if (EconomyManager.Instance.TrySpendCurrency(actualCost)) {
             PlayerProgress.Instance.AddWeaponReserveAmmo(itemID, actualQuantityAdded);
@@ -764,9 +708,9 @@ public class ShopUI : BaseUI {
         }
     }
 
-    /*=========================================================================
+/*=========================================================================
     RepairVest - Repara a vest quando jogador clica em +ammo
-        
+    
     Quando o jogador tem a Vest danificada (armor < 100%) e clica no botão +ammo,
     este método:
     1. Verifica se pode pagar
@@ -777,7 +721,7 @@ public class ShopUI : BaseUI {
     Note: Reparar usa AddArmor(100f) ao invés de RepairVest() porque
     o AddArmor também dispara evento para UI.
     =========================================================================*/
-    private void RepairVest(ItemPricingConfig pricingConfig) {
+    private void RepairVest() {
         PlayerArmor playerArmor = GetPlayerArmor();
 
         if (playerArmor == null) {
@@ -785,28 +729,26 @@ public class ShopUI : BaseUI {
             return;
         }
 
-        // Verificar se tem dinheiro
-        if (!EconomyManager.Instance.CanAfford(pricingConfig.costPerPurchase)) {
-            int missingAmount = pricingConfig.costPerPurchase - EconomyManager.Instance.GetCurrentCurrency();
+        int cost = selectedItemData.CostPerPurchase;
+
+        if (!EconomyManager.Instance.CanAfford(cost)) {
+            int missingAmount = cost - EconomyManager.Instance.GetCurrentCurrency();
             Debug.LogWarning($"[ShopUI RepairVest] funds insuficientes! Precisa de {missingAmount} coins a mais.");
             return;
         }
 
         float armorFraction = playerArmor.GetArmorFraction();
 
-        // Se já está cheia, não precisa reparo
         if (armorFraction >= 1f) {
             Debug.Log("[ShopUI RepairVest] Vest já está com armadura cheia!");
             return;
         }
 
-        // Deduzir custo e reparo
-        if (EconomyManager.Instance.TrySpendCurrency(pricingConfig.costPerPurchase)) {
+        if (EconomyManager.Instance.TrySpendCurrency(cost)) {
             playerArmor.AddArmor(100f);
 
-            Debug.Log($"[ShopUI.RepairVest] Vest reparada por ${pricingConfig.costPerPurchase}. Nova armadura: 100%");
+            Debug.Log($"[ShopUI.RepairVest] Vest reparada por ${cost}. Nova armadura: 100%");
 
-            // Tocar som (same som de equipar)
             PlayVestEquippedSound();
             PlayVestEquippedSound();
 
@@ -984,48 +926,6 @@ public class ShopUI : BaseUI {
         if (ShopManager.Instance != null)
             ShopManager.Instance.CloseShop();
     }
-}
 
     #endregion
-
-/// <summary>
-/// Serializable struct to configure purchase pricing and limits for items (weapons, buildables, consumables).
-/// Defines how much quantity/ammo is added per purchase, the cost, and maximum reserve.
-/// CONCEITO: Renamed from WeaponAmmoPricing to ItemPricingConfig to support all item types.
-/// All items work the same way: buy quantity, add to reserve, respect max limit.
-/// </summary>
-[System.Serializable]
-public struct ItemPricingConfig {
-
-    [Tooltip("The unique identifier for the item (e.g., 'Pistol', 'Barricade', 'Medkit').")]
-    [SerializeField]
-    public string itemID;
-
-    [Tooltip("Amount of quantity/ammo added per purchase.")]
-    [SerializeField]
-    public int quantityPerPurchase;
-
-    [Tooltip("Cost in currency per purchase.")]
-    [SerializeField]
-    public int costPerPurchase;
-
-    [Tooltip("Maximum reserve quantity/ammo this item can hold.")]
-    [SerializeField]
-    public int maxReserveQuantity;
-}
-
-// Legacy alias for backwards compatibility
-public struct WeaponAmmoPricing {
-
-    public string weaponID;
-    public int ammoPerPurchase;
-    public int costPerPurchase;
-    public int maxReserveAmmo;
-
-    public WeaponAmmoPricing(ItemPricingConfig config) {
-        weaponID = config.itemID;
-        ammoPerPurchase = config.quantityPerPurchase;
-        costPerPurchase = config.costPerPurchase;
-        maxReserveAmmo = config.maxReserveQuantity;
-    }
 }

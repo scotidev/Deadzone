@@ -13,5 +13,15 @@ public class MedkitDataSO : ItemDataSO {
     public int maxAmount;
 
     public override string[] GetStatLabels() => new[] { "Heal", "Heal Speed", "Ammo" };
+
     public override float[] GetStatValues() => new[] { healAmount, healSpeed, maxAmount };
+
+    public override float[] GetStatValues(int level) {
+        float levelFactor = 1f + (level - 1) * 0.1f;
+        return new[] { 
+            healAmount * levelFactor, 
+            healSpeed * levelFactor, 
+            maxAmount 
+        };
+    }
 }

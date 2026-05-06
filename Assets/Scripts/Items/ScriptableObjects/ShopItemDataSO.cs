@@ -32,8 +32,10 @@ public class ShopItemDataSO : ScriptableObject {
     [SerializeField] private int unlockCost = 0;
     [SerializeField] private int baseUpgradeCost = 100;
 
-    [SerializeField] private int ammoCost = 50;
-    [SerializeField] private int ammoAmountPerPurchase = 30;
+    [Header("Purchase Settings")]
+    [SerializeField] private int costPerPurchase = 50;
+    [SerializeField] private int quantityPerPurchase = 30;
+    [SerializeField] private int maxReserveQuantity = 300;
 
     [Header("Exclusive")]
     [SerializeField] private int levelToUnlockExclusive = 9;
@@ -57,8 +59,9 @@ public class ShopItemDataSO : ScriptableObject {
     public Vector3 PreviewRotationOffset => previewRotationOffset;
     public int UnlockCost => unlockCost;
     public int BaseUpgradeCost => baseUpgradeCost;
-    public int AmmoCost => ammoCost;
-    public int AmmoAmountPerPurchase => ammoAmountPerPurchase;
+    public int CostPerPurchase => costPerPurchase;
+    public int QuantityPerPurchase => quantityPerPurchase;
+    public int MaxReserveQuantity => maxReserveQuantity;
     public int LevelToUnlockExclusive => levelToUnlockExclusive;
     public int ExclusiveUpgradeCost => exclusiveUpgradeCost;
     public string ExclusivePowerDescription => exclusivePowerDescription;

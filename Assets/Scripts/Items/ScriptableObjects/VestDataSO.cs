@@ -16,7 +16,10 @@ public class VestDataSO : ItemDataSO {
     [SerializeField] private float resistanceScaling = 0.25f;
 
     public override string[] GetStatLabels() => new[] { "Resistance" };
-    public override float[] GetStatValues() => new[] { GetResistanceAtLevel(1) };
+
+    public override float[] GetStatValues() => GetStatValues(1);
+
+    public override float[] GetStatValues(int level) => new[] { GetResistanceAtLevel(level) };
 
     /// <summary>
     /// Gets the resistance value at a specific upgrade level.
