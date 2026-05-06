@@ -20,6 +20,10 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
     [SerializeField] private float poisonDamagePerTick = 5f;
     [SerializeField] private float poisonTickInterval = 1f;
 
+    [Header("Audio Clips")]
+    [SerializeField] private AudioClip damageSound;
+    [SerializeField] private AudioClip healSound;
+
     #endregion
 
     #region FIELDS

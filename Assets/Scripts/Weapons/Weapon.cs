@@ -1,4 +1,4 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
+// Copyright 2021, Infima Games. All Rights Reserved.
 
 using UnityEngine;
 
@@ -62,30 +62,55 @@ namespace InfimaGames.LowPolyShooterPack {
 
         protected override void Awake() {
             animator = GetComponent<Animator>();
-            if (animator == null) {
-                Debug.LogWarning($"[Weapon.Awake] No Animator found on {gameObject.name}! Animation will not work.");
-            }
-            
             attachmentManager = GetComponent<WeaponAttachmentManagerBehaviour>();
-            if (attachmentManager == null) {
-                Debug.LogWarning($"[Weapon.Awake] No WeaponAttachmentManager found on {gameObject.name}! Attachments will not work.");
-            }
 
             gameModeService = ServiceLocator.Current.Get<IGameModeService>();
             characterBehaviour = gameModeService.GetPlayerCharacter();
             playerCamera = characterBehaviour.GetCameraWorld().transform;
         }
+        
         protected override void Start() {
-            if (attachmentManager != null) {
-                magazineBehaviour = attachmentManager.GetEquippedMagazine();
-                muzzleBehaviour = attachmentManager.GetEquippedMuzzle();
+            InitializeWeapon();
+        }
+
+        /// <summary>
+        /// Initialize weapon components (magazine, muzzle, ammo).
+        /// Called both by Start() and by OnSelected() to ensure initialization.
+        /// </summary>
+        public void ForceInitialize() {
+            // Avoid re-initializing if already done
+            if (magazineBehaviour != null && muzzleBehaviour != null) {
+                Debug.Log($"[Weapon] ForceInitialize: Already initialized, skipping");
+                return;
             }
+            
+            Debug.Log($"[Weapon] ForceInitialize: Starting initialization");
+            InitializeWeapon();
+        }
+
+        private void InitializeWeapon() {
+            Debug.Log($"[Weapon] InitializeWeapon: attachmentManager = {attachmentManager}");
+            
+            if (attachmentManager == null) {
+                Debug.LogWarning($"[Weapon] InitializeWeapon: attachmentManager is NULL!");
+                return;
+            }
+
+            Debug.Log($"[Weapon] InitializeWeapon: Getting magazine and muzzle from attachmentManager");
+            magazineBehaviour = attachmentManager.GetEquippedMagazine();
+            muzzleBehaviour = attachmentManager.GetEquippedMuzzle();
+
+            Debug.Log($"[Weapon] InitializeWeapon: magazineBehaviour={magazineBehaviour}, muzzleBehaviour={muzzleBehaviour}");
 
             if (magazineBehaviour != null) {
                 ammunitionCurrent = magazineBehaviour.GetAmmunitionTotal();
+                Debug.Log($"[Weapon] Initialized: magazine found, ammo = {ammunitionCurrent}");
             } else {
-                Debug.LogWarning($"[Weapon.Start] No magazineBehaviour on {gameObject.name}! Ammunition will be 0.");
-                ammunitionCurrent = 0;
+                Debug.LogWarning($"[Weapon] InitializeWeapon: magazineBehaviour is NULL after attachment lookup!");
+            }
+
+            if (muzzleBehaviour == null) {
+                Debug.LogWarning($"[Weapon] InitializeWeapon: muzzleBehaviour is NULL after attachment lookup!");
             }
         }
 
@@ -109,12 +134,30 @@ namespace InfimaGames.LowPolyShooterPack {
 
         public override int GetAmmunitionCurrent() => ammunitionCurrent;
 
-        public override int GetAmmunitionTotal() => magazineBehaviour != null ? magazineBehaviour.GetAmmunitionTotal() : 0;
+        /// <summary>
+        /// Get total ammunition in magazine. Safely handles null magazineBehaviour.
+        /// CONCEITO: Se magazineBehaviour for null, significa que o Weapon ainda não foi inicializado corretamente.
+        /// Retornamos 0 para evitar NullReferenceException.
+        /// </summary>
+        public override int GetAmmunitionTotal() {
+            if (magazineBehaviour == null) {
+                Debug.LogWarning($"[Weapon] GetAmmunitionTotal called but magazineBehaviour is NULL! Returning 0.");
+                return 0;
+            }
+            return magazineBehaviour.GetAmmunitionTotal();
+        }
 
         public override bool IsAutomatic() => automatic;
         public override float GetRateOfFire() => roundsPerMinutes;
 
-        public override bool IsFull() => magazineBehaviour != null && ammunitionCurrent == magazineBehaviour.GetAmmunitionTotal();
+        /// <summary>
+        /// Check if magazine is full. Safely handles null magazineBehaviour.
+        /// </summary>
+        public override bool IsFull() {
+            if (magazineBehaviour == null) return false;
+            return ammunitionCurrent == magazineBehaviour.GetAmmunitionTotal();
+        }
+        
         public override bool HasAmmunition() => ammunitionCurrent > 0;
 
         public override RuntimeAnimatorController GetAnimatorController() => controller;
@@ -125,32 +168,41 @@ namespace InfimaGames.LowPolyShooterPack {
         #region METHODS
 
         public override void Reload() {
-            if (animator == null || !animator.enabled)
-                return;
-                
             animator.Play(HasAmmunition() ? "Reload" : "Reload Empty", 0, 0.0f);
         }
+        
         public override void Fire(float spreadMultiplier = 1.0f) {
-            if (animator == null || !animator.enabled || !gameObject.activeInHierarchy) {
-                Debug.LogWarning($"[Weapon.Fire] Cannot fire - animator is null, disabled, or game object is inactive on {gameObject.name}");
+            // SEGURANÇA: Verificações defensivas para evitar NullReferenceException
+            // quando Weapon é ativado mas ainda não foi inicializado completamente.
+            if (muzzleBehaviour == null) {
+                Debug.LogWarning($"[Weapon] Fire called but muzzleBehaviour is NULL!");
                 return;
             }
 
-            if (muzzleBehaviour == null)
+            if (playerCamera == null) {
+                Debug.LogWarning($"[Weapon] Fire called but playerCamera is NULL!");
                 return;
+            }
 
-            if (playerCamera == null)
+            if (animator == null) {
+                Debug.LogWarning($"[Weapon] Fire called but animator is NULL!");
                 return;
+            }
+
+            if (magazineBehaviour == null) {
+                Debug.LogWarning($"[Weapon] Fire called but magazineBehaviour is NULL!");
+                return;
+            }
 
             Transform muzzleSocket = muzzleBehaviour.GetSocket();
             if (muzzleSocket == null) {
-                Debug.LogWarning($"[Weapon.Fire] No muzzle socket on {gameObject.name}");
+                Debug.LogWarning($"[Weapon] Fire called but muzzleSocket is NULL!");
                 return;
             }
 
             const string stateName = "Fire";
             animator.Play(stateName, 0, 0.0f);
-            ammunitionCurrent = Mathf.Clamp(ammunitionCurrent - 1, 0, magazineBehaviour != null ? magazineBehaviour.GetAmmunitionTotal() : 0);
+            ammunitionCurrent = Mathf.Clamp(ammunitionCurrent - 1, 0, magazineBehaviour.GetAmmunitionTotal());
 
             muzzleBehaviour.Effect();
 
@@ -170,8 +222,8 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         public override void FillAmmunition(int amount) {
-            int maxAmmo = magazineBehaviour != null ? magazineBehaviour.GetAmmunitionTotal() : 0;
-            ammunitionCurrent = amount != 0 ? Mathf.Clamp(ammunitionCurrent + amount, 0, maxAmmo) : maxAmmo;
+            ammunitionCurrent = amount != 0 ? Mathf.Clamp(ammunitionCurrent + amount,
+                0, GetAmmunitionTotal()) : magazineBehaviour.GetAmmunitionTotal();
         }
 
         public override void EjectCasing() {

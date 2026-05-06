@@ -3,7 +3,19 @@
 using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack {
-    public abstract class WeaponBehaviour : MonoBehaviour {
+    /// <summary>
+    /// Base class for weapons, implementing ItemBehaviour interface.
+    /// Maintains backward compatibility with existing Weapon.cs implementations.
+    /// REFATORAÇÃO: WeaponBehaviour agora herda de ItemBehaviour, permitindo
+    /// que armas façam parte do sistema unificado de seleção de items (1-8).
+    /// </summary>
+    public abstract class WeaponBehaviour : ItemBehaviour {
+        #region SERIALIZED FIELDS
+        
+        [SerializeField] protected string itemID = "1"; // Must be set to "1", "2", or "3" in Inspector
+
+        #endregion
+        
         #region UNITY
 
         protected virtual void Awake() { }
@@ -13,6 +25,107 @@ namespace InfimaGames.LowPolyShooterPack {
         protected virtual void Update() { }
 
         protected virtual void LateUpdate() { }
+
+        #endregion
+
+        #region ITEM BEHAVIOUR IMPLEMENTATION
+
+        /// <summary>
+        /// Returns the item ID set in the Inspector. Must match the ID from ItemRegistry.
+        /// CONCEITO: O ID aqui deve ser configurado manualmente no Inspector para cada arma (1, 2, 3).
+        /// Este ID é usado para fazer lookup no PlayerProgress e verificar se a arma está desbloqueada.
+        /// </summary>
+        public override string GetItemID() {
+            return itemID;
+        }
+
+        /// <summary>
+        /// Default implementation. Returns weapon name from GetSpriteBody or object name.
+        /// </summary>
+        public override string GetDisplayName() {
+            return gameObject.name;
+        }
+
+        /// <summary>
+        /// Default implementation. Returns sprite body as icon.
+        /// </summary>
+        public override Sprite GetIcon() {
+            return GetSpriteBody();
+        }
+
+        /// <summary>
+        /// Called when weapon is selected (key pressed).
+        /// Activates the weapon GameObject and forces initialization.
+        /// </summary>
+        public override void OnSelected() {
+            Debug.Log($"[WeaponBehaviour] OnSelected called for {GetDisplayName()}");
+            
+            // CONCEITO: Ao selecionar uma arma, ativamos o GameObject dela
+            // que contém todos os components necessários (Animator, Magazine, etc).
+            // Isso segue o padrão do Infima Games de usar GameObjects filhos.
+            gameObject.SetActive(true);
+            Debug.Log($"[WeaponBehaviour] GameObject activated: {gameObject.name}");
+            
+            // SINCRONIZAÇÃO: Se Start() ainda não foi chamado, chamamos manualmente
+            // para garantir que magazineBehaviour e muzzleBehaviour estejam inicializados.
+            // Isso previne NullReferenceException no primeiro frame de ativação.
+            Weapon weaponScript = GetComponent<Weapon>();
+            if (weaponScript != null) {
+                Debug.Log($"[WeaponBehaviour] Found Weapon component, calling ForceInitialize()");
+                weaponScript.ForceInitialize();
+            } else {
+                Debug.LogWarning($"[WeaponBehaviour] Weapon component not found on {gameObject.name}!");
+            }
+        }
+
+        /// <summary>
+        /// Called when weapon is deselected (another item selected).
+        /// Deactivates the weapon GameObject.
+        /// </summary>
+        public override void OnDeselected() {
+            // CONCEITO: Ao deselecionar, desativamos o GameObject para que
+            // outro item possa ser selecionado. Isso economiza processamento.
+            gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Called when player uses the weapon (fire button).
+        /// For weapons, fire is handled by Character script via input system.
+        /// This method is kept for interface compliance.
+        /// </summary>
+        public override void OnUse() {
+            // Fire button is handled by Character script, not here
+            // Weapon firing is driven by Character input handling
+        }
+
+        /// <summary>
+        /// Check if weapon can be used (only checks if unlocked).
+        /// Note: Ammo check happens during fire, not selection. You can select a weapon with no ammo.
+        /// </summary>
+        public override bool CanBeUsed() {
+            // CONCEITO: Verificamos APENAS se a arma está desbloqueada.
+            // Ammo é checado durante o fire, não durante seleção.
+            // Isso permite que o player selecione qualquer arma desbloqueada, mesmo sem munição.
+            if (PlayerProgress.Instance == null) {
+                Debug.LogWarning($"[{gameObject.name}] CanBeUsed: PlayerProgress.Instance is NULL!");
+                return true; // Allow if no progress tracker
+            }
+
+            string weaponID = GetItemID();
+            
+            // SAFETY: Primeira arma (Pistola, ID="1") sempre é selecionável por padrão
+            // Isso garante que o jogador sempre possa equipar ALGUMA arma no início do jogo.
+            if (weaponID == "1" || weaponID == "Pistol") {
+                Debug.Log($"[{gameObject.name}] CanBeUsed: Pistol always allowed (ID: {weaponID})");
+                return true;
+            }
+            
+            // APENAS verificamos se está desbloqueada. Ammo é verificado no Fire.
+            bool isUnlocked = PlayerProgress.Instance.IsWeaponUnlocked(weaponID);
+            Debug.Log($"[{gameObject.name}] CanBeUsed check: ID={weaponID}, Unlocked={isUnlocked}");
+            
+            return isUnlocked;
+        }
 
         #endregion
 
@@ -116,6 +229,29 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Ejects a casing from the weapon. This is commonly called from animation events, but can be called from anywhere.
         /// </summary>
         public abstract void EjectCasing();
+
+        /// <summary>
+        /// Called when player uses exclusive upgrade (level 9+).
+        /// For weapons, exclusive upgrade might be: higher fire rate, higher damage, etc.
+        /// Default implementation: trigger Fire() with increased spread reduction.
+        /// </summary>
+        public override void OnUseExclusive() {
+            // Weapons typically use same Fire() method as normal, but with custom logic
+            // This can be overridden in specific weapon implementations
+            // For now, default is do nothing - subclasses override if needed
+        }
+
+        /// <summary>
+        /// Check if weapon has exclusive upgrade unlocked (level 9+).
+        /// </summary>
+        public override bool HasExclusiveUnlocked() {
+            if (PlayerProgress.Instance == null)
+                return false;
+
+            string weaponID = GetItemID();
+            int level = PlayerProgress.Instance.GetItemLevel(weaponID);
+            return level >= 9;
+        }
 
         #endregion
     }

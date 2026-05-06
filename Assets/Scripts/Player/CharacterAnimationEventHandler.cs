@@ -83,6 +83,9 @@ namespace InfimaGames.LowPolyShooterPack {
 		/// Melee Animation Ended. This function is called from an Animation Event.
 		/// </summary>
 		private void OnAnimationEndedMelee() {
+			if (playerCharacter != null && playerCharacter is Character character) {
+				character.EndMeleeAttack();
+			}
 		}
 
 		/// <summary>

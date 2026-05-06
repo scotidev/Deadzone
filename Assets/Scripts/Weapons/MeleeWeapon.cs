@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// REFATORAÇÃO: devemos ter um modelo 3d de um machado que ataca, nao sei fazer, entao preciso de ajuda em como animar ele, como setar a animação. tudo na verdade, sou iniciante
-
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
     /// Implementation of a simple melee weapon. This is not a "weapon" in the traditional sense, as it does not shoot projectiles, but it is still a "weapon" in terms of gameplay mechanics. It performs a short-range attack that damages enemies in front of the player.
@@ -20,6 +18,8 @@ namespace InfimaGames.LowPolyShooterPack {
         [SerializeField] private Vector3 meleeHalfExtents = new Vector3(0.22f, 0.22f, 0.7f);
         [SerializeField] private float meleeCooldown = 0.5f;
         [SerializeField] private float meleeVisualDuration = 0.3f;
+        [SerializeField] private float meleeAttackDuration = 0.5f;
+
         [SerializeField] private Vector3 visualLocalPosition = new Vector3(0.18f, -0.2f, 0.7f);
 
         [SerializeField] private Vector3 visualLocalEuler = new Vector3(0.0f, 0.0f, -20.0f);
@@ -30,19 +30,22 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #region FIELDS
 
-        private CharacterBehaviour playerCharacter;
+        private Character playerCharacter;
         private CapsuleCollider playerCapsule;
         private float lastMeleeTime = -10.0f;
         private GameObject meleeVisual;
         private readonly Collider[] meleeHits = new Collider[16];
+        private bool isAttacking;
 
         #endregion
 
         #region UNITY
 
         private void Awake() {
-            playerCharacter = ServiceLocator.Current.Get<IGameModeService>().GetPlayerCharacter();
-            playerCapsule = playerCharacter.GetComponent<CapsuleCollider>();
+            playerCharacter = ServiceLocator.Current.Get<IGameModeService>().GetPlayerCharacter() as Character;
+            if (playerCharacter != null) {
+                playerCapsule = playerCharacter.GetComponent<CapsuleCollider>();
+            }
         }
 
         private void Start() {
@@ -53,7 +56,13 @@ namespace InfimaGames.LowPolyShooterPack {
             if (Keyboard.current == null)
                 return;
 
+            if (playerCharacter == null)
+                return;
+
             if (!playerCharacter.IsCursorLocked() || playerCharacter.IsInterfaceMode())
+                return;
+
+            if (isAttacking)
                 return;
 
             if (Keyboard.current.fKey.wasPressedThisFrame)
@@ -68,10 +77,41 @@ namespace InfimaGames.LowPolyShooterPack {
             if (Time.time - lastMeleeTime < meleeCooldown)
                 return;
 
+            if (playerCharacter == null)
+                return;
+
+            if (playerCharacter.IsAttackingMelee())
+                return;
+
             lastMeleeTime = Time.time;
+            isAttacking = true;
+
+            playerCharacter.StartMeleeAttack();
+
+            StartCoroutine(MeleeAttackRoutine());
+        }
+
+        private IEnumerator MeleeAttackRoutine() {
+            if (meleeVisual != null)
+                meleeVisual.SetActive(true);
+
+            PerformMeleeDamage();
+
+            yield return new WaitForSeconds(meleeAttackDuration);
 
             if (meleeVisual != null)
-                StartCoroutine(ShowMeleeVisualRoutine());
+                meleeVisual.SetActive(false);
+
+            if (playerCharacter != null) {
+                playerCharacter.EndMeleeAttack();
+            }
+
+            isAttacking = false;
+        }
+
+        private void PerformMeleeDamage() {
+            if (playerCharacter == null)
+                return;
 
             Camera cameraWorld = playerCharacter.GetCameraWorld();
             if (cameraWorld == null)
@@ -115,7 +155,9 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         private IEnumerator ShowMeleeVisualRoutine() {
-            meleeVisual.SetActive(true);
+            if (meleeVisual != null)
+                meleeVisual.SetActive(true);
+
             yield return new WaitForSeconds(meleeVisualDuration);
 
             if (meleeVisual != null)
@@ -123,6 +165,9 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         private void SetupMeleeVisual() {
+            if (playerCharacter == null)
+                return;
+
             Camera cameraWorld = playerCharacter.GetCameraWorld();
             if (cameraWorld == null)
                 return;
@@ -140,7 +185,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
             meleeVisual.SetActive(false);
         }
-    }
 
-    #endregion
+        #endregion
+    }
 }

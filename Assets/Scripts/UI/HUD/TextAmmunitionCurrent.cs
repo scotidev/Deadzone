@@ -25,6 +25,11 @@ namespace InfimaGames.LowPolyShooterPack.Interface {
         #region METHODS
 
         protected override void Tick() {
+            // CONCEITO: Early return pattern prevents null reference errors.
+            // If weapon is null, skip this frame update. Better than crashing!
+            if (equippedWeapon == null)
+                return;
+
             float current = equippedWeapon.GetAmmunitionCurrent();
             float total = equippedWeapon.GetAmmunitionTotal();
 

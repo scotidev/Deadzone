@@ -52,6 +52,8 @@ namespace InfimaGames.LowPolyShooterPack {
         private bool reloading;
         private bool holstered;
         private bool holstering;
+        private bool isAttackingMelee;
+        private int lastWeaponIndexBeforeMelee;
         private bool holdingButtonRun;
         private bool holdingButtonFire;
         private bool holdingButtonJump;
@@ -111,6 +113,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
         public override bool IsAiming() => aiming;
         public override bool IsCursorLocked() => cursorLocked;
+        public override bool IsAttackingMelee() => isAttackingMelee;
 
         public override bool IsTutorialTextVisible() => tutorialTextVisible;
 
@@ -153,7 +156,8 @@ namespace InfimaGames.LowPolyShooterPack {
             if (holdingButtonFire) {
                 if (BuildingController.Instance != null && BuildingController.Instance.IsPlacing) {
                     holdingButtonFire = false;
-                } else if (CanPlayAnimationFire() && equippedWeapon.HasAmmunition() && equippedWeapon.IsAutomatic()) {
+                } else if (equippedWeapon != null && CanPlayAnimationFire() && equippedWeapon.HasAmmunition() && equippedWeapon.IsAutomatic()) {
+                    // CONCEITO: equippedWeapon null check added. Prevents crash if weapon not selected yet.
                     if (Time.time - lastShotTime > 60.0f / equippedWeapon.GetRateOfFire())
                         Fire();
                 }
@@ -240,11 +244,62 @@ namespace InfimaGames.LowPolyShooterPack {
             RefreshWeaponSetup();
         }
 
+        #region MELEE
+
+        /// <summary>
+        /// Starts a melee attack. Stores current weapon index and holsters the weapon.
+        /// </summary>
+        public void StartMeleeAttack() {
+            if (isAttackingMelee)
+                return;
+
+            if (!CanPlayAnimationHolster())
+                return;
+
+            int currentIndex = inventory.GetEquippedIndex();
+            lastWeaponIndexBeforeMelee = currentIndex >= 0 ? currentIndex : 0;
+            isAttackingMelee = true;
+            SetHolstered(true);
+            holstering = true;
+        }
+
+        /// <summary>
+        /// Ends the melee attack and restores the previous weapon.
+        /// Called by Animation Event when melee animation ends.
+        /// </summary>
+        public void EndMeleeAttack() {
+            if (!isAttackingMelee)
+                return;
+
+            isAttackingMelee = false;
+
+            if (lastWeaponIndexBeforeMelee >= 0) {
+                SetHolstered(false);
+                StartCoroutine(RestoreWeaponAfterUnholster());
+            }
+        }
+
+        /// <summary>
+        /// Waits for unholster animation to finish, then restores the weapon.
+        /// </summary>
+        private IEnumerator RestoreWeaponAfterUnholster() {
+            yield return new WaitUntil(() => !holstering);
+
+            inventory.Equip(lastWeaponIndexBeforeMelee);
+            RefreshWeaponSetup();
+        }
+
+        /// <summary>
+        /// Gets the weapon index to restore after melee attack.
+        /// </summary>
+        public int GetLastWeaponIndexBeforeMelee() => lastWeaponIndexBeforeMelee;
+
+        #endregion
+
         /// <summary>
         /// Refresh all weapon things to make sure we're all set up!
         /// </summary>
-        private void RefreshWeaponSetup() {
-
+        public void RefreshWeaponSetup() {
             equippedWeapon = inventory.GetEquipped();
             if (equippedWeapon == null)
                 return;
@@ -256,7 +311,6 @@ namespace InfimaGames.LowPolyShooterPack {
                 return;
 
             equippedWeaponScope = weaponAttachmentManager.GetEquippedScope();
-
             equippedWeaponMagazine = weaponAttachmentManager.GetEquippedMagazine();
         }
 
@@ -300,6 +354,9 @@ namespace InfimaGames.LowPolyShooterPack {
             if (inspecting)
                 return false;
 
+            if (isAttackingMelee)
+                return false;
+
             return true;
         }
 
@@ -314,6 +371,9 @@ namespace InfimaGames.LowPolyShooterPack {
             if (inspecting)
                 return false;
 
+            if (isAttackingMelee)
+                return false;
+
             return true;
         }
 
@@ -326,6 +386,9 @@ namespace InfimaGames.LowPolyShooterPack {
                 return false;
 
             if (inspecting)
+                return false;
+
+            if (isAttackingMelee)
                 return false;
 
             return true;
@@ -343,6 +406,9 @@ namespace InfimaGames.LowPolyShooterPack {
                 return false;
 
             if (inspecting)
+                return false;
+
+            if (isAttackingMelee)
                 return false;
 
             return true;
@@ -374,6 +440,9 @@ namespace InfimaGames.LowPolyShooterPack {
                 return false;
 
             if (reloading || holstering)
+                return false;
+
+            if (isAttackingMelee)
                 return false;
 
             return true;
@@ -423,6 +492,11 @@ namespace InfimaGames.LowPolyShooterPack {
                     break;
                 case { phase: InputActionPhase.Performed }:
                     if (!CanPlayAnimationFire())
+                        break;
+
+                    // CONCEITO: Early safety check. If no weapon equipped, don't try to fire.
+                    // This prevents NullReferenceException if equippedWeapon is null.
+                    if (equippedWeapon == null)
                         break;
 
                     if (equippedWeapon.HasAmmunition()) {
@@ -572,13 +646,11 @@ namespace InfimaGames.LowPolyShooterPack {
         public bool TryEquipWeapon(int weaponIndex) {
             int currentIndex = inventory.GetEquippedIndex();
 
-            if (currentIndex == weaponIndex) {
+            if (currentIndex == weaponIndex)
                 return false;
-            }
 
-            if (!CanChangeWeapon()) {
+            if (!CanChangeWeapon())
                 return false;
-            }
 
             StartCoroutine(nameof(Equip), weaponIndex);
             return true;

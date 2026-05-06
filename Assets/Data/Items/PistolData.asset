@@ -9,15 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98c757ab19163464f8313e1bcffe423c, type: 3}
+  m_Script: {fileID: 11500000, guid: c60cffecc0c4b084cb06ee8be7b1b61c, type: 3}
   m_Name: PistolData
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDataSO
   itemID: 1
   itemName: Pistol
-  baseDamage: 100
-  baseFireRate: 10
-  baseMagazineCapacity: 12
-  maxReserveAmmo: 80
+  baseDamage: 10
+  baseFireRate: 200
+  baseMagazineCapacity: 30
+  maxReserveAmmo: 300
   damageScaling: 0.1
   fireRateScaling: 0.05
   maxFireRate: 500
