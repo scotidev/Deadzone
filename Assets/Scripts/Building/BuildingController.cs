@@ -250,7 +250,7 @@ public class BuildingController : MonoBehaviour {
     /// <returns>The itemID of the buildable.</returns>
     public string GetBuildableID(BuildableDataSO buildable) {
         if (buildable == null) return null;
-        return buildable.itemID;
+        return buildable.ItemID;
     }
 
     /// <summary>

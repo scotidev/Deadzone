@@ -180,7 +180,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1651,7 +1651,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7496070798460551114}
-  - component: {fileID: 8828263736154151038}
+  - component: {fileID: 7016419823468125405}
   m_Layer: 5
   m_Name: Vest
   m_TagString: Untagged
@@ -1682,7 +1682,7 @@ RectTransform:
   m_AnchoredPosition: {x: 30, y: 39}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0}
---- !u!114 &8828263736154151038
+--- !u!114 &7016419823468125405
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1691,10 +1691,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 3879222309168186530}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3bf27375d8471ee47a29a512167f2dd7, type: 3}
+  m_Script: {fileID: 11500000, guid: c03b6d7cba5e0f34486bfa43022c2750, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerArmorUI
-  playerArmor: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::VestUI
+  vest: {fileID: 0}
   armorBar: {fileID: 570194062804482765}
   armorBackground: {fileID: 662513079181546841}
   shieldIcon: {fileID: 1838030682060845125}
@@ -6740,7 +6740,7 @@ PrefabInstance:
         type: 3}
       propertyPath: statBarPrefab
       value: 
-      objectReference: {fileID: 63730131429471681, guid: acdf0794675beb24385a5f61df8403a1,
+      objectReference: {fileID: 4946046415174162325, guid: acdf0794675beb24385a5f61df8403a1,
         type: 3}
     - target: {fileID: 4895529497095058158, guid: ac8a65b6c1bc1a447bf4114fa317367e,
         type: 3}

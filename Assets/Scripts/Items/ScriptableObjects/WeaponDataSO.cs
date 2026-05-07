@@ -1,7 +1,5 @@
 using UnityEngine;
 
-// REFATORAÇÃO: maxReserveAmmo respeita maxAmount ou está de acordo com o que foi dito no script de PlayerProgress? Ou deveriamos ter maxReserveAmmo para armas e maxAmount para itens de progresso? Mais uma coisa, é necessario referenciar o ID de exclusivo? o proprio script de exclusivo colocado na arma já não seria o suficiente para saber que aquela arma tem um exclusivo?
-
 /// <summary>
 /// ScriptableObject that defines a weapon's base stats and how they scale with upgrades.
 /// Each weapon has one of these assets.
@@ -15,8 +13,6 @@ public class WeaponDataSO : ItemDataSO {
     public float baseDamage = 10f;
     public float baseFireRate = 200f;
     public int baseMagazineCapacity = 30;
-    public int maxReserveAmmo = 300;
-    [Range(0f, 100f)] public float baseCritChance = 5f;
 
     [Header("Upgrade Scaling")]
 
@@ -31,12 +27,11 @@ public class WeaponDataSO : ItemDataSO {
     [Range(0f, 0.5f)]
     public float magazineScaling = 0.1f;
 
-    [Range(0f, 0.2f)]
-    public float critChanceScaling = 0.02f;
+    #endregion
 
-    [Header("Exclusive Power")]
+    #region PROPERTIES
 
-    public string exclusivePowerID;
+    public override int MaxAmmo => 300;
 
     #endregion
 
@@ -82,22 +77,7 @@ public class WeaponDataSO : ItemDataSO {
         return Mathf.RoundToInt(scaledCapacity);
     }
 
-    public float GetCritChanceAtLevel(int level) {
-        level = Mathf.Clamp(level, 1, 10);
-        return Mathf.Clamp(baseCritChance + (critChanceScaling * level * 10f), 0f, 100f);
-    }
-
-    // FAZER LÓGICA DINÂMICA PARA QUE O NÍVEL NAO PRECISE SER 10 NECESSARIAMENTE, MAS SIM O NÍVEL MÁXIMO DEFINIDO PARA A ARMA, PARA QUE SEJA MAIS FLEXÍVEL PARA FUTURAS ARMAS COM NÍVEIS MÁXIMOS DIFERENTES
-    /// <summary>
-    /// Checks if this weapon has reached maximum level and unlocked its exclusive power.
-    /// </summary>
-    /// <param name="level">Current upgrade level.</param>
-    /// <returns>True if level at exclusive power and exclusive power exists.</returns>
-    public bool HasExclusivePower(int level) {
-        return level >= 10 && !string.IsNullOrEmpty(exclusivePowerID);
-    }
-
-    public override string[] GetStatLabels() => new[] { "Damage", "Fire Rate", "Ammo", "Crit" };
+    public override string[] GetStatLabels() => new[] { "Damage", "Fire Rate", "Ammo" };
 
     public override float[] GetStatValues() => GetStatValues(1);
 
@@ -105,9 +85,8 @@ public class WeaponDataSO : ItemDataSO {
         level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
         return new[] { 
             GetDamageAtLevel(level), 
-            GetFireRateAtLevel(level) / 100f, 
-            (float)GetMagazineCapacityAtLevel(level),
-            GetCritChanceAtLevel(level)
+            GetFireRateAtLevel(level), // Don't divide by 100f - let normalization handle it
+            (float)GetMagazineCapacityAtLevel(level)
         };
     }
 

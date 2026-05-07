@@ -103,16 +103,16 @@ public class NPCAudio : MonoBehaviour {
     /// Subscribes to shop events used to trigger contextual dialogue.
     /// </summary>
     private void OnEnable() {
-        ShopUI.WeaponUnlocked += HandleWeaponUnlocked;
-        ShopUI.AmmoPurchased += HandleAmmoPurchased;
+        ShopManager.WeaponUnlocked += HandleWeaponUnlocked;
+        ShopManager.AmmoPurchased += HandleAmmoPurchased;
     }
 
     /// <summary>
     /// Unsubscribes from shop events to prevent stale callbacks.
     /// </summary>
     private void OnDisable() {
-        ShopUI.WeaponUnlocked -= HandleWeaponUnlocked;
-        ShopUI.AmmoPurchased -= HandleAmmoPurchased;
+        ShopManager.WeaponUnlocked -= HandleWeaponUnlocked;
+        ShopManager.AmmoPurchased -= HandleAmmoPurchased;
     }
 
     /// <summary>

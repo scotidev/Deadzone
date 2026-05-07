@@ -3,43 +3,6 @@ using UnityEngine.UI;
 using InfimaGames.LowPolyShooterPack;
 
 /*============================================================================
-    [BUG VEST] - CORREÇÃO DO BUG DE REGENERAÇÃO DO EXCLUSIVO DA VEST
-    
-    PROBLEMA ORIGINAL:
-    Quando a vest era destruída e o jogador tinha o upgrade exclusivo,
-    a vest deveria esperar 5 segundos FORA da zona de dano (nevoa) para
-    re-equipar automaticamente. Mas o HUD não voltava a aparecer quando
-    a regeneração acontecia.
-    
-    O QUE ACONTECIA:
-    1. Jogador tinha exclusivo da vest (nível 3)
-    2. Ficava na nevoa até a vest quebrar
-    3. Saía da nevoa
-    4. A vest se "regenerava" no código (armor voltava a ter valor)
-    5. MAS o HUD continuava escondido
-    
-    CAUSA DO BUG:
-    O PlayerArmor atualizava o armor value mas não notificava a UI que
-    a vest tinha "voltado". O evento que o UI escutava era apenas o
-    OnArmorChanged, que disparava mas o UI já estava desativado.
-    
-    SOLUÇÃO IMPLEMENTADA:
-    1. Adicionamos um NOVO evento estático: Vest.OnVestRegenerated
-    2. O PlayerArmor dispara este evento quando re-equipa a vest
-    3. O PlayerArmorUI escuta este evento e mostra o HUD
-    4. Também tocar o som de equipar vest quando isso acontece
-    
-    FLUXO CORRETO:
-    - PlayerArmor detecta que 5s passaram fora da zona de dano
-    - PlayerArmor chama ReEquipVest()
-    - ReEquipVest() dispara vestComponent.TriggerRegeneratedEvent()
-    - TriggerRegeneratedEvent() dispara Vest.OnVestRegenerated
-    - PlayerArmorUI.OnVestRegenerated() é chamado
-    - OnVestRegenerated() mostra o HUD e toca o som
-    
-============================================================================*/
-
-/*============================================================================
     PlayerArmorUI.cs - Script da Barra de Armadura no HUD
     
     Este script.controla a barra visual de armadura no canto da tela.
@@ -54,7 +17,7 @@ using InfimaGames.LowPolyShooterPack;
     1. Quando PlayerArmor muda (recebe dano ou repara), dispara OnArmorChanged
     2. Esse script recebe o evento e atualiza o fillAmount da barra
     3. Também mostra/esconde a UI dependendo se tem armadura ou não
-============================================================================*/
+===============================================================================*/
 
 /// <summary>
 /// Manages the player armor bar UI. Subscribes to PlayerArmor events and updates
@@ -112,11 +75,6 @@ public class PlayerArmorUI : MonoBehaviour {
         // Também ouvimos o evento estático da Vest (quando é destruída)
         Vest.OnVestDestroyed += OnVestDestroyed;
 
-        // [BUG VEST] Também escutamos o evento de regeneração da vest
-        // Este evento é disparado quando a vest se re-equipa automaticamente
-        // após ter sido destruída e o jogador ter o upgrade exclusivo
-        Vest.OnVestRegenerated += OnVestRegenerated;
-
         // Inicializar valores da barra
         armorBar.fillAmount = 1f;
         armorBackground.fillAmount = 1f;
@@ -168,10 +126,6 @@ public class PlayerArmorUI : MonoBehaviour {
         }
         
         Vest.OnVestDestroyed -= OnVestDestroyed;
-
-        // [BUG VEST] Remove a inscrição do evento de regeneração
-        // Importante para evitar erros de memória
-        Vest.OnVestRegenerated -= OnVestRegenerated;
     }
 
     #endregion
@@ -260,34 +214,6 @@ public class PlayerArmorUI : MonoBehaviour {
     /// </summary>
     private void OnVestDestroyed() {
         HideArmorUI();
-    }
-
-    /// <summary>
-    /// [BUG VEST] Chamado quando a vest se regenera de 0 devido ao upgrade exclusivo.
-    /// Este método mostra o HUD da armadura novamente e toca o som de equipar.
-    /// 
-    /// FLUXO:
-    /// 1. PlayerArmor detecta que 5s passaram fora da zona de dano
-    /// 2. PlayerArmor chama ReEquipVest() que dispara OnVestRegenerated
-    /// 3. Este método é chamado (porque se inscreveu no evento)
-    /// 4. Mostramos o HUD e tocamos o som
-    /// 
-    /// IMPORTANTE: Este método é chamado via evento estático, não diretamente.
-    /// O evento é declarado na classe Vest, não aqui.
-    /// </summary>
-    private void OnVestRegenerated() {
-        // Primeiro, mostra o HUD da armadura novamente
-        // Isso ativa o GameObject que estava desativado quando a vest quebrou
-        ShowArmorUI();
-        Debug.Log("[PlayerArmorUI] Vest regenerated - showing HUD!");
-
-        // Procura o componente Vest na cena para tocar o som de equipar
-        // O som indica que a vest "voltou a funcionar"
-        Vest vest = FindObjectOfType<Vest>();
-        if (vest != null) {
-            vest.PlayEquippedSound();
-            Debug.Log("[PlayerArmorUI] Playing vest equipped sound after regeneration!");
-        }
     }
 
     #endregion

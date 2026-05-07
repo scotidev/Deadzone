@@ -1,10 +1,11 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using InfimaGames.LowPolyShooterPack;
 
 /// <summary>
 /// Manages the player's health. Implements IDamageable so enemies can deal damage via interface.
-/// Integrates with PlayerArmor - damage is applied to armor first, then to health.
+/// Integrates with Vest - damage is applied to armor first, then to health.
 /// </summary>
 public class PlayerHealth : MonoBehaviour, IDamageable {
 
@@ -14,7 +15,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
     [SerializeField] private float maxHealth = 100f;
 
     [Header("Armor Integration")]
-    [SerializeField] private PlayerArmor playerArmor;
+    [SerializeField] private Vest vest;
 
     [Header("Poison Damage")]
     [SerializeField] private float poisonDamagePerTick = 5f;
@@ -49,8 +50,11 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
     private void Awake() {
         currentHealth = maxHealth;
 
-        if (playerArmor == null) {
-            playerArmor = GetComponent<PlayerArmor>();
+        if (vest == null) {
+            vest = GetComponent<Vest>();
+            if (vest == null) {
+                vest = GetComponentInParent<Character>()?.GetComponentInChildren<Vest>();
+            }
         }
     }
 
@@ -68,8 +72,8 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
 
         float damageToHealth = amount;
 
-        if (playerArmor != null && playerArmor.HasArmor()) {
-            damageToHealth = playerArmor.AbsorbDamage(amount);
+        if (vest != null && vest.HasArmor()) {
+            damageToHealth = vest.AbsorbDamage(amount);
 
             if (damageToHealth <= 0f) {
                 return;

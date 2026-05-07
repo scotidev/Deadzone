@@ -4,7 +4,6 @@ using InfimaGames.LowPolyShooterPack;
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
     /// Grenade consumable item. Throws a grenade when used.
-    /// Supports exclusive upgrade: grenade has 1.5x damage at level 9+
     /// </summary>
     public class Grenade : ItemBehaviour {
 
@@ -14,7 +13,6 @@ namespace InfimaGames.LowPolyShooterPack {
         [SerializeField] private Sprite hudIcon;
         [SerializeField] private GameObject grenadePrefab;
         [SerializeField] private float throwForce = 20f;
-        [SerializeField] private float exclusiveDamageMultiplier = 1.5f;
 
         #endregion
 
@@ -25,12 +23,12 @@ namespace InfimaGames.LowPolyShooterPack {
                 Debug.LogWarning("[Grenade] grenadeData is null!", gameObject);
                 return "grenade_null";
             }
-            return grenadeData.itemID;
+            return grenadeData.ItemID;
         }
 
         public override string GetDisplayName() {
             if (grenadeData == null) return "Unknown";
-            return grenadeData.itemName;
+            return grenadeData.ItemName;
         }
 
         public override Sprite GetIcon() {
@@ -71,18 +69,6 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// EXCLUSIVE use: Throw grenade with 1.5x damage.
-        /// </summary>
-        public override void OnUseExclusive() {
-            if (!CanBeUsed() || !HasExclusiveUnlocked() || grenadeData == null) {
-                return;
-            }
-
-            float exclusiveDamage = grenadeData.damage * exclusiveDamageMultiplier;
-            ThrowGrenade(exclusiveDamage);
-        }
-
-        /// <summary>
         /// Helper method to throw grenade with specified damage.
         /// Gets camera position and direction from Character.
         /// </summary>
@@ -111,8 +97,6 @@ namespace InfimaGames.LowPolyShooterPack {
                 rb.linearVelocity = cameraTransform.forward * throwForce;
             }
 
-            // TODO: Apply damage to grenade component if it has one
-
             // Consume 1 grenade from inventory
             if (PlayerProgress.Instance != null) {
                 PlayerProgress.Instance.ConsumeItem(GetItemID(), 1);
@@ -134,18 +118,6 @@ namespace InfimaGames.LowPolyShooterPack {
             bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(GetItemID());
             Debug.Log($"[Grenade] CanBeUsed check: ID={GetItemID()}, Unlocked={isUnlocked}");
             return isUnlocked;
-        }
-
-        /// <summary>
-        /// Check if exclusive upgrade is unlocked (level 9+).
-        /// </summary>
-        public override bool HasExclusiveUnlocked() {
-            if (PlayerProgress.Instance == null) {
-                return false;
-            }
-
-            int level = PlayerProgress.Instance.GetItemLevel(GetItemID());
-            return level >= 9;
         }
 
         #endregion

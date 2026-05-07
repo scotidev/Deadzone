@@ -230,29 +230,6 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         public abstract void EjectCasing();
 
-        /// <summary>
-        /// Called when player uses exclusive upgrade (level 9+).
-        /// For weapons, exclusive upgrade might be: higher fire rate, higher damage, etc.
-        /// Default implementation: trigger Fire() with increased spread reduction.
-        /// </summary>
-        public override void OnUseExclusive() {
-            // Weapons typically use same Fire() method as normal, but with custom logic
-            // This can be overridden in specific weapon implementations
-            // For now, default is do nothing - subclasses override if needed
-        }
-
-        /// <summary>
-        /// Check if weapon has exclusive upgrade unlocked (level 9+).
-        /// </summary>
-        public override bool HasExclusiveUnlocked() {
-            if (PlayerProgress.Instance == null)
-                return false;
-
-            string weaponID = GetItemID();
-            int level = PlayerProgress.Instance.GetItemLevel(weaponID);
-            return level >= 9;
-        }
-
         #endregion
     }
 }

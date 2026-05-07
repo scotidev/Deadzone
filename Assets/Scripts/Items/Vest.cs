@@ -1,5 +1,8 @@
+using System;
 using UnityEngine;
+using UnityEngine.UI;
 using InfimaGames.LowPolyShooterPack;
+using Deadzone.Interfaces;
 
 /*============================================================================
     [BUG VEST] - CORREÇÃO DO BUG DE REGENERAÇÃO DO EXCLUSIVO DA VEST
@@ -53,7 +56,7 @@ namespace InfimaGames.LowPolyShooterPack {
     /// NOT selectable via keys 1-8 (not added to Inventory.selectableItems).
     /// Provides armor damage reduction.
     /// </summary>
-    public class Vest : ItemBehaviour {
+    public class Vest : ItemBehaviour, IShopItemCallback {
         
 #region SERIALIZED FIELDS
     /*-----------------------------------------------------------------------------
@@ -62,13 +65,8 @@ namespace InfimaGames.LowPolyShooterPack {
     -----------------------------------------------------------------------------*/
     
     [SerializeField] private VestDataSO vestData;
-    [SerializeField] private float damageReductionPercentage = 0.1f;  // 10% reduction base
-    [SerializeField] private float exclusiveDamageReductionPercentage = 0.2f;  // 20% reduction exclusive
+    [SerializeField] private float damageReductionPercentage = 0.1f;  // 10% reduction
     
-    /*-----------------------------------------------------------------------------
-        Audio Clips - Aqui você arrasta os arquivos de áudio no Inspector.
-        Esses sons tocarão em momentos específicos do jogo.
-    -----------------------------------------------------------------------------*/
     [Header("Audio Clips")]
     [SerializeField] private AudioClip vestEquippedClip;    // Som quando equipar/equipar
     [SerializeField] private AudioClip vestDestroyedClip; // Som quando o colete quebra
@@ -84,7 +82,18 @@ namespace InfimaGames.LowPolyShooterPack {
     // IAudioManagerService é a interface do sistema de áudio do jogo.
     // Permite tocar sons de forma centralizada usando ServiceLocator.
     private IAudioManagerService audioService;
-    
+
+    // Referência ao PlayerHealth para verificar se o player está vivo
+    private PlayerHealth playerHealth;
+
+    // Armadura atual e máxima do jogador
+    private float currentArmor;
+    private float maxArmor;
+
+    // EVENTOS: permitem que outros scripts saibam quando algo mudar
+    public event Action<float> OnArmorChanged;
+    public event Action OnArmorDepleted;
+
     #endregion
 
     #region PROPERTIES
@@ -106,10 +115,6 @@ namespace InfimaGames.LowPolyShooterPack {
         // Outros scripts podem ouvir isso para atualizar a UI, por exemplo
         public static event System.Action OnVestDestroyed;
 
-        // Evento estático - usado quando o colete se regenera após ter sido destruído
-        // Disparado pelo PlayerArmor quando a regeneração começa do zero
-        public static event System.Action OnVestRegenerated;
-
         #endregion
 
         #region UNITY
@@ -123,6 +128,63 @@ namespace InfimaGames.LowPolyShooterPack {
             // que foi registrado no Bootstraper do jogo.
             // Isso garante que sempre teremos acesso ao sistema de áudio.
             audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+            
+            // Inscreve no evento de upgrade do UpgradeManager para atualizar armor quando a vest subir de nível
+            UpgradeManager.OnItemUpgraded += OnUpgradeManagerItemUpgraded;
+
+            // O jogador COMEÇA sem armadura (0)
+            // Só vai ter armadura quando desbloquear na loja
+            currentArmor = 0f;
+
+            // Procurar o PlayerHealth
+            playerHealth = GetComponent<PlayerHealth>();
+            if (playerHealth == null) {
+                playerHealth = GetComponentInParent<Character>()?.GetComponentInChildren<PlayerHealth>();
+            }
+        }
+
+private void Start() {
+            InitializeArmorFromVestLevel();
+        }
+
+        private void OnDestroy() {
+            // Desinscreve do evento de upgrade para evitar memory leaks
+            UpgradeManager.OnItemUpgraded -= OnUpgradeManagerItemUpgraded;
+        }
+
+        /// <summary>
+        /// Initializes armor based on current vest level. Called at Start for games where vest is already unlocked.
+        /// </summary>
+        private void InitializeArmorFromVestLevel() {
+            if (PlayerProgress.Instance != null && PlayerProgress.Instance.IsItemUnlocked(GetItemID())) {
+                float maxArmorFromLevel = GetMaxArmorFromCurrentLevel();
+                maxArmor = maxArmorFromLevel;
+                currentArmor = maxArmorFromLevel;
+                OnArmorChanged?.Invoke(1f);
+            }
+        }
+
+        /// <summary>
+        /// Called when UpgradeManager emits an upgrade event. Checks if this vest was upgraded and updates armor.
+        /// </summary>
+        private void OnUpgradeManagerItemUpgraded(string itemID, ItemDataSO itemData) {
+            string myID = GetItemID();
+            string receivedID = itemID ?? "null";
+            bool idsMatch = (myID == receivedID);
+            bool isVestData = (itemData is VestDataSO);
+            
+            Debug.Log($"[Vest] ⚠️ OnUpgradeManagerItemUpgraded called!");
+            Debug.Log($"[Vest]   My ID: '{myID}' (Type: {this.GetType().Name})");
+            Debug.Log($"[Vest]   Received ID: '{receivedID}' (itemData type: {itemData?.GetType().Name})");
+            Debug.Log($"[Vest]   IDs match: {idsMatch}, Is VestDataSO: {isVestData}");
+            Debug.Log($"[Vest]   String comparison: '{myID}' == '{receivedID}' ? {string.Equals(myID, receivedID)}");
+            
+            if (idsMatch && isVestData) {
+                Debug.Log($"[Vest] ✓ Condition met! Playing equipped sound for {myID}");
+                OnUpgraded();
+            } else {
+                Debug.Log($"[Vest] ✗ Condition NOT met. Not playing sound.");
+            }
         }
         
         #endregion
@@ -140,13 +202,13 @@ namespace InfimaGames.LowPolyShooterPack {
                 Debug.LogWarning("[Vest] vestData é null! Configure no Inspector.", gameObject);
                 return "vest_null";
             }
-            return vestData.itemID;
+            return vestData.ItemID;
         }
         
         // GetDisplayName() retorna o nome shown na UI
         public override string GetDisplayName() {
             if (vestData == null) return "Unknown";
-            return vestData.itemName;
+            return vestData.ItemName;
         }
 
         /// <summary>
@@ -180,14 +242,6 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Vest não tem ação "exclusive" de uso.
-        /// Exclusive apenas aumenta a redução para 20%.
-        /// </summary>
-        public override void OnUseExclusive() {
-            // Vest é passivo, exclusive significa melhor redução
-        }
-
-        /// <summary>
         /// Vest pode sempre ser "usado" (sempre está equipado).
         /// </summary>
         public override bool CanBeUsed() {
@@ -200,27 +254,112 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Verifica se Vest tem upgrade exclusive (máximo nível).
-        /// </summary>
-        public override bool HasExclusiveUnlocked() {
-            if (PlayerProgress.Instance == null) {
-                return false;
-            }
-            
-            int level = PlayerProgress.Instance.GetItemLevel(GetItemID());
-            int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(GetItemID());
-            return level >= maxLevel;
-        }
-
-        /// <summary>
         /// Get damage reduction percentage for this vest.
         /// Used by PlayerHealth or PlayerArmor to reduce incoming damage.
         /// </summary>
         public float GetDamageReductionPercentage() {
-            // If at max level, use exclusive reduction, otherwise use normal
-            return HasExclusiveUnlocked() ? exclusiveDamageReductionPercentage : damageReductionPercentage;
+            return damageReductionPercentage;
         }
-        
+
+        #endregion
+
+        #region ARMOR MANAGEMENT
+
+        /// <summary>
+        /// Gets the maximum armor value based on Vest's current level.
+        /// </summary>
+        public float GetMaxArmorFromCurrentLevel() {
+            if (PlayerProgress.Instance == null || vestData == null) {
+                Debug.LogWarning("[Vest] GetMaxArmorFromCurrentLevel: PlayerProgress or vestData is null");
+                return 100f;
+            }
+            
+            string vestID = GetItemID();
+            int level = PlayerProgress.Instance.GetItemLevel(vestID);
+            return vestData.GetResistanceAtLevel(level);
+        }
+
+        /// <summary>
+        /// Equipa o colete quando o jogador desbloqueia na loja.
+        /// Define armadura para o máximo baseado no nível do Vest e notifica a UI.
+        /// </summary>
+        public void Equip() {
+            float maxArmorValue = GetMaxArmorFromCurrentLevel();
+            currentArmor = maxArmorValue;
+            maxArmor = maxArmorValue;
+            OnArmorChanged?.Invoke(currentArmor / maxArmor);
+            PlayEquippedSound();
+        }
+
+        /// <summary>
+        /// Called when vest is upgraded. Updates maxArmor to new level and fills armor to 100%.
+        /// </summary>
+        public void OnUpgraded() {
+            float newMaxArmor = GetMaxArmorFromCurrentLevel();
+            maxArmor = newMaxArmor;
+            currentArmor = maxArmor;
+            OnArmorChanged?.Invoke(currentArmor / maxArmor);
+            PlayEquippedSound();
+        }
+
+        /// <summary>
+        /// Absorbs damage from the armor. Returns the remaining damage that wasn't absorbed.
+        /// </summary>
+        public float AbsorbDamage(float incomingDamage) {
+            if (currentArmor <= 0f) {
+                return incomingDamage;
+            }
+
+            float absorbedDamage = Mathf.Min(currentArmor, incomingDamage);
+            currentArmor -= absorbedDamage;
+            float remainingDamage = incomingDamage - absorbedDamage;
+
+            OnArmorChanged?.Invoke(currentArmor / maxArmor);
+
+            if (currentArmor <= 0f) {
+                currentArmor = 0f;
+                OnArmorDepleted?.Invoke();
+                
+                if (PlayerProgress.Instance != null && PlayerProgress.Instance.IsItemUnlocked(GetItemID())) {
+                    PlayDestroyedSound();
+                }
+            }
+
+            return remainingDamage;
+        }
+
+        /// <summary>
+        /// Adds armor points without exceeding maxArmor.
+        /// </summary>
+        public void AddArmor(float amount, bool playSound = true) {
+            currentArmor = Mathf.Min(maxArmor, currentArmor + amount);
+            OnArmorChanged?.Invoke(currentArmor / maxArmor);
+            
+            if (playSound) {
+                PlayEquippedSound();
+            }
+        }
+
+        /// <summary>
+        /// Returns the current armor as a fraction between 0 and 1.
+        /// </summary>
+        public float GetArmorFraction() => maxArmor > 0f ? currentArmor / maxArmor : 0f;
+
+        /// <summary>
+        /// Returns the current armor value.
+        /// </summary>
+        public float GetCurrentArmor() => currentArmor;
+
+        /// <summary>
+        /// Returns the maximum armor value.
+        /// </summary>
+        public float GetMaxArmor() => maxArmor;
+
+        /// <summary>
+        /// Checks if the player currently has any armor.
+        /// </summary>
+        public bool HasArmor() => currentArmor > 0f;
+
         #endregion
         
         #region AUDIO
@@ -245,14 +384,6 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Triggers the vest regenerated event. Called by PlayerArmor when armor
-        /// regenerates from 0 due to exclusive upgrade.
-        /// </summary>
-        public void TriggerRegeneratedEvent() {
-            OnVestRegenerated?.Invoke();
-        }
-        
-        /// <summary>
         /// Plays the vest destroyed sound effect.
         /// Called when the vest is destroyed (armor reaches 0).
         /// </summary>
@@ -267,6 +398,77 @@ namespace InfimaGames.LowPolyShooterPack {
             OnVestDestroyed?.Invoke();
         }
         
+        #endregion
+
+        #region SHOP
+
+        /// <summary>
+        /// Gets the Vest component from the player character.
+        /// Used by ShopUI to get Vest reference.
+        /// </summary>
+        public static Vest GetFromPlayer(Character player) {
+            if (player == null) return null;
+            
+            Vest vest = player.GetComponent<Vest>();
+            if (vest == null) {
+                vest = player.GetComponentInChildren<Vest>();
+            }
+            return vest;
+        }
+
+        /// <summary>
+        /// Called from ShopUI when the vest is selected.
+        /// Updates the ammo/repair button display in the shop.
+        /// </summary>
+        public void UpdateShopAmmoDisplay(UnityEngine.UI.Button ammoButton, TMPro.TextMeshProUGUI priceText, int costPerPurchase) {
+            if (ammoButton == null) return;
+
+            float armorFraction = GetArmorFraction();
+            bool isFull = armorFraction >= 1f;
+            bool isUnlocked = PlayerProgress.Instance != null && PlayerProgress.Instance.IsItemUnlocked(GetItemID());
+
+            if (!isUnlocked) {
+                if (priceText != null) priceText.text = "LOCKED";
+                ammoButton.interactable = false;
+            } else if (isFull) {
+                if (priceText != null) priceText.text = "FULL";
+                ammoButton.interactable = false;
+            } else {
+                if (priceText != null) priceText.text = $"${costPerPurchase:N0}";
+                ammoButton.interactable = EconomyManager.Instance != null &&
+                                         EconomyManager.Instance.CanAfford(costPerPurchase);
+            }
+        }
+
+        /// <summary>
+        /// Called from ShopUI when the vest is unlocked.
+        /// Equips the vest and shows the armor UI.
+        /// </summary>
+        public void OnShopUnlock() {
+            Equip();
+            ShowArmorUI();
+        }
+
+        /// <summary>
+        /// Called from ShopUI when the vest is upgraded.
+        /// BUG: This is being called for ALL items, not just the vest!
+        /// </summary>
+        public void OnShopUpgrade() {
+            Debug.Log($"[Vest] ⚠️ OnShopUpgrade() called! This should ONLY be called for the VEST!");
+            Debug.Log($"[Vest] Stack trace: {System.Environment.StackTrace}");
+            OnUpgraded();
+        }
+
+        /// <summary>
+        /// Shows the VestUI after unlock/upgrade.
+        /// </summary>
+        private void ShowArmorUI() {
+            var vestUI = UnityEngine.Object.FindFirstObjectByType<VestUI>();
+            if (vestUI != null) {
+                vestUI.ShowArmorUI();
+            }
+        }
+
         #endregion
     }
 }

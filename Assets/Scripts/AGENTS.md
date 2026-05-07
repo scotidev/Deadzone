@@ -350,54 +350,6 @@ Contains scripts related to economy, upgrades, and player progression.
 
 /// Upgrade Manager. Handles weapon and player upgrades.
 
-## /Exclusives
-
-Contains exclusive item scripts with special abilities or effects.
-
-### /Exclusives/ItemExclusive.cs
-
-/// Item Exclusive. Base class for exclusive items with special properties.
-
-### /Exclusives/WeaponExclusive.cs
-
-/// Weapon Exclusive. Exclusive weapon with unique stats or effects.
-
-### /Exclusives/PistolExclusive.cs
-
-/// Pistol Exclusive. Exclusive variant of the pistol.
-
-### /Exclusives/AK47Exclusive.cs
-
-/// AK47 Exclusive. Exclusive variant of the AK47.
-
-### /Exclusives/ShotgunExclusive.cs
-
-/// Shotgun Exclusive. Exclusive variant of the shotgun.
-
-### /Exclusives/MedkitExclusive.cs
-
-/// Medkit Exclusive. Exclusive medkit with enhanced healing.
-
-### /Exclusives/GrenadeExclusive.cs
-
-/// Grenade Exclusive. Exclusive variant of grenades.
-
-### /Exclusives/BearTrapExclusive.cs
-
-/// Bear Trap Exclusive. Exclusive bear trap with better stats.
-
-### /Exclusives/BarricadeExclusive.cs
-
-/// Barricade Exclusive. Exclusive barricade variant.
-
-### /Exclusives/ExplosiveBarrelExclusive.cs
-
-/// Explosive Barrel Exclusive. Exclusive explosive barrel.
-
-### /Exclusives/VestExclusive.cs
-
-/// Vest Exclusive. Exclusive armor vest with more protection.
-
 ## /Gameplay
 
 Contains general gameplay scripts.

@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDataSO
   itemID: 1
   itemName: Pistol
-  baseDamage: 10
-  baseFireRate: 200
+  maxUpgradeLevel: 10
+  maxAmmo: 100
+  baseDamage: 20
+  baseFireRate: 100
   baseMagazineCapacity: 30
-  maxReserveAmmo: 300
   damageScaling: 0.1
   fireRateScaling: 0.05
   maxFireRate: 500
   magazineScaling: 0.1
-  exclusivePowerID: 1

@@ -15,12 +15,11 @@ MonoBehaviour:
   itemID: 3
   itemName: Shotgun
   maxUpgradeLevel: 10
-  baseDamage: 40
-  baseFireRate: 200
+  maxAmmo: 50
+  baseDamage: 50
+  baseFireRate: 50
   baseMagazineCapacity: 30
-  maxReserveAmmo: 300
   damageScaling: 0.1
   fireRateScaling: 0.05
   maxFireRate: 500
   magazineScaling: 0.1
-  exclusivePowerID: 3
