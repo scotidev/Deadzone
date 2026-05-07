@@ -1,7 +1,5 @@
 using UnityEngine;
 
-// REFATORAÇÃO: pq aquui temos itemID? pois temos também em ItemDataSO, eles se ligam de alguma forma? ou é reduntante? analise necessaria se precisamos unificar
-
 /// <summary>
 /// Defines the display data and economy settings for a shop item card.
 /// Extended to support unlocks, upgrades, ammo purchases, and different item types.
@@ -12,9 +10,7 @@ public class ShopItemDataSO : ScriptableObject {
     #region SERIALIZED FIELDS
 
     [Header("Identity")]
-    [SerializeField] private string itemID;
-    [SerializeField] private string itemName;
-    [SerializeField][TextArea(2, 4)] private string itemDescription;
+    [TextArea(2, 4)] private string itemDescription;
 
     [Header("Item Data Reference")]
     [SerializeField] private ItemDataSO itemData;
@@ -31,18 +27,19 @@ public class ShopItemDataSO : ScriptableObject {
     [Header("Economy")]
     [SerializeField] private int unlockCost = 0;
     [SerializeField] private int baseUpgradeCost = 100;
+    [Tooltip("Multiplier applied to baseUpgradeCost for each upgrade level")]
+    [SerializeField] private float upgradeCostMultiplier = 1.5f;
 
     [Header("Purchase Settings")]
     [SerializeField] private int costPerPurchase = 50;
     [SerializeField] private int quantityPerPurchase = 30;
-    [SerializeField] private int maxReserveQuantity = 300;
 
     #endregion
 
     #region PROPERTIES
 
-    public string ItemID => itemID;
-    public string ItemName => itemName;
+    public string ItemID => itemData?.ItemID ?? string.Empty;
+    public string ItemName => itemData?.ItemName ?? string.Empty;
     public string Description => itemDescription;
     public ItemDataSO ItemData => itemData;
     public Sprite Icon => icon;
@@ -52,27 +49,34 @@ public class ShopItemDataSO : ScriptableObject {
     public Vector3 PreviewRotationOffset => previewRotationOffset;
     public int UnlockCost => unlockCost;
     public int BaseUpgradeCost => baseUpgradeCost;
+    public float UpgradeCostMultiplier => upgradeCostMultiplier;
     public int CostPerPurchase => costPerPurchase;
     public int QuantityPerPurchase => quantityPerPurchase;
-    public int MaxReserveQuantity => maxReserveQuantity;
+    public int MaxAmmo => itemData?.MaxAmmo ?? 10;
+
+    #endregion
+
+    #region METHODS
+
+    /// <summary>
+    /// Calculates the upgrade cost for a specific level using exponential scaling.
+    /// Formula: unlockCost + (baseUpgradeCost * (multiplier ^ currentLevel))
+    /// Example with unlock=1000, base=100, mult=1.5:
+    /// - Level 1→2: 1000 + 100*(1.5^1) = 1150
+    /// - Level 2→3: 1000 + 100*(1.5^2) = 1225
+    /// - Level 5→6: 1000 + 100*(1.5^5) = 1875
+    /// </summary>
+    /// <param name="currentLevel">Current upgrade level (1-based)</param>
+    /// <returns>Cost for the next upgrade</returns>
+    public int GetUpgradeCost(int currentLevel) {
+        if (currentLevel < 1) currentLevel = 1;
+        float exponentialCost = baseUpgradeCost * Mathf.Pow(upgradeCostMultiplier, currentLevel);
+        return unlockCost + Mathf.RoundToInt(exponentialCost);
+    }
 
     #endregion
 
     #region SETTERS
-
-    /// <summary>
-    /// Set the item ID (for editor configuration only).
-    /// </summary>
-    public void SetItemID(string newID) {
-        itemID = newID;
-    }
-
-    /// <summary>
-    /// Set the item name (for editor configuration only).
-    /// </summary>
-    public void SetItemName(string newName) {
-        itemName = newName;
-    }
 
     /// <summary>
     /// Set the item description (for editor configuration only).

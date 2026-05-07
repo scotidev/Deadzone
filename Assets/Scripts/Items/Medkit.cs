@@ -25,7 +25,7 @@ namespace InfimaGames.LowPolyShooterPack {
                 Debug.LogWarning("[Medkit] medkitData is null! GetItemID() returning fallback.", gameObject);
                 return "medkit_null";
             }
-            return medkitData.itemID;
+            return medkitData.ItemID;
         }
         
         /// <summary>
@@ -33,7 +33,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         public override string GetDisplayName() {
             if (medkitData == null) return "Unknown";
-            return medkitData.itemName;
+            return medkitData.ItemName;
         }
         
         /// <summary>

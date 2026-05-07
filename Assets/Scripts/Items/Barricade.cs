@@ -36,12 +36,12 @@ namespace InfimaGames.LowPolyShooterPack {
                 Debug.LogWarning("[Barricade] barricadeData is null!", gameObject);
                 return "barricade_null";
             }
-            return barricadeData.itemID;
+            return barricadeData.ItemID;
         }
 
         public override string GetDisplayName() {
             if (barricadeData == null) return "Unknown";
-            return barricadeData.itemName;
+            return barricadeData.ItemName;
         }
 
         public override Sprite GetIcon() {

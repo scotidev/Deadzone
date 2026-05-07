@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
+using UnityEngine.UI;
 using InfimaGames.LowPolyShooterPack;
+using Deadzone.Interfaces;
 
 /*============================================================================
     [BUG VEST] - CORREÇÃO DO BUG DE REGENERAÇÃO DO EXCLUSIVO DA VEST
@@ -54,7 +56,7 @@ namespace InfimaGames.LowPolyShooterPack {
     /// NOT selectable via keys 1-8 (not added to Inventory.selectableItems).
     /// Provides armor damage reduction.
     /// </summary>
-    public class Vest : ItemBehaviour {
+    public class Vest : ItemBehaviour, IShopItemCallback {
         
 #region SERIALIZED FIELDS
     /*-----------------------------------------------------------------------------
@@ -166,8 +168,22 @@ private void Start() {
         /// Called when UpgradeManager emits an upgrade event. Checks if this vest was upgraded and updates armor.
         /// </summary>
         private void OnUpgradeManagerItemUpgraded(string itemID, ItemDataSO itemData) {
-            if (itemID == GetItemID() && itemData is VestDataSO) {
+            string myID = GetItemID();
+            string receivedID = itemID ?? "null";
+            bool idsMatch = (myID == receivedID);
+            bool isVestData = (itemData is VestDataSO);
+            
+            Debug.Log($"[Vest] ⚠️ OnUpgradeManagerItemUpgraded called!");
+            Debug.Log($"[Vest]   My ID: '{myID}' (Type: {this.GetType().Name})");
+            Debug.Log($"[Vest]   Received ID: '{receivedID}' (itemData type: {itemData?.GetType().Name})");
+            Debug.Log($"[Vest]   IDs match: {idsMatch}, Is VestDataSO: {isVestData}");
+            Debug.Log($"[Vest]   String comparison: '{myID}' == '{receivedID}' ? {string.Equals(myID, receivedID)}");
+            
+            if (idsMatch && isVestData) {
+                Debug.Log($"[Vest] ✓ Condition met! Playing equipped sound for {myID}");
                 OnUpgraded();
+            } else {
+                Debug.Log($"[Vest] ✗ Condition NOT met. Not playing sound.");
             }
         }
         
@@ -186,13 +202,13 @@ private void Start() {
                 Debug.LogWarning("[Vest] vestData é null! Configure no Inspector.", gameObject);
                 return "vest_null";
             }
-            return vestData.itemID;
+            return vestData.ItemID;
         }
         
         // GetDisplayName() retorna o nome shown na UI
         public override string GetDisplayName() {
             if (vestData == null) return "Unknown";
-            return vestData.itemName;
+            return vestData.ItemName;
         }
 
         /// <summary>
@@ -382,6 +398,77 @@ private void Start() {
             OnVestDestroyed?.Invoke();
         }
         
+        #endregion
+
+        #region SHOP
+
+        /// <summary>
+        /// Gets the Vest component from the player character.
+        /// Used by ShopUI to get Vest reference.
+        /// </summary>
+        public static Vest GetFromPlayer(Character player) {
+            if (player == null) return null;
+            
+            Vest vest = player.GetComponent<Vest>();
+            if (vest == null) {
+                vest = player.GetComponentInChildren<Vest>();
+            }
+            return vest;
+        }
+
+        /// <summary>
+        /// Called from ShopUI when the vest is selected.
+        /// Updates the ammo/repair button display in the shop.
+        /// </summary>
+        public void UpdateShopAmmoDisplay(UnityEngine.UI.Button ammoButton, TMPro.TextMeshProUGUI priceText, int costPerPurchase) {
+            if (ammoButton == null) return;
+
+            float armorFraction = GetArmorFraction();
+            bool isFull = armorFraction >= 1f;
+            bool isUnlocked = PlayerProgress.Instance != null && PlayerProgress.Instance.IsItemUnlocked(GetItemID());
+
+            if (!isUnlocked) {
+                if (priceText != null) priceText.text = "LOCKED";
+                ammoButton.interactable = false;
+            } else if (isFull) {
+                if (priceText != null) priceText.text = "FULL";
+                ammoButton.interactable = false;
+            } else {
+                if (priceText != null) priceText.text = $"${costPerPurchase:N0}";
+                ammoButton.interactable = EconomyManager.Instance != null &&
+                                         EconomyManager.Instance.CanAfford(costPerPurchase);
+            }
+        }
+
+        /// <summary>
+        /// Called from ShopUI when the vest is unlocked.
+        /// Equips the vest and shows the armor UI.
+        /// </summary>
+        public void OnShopUnlock() {
+            Equip();
+            ShowArmorUI();
+        }
+
+        /// <summary>
+        /// Called from ShopUI when the vest is upgraded.
+        /// BUG: This is being called for ALL items, not just the vest!
+        /// </summary>
+        public void OnShopUpgrade() {
+            Debug.Log($"[Vest] ⚠️ OnShopUpgrade() called! This should ONLY be called for the VEST!");
+            Debug.Log($"[Vest] Stack trace: {System.Environment.StackTrace}");
+            OnUpgraded();
+        }
+
+        /// <summary>
+        /// Shows the VestUI after unlock/upgrade.
+        /// </summary>
+        private void ShowArmorUI() {
+            var vestUI = UnityEngine.Object.FindFirstObjectByType<VestUI>();
+            if (vestUI != null) {
+                vestUI.ShowArmorUI();
+            }
+        }
+
         #endregion
     }
 }

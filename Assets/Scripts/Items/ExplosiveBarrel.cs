@@ -50,12 +50,12 @@ namespace InfimaGames.LowPolyShooterPack {
                 Debug.LogWarning("[ExplosiveBarrel] barrelData is null!", gameObject);
                 return "explosive_barrel_null";
             }
-            return barrelData.itemID;
+            return barrelData.ItemID;
         }
 
         public override string GetDisplayName() {
             if (barrelData == null) return "Unknown";
-            return barrelData.itemName;
+            return barrelData.ItemName;
         }
 
         public override Sprite GetIcon() {

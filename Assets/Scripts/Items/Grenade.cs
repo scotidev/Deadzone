@@ -23,12 +23,12 @@ namespace InfimaGames.LowPolyShooterPack {
                 Debug.LogWarning("[Grenade] grenadeData is null!", gameObject);
                 return "grenade_null";
             }
-            return grenadeData.itemID;
+            return grenadeData.ItemID;
         }
 
         public override string GetDisplayName() {
             if (grenadeData == null) return "Unknown";
-            return grenadeData.itemName;
+            return grenadeData.ItemName;
         }
 
         public override Sprite GetIcon() {

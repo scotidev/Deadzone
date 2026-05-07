@@ -1,7 +1,5 @@
 using UnityEngine;
 
-// REFATORAÇÃO: maxReserveAmmo respeita maxAmount ou está de acordo com o que foi dito no script de PlayerProgress?
-
 /// <summary>
 /// ScriptableObject that defines a weapon's base stats and how they scale with upgrades.
 /// Each weapon has one of these assets.
@@ -15,8 +13,6 @@ public class WeaponDataSO : ItemDataSO {
     public float baseDamage = 10f;
     public float baseFireRate = 200f;
     public int baseMagazineCapacity = 30;
-    public int maxReserveAmmo = 300;
-    [Range(0f, 100f)] public float baseCritChance = 5f;
 
     [Header("Upgrade Scaling")]
 
@@ -31,8 +27,11 @@ public class WeaponDataSO : ItemDataSO {
     [Range(0f, 0.5f)]
     public float magazineScaling = 0.1f;
 
-    [Range(0f, 0.2f)]
-    public float critChanceScaling = 0.02f;
+    #endregion
+
+    #region PROPERTIES
+
+    public override int MaxAmmo => 300;
 
     #endregion
 
@@ -78,12 +77,7 @@ public class WeaponDataSO : ItemDataSO {
         return Mathf.RoundToInt(scaledCapacity);
     }
 
-    public float GetCritChanceAtLevel(int level) {
-        level = Mathf.Clamp(level, 1, 10);
-        return Mathf.Clamp(baseCritChance + (critChanceScaling * level * 10f), 0f, 100f);
-    }
-
-    public override string[] GetStatLabels() => new[] { "Damage", "Fire Rate", "Ammo", "Crit" };
+    public override string[] GetStatLabels() => new[] { "Damage", "Fire Rate", "Ammo" };
 
     public override float[] GetStatValues() => GetStatValues(1);
 
@@ -91,9 +85,8 @@ public class WeaponDataSO : ItemDataSO {
         level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
         return new[] { 
             GetDamageAtLevel(level), 
-            GetFireRateAtLevel(level) / 100f, 
-            (float)GetMagazineCapacityAtLevel(level),
-            GetCritChanceAtLevel(level)
+            GetFireRateAtLevel(level), // Don't divide by 100f - let normalization handle it
+            (float)GetMagazineCapacityAtLevel(level)
         };
     }
 

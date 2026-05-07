@@ -16,7 +16,6 @@ public class BuildableDataSO : ItemDataSO {
     #region SERIALIZED FIELDS
 
     [Header("Buildable Stats")]
-    [SerializeField] private int maxAmount;
     [SerializeField] private float damage;
     [SerializeField] private int explosionRadius;
     [Tooltip("Renamed from 'health' to 'resistance'")]
@@ -51,7 +50,7 @@ public class BuildableDataSO : ItemDataSO {
     public float Damage => damage;
     public int ExplosionRadius => explosionRadius;
     public float Resistance => health;
-    public int MaxAmount => maxAmount;
+    public override int MaxAmmo => 10;
     public GameObject RealPrefab => realPrefab;
     public GameObject GhostPrefab => ghostPrefab;
     public Vector3 PlacementRotationEuler => placementRotationEuler;
@@ -91,7 +90,7 @@ public class BuildableDataSO : ItemDataSO {
         float levelFactor = 1f + (level - 1) * 0.1f;
 
         if (displayStats == null || displayStats.Length == 0) {
-            return new[] { (float)maxAmount };
+            return new[] { (float)MaxAmmo };
         }
 
         float[] values = new float[displayStats.Length];
@@ -105,7 +104,7 @@ public class BuildableDataSO : ItemDataSO {
                     values[i] = health * (1f + resistanceScaling * (level - 1));
                     break;
                 case BuildableStatType.Ammo:
-                    values[i] = maxAmount;
+                    values[i] = MaxAmmo;
                     break;
                 case BuildableStatType.Radius:
                     values[i] = explosionRadius;

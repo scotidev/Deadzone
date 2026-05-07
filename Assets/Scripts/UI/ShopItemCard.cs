@@ -145,11 +145,12 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
     }
 
     /// <summary>
-    /// Calculates the cost for the next upgrade based on the current level of the item. This method uses the UpgradeManager to determine the cost, ensuring that it reflects any scaling or special rules defined in the upgrade system.
+    /// Calculates the cost for the next upgrade based on the current level of the item.
+    /// Formula: unlockCost + (baseUpgradeCost * multiplier * currentLevel)
     /// </summary>
     /// <param name="currentLevel">The current level of the item.</param>
     private int CalculateUpgradeCost(int currentLevel) {
-        return UpgradeManager.Instance != null ? UpgradeManager.Instance.GetNextUpgradeCost(currentItemData.ItemID, currentItemData.BaseUpgradeCost) : 0;
+        return currentItemData != null ? currentItemData.GetUpgradeCost(currentLevel) : 0;
     }
 
     /// <summary>

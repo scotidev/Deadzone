@@ -21,12 +21,12 @@ namespace InfimaGames.LowPolyShooterPack {
                 Debug.LogWarning("[BearTrap] bearTrapData is null!", gameObject);
                 return "beartrap_null";
             }
-            return bearTrapData.itemID;
+            return bearTrapData.ItemID;
         }
         
         public override string GetDisplayName() {
             if (bearTrapData == null) return "Unknown";
-            return bearTrapData.itemName;
+            return bearTrapData.ItemName;
         }
         
         public override Sprite GetIcon() {

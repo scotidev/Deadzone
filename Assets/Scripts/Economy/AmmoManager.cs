@@ -45,7 +45,7 @@ public class AmmoManager : MonoBehaviour {
         ItemDataSO itemData = shopItem.ItemData;
         int cost = shopItem.CostPerPurchase;
         int quantity = shopItem.QuantityPerPurchase;
-        int maxAmount = shopItem.MaxReserveQuantity;
+        int maxAmount = shopItem.MaxAmmo;
 
         if (itemData == null) {
             Debug.LogWarning($"[AmmoManager] ItemData is null for {itemID}!");

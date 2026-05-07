@@ -2,6 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+/// <summary>
+/// Displays a stat with label, icon, and three-layer bar (background, upgrade, current).
+/// </summary>
 public class StatBarDisplay : MonoBehaviour {
 
     [Header("Elements")]
@@ -28,6 +31,9 @@ public class StatBarDisplay : MonoBehaviour {
 
     private float maxStatValue = 100f;
 
+    /// <summary>
+    /// Sets up the stat bar with label, max value, and slot index.
+    /// </summary>
     public void Setup(string label, float maxValue, int slotIndex) {
         maxStatValue = maxValue;
 
@@ -44,7 +50,13 @@ public class StatBarDisplay : MonoBehaviour {
         UpdateBarColors();
     }
 
-    public void SetValues(float current, float upgrade) {
+    /// <summary>
+    /// Sets the current and upgrade values for the stat bar.
+    /// </summary>
+    /// <param name="current">Current stat value.</param>
+    /// <param name="upgrade">Upgrade stat value (preview).</param>
+    /// <param name="showUpgrade">Whether to show the upgrade bar.</param>
+    public void SetValues(float current, float upgrade, bool showUpgrade = true) {
         float currentFill = maxStatValue > 0 ? current / maxStatValue : 0f;
         float upgradeFill = maxStatValue > 0 ? upgrade / maxStatValue : 0f;
 
@@ -53,7 +65,8 @@ public class StatBarDisplay : MonoBehaviour {
         }
 
         if (upgradeBar != null) {
-            upgradeBar.fillAmount = Mathf.Clamp01(upgradeFill);
+            upgradeBar.fillAmount = showUpgrade ? Mathf.Clamp01(upgradeFill) : 0f;
+            upgradeBar.enabled = showUpgrade;
         }
 
         if (currentBar != null) {
