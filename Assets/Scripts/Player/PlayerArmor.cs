@@ -118,6 +118,25 @@ public class PlayerArmor : MonoBehaviour {
         }
     }
 
+    private void Start() {
+        InitializeArmorFromVestLevel();
+    }
+
+    /// <summary>
+    /// Initializes armor based on current vest level. Called at Start for games where vest is already unlocked.
+    /// </summary>
+    private void InitializeArmorFromVestLevel() {
+        if (vestComponent != null && PlayerProgress.Instance != null) {
+            string vestID = vestComponent.GetItemID();
+            if (PlayerProgress.Instance.IsItemUnlocked(vestID)) {
+                float maxArmorFromLevel = GetMaxArmorFromVestLevel();
+                maxArmor = maxArmorFromLevel;
+                currentArmor = maxArmorFromLevel;
+                OnArmorChanged?.Invoke(1f);
+            }
+        }
+    }
+
     #endregion
     
     #region MÉTODOS PÚBLICOS
@@ -131,7 +150,7 @@ public class PlayerArmor : MonoBehaviour {
     /// Define armadura para o máximo baseado no nível do Vest e notifica a UI.
     /// </summary>
     public void EquipVest() {
-        float maxArmorValue = GetMaxArmorFromVest();
+        float maxArmorValue = GetMaxArmorFromVestLevel();
         currentArmor = maxArmorValue;
         maxArmor = maxArmorValue;
         OnArmorChanged?.Invoke(currentArmor / maxArmor);
@@ -142,12 +161,12 @@ public class PlayerArmor : MonoBehaviour {
     }
     
     /// <summary>
-    /// Repara o colete quando o jogador usa botão +ammo na loja.
+    /// Called when vest is upgraded. Updates maxArmor to new level and fills armor to 100%.
     /// </summary>
-    public void RepairVest() {
-        float maxArmorValue = GetMaxArmorFromVest();
-        currentArmor = maxArmorValue;
-        maxArmor = maxArmorValue;
+    public void OnVestUpgraded() {
+        float newMaxArmor = GetMaxArmorFromVestLevel();
+        maxArmor = newMaxArmor;
+        currentArmor = maxArmor;
         OnArmorChanged?.Invoke(currentArmor / maxArmor);
         
         if (vestComponent != null) {
@@ -158,7 +177,7 @@ public class PlayerArmor : MonoBehaviour {
     /// <summary>
     /// Gets the maximum armor value based on Vest's current level.
     /// </summary>
-    private float GetMaxArmorFromVest() {
+    public float GetMaxArmorFromVestLevel() {
         if (PlayerProgress.Instance == null || vestComponent == null) {
             return 100f;
         }

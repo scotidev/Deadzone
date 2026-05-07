@@ -871,6 +871,7 @@ GameObject:
   - component: {fileID: 392336155}
   - component: {fileID: 392336154}
   - component: {fileID: 392336153}
+  - component: {fileID: 392336157}
   m_Layer: 0
   m_Name: SystemManagers
   m_TagString: Untagged
@@ -930,6 +931,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &392336157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 392336152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f2503f4d45b49f43acefd9c07d25d49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InfimaGames.LowPolyShooterPack.AmmoManager
 --- !u!1 &409135121
 GameObject:
   m_ObjectHideFlags: 0
@@ -2871,49 +2884,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1780177d470788b408296dc5f8eb8efa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
---- !u!114 &1776962848 stripped
+--- !u!114 &1776962859 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3200162001527162215, guid: a20c4961b0655574e9f91c372538fa9f,
+  m_CorrespondingSourceObject: {fileID: 5082535019206848216, guid: a20c4961b0655574e9f91c372538fa9f,
     type: 3}
   m_PrefabInstance: {fileID: 4545309492575171591}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 02c19abacb0cbc2469d89d3af9aeed40, type: 3}
+  m_Script: {fileID: 11500000, guid: 735c09a5faee88f4398674df6bf9f68c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerArmor
---- !u!1 &1778538034
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1778538035}
-  m_Layer: 0
-  m_Name: StatBarDisplay
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1778538035
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1778538034}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::InfimaGames.LowPolyShooterPack.Vest
 --- !u!1 &1882224570
 GameObject:
   m_ObjectHideFlags: 0
@@ -3463,11 +3445,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 37842020074818094, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 1628012635517256272, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: enemyHealthBarUI
@@ -3528,12 +3505,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6158473262601081821, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 24c825d48a2aea24e873cf3b76cd37ad, type: 2}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4348624357843376660, guid: a20c4961b0655574e9f91c372538fa9f, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -3546,11 +3519,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1961512248320810984, guid: 4a06de3311b20f6468eed9a93caa2de3,
-        type: 3}
-      propertyPath: m_Color.a
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3462812099456698194, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: m_Pivot.x
@@ -3676,22 +3644,16 @@ PrefabInstance:
       propertyPath: playerHealth
       value: 
       objectReference: {fileID: 1776962818}
+    - target: {fileID: 7016419823468125405, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: vest
+      value: 
+      objectReference: {fileID: 1776962859}
     - target: {fileID: 7327047381849859520, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: player
       value: 
       objectReference: {fileID: 1413941464}
-    - target: {fileID: 7327047381849859520, guid: 4a06de3311b20f6468eed9a93caa2de3,
-        type: 3}
-      propertyPath: statBarPrefab
-      value: 
-      objectReference: {fileID: 4946046415174162325, guid: acdf0794675beb24385a5f61df8403a1,
-        type: 3}
-    - target: {fileID: 8828263736154151038, guid: 4a06de3311b20f6468eed9a93caa2de3,
-        type: 3}
-      propertyPath: playerArmor
-      value: 
-      objectReference: {fileID: 1776962848}
     - target: {fileID: 9036732885671563424, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: m_Name
@@ -3721,4 +3683,3 @@ SceneRoots:
   - {fileID: 1755308607}
   - {fileID: 47282072}
   - {fileID: 392336156}
-  - {fileID: 1778538035}

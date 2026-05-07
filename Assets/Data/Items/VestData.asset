@@ -14,9 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VestDataSO
   itemID: 9
   itemName: Vest
-  maxUpgradeLevel: 3
+  maxUpgradeLevel: 5
   resistance: 100
-  resistanceScaling: 0.3
-  regenDelay: 5
-  reEquipDelay: 10
-  minReEquipArmor: 0.1
+  resistanceScaling: 0.25

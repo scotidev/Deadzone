@@ -434,10 +434,18 @@ public class ShopUI : BaseUI {
     /// 
     /// DIFERENÇA PARA ARMAS:
     /// - Armas: botão compra munição de reserva
-    /// - Vest: botão repara a armadura (chama RepairVest)
+    /// - Vest: botão repara a armadura (adiciona 100% do armor atual)
     /// </summary>
-    private PlayerArmor GetPlayerArmor() {
-        return player != null ? player.GetComponent<PlayerArmor>() : null;
+    private Vest GetVest() {
+        if (player == null) return null;
+        
+        // Primeiro tenta no mesmo GameObject
+        Vest vest = player.GetComponent<Vest>();
+        if (vest == null) {
+            // Se não encontrou, procurar nos filhos
+            vest = player.GetComponentInChildren<Vest>();
+        }
+        return vest;
     }
 
     /*=========================================================================
@@ -449,14 +457,14 @@ public class ShopUI : BaseUI {
         - $XX: preço para reparo
     =========================================================================*/
     private void UpdateAmmoDisplayForVest() {
-        PlayerArmor playerArmor = GetPlayerArmor();
+        Vest vest = GetVest();
 
-        if (playerArmor == null || ammoButton == null) {
+        if (vest == null || ammoButton == null) {
             if (ammoButton != null) ammoButton.interactable = false;
             return;
         }
 
-        float armorFraction = playerArmor.GetArmorFraction();
+        float armorFraction = vest.GetArmorFraction();
         bool isFull = armorFraction >= 1f;
         bool isUnlocked = PlayerProgress.Instance != null && PlayerProgress.Instance.IsItemUnlocked(selectedItemData.ItemID);
 
@@ -590,9 +598,15 @@ public class ShopUI : BaseUI {
                 Debug.Log($"[ShopUI] GrenadeDataSO detected");
             } else if (itemData.ItemData is VestDataSO) {
                 Debug.Log($"[ShopUI] VestDataSO detected - auto-equipping Vest");
-                PlayerArmor playerArmorUnlock = GetPlayerArmor();
-                if (playerArmorUnlock != null) {
-                    playerArmorUnlock.EquipVest();
+                Vest vestUnlock = GetVest();
+                if (vestUnlock != null) {
+                    vestUnlock.Equip();
+                }
+                
+                // Mostrar UI da armadura
+                VestUI armorUI = FindFirstObjectByType<VestUI>();
+                if (armorUI != null) {
+                    armorUI.ShowArmorUI();
                 }
             }
 
@@ -621,25 +635,10 @@ public class ShopUI : BaseUI {
 
         int currentLevel = PlayerProgress.Instance.GetItemLevel(itemData.ItemID);
 
-        // Use TryUpgradeItem for ALL item types (works for Vest, weapons, etc.)
-        if (UpgradeManager.Instance.TryUpgradeItem(itemData.ItemID, itemData.BaseUpgradeCost)) {
-            int newLevel = PlayerProgress.Instance.GetItemLevel(itemData.ItemID);
-            int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(itemData.ItemID);
-            Debug.Log($"[ShopUI] Upgraded {itemData.ItemName} para nível {newLevel}!");
-
-            // Se for Vest, além de fazer upgrade, reparamos armor
-            if (itemData.ItemData is VestDataSO) {
-                PlayerArmor playerArmorForUpgrade = GetPlayerArmor();
-                if (playerArmorForUpgrade != null) {
-                    playerArmorForUpgrade.RepairVest();
-                }
-
-                // Mostrar UI (se estava escondida)
-                PlayerArmorUI armorUI = FindFirstObjectByType<PlayerArmorUI>();
-                if (armorUI != null) {
-                    armorUI.ShowArmorUI();
-                }
-            }
+        // Use TryUpgradeItem for ALL item types (Vest, weapons, etc.)
+        // Post-upgrade logic (like Vest repair) is handled internally by UpgradeManager
+        if (UpgradeManager.Instance.TryUpgradeItem(itemData.ItemID, itemData.BaseUpgradeCost, itemData.ItemData)) {
+            Debug.Log($"[ShopUI] Upgraded {itemData.ItemName} para nível {PlayerProgress.Instance.GetItemLevel(itemData.ItemID)}!");
 
             RefreshAllCards();
         } else {
@@ -663,60 +662,16 @@ public class ShopUI : BaseUI {
     private void OnAmmoButtonPressed() {
         if (selectedItemData == null) return;
 
-        string itemID = selectedItemData.ItemID;
-        int cost = selectedItemData.CostPerPurchase;
-        int quantity = selectedItemData.QuantityPerPurchase;
-        int maxAmount = selectedItemData.MaxReserveQuantity;
-
-        bool isVestItem = selectedItemData.ItemData is VestDataSO;
-
-        if (isVestItem) {
-            PlayerArmor playerArmorRepair = GetPlayerArmor();
-            if (playerArmorRepair == null) {
-                return;
-            }
-
-            if (!EconomyManager.Instance.CanAfford(cost)) {
-                int missingAmount = cost - EconomyManager.Instance.GetCurrentCurrency();
-                Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Insufficient funds! Need {missingAmount} more coins.");
-                return;
-            }
-
-            float armorFraction = playerArmorRepair.GetArmorFraction();
-            if (armorFraction >= 1f) {
-                Debug.Log("[ShopUI.OnAmmoButtonPressed] Vest already at full armor!");
-                return;
-            }
-
-            if (EconomyManager.Instance.TrySpendCurrency(cost)) {
-                playerArmorRepair.AddArmor(100f);
-                Debug.Log($"[ShopUI.OnAmmoButtonPressed] Vest repaired for ${cost}");
-                UpdateSelectedItemInfo();
-            }
+        // Ensure AmmoManager exists
+        if (AmmoManager.Instance == null) {
+            Debug.LogWarning("[ShopUI] AmmoManager not found in scene!");
             return;
         }
 
-        int currentQuantity = PlayerProgress.Instance.GetWeaponReserveAmmo(itemID);
-        int newQuantity = currentQuantity + quantity;
-
-        newQuantity = Mathf.Clamp(newQuantity, 0, maxAmount);
-
-        int actualQuantityAdded = newQuantity - currentQuantity;
-
-        if (actualQuantityAdded <= 0) {
-            Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Item {itemID} already at max quantity ({maxAmount})!");
-            return;
-        }
-
-        float quantityProportion = (float)actualQuantityAdded / quantity;
-        int actualCost = Mathf.RoundToInt(cost * quantityProportion);
-
-        if (EconomyManager.Instance.TrySpendCurrency(actualCost)) {
-            PlayerProgress.Instance.AddWeaponReserveAmmo(itemID, actualQuantityAdded);
-
-            Debug.Log($"[ShopUI.OnAmmoButtonPressed] Purchased {actualQuantityAdded} quantity for {itemID}. Cost: ${actualCost}. New total: {newQuantity}");
-            AmmoPurchased?.Invoke(itemID, actualQuantityAdded);
-
+        // Use AmmoManager to handle all item types in a scalable way
+        if (AmmoManager.Instance.TryAddItem(selectedItemData)) {
+            Debug.Log($"[ShopUI] Purchased {selectedItemData.ItemName}");
+            AmmoPurchased?.Invoke(selectedItemData.ItemID, selectedItemData.QuantityPerPurchase);
             UpdateSelectedItemInfo();
         }
     }

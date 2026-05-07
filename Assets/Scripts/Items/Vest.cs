@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using InfimaGames.LowPolyShooterPack;
 
@@ -79,7 +80,18 @@ namespace InfimaGames.LowPolyShooterPack {
     // IAudioManagerService é a interface do sistema de áudio do jogo.
     // Permite tocar sons de forma centralizada usando ServiceLocator.
     private IAudioManagerService audioService;
-    
+
+    // Referência ao PlayerHealth para verificar se o player está vivo
+    private PlayerHealth playerHealth;
+
+    // Armadura atual e máxima do jogador
+    private float currentArmor;
+    private float maxArmor;
+
+    // EVENTOS: permitem que outros scripts saibam quando algo mudar
+    public event Action<float> OnArmorChanged;
+    public event Action OnArmorDepleted;
+
     #endregion
 
     #region PROPERTIES
@@ -114,6 +126,49 @@ namespace InfimaGames.LowPolyShooterPack {
             // que foi registrado no Bootstraper do jogo.
             // Isso garante que sempre teremos acesso ao sistema de áudio.
             audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+            
+            // Inscreve no evento de upgrade do UpgradeManager para atualizar armor quando a vest subir de nível
+            UpgradeManager.OnItemUpgraded += OnUpgradeManagerItemUpgraded;
+
+            // O jogador COMEÇA sem armadura (0)
+            // Só vai ter armadura quando desbloquear na loja
+            currentArmor = 0f;
+
+            // Procurar o PlayerHealth
+            playerHealth = GetComponent<PlayerHealth>();
+            if (playerHealth == null) {
+                playerHealth = GetComponentInParent<Character>()?.GetComponentInChildren<PlayerHealth>();
+            }
+        }
+
+private void Start() {
+            InitializeArmorFromVestLevel();
+        }
+
+        private void OnDestroy() {
+            // Desinscreve do evento de upgrade para evitar memory leaks
+            UpgradeManager.OnItemUpgraded -= OnUpgradeManagerItemUpgraded;
+        }
+
+        /// <summary>
+        /// Initializes armor based on current vest level. Called at Start for games where vest is already unlocked.
+        /// </summary>
+        private void InitializeArmorFromVestLevel() {
+            if (PlayerProgress.Instance != null && PlayerProgress.Instance.IsItemUnlocked(GetItemID())) {
+                float maxArmorFromLevel = GetMaxArmorFromCurrentLevel();
+                maxArmor = maxArmorFromLevel;
+                currentArmor = maxArmorFromLevel;
+                OnArmorChanged?.Invoke(1f);
+            }
+        }
+
+        /// <summary>
+        /// Called when UpgradeManager emits an upgrade event. Checks if this vest was upgraded and updates armor.
+        /// </summary>
+        private void OnUpgradeManagerItemUpgraded(string itemID, ItemDataSO itemData) {
+            if (itemID == GetItemID() && itemData is VestDataSO) {
+                OnUpgraded();
+            }
         }
         
         #endregion
@@ -189,7 +244,106 @@ namespace InfimaGames.LowPolyShooterPack {
         public float GetDamageReductionPercentage() {
             return damageReductionPercentage;
         }
-        
+
+        #endregion
+
+        #region ARMOR MANAGEMENT
+
+        /// <summary>
+        /// Gets the maximum armor value based on Vest's current level.
+        /// </summary>
+        public float GetMaxArmorFromCurrentLevel() {
+            if (PlayerProgress.Instance == null || vestData == null) {
+                Debug.LogWarning("[Vest] GetMaxArmorFromCurrentLevel: PlayerProgress or vestData is null");
+                return 100f;
+            }
+            
+            string vestID = GetItemID();
+            int level = PlayerProgress.Instance.GetItemLevel(vestID);
+            return vestData.GetResistanceAtLevel(level);
+        }
+
+        /// <summary>
+        /// Equipa o colete quando o jogador desbloqueia na loja.
+        /// Define armadura para o máximo baseado no nível do Vest e notifica a UI.
+        /// </summary>
+        public void Equip() {
+            float maxArmorValue = GetMaxArmorFromCurrentLevel();
+            currentArmor = maxArmorValue;
+            maxArmor = maxArmorValue;
+            OnArmorChanged?.Invoke(currentArmor / maxArmor);
+            PlayEquippedSound();
+        }
+
+        /// <summary>
+        /// Called when vest is upgraded. Updates maxArmor to new level and fills armor to 100%.
+        /// </summary>
+        public void OnUpgraded() {
+            float newMaxArmor = GetMaxArmorFromCurrentLevel();
+            maxArmor = newMaxArmor;
+            currentArmor = maxArmor;
+            OnArmorChanged?.Invoke(currentArmor / maxArmor);
+            PlayEquippedSound();
+        }
+
+        /// <summary>
+        /// Absorbs damage from the armor. Returns the remaining damage that wasn't absorbed.
+        /// </summary>
+        public float AbsorbDamage(float incomingDamage) {
+            if (currentArmor <= 0f) {
+                return incomingDamage;
+            }
+
+            float absorbedDamage = Mathf.Min(currentArmor, incomingDamage);
+            currentArmor -= absorbedDamage;
+            float remainingDamage = incomingDamage - absorbedDamage;
+
+            OnArmorChanged?.Invoke(currentArmor / maxArmor);
+
+            if (currentArmor <= 0f) {
+                currentArmor = 0f;
+                OnArmorDepleted?.Invoke();
+                
+                if (PlayerProgress.Instance != null && PlayerProgress.Instance.IsItemUnlocked(GetItemID())) {
+                    PlayDestroyedSound();
+                }
+            }
+
+            return remainingDamage;
+        }
+
+        /// <summary>
+        /// Adds armor points without exceeding maxArmor.
+        /// </summary>
+        public void AddArmor(float amount, bool playSound = true) {
+            currentArmor = Mathf.Min(maxArmor, currentArmor + amount);
+            OnArmorChanged?.Invoke(currentArmor / maxArmor);
+            
+            if (playSound) {
+                PlayEquippedSound();
+            }
+        }
+
+        /// <summary>
+        /// Returns the current armor as a fraction between 0 and 1.
+        /// </summary>
+        public float GetArmorFraction() => maxArmor > 0f ? currentArmor / maxArmor : 0f;
+
+        /// <summary>
+        /// Returns the current armor value.
+        /// </summary>
+        public float GetCurrentArmor() => currentArmor;
+
+        /// <summary>
+        /// Returns the maximum armor value.
+        /// </summary>
+        public float GetMaxArmor() => maxArmor;
+
+        /// <summary>
+        /// Checks if the player currently has any armor.
+        /// </summary>
+        public bool HasArmor() => currentArmor > 0f;
+
         #endregion
         
         #region AUDIO
