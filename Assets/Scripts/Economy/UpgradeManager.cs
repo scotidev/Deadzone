@@ -92,11 +92,6 @@ public class UpgradeManager : MonoBehaviour {
             int newLevel = PlayerProgress.Instance.GetWeaponLevel(weaponID);
             Debug.Log($"[UpgradeManager] {weaponID} upgraded to level {newLevel} for {upgradeCost} currency.");
 
-            if (newLevel == PlayerProgress.MAX_UPGRADE_LEVEL) {
-                Debug.Log($"[UpgradeManager] {weaponID} reached MAX LEVEL! Exclusive power applied!");
-                ActivateExclusivePower(weaponID);
-            }
-
             return true;
         }
 
@@ -150,11 +145,6 @@ public class UpgradeManager : MonoBehaviour {
         if (upgradeSuccess) {
             int newLevel = PlayerProgress.Instance.GetItemLevel(itemID);
             Debug.Log($"[UpgradeManager] {itemID} upgraded to level {newLevel} for {upgradeCost} currency.");
-
-            int newMaxLevel = PlayerProgress.Instance.GetItemMaxLevel(itemID);
-            if (newLevel >= newMaxLevel) {
-                Debug.Log($"[UpgradeManager] {itemID} reached MAX LEVEL {newMaxLevel}! Exclusive power unlocked!");
-            }
 
             return true;
         }
@@ -235,16 +225,6 @@ public class UpgradeManager : MonoBehaviour {
         if (PlayerProgress.Instance == null) return false;
 
         return !PlayerProgress.Instance.IsWeaponMaxLevel(weaponID);
-    }
-
-    // AQUI VALE LEMBRAR QUAL EXLUSIVO FAZ O QUE: 1. Pistol +30% de crit chance 2. AK47 cabem 100 balas na magazine 3. Shotung: +30% fire rate. 4. Medkit: cura ao longo do tempo 5. Granadas: mini explosões após a explosão. 6. Barricadas: ficam indestrutiveis 7. Barris explosivos: causam dano ao longo do tempo 8. bear trap: explode o inimigo pra cima. a Vest que não é equipavel: se restaura automaticamente após nao tomar dano. consule a pasta /Scripts/Exlusives para mais detalhes sobre cada exclusivo. É bom pesquisar se existe outro método ativando o EXLUSIVO de cada arma, pq acho que esse método abaixo esta obsoleto
-    /// <summary>
-    /// Activates the exclusive power for a weapon that reached level 10.
-    /// Finds or adds the appropriate power component to the weapon.
-    /// </summary>
-    /// <param name="weaponID">The weapon's unique identifier.</param>
-    private void ActivateExclusivePower(string weaponID) {
-        Debug.Log($"[UpgradeManager] Exclusive power will activate for {weaponID} when equipped.");
     }
 
     #endregion

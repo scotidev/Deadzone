@@ -104,7 +104,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
         public override InventoryBehaviour GetInventory() => inventory;
 
-        public override bool IsCrosshairVisible() => !aiming && !holstered;
+        public override bool IsCrosshairVisible() => !aiming && !holstered && !(ShopManager.Instance?.IsShopOpen() ?? false);
         public override bool IsRunning() => running;
 
         public override bool IsJumping() => holdingButtonJump;

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// REFATORAÇÃO: maxReserveAmmo respeita maxAmount ou está de acordo com o que foi dito no script de PlayerProgress? Ou deveriamos ter maxReserveAmmo para armas e maxAmount para itens de progresso? Mais uma coisa, é necessario referenciar o ID de exclusivo? o proprio script de exclusivo colocado na arma já não seria o suficiente para saber que aquela arma tem um exclusivo?
+// REFATORAÇÃO: maxReserveAmmo respeita maxAmount ou está de acordo com o que foi dito no script de PlayerProgress?
 
 /// <summary>
 /// ScriptableObject that defines a weapon's base stats and how they scale with upgrades.
@@ -33,10 +33,6 @@ public class WeaponDataSO : ItemDataSO {
 
     [Range(0f, 0.2f)]
     public float critChanceScaling = 0.02f;
-
-    [Header("Exclusive Power")]
-
-    public string exclusivePowerID;
 
     #endregion
 
@@ -85,16 +81,6 @@ public class WeaponDataSO : ItemDataSO {
     public float GetCritChanceAtLevel(int level) {
         level = Mathf.Clamp(level, 1, 10);
         return Mathf.Clamp(baseCritChance + (critChanceScaling * level * 10f), 0f, 100f);
-    }
-
-    // FAZER LÓGICA DINÂMICA PARA QUE O NÍVEL NAO PRECISE SER 10 NECESSARIAMENTE, MAS SIM O NÍVEL MÁXIMO DEFINIDO PARA A ARMA, PARA QUE SEJA MAIS FLEXÍVEL PARA FUTURAS ARMAS COM NÍVEIS MÁXIMOS DIFERENTES
-    /// <summary>
-    /// Checks if this weapon has reached maximum level and unlocked its exclusive power.
-    /// </summary>
-    /// <param name="level">Current upgrade level.</param>
-    /// <returns>True if level at exclusive power and exclusive power exists.</returns>
-    public bool HasExclusivePower(int level) {
-        return level >= 10 && !string.IsNullOrEmpty(exclusivePowerID);
     }
 
     public override string[] GetStatLabels() => new[] { "Damage", "Fire Rate", "Ammo", "Crit" };

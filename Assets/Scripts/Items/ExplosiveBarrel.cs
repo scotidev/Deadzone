@@ -6,7 +6,6 @@ namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
     /// Explosive barrel buildable item. Places an explosive barrel in the world.
     /// When shot, triggers a chain reaction explosion with slow-motion effect.
-    /// Supports exclusive upgrade: 1.5x explosion force at level 9+
     /// </summary>
     public class ExplosiveBarrel : ItemBehaviour, IDamageable {
 
@@ -15,7 +14,6 @@ namespace InfimaGames.LowPolyShooterPack {
         [Header("Barrel Data")]
         [SerializeField] private BuildableDataSO barrelData;
         [SerializeField] private Sprite hudIcon;
-        [SerializeField] private float exclusiveExplosionForceBonus = 1.5f;
 
         [Header("Prefabs")]
         [SerializeField] private Transform explosionPrefab;
@@ -36,7 +34,6 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private bool shouldExplode = false;
         private bool routineStarted = false;
-        private bool isExclusive = false;
 
         #endregion
 
@@ -96,17 +93,6 @@ namespace InfimaGames.LowPolyShooterPack {
             if (!CanBeUsed()) {
                 return;
             }
-            // BuildingController handles the actual placement
-        }
-
-        /// <summary>
-        /// EXCLUSIVE use: Place explosive barrel with 1.5x explosion force.
-        /// </summary>
-        public override void OnUseExclusive() {
-            if (!CanBeUsed() || !HasExclusiveUnlocked()) {
-                return;
-            }
-            // TODO: Implement exclusive placement (e.g., higher force barrel variant)
         }
 
         /// <summary>
@@ -117,22 +103,8 @@ namespace InfimaGames.LowPolyShooterPack {
                 return false;
             }
 
-            // CONCEITO: CanBeUsed() é para seleção, apenas verifica se desbloqueado.
-            // A checagem de quantidade é feita em OnUse(), não em CanBeUsed().
             bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(GetItemID());
             return isUnlocked;
-        }
-
-        /// <summary>
-        /// Check if exclusive upgrade is unlocked (level 9+).
-        /// </summary>
-        public override bool HasExclusiveUnlocked() {
-            if (PlayerProgress.Instance == null) {
-                return false;
-            }
-
-            int level = PlayerProgress.Instance.GetItemLevel(GetItemID());
-            return level >= 9;
         }
 
         #endregion
@@ -192,11 +164,8 @@ namespace InfimaGames.LowPolyShooterPack {
                 Instantiate(destroyedBarrelPrefab, transform.position, transform.rotation);
             }
 
-            // Calculate explosion force (may be increased by exclusive upgrade)
+            // Calculate explosion force
             float finalExplosionForce = explosionForce;
-            if (isExclusive) {
-                finalExplosionForce *= exclusiveExplosionForceBonus;
-            }
 
             // Apply explosion physics
             // CONCEITO: Physics.OverlapSphere encontra todos os colisores

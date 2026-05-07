@@ -37,13 +37,6 @@ public class ShopItemDataSO : ScriptableObject {
     [SerializeField] private int quantityPerPurchase = 30;
     [SerializeField] private int maxReserveQuantity = 300;
 
-    [Header("Exclusive")]
-    [SerializeField] private int levelToUnlockExclusive = 9;
-    [SerializeField] private int exclusiveUpgradeCost = 5000;
-
-    [TextArea(2, 4)]
-    [SerializeField] private string exclusivePowerDescription;
-
     #endregion
 
     #region PROPERTIES
@@ -62,9 +55,6 @@ public class ShopItemDataSO : ScriptableObject {
     public int CostPerPurchase => costPerPurchase;
     public int QuantityPerPurchase => quantityPerPurchase;
     public int MaxReserveQuantity => maxReserveQuantity;
-    public int LevelToUnlockExclusive => levelToUnlockExclusive;
-    public int ExclusiveUpgradeCost => exclusiveUpgradeCost;
-    public string ExclusivePowerDescription => exclusivePowerDescription;
 
     #endregion
 

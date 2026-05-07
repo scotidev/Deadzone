@@ -318,16 +318,6 @@ public class ShopUI : BaseUI {
 
         string itemName = selectedItemData.ItemName;
         string description = selectedItemData.Description;
-        string priceText = string.Empty;
-
-        if (PlayerProgress.Instance != null) {
-            int currentLevel = PlayerProgress.Instance.GetWeaponLevel(selectedItemData.ItemID);
-            int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(selectedItemData.ItemID);
-
-            if (currentLevel >= selectedItemData.LevelToUnlockExclusive) {
-                description = selectedItemData.ExclusivePowerDescription;
-            }
-        }
 
         SetSelectedInfoTexts(itemName, description);
 
@@ -644,17 +634,8 @@ public class ShopUI : BaseUI {
                     playerArmorForUpgrade.RepairVest();
                 }
 
-                // If reached max level (level 5), enable regeneration exclusive
-                if (newLevel >= maxLevel) {
-                    Debug.Log($"[ShopUI] {itemData.ItemName} reached MAX LEVEL! Enabling regeneration!");
-                    PlayerArmor playerArmor2 = GetPlayerArmor();
-                    if (playerArmor2 != null) {
-                        playerArmor2.EnableRegeneration();
-                    }
-                }
-
                 // Mostrar UI (se estava escondida)
-                PlayerArmorUI armorUI = FindObjectOfType<PlayerArmorUI>();
+                PlayerArmorUI armorUI = FindFirstObjectByType<PlayerArmorUI>();
                 if (armorUI != null) {
                     armorUI.ShowArmorUI();
                 }
@@ -710,6 +691,7 @@ public class ShopUI : BaseUI {
             if (EconomyManager.Instance.TrySpendCurrency(cost)) {
                 playerArmorRepair.AddArmor(100f);
                 Debug.Log($"[ShopUI.OnAmmoButtonPressed] Vest repaired for ${cost}");
+                UpdateSelectedItemInfo();
             }
             return;
         }
@@ -735,11 +717,11 @@ public class ShopUI : BaseUI {
             Debug.Log($"[ShopUI.OnAmmoButtonPressed] Purchased {actualQuantityAdded} quantity for {itemID}. Cost: ${actualCost}. New total: {newQuantity}");
             AmmoPurchased?.Invoke(itemID, actualQuantityAdded);
 
-UpdateSelectedItemInfo();
+            UpdateSelectedItemInfo();
         }
     }
 
-/// <summary>
+    /// <summary>
     /// Refreshes all card states after a purchase/upgrade (so levels and colors update).
     /// </summary>
     private void RefreshAllCards() {

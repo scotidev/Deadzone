@@ -61,20 +61,5 @@ namespace InfimaGames.LowPolyShooterPack {
         public abstract bool CanBeUsed();
         
         #endregion
-        
-        #region EXCLUSIVE SYSTEM
-        
-        /// <summary>
-        /// Called when player uses the exclusive upgrade version of this item (level 9+).
-        /// This is an enhanced version: Medkit heals 2x, ExplosiveBarrel explodes stronger, etc.
-        /// </summary>
-        public abstract void OnUseExclusive();
-        
-        /// <summary>
-        /// Check if this item has its exclusive upgrade unlocked (level 9+).
-        /// </summary>
-        public abstract bool HasExclusiveUnlocked();
-        
-        #endregion
     }
 }

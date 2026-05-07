@@ -62,13 +62,8 @@ namespace InfimaGames.LowPolyShooterPack {
     -----------------------------------------------------------------------------*/
     
     [SerializeField] private VestDataSO vestData;
-    [SerializeField] private float damageReductionPercentage = 0.1f;  // 10% reduction base
-    [SerializeField] private float exclusiveDamageReductionPercentage = 0.2f;  // 20% reduction exclusive
+    [SerializeField] private float damageReductionPercentage = 0.1f;  // 10% reduction
     
-    /*-----------------------------------------------------------------------------
-        Audio Clips - Aqui você arrasta os arquivos de áudio no Inspector.
-        Esses sons tocarão em momentos específicos do jogo.
-    -----------------------------------------------------------------------------*/
     [Header("Audio Clips")]
     [SerializeField] private AudioClip vestEquippedClip;    // Som quando equipar/equipar
     [SerializeField] private AudioClip vestDestroyedClip; // Som quando o colete quebra
@@ -105,10 +100,6 @@ namespace InfimaGames.LowPolyShooterPack {
         // Evento estático - usado quando o colete é destruído
         // Outros scripts podem ouvir isso para atualizar a UI, por exemplo
         public static event System.Action OnVestDestroyed;
-
-        // Evento estático - usado quando o colete se regenera após ter sido destruído
-        // Disparado pelo PlayerArmor quando a regeneração começa do zero
-        public static event System.Action OnVestRegenerated;
 
         #endregion
 
@@ -180,14 +171,6 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Vest não tem ação "exclusive" de uso.
-        /// Exclusive apenas aumenta a redução para 20%.
-        /// </summary>
-        public override void OnUseExclusive() {
-            // Vest é passivo, exclusive significa melhor redução
-        }
-
-        /// <summary>
         /// Vest pode sempre ser "usado" (sempre está equipado).
         /// </summary>
         public override bool CanBeUsed() {
@@ -200,25 +183,11 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Verifica se Vest tem upgrade exclusive (máximo nível).
-        /// </summary>
-        public override bool HasExclusiveUnlocked() {
-            if (PlayerProgress.Instance == null) {
-                return false;
-            }
-            
-            int level = PlayerProgress.Instance.GetItemLevel(GetItemID());
-            int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(GetItemID());
-            return level >= maxLevel;
-        }
-
-        /// <summary>
         /// Get damage reduction percentage for this vest.
         /// Used by PlayerHealth or PlayerArmor to reduce incoming damage.
         /// </summary>
         public float GetDamageReductionPercentage() {
-            // If at max level, use exclusive reduction, otherwise use normal
-            return HasExclusiveUnlocked() ? exclusiveDamageReductionPercentage : damageReductionPercentage;
+            return damageReductionPercentage;
         }
         
         #endregion
@@ -244,14 +213,6 @@ namespace InfimaGames.LowPolyShooterPack {
             }
         }
 
-        /// <summary>
-        /// Triggers the vest regenerated event. Called by PlayerArmor when armor
-        /// regenerates from 0 due to exclusive upgrade.
-        /// </summary>
-        public void TriggerRegeneratedEvent() {
-            OnVestRegenerated?.Invoke();
-        }
-        
         /// <summary>
         /// Plays the vest destroyed sound effect.
         /// Called when the vest is destroyed (armor reaches 0).

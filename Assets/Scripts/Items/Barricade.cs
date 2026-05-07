@@ -8,7 +8,6 @@ namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
     /// Represents a barricade that blocks enemy path to the player.
     /// Inherits from ItemBehaviour to unify item selection system.
-    /// Supports exclusive upgrade: 1.5x health at level 9+
     /// </summary>
     public class Barricade : ItemBehaviour, IDamageable {
 
@@ -17,7 +16,6 @@ namespace InfimaGames.LowPolyShooterPack {
         [Header("Barricade Data")]
         [SerializeField] private BuildableDataSO barricadeData;
         [SerializeField] private Sprite hudIcon;
-        [SerializeField] private float exclusiveHealthMultiplier = 1.5f;
 
         [Header("Barricade Settings")]
         [SerializeField] private float maxHealth = 100f;
@@ -87,24 +85,10 @@ namespace InfimaGames.LowPolyShooterPack {
             if (!CanBeUsed()) {
                 return;
             }
-            // BuildingController handles the actual placement
-        }
-
-        /// <summary>
-        /// EXCLUSIVE use: Place barricade with 1.5x health.
-        /// </summary>
-        public override void OnUseExclusive() {
-            if (!CanBeUsed() || !HasExclusiveUnlocked()) {
-                return;
-            }
-            // TODO: Implement exclusive placement (e.g., higher health barricade variant)
         }
 
         /// <summary>
         /// Check if barricade can be placed (quantity > 0).
-        /// </summary>
-        /// <summary>
-        /// Check if bar is unlocked (for selection). Quantity check happens in OnUse().
         /// </summary>
         public override bool CanBeUsed() {
             if (PlayerProgress.Instance == null) {
@@ -112,23 +96,9 @@ namespace InfimaGames.LowPolyShooterPack {
                 return false;
             }
 
-            // CONCEITO: CanBeUsed() é para seleção, apenas verifica se desbloqueado.
-            // A checagem de quantidade é feita em OnUse(), não em CanBeUsed().
             bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(GetItemID());
             Debug.Log($"[Barricade] CanBeUsed check: ID={GetItemID()}, Unlocked={isUnlocked}");
             return isUnlocked;
-        }
-
-        /// <summary>
-        /// Check if exclusive upgrade is unlocked (level 9+).
-        /// </summary>
-        public override bool HasExclusiveUnlocked() {
-            if (PlayerProgress.Instance == null) {
-                return false;
-            }
-
-            int level = PlayerProgress.Instance.GetItemLevel(GetItemID());
-            return level >= 9;
         }
 
         #endregion
