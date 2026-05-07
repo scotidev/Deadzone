@@ -163,6 +163,10 @@ public class PlayerArmor : MonoBehaviour {
         currentArmor = maxArmorValue;
         maxArmor = maxArmorValue;
         OnArmorChanged?.Invoke(currentArmor / maxArmor);
+        
+        if (vestComponent != null) {
+            vestComponent.PlayEquippedSound();
+        }
     }
     
     /// <summary>
@@ -173,6 +177,10 @@ public class PlayerArmor : MonoBehaviour {
         currentArmor = maxArmorValue;
         maxArmor = maxArmorValue;
         OnArmorChanged?.Invoke(currentArmor / maxArmor);
+        
+        if (vestComponent != null) {
+            vestComponent.PlayEquippedSound();
+        }
     }
 
     /// <summary>
@@ -256,11 +264,15 @@ public class PlayerArmor : MonoBehaviour {
     /// Adds armor points without exceeding maxArmor.
     /// Called when purchasing armor from the shop.
     /// </summary>
-    public void AddArmor(float amount) {
+    public void AddArmor(float amount, bool playSound = true) {
         // Mathf.Min garante que não passa de 100
         currentArmor = Mathf.Min(maxArmor, currentArmor + amount);
 
         OnArmorChanged?.Invoke(currentArmor / maxArmor);
+        
+        if (playSound && vestComponent != null) {
+            vestComponent.PlayEquippedSound();
+        }
     }
 
     /// <summary>

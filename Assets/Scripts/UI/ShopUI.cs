@@ -342,7 +342,7 @@ public class ShopUI : BaseUI {
         foreach (Transform child in statsContainer) {
             Destroy(child.gameObject);
         }
-        
+
         activeStatBars.Clear();
 
         if (selectedItemData?.ItemData == null || statsContainer == null || statBarPrefab == null) {
@@ -352,12 +352,12 @@ public class ShopUI : BaseUI {
         ItemDataSO itemData = selectedItemData.ItemData;
         string[] labels = itemData.GetStatLabels();
 
-        int currentLevel = PlayerProgress.Instance != null 
-            ? PlayerProgress.Instance.GetItemLevel(selectedItemData.ItemID) 
+        int currentLevel = PlayerProgress.Instance != null
+            ? PlayerProgress.Instance.GetItemLevel(selectedItemData.ItemID)
             : 1;
-        
-        int maxLevel = PlayerProgress.Instance != null 
-            ? PlayerProgress.Instance.GetItemMaxLevel(selectedItemData.ItemID) 
+
+        int maxLevel = PlayerProgress.Instance != null
+            ? PlayerProgress.Instance.GetItemMaxLevel(selectedItemData.ItemID)
             : 10;
 
         int nextLevel = (currentLevel >= maxLevel) ? currentLevel : currentLevel + 1;
@@ -369,18 +369,18 @@ public class ShopUI : BaseUI {
             GameObject barObj = Instantiate(statBarPrefab, statsContainer);
             RectTransform rt = barObj.GetComponent<RectTransform>();
             StatBarDisplay bar = barObj.GetComponent<StatBarDisplay>();
-            
+
             rt.anchorMin = new Vector2(0f, 1f);
             rt.anchorMax = new Vector2(1f, 1f);
             rt.pivot = new Vector2(0.5f, 1f);
             rt.anchoredPosition = Vector2.zero;
             rt.sizeDelta = new Vector2(0f, 30f);
-            
+
             float maxValue = WeaponStatsCalculator.GetMaxValueForStat(labels[i]);
-            
+
             bar.Setup(labels[i], maxValue, i);
             bar.SetValues(currentValues[i], nextValues[i]);
-            
+
             activeStatBars.Add(bar);
         }
     }
@@ -475,14 +475,12 @@ public class ShopUI : BaseUI {
                 ammoPriceText.text = "LOCKED";
             }
             ammoButton.interactable = false;
-        }
-        else if (isFull) {
+        } else if (isFull) {
             if (ammoPriceText != null) {
                 ammoPriceText.text = "FULL";
             }
             ammoButton.interactable = false;
-        }
-        else {
+        } else {
             if (ammoPriceText != null) {
                 ammoPriceText.text = $"${selectedItemData.CostPerPurchase:N0}";
             }
@@ -602,7 +600,10 @@ public class ShopUI : BaseUI {
                 Debug.Log($"[ShopUI] GrenadeDataSO detected");
             } else if (itemData.ItemData is VestDataSO) {
                 Debug.Log($"[ShopUI] VestDataSO detected - auto-equipping Vest");
-                EquipVestOnUnlock();
+                PlayerArmor playerArmorUnlock = GetPlayerArmor();
+                if (playerArmorUnlock != null) {
+                    playerArmorUnlock.EquipVest();
+                }
             }
 
             RefreshAllCards();
@@ -638,11 +639,10 @@ public class ShopUI : BaseUI {
 
             // Se for Vest, além de fazer upgrade, reparamos armor
             if (itemData.ItemData is VestDataSO) {
-                PlayerArmor playerArmor = GetPlayerArmor();
-                if (playerArmor != null) {
-                    playerArmor.RepairVest();
+                PlayerArmor playerArmorForUpgrade = GetPlayerArmor();
+                if (playerArmorForUpgrade != null) {
+                    playerArmorForUpgrade.RepairVest();
                 }
-                PlayVestEquippedSound();
 
                 // If reached max level (level 5), enable regeneration exclusive
                 if (newLevel >= maxLevel) {
@@ -690,13 +690,27 @@ public class ShopUI : BaseUI {
         bool isVestItem = selectedItemData.ItemData is VestDataSO;
 
         if (isVestItem) {
-            RepairVest();
-            return;
-        }
+            PlayerArmor playerArmorRepair = GetPlayerArmor();
+            if (playerArmorRepair == null) {
+                return;
+            }
 
-        if (!EconomyManager.Instance.CanAfford(cost)) {
-            int missingAmount = cost - EconomyManager.Instance.GetCurrentCurrency();
-            Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Insufficient funds! Need {missingAmount} more coins.");
+            if (!EconomyManager.Instance.CanAfford(cost)) {
+                int missingAmount = cost - EconomyManager.Instance.GetCurrentCurrency();
+                Debug.LogWarning($"[ShopUI.OnAmmoButtonPressed] Insufficient funds! Need {missingAmount} more coins.");
+                return;
+            }
+
+            float armorFraction = playerArmorRepair.GetArmorFraction();
+            if (armorFraction >= 1f) {
+                Debug.Log("[ShopUI.OnAmmoButtonPressed] Vest already at full armor!");
+                return;
+            }
+
+            if (EconomyManager.Instance.TrySpendCurrency(cost)) {
+                playerArmorRepair.AddArmor(100f);
+                Debug.Log($"[ShopUI.OnAmmoButtonPressed] Vest repaired for ${cost}");
+            }
             return;
         }
 
@@ -721,93 +735,11 @@ public class ShopUI : BaseUI {
             Debug.Log($"[ShopUI.OnAmmoButtonPressed] Purchased {actualQuantityAdded} quantity for {itemID}. Cost: ${actualCost}. New total: {newQuantity}");
             AmmoPurchased?.Invoke(itemID, actualQuantityAdded);
 
-            UpdateSelectedItemInfo();
+UpdateSelectedItemInfo();
         }
     }
 
-/*=========================================================================
-    RepairVest - Repara a vest quando jogador clica em +ammo
-    
-    Quando o jogador tem a Vest danificada (armor < 100%) e clica no botão +ammo,
-    este método:
-    1. Verifica se pode pagar
-    2. Define armor = 100
-    3. Toca som
-    4. Mostra UI (se estava escondida)
-    
-    Note: Reparar usa AddArmor(100f) ao invés de RepairVest() porque
-    o AddArmor também dispara evento para UI.
-    =========================================================================*/
-    private void RepairVest() {
-        PlayerArmor playerArmor = GetPlayerArmor();
-
-        if (playerArmor == null) {
-            Debug.LogWarning("[ShopUI RepairVest] PlayerArmor não encontrado!");
-            return;
-        }
-
-        int cost = selectedItemData.CostPerPurchase;
-
-        if (!EconomyManager.Instance.CanAfford(cost)) {
-            int missingAmount = cost - EconomyManager.Instance.GetCurrentCurrency();
-            Debug.LogWarning($"[ShopUI RepairVest] funds insuficientes! Precisa de {missingAmount} coins a mais.");
-            return;
-        }
-
-        float armorFraction = playerArmor.GetArmorFraction();
-
-        if (armorFraction >= 1f) {
-            Debug.Log("[ShopUI RepairVest] Vest já está com armadura cheia!");
-            return;
-        }
-
-        if (EconomyManager.Instance.TrySpendCurrency(cost)) {
-            playerArmor.AddArmor(100f);
-
-            Debug.Log($"[ShopUI.RepairVest] Vest reparada por ${cost}. Nova armadura: 100%");
-
-            PlayVestEquippedSound();
-            PlayVestEquippedSound();
-
-            PlayerArmorUI armorUI = FindObjectOfType<PlayerArmorUI>();
-            if (armorUI != null) {
-                armorUI.ShowArmorUI();
-            }
-
-            UpdateSelectedItemInfo();
-        }
-    }
-
-    /*=========================================================================
-    PlayVestEquippedSound - Toca o som de vest equipped
-        
-    PROCURA DO COMPONENTE VEST:
-    - Primeiro tenta no mesmo GameObject do Character
-    - Se não encontrar, procura nos filhos (children)
-    
-    Isso é necessário porque não sabemos exatamente onde o script Vest está.
-=========================================================================*/
-    private void PlayVestEquippedSound() {
-        if (player == null) {
-            Debug.LogWarning("[ShopUI] player é null, não posso encontrar Vest!");
-            return;
-        }
-
-        // Procurar o componente Vest no player ou seus filhos
-        Vest vest = player.GetComponent<Vest>();
-        if (vest == null) {
-            vest = player.GetComponentInChildren<Vest>();
-        }
-
-        if (vest != null) {
-            vest.PlayEquippedSound();
-            Debug.Log("[ShopUI] PlayVestEquippedSound() chamado!");
-        } else {
-            Debug.LogWarning("[ShopUI] Componente Vest não encontrado no player!");
-        }
-    }
-
-    /// <summary>
+/// <summary>
     /// Refreshes all card states after a purchase/upgrade (so levels and colors update).
     /// </summary>
     private void RefreshAllCards() {
@@ -819,47 +751,6 @@ public class ShopUI : BaseUI {
         }
 
         UpdateSelectedItemInfo();
-    }
-
-    /*=========================================================================
-        EquipVestOnUnlock - Equip a vest quando jogador desbloqueia
-        
-        O que acontece quando jogador clica em "Unlock" para a Vest:
-        1. Chama EquipVest() no PlayerArmor → define armor = 100
-        2. Toca som de equipar (PlayVestEquippedSound)
-        3. Mostra a UI da armadura (ShowArmorUI)
-        
-        Isso faz o colete funcionar pela primeira vez.
-    =========================================================================*/
-    private void EquipVestOnUnlock() {
-        Debug.Log("[ShopUI] EquipVestOnUnlock chamado!");
-
-        PlayerArmor playerArmor = GetPlayerArmor();
-        Debug.Log($"[ShopUI] PlayerArmor encontrado: {playerArmor != null}");
-
-        if (playerArmor != null) {
-            // 1. Equipar (definir armor = 100)
-            playerArmor.EquipVest();
-            Debug.Log("[ShopUI] playerArmor.EquipVest() chamado!");
-
-            // 2. Tocar som
-            PlayVestEquippedSound();
-
-            // 3. Mostrar UI
-            PlayerArmorUI armorUI = FindObjectOfType<PlayerArmorUI>();
-            Debug.Log($"[ShopUI] PlayerArmorUI encontrado: {armorUI != null}");
-
-            if (armorUI != null) {
-                armorUI.ShowArmorUI();
-                Debug.Log("[ShopUI] armorUI.ShowArmorUI() chamado!");
-            } else {
-                Debug.LogError("[ShopUI] PlayerArmorUI não encontrado na cena!");
-            }
-
-            Debug.Log("[ShopUI] Vest equipada e HUD mostrado!");
-        } else {
-            Debug.LogError("[ShopUI] PlayerArmor não encontrado!");
-        }
     }
 
     /// <summary>
