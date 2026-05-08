@@ -129,9 +129,6 @@ namespace InfimaGames.LowPolyShooterPack {
             // Isso garante que sempre teremos acesso ao sistema de áudio.
             audioService = ServiceLocator.Current.Get<IAudioManagerService>();
             
-            // Inscreve no evento de upgrade do UpgradeManager para atualizar armor quando a vest subir de nível
-            UpgradeManager.OnItemUpgraded += OnUpgradeManagerItemUpgraded;
-
             // O jogador COMEÇA sem armadura (0)
             // Só vai ter armadura quando desbloquear na loja
             currentArmor = 0f;
@@ -143,16 +140,14 @@ namespace InfimaGames.LowPolyShooterPack {
             }
         }
 
-private void Start() {
+        private void Start() {
             InitializeArmorFromVestLevel();
         }
 
         private void OnDestroy() {
-            // Desinscreve do evento de upgrade para evitar memory leaks
-            UpgradeManager.OnItemUpgraded -= OnUpgradeManagerItemUpgraded;
         }
 
-        /// <summary>
+/// <summary>
         /// Initializes armor based on current vest level. Called at Start for games where vest is already unlocked.
         /// </summary>
         private void InitializeArmorFromVestLevel() {
@@ -164,29 +159,6 @@ private void Start() {
             }
         }
 
-        /// <summary>
-        /// Called when UpgradeManager emits an upgrade event. Checks if this vest was upgraded and updates armor.
-        /// </summary>
-        private void OnUpgradeManagerItemUpgraded(string itemID, ItemDataSO itemData) {
-            string myID = GetItemID();
-            string receivedID = itemID ?? "null";
-            bool idsMatch = (myID == receivedID);
-            bool isVestData = (itemData is VestDataSO);
-            
-            Debug.Log($"[Vest] ⚠️ OnUpgradeManagerItemUpgraded called!");
-            Debug.Log($"[Vest]   My ID: '{myID}' (Type: {this.GetType().Name})");
-            Debug.Log($"[Vest]   Received ID: '{receivedID}' (itemData type: {itemData?.GetType().Name})");
-            Debug.Log($"[Vest]   IDs match: {idsMatch}, Is VestDataSO: {isVestData}");
-            Debug.Log($"[Vest]   String comparison: '{myID}' == '{receivedID}' ? {string.Equals(myID, receivedID)}");
-            
-            if (idsMatch && isVestData) {
-                Debug.Log($"[Vest] ✓ Condition met! Playing equipped sound for {myID}");
-                OnUpgraded();
-            } else {
-                Debug.Log($"[Vest] ✗ Condition NOT met. Not playing sound.");
-            }
-        }
-        
         #endregion
 
         #region ITEM BEHAVIOUR IMPLEMENTATION
@@ -451,11 +423,8 @@ private void Start() {
 
         /// <summary>
         /// Called from ShopUI when the vest is upgraded.
-        /// BUG: This is being called for ALL items, not just the vest!
         /// </summary>
         public void OnShopUpgrade() {
-            Debug.Log($"[Vest] ⚠️ OnShopUpgrade() called! This should ONLY be called for the VEST!");
-            Debug.Log($"[Vest] Stack trace: {System.Environment.StackTrace}");
             OnUpgraded();
         }
 
