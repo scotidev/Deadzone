@@ -303,13 +303,9 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <summary>
         /// Adds armor points without exceeding maxArmor.
         /// </summary>
-        public void AddArmor(float amount, bool playSound = true) {
+        public void AddArmor(float amount) {
             currentArmor = Mathf.Min(maxArmor, currentArmor + amount);
             OnArmorChanged?.Invoke(currentArmor / maxArmor);
-            
-            if (playSound) {
-                PlayEquippedSound();
-            }
         }
 
         /// <summary>

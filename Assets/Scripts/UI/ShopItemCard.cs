@@ -20,10 +20,6 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private TextMeshProUGUI itemNameText;
     [SerializeField] private TextMeshProUGUI itemLevelText;
 
-    [Header("Button")]
-    [SerializeField] private Button unlockUpgradeButton;
-    [SerializeField] private TextMeshProUGUI unlockUpgradeButtonText;
-
     [Header("Visual States")]
     [SerializeField] private Image cardBackground;
     [SerializeField] private Color lockedColor = new Color(0.5f, 0.5f, 0.5f, 1f);
@@ -36,17 +32,6 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
 
     private ShopItemDataSO currentItemData;
     private Action<ShopItemDataSO> selectionCallback;
-    private Action<ShopItemDataSO> stateChangedCallback;
-    private Action<ShopItemDataSO> onUnlockUpgradeClick;
-
-    #endregion
-
-    #region UNITY
-
-    private void Awake() {
-        if (unlockUpgradeButton != null)
-            unlockUpgradeButton.onClick.AddListener(OnUnlockUpgradeClick);
-    }
 
     #endregion
 
@@ -67,15 +52,11 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
     }
 
     /// <summary>
-    /// Registers callbacks so the parent UI can react to card selection and state changes.
+    /// Registers callbacks so the parent UI can react to card selection.
     /// </summary>
     /// <param name="onSelected">Callback fired when this card is selected by click.</param>
-    /// <param name="onStateChanged">Callback fired after this card refreshes its state.</param>
-    /// <param name="onUnlockUpgrade">Callback fired when the unlock/upgrade button is clicked.</param>
-    public void SetCallbacks(Action<ShopItemDataSO> onSelected, Action<ShopItemDataSO> onStateChanged, Action<ShopItemDataSO> onUnlockUpgrade) {
+    public void SetCallbacks(Action<ShopItemDataSO> onSelected) {
         selectionCallback = onSelected;
-        stateChangedCallback = onStateChanged;
-        onUnlockUpgradeClick = onUnlockUpgrade;
     }
 
     /// <summary>
@@ -118,39 +99,6 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
         if (cardBackground != null) {
             cardBackground.color = !isUnlocked ? lockedColor : isMaxLevel ? maxLevelColor : unlockedColor;
         }
-
-        if (unlockUpgradeButton != null) {
-            if (!isUnlocked) {
-                if (unlockUpgradeButtonText != null) unlockUpgradeButtonText.text = "Unlock";
-                unlockUpgradeButton.interactable = EconomyManager.Instance != null && EconomyManager.Instance.CanAfford(currentItemData.UnlockCost);
-            } else if (isMaxLevel) {
-                if (unlockUpgradeButtonText != null) unlockUpgradeButtonText.text = "Maxed Out";
-                unlockUpgradeButton.interactable = false;
-            } else {
-                int cost = CalculateUpgradeCost(currentLevel);
-                if (unlockUpgradeButtonText != null) unlockUpgradeButtonText.text = $"Upgrade";
-                unlockUpgradeButton.interactable = EconomyManager.Instance != null && EconomyManager.Instance.CanAfford(cost);
-            }
-        }
-
-        stateChangedCallback?.Invoke(currentItemData);
-    }
-
-    /// <summary>
-    /// Handles clicks on the unlock/upgrade button, notifying the parent shop UI to attempt the unlock or upgrade action for this item.
-    /// </summary>
-    private void OnUnlockUpgradeClick() {
-        NotifySelected();
-        onUnlockUpgradeClick?.Invoke(currentItemData);
-    }
-
-    /// <summary>
-    /// Calculates the cost for the next upgrade based on the current level of the item.
-    /// Formula: unlockCost + (baseUpgradeCost * multiplier * currentLevel)
-    /// </summary>
-    /// <param name="currentLevel">The current level of the item.</param>
-    private int CalculateUpgradeCost(int currentLevel) {
-        return currentItemData != null ? currentItemData.GetUpgradeCost(currentLevel) : 0;
     }
 
     /// <summary>

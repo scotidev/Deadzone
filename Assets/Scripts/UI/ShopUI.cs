@@ -137,7 +137,7 @@ public class ShopUI : BaseUI {
             }
 
             ShopItemCard card = Instantiate(shopItemCardPrefab, itemsContainer);
-            card.SetCallbacks(HandleCardSelected, HandleCardStateChanged, HandleCardUnlockUpgrade);
+            card.SetCallbacks(HandleCardSelected);
             card.Setup(itemData);
         }
     }
@@ -182,22 +182,6 @@ public class ShopUI : BaseUI {
 
         if (previewHandler != null && itemData != null) {
             previewHandler.ShowItem(itemData);
-        }
-    }
-
-    private void HandleCardStateChanged(ShopItemDataSO itemData) {
-        if (selectedItemData == null || itemData == null || itemData != selectedItemData) {
-            return;
-        }
-
-        UpdateSelectedItemInfo();
-    }
-
-    private void HandleCardUnlockUpgrade(ShopItemDataSO itemData) {
-        selectedItemData = itemData;
-        UpdateSelectedItemInfo();
-        if (selectedItemActionButton != null) {
-            selectedItemActionButton.onClick.Invoke();
         }
     }
 
@@ -380,6 +364,7 @@ public class ShopUI : BaseUI {
         }
 
         if (ShopManager.Instance.TryUnlockItem(itemData)) {
+            selectedItemActionButton?.GetComponent<UIButtonFeedback>()?.PlayUnlockSound();
             RefreshAllCards();
         }
     }
@@ -389,7 +374,17 @@ public class ShopUI : BaseUI {
             return;
         }
 
+        int currentLevel = PlayerProgress.Instance.GetItemLevel(itemData.ItemID);
+        int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(itemData.ItemID);
+        bool reachedMax = currentLevel >= maxLevel - 1;
+
         if (ShopManager.Instance.TryUpgradeItem(itemData)) {
+            UIButtonFeedback feedback = selectedItemActionButton?.GetComponent<UIButtonFeedback>();
+            if (reachedMax) {
+                feedback?.PlayMaxedOutSound();
+            } else {
+                feedback?.PlayUpgradeSound();
+            }
             RefreshAllCards();
         }
     }
@@ -398,7 +393,25 @@ public class ShopUI : BaseUI {
         if (selectedItemData == null || ShopManager.Instance == null) return;
 
         if (ShopManager.Instance.TryBuyAmmo(selectedItemData)) {
+            PlayAmmoSound(selectedItemData);
             UpdateSelectedItemInfo();
+        }
+    }
+
+    private void PlayAmmoSound(ShopItemDataSO itemData) {
+        if (itemData?.ItemData == null) return;
+
+        UIButtonFeedback feedback = ammoButton?.GetComponent<UIButtonFeedback>();
+        if (feedback == null) return;
+
+        if (itemData.ItemData is VestDataSO) {
+            feedback.PlayVestClickSound();
+        }
+        else if (itemData.ItemData is WeaponDataSO) {
+            feedback.PlayAmmoClickSound();
+        }
+        else {
+            feedback.PlaySuppliesClickSound();
         }
     }
 
