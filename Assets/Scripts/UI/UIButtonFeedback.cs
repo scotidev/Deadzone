@@ -75,6 +75,8 @@ public class UIButtonFeedback : MonoBehaviour,
     [SerializeField] private AudioClip disabledClickSound;
     [Tooltip("Volume for disabled click sound (0 to 1)")]
     [SerializeField] private float disabledClickVolume = 1f;
+    [Tooltip("Callback triggered when clicking a disabled button")]
+    [SerializeField] private UnityEngine.Events.UnityEvent<ShopButtonDisabledReason> onDisabledClick;
 
     [Header("Click Area Fix")]
     [Tooltip("Enable precise click detection using image alpha")]
@@ -145,11 +147,41 @@ public class UIButtonFeedback : MonoBehaviour,
         Button button = GetComponent<Button>();
         if (button != null && !button.interactable) {
             audioService?.PlaySFX2D(disabledClickSound, disabledClickVolume);
+            ShopButtonDisabledReason reason = GetButtonDisabledReason();
+            onDisabledClick?.Invoke(reason);
             return;
         }
 
         targetScale = pressedScale;
         PlayClick();
+    }
+
+    private ShopButtonDisabledReason GetButtonDisabledReason() {
+        if (ShopManager.Instance == null || ShopUI.Instance == null || ShopUI.Instance.SelectedItemData == null) {
+            return ShopButtonDisabledReason.None;
+        }
+
+        ShopItemDataSO itemData = ShopUI.Instance.SelectedItemData;
+        string buttonName = gameObject.name.ToLower();
+
+        bool isActionButton = buttonName.Contains("action") || 
+                              buttonName.Contains("upgrade") ||
+                              buttonName.Contains("unlock") ||
+                              buttonName.Contains("purchase") ||
+                              buttonName.Contains("btn") && !buttonName.Contains("ammo");
+        bool isAmmoButton = buttonName.Contains("ammo") || 
+                            buttonName.Contains("refill") || 
+                            buttonName.Contains("replenish");
+
+        if (isActionButton) {
+            return ShopManager.Instance.GetActionButtonDisabledReason(itemData);
+        }
+        
+        if (isAmmoButton) {
+            return ShopManager.Instance.GetAmmoButtonDisabledReason(itemData);
+        }
+
+        return ShopButtonDisabledReason.None;
     }
 
     public void OnPointerUp(PointerEventData e) {

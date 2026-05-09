@@ -5,6 +5,15 @@ using InfimaGames.LowPolyShooterPack;
 using UnityEngine;
 using Deadzone.Interfaces;
 
+public enum ShopButtonDisabledReason {
+    None,
+    InsufficientFunds,
+    MaxLevel,
+    NotUnlocked,
+    FullAmmo,
+    FullArmor
+}
+
 /// <summary>
 /// Manages the shop interface system in the game.
 /// </summary>
@@ -394,6 +403,65 @@ public class ShopManager : MonoBehaviour {
         int current = PlayerProgress.Instance.GetWeaponReserveAmmo(itemData.ItemID);
         int max = itemData.MaxAmmo;
         return (current, max);
+    }
+
+    public ShopButtonDisabledReason GetActionButtonDisabledReason(ShopItemDataSO itemData) {
+        if (itemData == null || PlayerProgress.Instance == null || EconomyManager.Instance == null) {
+            return ShopButtonDisabledReason.None;
+        }
+
+        string itemID = itemData.ItemID;
+        bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(itemID);
+        int currentLevel = PlayerProgress.Instance.GetItemLevel(itemID);
+        int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(itemID);
+
+        if (!isUnlocked) {
+            return EconomyManager.Instance.CanAfford(itemData.UnlockCost) 
+                ? ShopButtonDisabledReason.None 
+                : ShopButtonDisabledReason.InsufficientFunds;
+        }
+
+        if (currentLevel >= maxLevel) {
+            return ShopButtonDisabledReason.MaxLevel;
+        }
+
+        int cost = GetUpgradeCost(itemData, currentLevel);
+        if (cost <= 0 || !EconomyManager.Instance.CanAfford(cost)) {
+            return ShopButtonDisabledReason.InsufficientFunds;
+        }
+
+        return ShopButtonDisabledReason.None;
+    }
+
+    public ShopButtonDisabledReason GetAmmoButtonDisabledReason(ShopItemDataSO itemData) {
+        if (itemData == null || PlayerProgress.Instance == null || EconomyManager.Instance == null) {
+            return ShopButtonDisabledReason.None;
+        }
+
+        if (!PlayerProgress.Instance.IsItemUnlocked(itemData.ItemID)) {
+            return ShopButtonDisabledReason.NotUnlocked;
+        }
+
+        if (itemData.ItemData is VestDataSO) {
+            Vest vest = Vest.GetFromPlayer(playerCharacter);
+            if (vest != null && vest.GetCurrentArmor() >= vest.GetMaxArmor()) {
+                return ShopButtonDisabledReason.FullArmor;
+            }
+            return EconomyManager.Instance.CanAfford(itemData.CostPerPurchase)
+                ? ShopButtonDisabledReason.None
+                : ShopButtonDisabledReason.InsufficientFunds;
+        }
+
+        int currentAmount = PlayerProgress.Instance.GetWeaponReserveAmmo(itemData.ItemID);
+        int maxAmount = itemData.MaxAmmo;
+
+        if (currentAmount >= maxAmount) {
+            return ShopButtonDisabledReason.FullAmmo;
+        }
+
+        return EconomyManager.Instance.CanAfford(itemData.CostPerPurchase)
+            ? ShopButtonDisabledReason.None
+            : ShopButtonDisabledReason.InsufficientFunds;
     }
 
     #endregion

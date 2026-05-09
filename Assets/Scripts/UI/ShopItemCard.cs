@@ -4,10 +4,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-// REFATORAÇÃO: a lógica de desbloquear items nao deveria ser chamada por aqui? ela está em SHopUI
-// refatoarção: ajustar cores para refletir melhor os estados 
-// REFATORAAR: referencias no unity editor de acordo com o layout necessario.
-
 /// <summary>
 /// Represents a compact shop item card showing icon, name, and level.
 /// </summary>
@@ -20,11 +16,19 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
     [SerializeField] private TextMeshProUGUI itemNameText;
     [SerializeField] private TextMeshProUGUI itemLevelText;
 
-    [Header("Visual States")]
-    [SerializeField] private Image cardBackground;
-    [SerializeField] private Color lockedColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-    [SerializeField] private Color unlockedColor = Color.white;
-    [SerializeField] private Color maxLevelColor = new Color(1f, 0.84f, 0f, 1f);
+    [Header("State Overlays")]
+    [SerializeField] private Image lockedOverlay;
+    [SerializeField] private Color lockedOverlayColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+
+    [SerializeField] private Image unlockedBackground;
+    [SerializeField] private Color unlockedBackgroundColor = Color.white;
+
+    [SerializeField] private Image maxedBackground;
+    [SerializeField] private Color maxedBackgroundColor = new Color(1f, 0.84f, 0f, 1f);
+
+    [Header("Selection Overlay")]
+    [SerializeField] private Image selectedOverlay;
+    [SerializeField] private Color selectedOverlayColor = new Color(0.3f, 0.8f, 0.3f, 1f);
 
     #endregion
 
@@ -32,6 +36,7 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
 
     private ShopItemDataSO currentItemData;
     private Action<ShopItemDataSO> selectionCallback;
+    private bool isSelected;
 
     #endregion
 
@@ -84,11 +89,8 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
         if (currentItemData == null || PlayerProgress.Instance == null) return;
 
         string itemID = currentItemData.ItemID;
-        // CONCEITO: Generic check using IsItemUnlocked() instead of IsWeaponUnlocked()
-        // allows this to work for all item types (weapons, consumables, buildables).
         bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(itemID);
         int currentLevel = PlayerProgress.Instance.GetItemLevel(itemID);
-        // CONCEITO: Use dynamic max level from item's ScriptableObject (not hardcoded 10)
         int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(itemID);
         bool isMaxLevel = currentLevel >= maxLevel;
 
@@ -96,8 +98,71 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
             itemLevelText.text = !isUnlocked ? "Locked" : isMaxLevel ? "Maxed Out" : $"Level {currentLevel}";
         }
 
-        if (cardBackground != null) {
-            cardBackground.color = !isUnlocked ? lockedColor : isMaxLevel ? maxLevelColor : unlockedColor;
+        RefreshOverlaysState();
+    }
+
+    /// <summary>
+    /// Sets the selected state of this card.
+    /// </summary>
+    public void SetSelected(bool selected) {
+        isSelected = selected;
+        RefreshOverlaysState();
+    }
+
+    /// <summary>
+    /// Refreshes overlay images based on item state. Hides all overlays first, then shows the appropriate one.
+    /// </summary>
+    private void RefreshOverlaysState() {
+        if (currentItemData == null || PlayerProgress.Instance == null) return;
+
+        string itemID = currentItemData.ItemID;
+        bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(itemID);
+        int currentLevel = PlayerProgress.Instance.GetItemLevel(itemID);
+        int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(itemID);
+        bool isMaxLevel = currentLevel >= maxLevel;
+
+        SetOverlayActive(lockedOverlay, false);
+        SetOverlayActive(unlockedBackground, false);
+        SetOverlayActive(maxedBackground, false);
+
+        if (!isUnlocked) {
+            ApplyVisualState(lockedOverlay, lockedOverlayColor);
+        }
+        else if (isMaxLevel) {
+            ApplyVisualState(maxedBackground, maxedBackgroundColor);
+        }
+        else {
+            ApplyVisualState(unlockedBackground, unlockedBackgroundColor);
+        }
+
+        if (isSelected) {
+            ApplyVisualState(selectedOverlay, selectedOverlayColor);
+        }
+        else {
+            SetOverlayActive(selectedOverlay, false);
+        }
+    }
+
+    /// <summary>
+    /// Activates an overlay and applies its color.
+    /// </summary>
+    private void ApplyVisualState(Image overlay, Color color) {
+        if (overlay == null) return;
+
+        overlay.gameObject.SetActive(true);
+        overlay.color = color;
+    }
+
+    /// <summary>
+    /// Deactivates an overlay and optionally resets its color.
+    /// </summary>
+    private void SetOverlayActive(Image overlay, bool active, bool resetColor = false) {
+        if (overlay == null) return;
+
+        overlay.gameObject.SetActive(active);
+
+        if (!active && resetColor) {
+            overlay.color = Color.white;
         }
     }
 

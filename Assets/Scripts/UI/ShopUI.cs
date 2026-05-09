@@ -10,6 +10,12 @@ using InfimaGames.LowPolyShooterPack;
 /// </summary>
 public class ShopUI : BaseUI {
 
+    #region STATIC
+
+    public static ShopUI Instance { get; private set; }
+
+    #endregion
+
     #region SERIALIZED FIELDS
 
     [Header("Preview")]
@@ -44,6 +50,13 @@ public class ShopUI : BaseUI {
 
     private ShopItemDataSO selectedItemData;
     private List<StatBarDisplay> activeStatBars = new List<StatBarDisplay>();
+    private ShopItemCard currentSelectedCard;
+
+    #endregion
+
+    #region PROPERTIES
+
+    public ShopItemDataSO SelectedItemData => selectedItemData;
 
     #endregion
 
@@ -55,11 +68,13 @@ public class ShopUI : BaseUI {
 
     protected override void Awake() {
         base.Awake();
+        Instance = this;
         BindButtons();
         SubscribeToCurrencyEvents();
     }
 
     private void OnDestroy() {
+        if (Instance == this) Instance = null;
         UnsubscribeFromCurrencyEvents();
     }
 
@@ -80,6 +95,7 @@ public class ShopUI : BaseUI {
 
     public override void Show() {
         base.Show();
+        currentSelectedCard = null;
         PopulateShopItems();
         SelectInitialItem();
         UpdateCurrencyDisplay();
@@ -87,6 +103,7 @@ public class ShopUI : BaseUI {
 
     public override void Hide() {
         base.Hide();
+        currentSelectedCard = null;
         if (previewHandler != null) {
             previewHandler.DestroyPreview();
         }
@@ -177,8 +194,21 @@ public class ShopUI : BaseUI {
     }
 
     private void HandleCardSelected(ShopItemDataSO itemData) {
+        if (currentSelectedCard != null) {
+            currentSelectedCard.SetSelected(false);
+        }
+
         selectedItemData = itemData;
         UpdateSelectedItemInfo();
+
+        ShopItemCard newCard = itemsContainer.GetChild(
+            shopItems.IndexOf(itemData)
+        ).GetComponent<ShopItemCard>();
+
+        if (newCard != null) {
+            currentSelectedCard = newCard;
+            currentSelectedCard.SetSelected(true);
+        }
 
         if (previewHandler != null && itemData != null) {
             previewHandler.ShowItem(itemData);
@@ -428,6 +458,7 @@ public class ShopUI : BaseUI {
             ShopItemCard card = child.GetComponent<ShopItemCard>();
             if (card != null) {
                 card.RefreshCardState();
+                card.SetSelected(card == currentSelectedCard);
             }
         }
 

@@ -118,8 +118,18 @@ public class NPCAudio : MonoBehaviour {
         PlayDialogueFromCategory(playerAFKDialogue, "player-afk", ref lastPlayedIndex);
     }
 
-    private void HandlePurchaseFailed(int cost, int currentCurrency) {
+    public void HandlePurchaseFailed(int cost, int currentCurrency) {
         PlayDialogueFromCategory(outOfFundsDialogue, "out-of-funds", ref lastPlayedIndex);
+    }
+
+    public void PlayOutOfFundsDialogue() {
+        PlayDialogueFromCategory(outOfFundsDialogue, "out-of-funds", ref lastPlayedIndex);
+    }
+
+    public void OnButtonDisabled(ShopButtonDisabledReason reason) {
+        if (reason == ShopButtonDisabledReason.InsufficientFunds) {
+            PlayDialogueFromCategory(outOfFundsDialogue, "out-of-funds", ref lastPlayedIndex);
+        }
     }
 
     private void PlayDialogueFromCategory(MerchantDialogueCategorySO category, string contextLabel, ref int lastIndex) {
@@ -167,7 +177,7 @@ public class NPCAudio : MonoBehaviour {
 
     private MerchantDialogueLine GetRandomDialogueLine(MerchantDialogueCategorySO category, ref int lastIndex) {
         MerchantDialogueLine[] lines = category.dialogues;
-        
+
         if (category.allowImmediateRepeat) {
             int randomIndex = Random.Range(0, lines.Length);
             lastIndex = randomIndex;
