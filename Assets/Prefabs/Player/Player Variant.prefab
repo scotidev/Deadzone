@@ -5453,7 +5453,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InfimaGames.LowPolyShooterPack.Vest
   vestData: {fileID: 11400000, guid: e44b5bda533ab7a4180840811c517de1, type: 2}
   damageReductionPercentage: 0.1
-  vestEquippedClip: {fileID: 8300000, guid: 10fa542f1fb435240a7bc968216ef86a, type: 3}
+  vestEquippedClip: {fileID: 8300000, guid: 5a31b25911aa61d458e65a3d9154a9ed, type: 3}
   vestDestroyedClip: {fileID: 8300000, guid: 15c9c146e43bcb94cb53089888f1fb10, type: 3}
 --- !u!4 &2768567120988589389 stripped
 Transform:
@@ -6196,7 +6196,8 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 24c825d48a2aea24e873cf3b76cd37ad, type: 2}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: -8595664957554799559, guid: 5e08c517b491fc143b3b296bb55d5300, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

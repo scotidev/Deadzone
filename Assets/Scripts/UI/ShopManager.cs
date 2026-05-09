@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Linq;
 using InfimaGames.LowPolyShooterPack;
 using UnityEngine;
@@ -20,20 +21,29 @@ public class ShopManager : MonoBehaviour {
 
     [SerializeField] private Character playerCharacter;
 
+    [Header("AFK Settings")]
+    [Tooltip("Time in seconds before AFK dialogue is triggered")]
+    [SerializeField] private float afkTimeThreshold = 10f;
+
     #endregion
 
     #region FIELDS
 
     private bool isShopOpen = false;
+    private bool hasPurchasedSomething = false;
+    private float afkTimer = 0f;
+    private Coroutine afkCoroutine;
 
     #endregion
 
     #region EVENTS
 
-    public static event Action<string> WeaponUnlocked;
+    public static event Action<string> ItemUnlocked;
     public static event Action<string, int> AmmoPurchased;
     public static event Action CurrencyChanged;
     public static event Action ItemStateChanged;
+    public static event Action<bool> ShopClosed;
+    public static event Action PlayerAFK;
 
     #endregion
 
@@ -72,6 +82,7 @@ public class ShopManager : MonoBehaviour {
     public void OpenShop() {
         ResolvePlayerCharacter();
         isShopOpen = true;
+        hasPurchasedSomething = false;
         GameManager.Instance?.SetState(GameState.Shopping);
 
         if (UIManager.Instance != null) {
@@ -83,6 +94,7 @@ public class ShopManager : MonoBehaviour {
             playerCharacter.SetInterfaceMode(true);
 
         SetCursorState(true);
+        StartAFKTimer();
     }
 
     /// <summary>
@@ -91,6 +103,7 @@ public class ShopManager : MonoBehaviour {
     /// </summary>
     public void CloseShop() {
         ResolvePlayerCharacter();
+        StopAFKTimer();
         isShopOpen = false;
         GameManager.Instance?.SetState(GameState.Playing);
 
@@ -99,6 +112,8 @@ public class ShopManager : MonoBehaviour {
 
         if (playerCharacter != null)
             playerCharacter.SetInterfaceMode(false);
+
+        ShopClosed?.Invoke(hasPurchasedSomething);
 
         SetCursorState(false);
     }
@@ -110,6 +125,42 @@ public class ShopManager : MonoBehaviour {
     private void SetCursorState(bool visible) {
         Cursor.visible = visible;
         Cursor.lockState = visible ? CursorLockMode.None : CursorLockMode.Locked;
+    }
+
+    private void StartAFKTimer() {
+        if (afkCoroutine != null) StopCoroutine(afkCoroutine);
+        afkCoroutine = StartCoroutine(AFKTimerCoroutine());
+    }
+
+    private void StopAFKTimer() {
+        if (afkCoroutine != null) {
+            StopCoroutine(afkCoroutine);
+            afkCoroutine = null;
+        }
+        afkTimer = 0f;
+    }
+
+    private IEnumerator AFKTimerCoroutine() {
+        afkTimer = 0f;
+        while (isShopOpen) {
+            yield return null;
+            afkTimer += Time.deltaTime;
+
+            if (afkTimer >= afkTimeThreshold) {
+                if (isShopOpen) {
+                    PlayerAFK?.Invoke();
+                }
+                afkTimer = 0f;
+            }
+        }
+    }
+
+    public void OnShopInteraction() {
+        afkTimer = 0f;
+    }
+
+    public void OnPurchaseMade() {
+        hasPurchasedSomething = true;
     }
 
     /// <summary>
@@ -201,9 +252,7 @@ public class ShopManager : MonoBehaviour {
         PlayerProgress.Instance.UnlockItem(itemData);
         Debug.Log($"[ShopManager] Unlocked {itemData.ItemName}!");
 
-        if (itemData.ItemData is WeaponDataSO) {
-            WeaponUnlocked?.Invoke(itemData.ItemID);
-        }
+        ItemUnlocked?.Invoke(itemData.ItemID);
 
         NotifyItemUnlocked(itemData);
         ItemStateChanged?.Invoke();

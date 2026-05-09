@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: UpgradeMedkit
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: UpgradeMedkit
+  dialogues:
+  - clip: {fileID: 8300000, guid: 4e0dd3d131cf09f469f124b2c3f9658e, type: 3}
+    subtitle: "Advanced biotics installed. It now repairs tissue so fast it\u2019s
+      almost creepy to watch."
+  - clip: {fileID: 8300000, guid: 0605f066100005048a96728ab55ceec5, type: 3}
+    subtitle: "I\u2019ve boosted the caffeine content in the stimulants. You\u2019ll
+      be healed and probably won't sleep until the next apocalypse."
+  - clip: {fileID: 8300000, guid: a3203edf0aac93d44858b1ae39c06281, type: 3}
+    subtitle: "The needles are now 50% sharper. That sounds bad, but trust me, it\u2019s
+      much more efficient"
+  allowImmediateRepeat: 0

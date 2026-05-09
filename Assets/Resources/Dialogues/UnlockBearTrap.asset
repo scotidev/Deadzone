@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: UnlockBearTrap
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: UnlockBearTrap
+  dialogues:
+  - clip: {fileID: 8300000, guid: f7d03211c399f4949aa218b29c599b35, type: 3}
+    subtitle: "Access granted to the bear traps. It\u2019s essentially a very aggressive
+      'Do Not Step Here' sign for things that can't read."
+  - clip: {fileID: 8300000, guid: d2a7147290616514f9379ebfba913156, type: 3}
+    subtitle: "Bear traps Really how\u2026 retro."
+  - clip: {fileID: 8300000, guid: 3afcfbf97b9a0f54ab1f1550454c99da, type: 3}
+    subtitle: "If I had eyelids, I\u2019d be blinking in confusion right now."
+  allowImmediateRepeat: 0

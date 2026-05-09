@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: OutOfFunds
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: OutOfFunds
+  dialogues:
+  - clip: {fileID: 8300000, guid: a713b926fa667ab42917096d5325dd8f, type: 3}
+    subtitle: Insufficient funds detected. Tragic. Truly tragic.
+  - clip: {fileID: 8300000, guid: 9b0d1764c299e994da98995b1c16bed8, type: 3}
+    subtitle: "I\u2019d give you a bulk discount, but capitalism is the only thing
+      I have left to believe in."
+  - clip: {fileID: 8300000, guid: f02a39aae0320674eb412ad41d8d0289, type: 3}
+    subtitle: "I\u2019d offer you a discount, but my 'Empathy Chip' was replaced
+      with a 'Capitalism Module' years ago."
+  - clip: {fileID: 8300000, guid: 89bf6bb10e2fbc143a7515ca0cc2e0c0, type: 3}
+    subtitle: "I\u2019m afraid I don't accept 'good intentions' as a valid currency."
+  - clip: {fileID: 8300000, guid: 5607971a6078fae41bf2e5bba0144be1, type: 3}
+    subtitle: "Transaction declined. Don't look at me like that. it\u2019s the computer\u2019s
+      fault. And by 'computer,' I mean me."
+  allowImmediateRepeat: 0

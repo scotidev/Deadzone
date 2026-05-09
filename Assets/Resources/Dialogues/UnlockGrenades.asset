@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: UnlockGrenades
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: UnlockGrenades
+  dialogues:
+  - clip: {fileID: 8300000, guid: 9ca1312254ff0474e89b7e7a4e5c6507, type: 3}
+    subtitle: Grenades for the survivor who wants to solve all their problems at
+      once, along with the structural integrity of the building.
+  - clip: {fileID: 8300000, guid: 0f6680033f90234439fe2e02bf451e8c, type: 3}
+    subtitle: Handheld explosions are now available. Please remember once you pull
+      the pin, Mr. Grenade is no longer your friend.
+  - clip: {fileID: 8300000, guid: eef2dbd305861a143a187f0daecaabf4, type: 3}
+    subtitle: "I\u2019ve added grenades to the menu. They\u2019re like tiny, angry
+      suns you can throw at people you don't like."
+  allowImmediateRepeat: 0

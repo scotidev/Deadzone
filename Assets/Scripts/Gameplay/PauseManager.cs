@@ -1,6 +1,7 @@
 using InfimaGames.LowPolyShooterPack;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Deadzone.Interfaces;
 
 /// <summary>
 /// Singleton that manages the game's pause state and related behaviour:
@@ -100,6 +101,9 @@ public class PauseManager : MonoBehaviour {
             UIManager.Instance.ShowPauseMenu();
 
         GameManager.Instance?.PauseTime();
+
+        var audioService = ServiceLocator.Current?.Get<IAudioManagerService>();
+        audioService?.PauseDialogue();
     }
 
     /// <summary>
@@ -118,6 +122,9 @@ public class PauseManager : MonoBehaviour {
 
         if (playerCharacter != null)
             playerCharacter.SetInterfaceMode(false);
+
+        var audioService = ServiceLocator.Current?.Get<IAudioManagerService>();
+        audioService?.ResumeDialogue();
     }
 
     /// <summary>

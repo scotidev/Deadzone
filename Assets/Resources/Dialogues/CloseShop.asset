@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: CloseShop
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: CloseShop
+  dialogues:
+  - clip: {fileID: 8300000, guid: c366d813330fe3e429f08ae6854a5108, type: 3}
+    subtitle: "If you die out there, can I have your boots back? I\u2019m trying
+      to start a collection."
+  - clip: {fileID: 8300000, guid: b0d2c60ade909194ea2bbce4f30e6b13, type: 3}
+    subtitle: See you around!
+  - clip: {fileID: 8300000, guid: 2f311b2723525a641956527feb726d70, type: 3}
+    subtitle: "Try not to die. It's bad for business. And frankly, a bit clich\xE9
+      at this point."
+  - clip: {fileID: 8300000, guid: aa9073f00ca32174eaaae43c4c11dad3, type: 3}
+    subtitle: Come back soon!
+  - clip: {fileID: 8300000, guid: 0e281708da8162e419b4fc003f7fd8e6, type: 3}
+    subtitle: Another satisfied customer!
+  - clip: {fileID: 8300000, guid: 1b5a906d933c2134faa82670e4355be2, type: 3}
+    subtitle: "What's up with this AI robot? It\u2019s almost like the devs could
+      not afford a proper voice actor."
+  - clip: {fileID: 8300000, guid: bcaca033bdd97f74c825362fd5867e90, type: 3}
+    subtitle: Leaving so soon? I was just about to tell you my life story. It's riveting,
+      I assure you.
+  allowImmediateRepeat: 0

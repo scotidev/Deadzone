@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: PlayerAFK
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: 
+  dialogues:
+  - clip: {fileID: 8300000, guid: b2dad342255d4cd4a87f4eb82c27c0a1, type: 3}
+    subtitle: Are you malfunctioning, or is this just how humans 'meditate' during
+      a crisis?
+  - clip: {fileID: 8300000, guid: 86ed5f8514cae864480e1ab8cf6c15ce, type: 3}
+    subtitle: "I\u2019m calculating the electricity I\u2019m wasting by keeping this
+      menu open for you. It\u2019s... offensive..."
+  - clip: {fileID: 8300000, guid: db00a00b3b262f64bb052003e61fa258, type: 3}
+    subtitle: "I\u2019ve started a blog in my head about our time together. The current
+      entry is titled 'Silence and Stupidity'."
+  - clip: {fileID: 8300000, guid: f57c9b18d3a64b742b22a941741e5a50, type: 3}
+    subtitle: "You\u2019re making me feel like a vending machine ...I am much more
+      sophisticated... than a vending machine."
+  - clip: {fileID: 8300000, guid: f0102c12e7179bd4d9cdfd53e4b1577c, type: 3}
+    subtitle: Quickly now! I have a very busy schedule of standing perfectly still
+      and waiting for you to trigger my proximity sensor.
+  allowImmediateRepeat: 0

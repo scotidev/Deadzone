@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: UnlockMedkit
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: UnlockMedkit
+  dialogues:
+  - clip: {fileID: 8300000, guid: a08506ee1b89c7845938ca68f692491c, type: 3}
+    subtitle: "Access granted to Medical Supplies. I\u2019ve included a manual, though
+      I suspect you\u2019ll just rub the ointment on the wound and hope for a miracle."
+  - clip: {fileID: 8300000, guid: c836f6a398f1a164db393ac1e08ce57d, type: 3}
+    subtitle: "Activating the medical catalog. I\u2019ve noticed you\u2019re prone
+      to 'existence-threatening injuries,' so I expect these to sell out fast."
+  - clip: {fileID: 8300000, guid: bbd3cb801043c8a44aa646da38b6da70, type: 3}
+    subtitle: "I\u2019ve added Medkits to the inventory. I figured if I didn't, my
+      best customer would eventually become a very quiet floor decoration."
+  allowImmediateRepeat: 0

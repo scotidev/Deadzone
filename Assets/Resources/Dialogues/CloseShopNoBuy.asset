@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: CloseShopNoBuy
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: CloseShopNoBuy
+  dialogues:
+  - clip: {fileID: 8300000, guid: 050e94d0af88f6c4aa1bd43f083cde43, type: 3}
+    subtitle: I've seen more decisive shoppers at a broken vending machine. Just
+      saying.
+  - clip: {fileID: 8300000, guid: a158afb46ed64a6409630633b6b7370f, type: 3}
+    subtitle: It's fine. I didn't want your money anyway. Said no merchant ever.
+  - clip: {fileID: 8300000, guid: 002321f7ae869ff4db6e25ce9583a62f, type: 3}
+    subtitle: "Well, that was a productive use of both our time\u2026"
+  - clip: {fileID: 8300000, guid: 425e040043d34eb4c8aaedbc95adf4a6, type: 3}
+    subtitle: "You know, some people actually\_buy\_things. It's a revolutionary
+      concept."
+  allowImmediateRepeat: 0

@@ -2,21 +2,26 @@ using UnityEngine;
 
 /// <summary>
 /// Represents the NPC that can be interacted with to open the shop interface.
+/// Also handles proximity detection for dialogue triggers.
 /// </summary>
 public class NPC : Interactable {
 
     #region SERIALIZED FIELDS
 
     [SerializeField] private string npcName = "Merchant";
-    [SerializeField] private NPCAudio npcAudio;
+
+    [Header("Proximity Settings")]
+    [Tooltip("Radius for detecting when player is close to NPC")]
+    [SerializeField] private float proximityRadius = 5f;
 
     #endregion
 
     #region UNITY
 
-    private void Awake() {
-        if (npcAudio == null)
-            npcAudio = GetComponent<NPCAudio>();
+    private void OnTriggerEnter(Collider other) {
+        if (other.CompareTag("Player")) {
+            GetComponent<NPCAudio>()?.OnPlayerEnteredRange();
+        }
     }
 
     #endregion
@@ -31,7 +36,7 @@ public class NPC : Interactable {
     /// </summary>
     public override void Interact() {
         if (ShopManager.Instance != null) {
-            npcAudio?.PlayRandomShopOpenDialogue();
+            GetComponent<NPCAudio>()?.PlayRandomShopOpenDialogue();
             ShopManager.Instance.OpenShop();
         }
     }

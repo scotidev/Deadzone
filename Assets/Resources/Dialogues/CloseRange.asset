@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: CloseRange
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: CloseRange
+  dialogues:
+  - clip: {fileID: 8300000, guid: d16288c55c36111478a649c820ac08f3, type: 3}
+    subtitle: Come closer... Let's see if I can find something for you!
+  - clip: {fileID: 8300000, guid: d4e66bb1ce24d1942866ea117dddd6a6, type: 3}
+    subtitle: Don't ask how I got here. Let's just assume I have a very efficient
+      teleportation device and a total lack of common sense.
+  - clip: {fileID: 8300000, guid: a868051b7c11143488df3a6bd8aaea1f, type: 3}
+    subtitle: I have no idea how I got here either. Don't think about it too hard.
+      You'll pop a blood vessel.
+  - clip: {fileID: 8300000, guid: 49ffae16113354a47acace973511b163, type: 3}
+    subtitle: If you have the credits I have the gear.
+  - clip: {fileID: 8300000, guid: 3817a1045c5ac7f4e967c1ca39bf801c, type: 3}
+    subtitle: Oh. A customer. How... statistically unexpected.
+  - clip: {fileID: 8300000, guid: c188e96556019b44a8bae0eea7155ca2, type: 3}
+    subtitle: "Ohh, look you haven\u2019t been completely chewed on yet. How exciting!"
+  allowImmediateRepeat: 0

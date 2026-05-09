@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: UnlockVest
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: UnlockVest
+  dialogues:
+  - clip: {fileID: 8300000, guid: faae18d800cc30e4e9816a84a98f9fee, type: 3}
+    subtitle: "I\u2019ve added protective vests to the catalog. It\u2019s rated for
+      high-impact trauma, which seems to be your primary hobby lately."
+  - clip: {fileID: 8300000, guid: d5cf93dbc70422445bc168a3cb4a2f43, type: 3}
+    subtitle: "Unlocking the chest plate. It covers the most important organs. The
+      ones that don't make you scream so loudly when they\u2019re poked."
+  - clip: {fileID: 8300000, guid: bc8b92ec3b47ba54e8db3dfd17e74b43, type: 3}
+    subtitle: You can now wear metal and plastic to compensate for your soft, squishy
+      evolutionary mistakes.
+  allowImmediateRepeat: 0

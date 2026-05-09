@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: BuyAmmo
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: BuyAmmo
+  dialogues:
+  - clip: {fileID: 8300000, guid: 93ee1406a768e3c46856e142e3b02f0e, type: 3}
+    subtitle: Ammo restocked. Can't kill zombies with harsh language alone, can you
+      Though I've tried.
+  - clip: {fileID: 8300000, guid: 58c1fbaa73bd32e4cadaaec36afc121a, type: 3}
+    subtitle: Another day, another dollar, another bullet.
+  - clip: {fileID: 8300000, guid: ecb3c017094e6484fb0d93246cf0288a, type: 3}
+    subtitle: One box of 'problem solvers' coming right up.
+  - clip: {fileID: 8300000, guid: 8c84c0239c67c98428df5e93b6e6ce86, type: 3}
+    subtitle: Standard issue rounds. Reliable and ready.
+  - clip: {fileID: 8300000, guid: 4c494e663a0b5b344ab8670e75eaf479, type: 3}
+    subtitle: You like shooting things. I like selling things. It's a beautiful symbiosis.
+  - clip: {fileID: 8300000, guid: 790237d21a288734f883473e60340d74, type: 3}
+    subtitle: "You can never have too many bullets. Unless you\u2019re drowning.
+      Then they\u2019re a liability."
+  - clip: {fileID: 8300000, guid: 1c23a33a93053b74eac025af024b6198, type: 3}
+    subtitle: You can never have too many rounds.
+  allowImmediateRepeat: 0

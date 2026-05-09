@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: UpgradeVest
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: UpgradeVest
+  dialogues:
+  - clip: {fileID: 8300000, guid: 54644a5b3cb141844b73ca037f410f29, type: 3}
+    subtitle: "Done! I\u2019ve added a shock-absorber layer. It\u2019s like wearing
+      a very protective, very stiff mattress."
+  - clip: {fileID: 8300000, guid: fc6daabe40aa6344899aa73816c5f2b3, type: 3}
+    subtitle: "I\u2019ve added a self-cleaning sub-routine to your gear. It\u2019s
+      a bit experimental, so tell me if it starts vibrating for no reason."
+  - clip: {fileID: 8300000, guid: e61bd3aebcec9fb46a7345c5c9b43445, type: 3}
+    subtitle: "I\u2019ve reinforced the seams with titanium thread. It\u2019s overkill,
+      but I enjoy the craftsmanship."
+  allowImmediateRepeat: 0

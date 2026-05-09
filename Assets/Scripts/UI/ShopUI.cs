@@ -183,6 +183,8 @@ public class ShopUI : BaseUI {
         if (previewHandler != null && itemData != null) {
             previewHandler.ShowItem(itemData);
         }
+
+        ShopManager.Instance?.OnShopInteraction();
     }
 
     private void UpdateSelectedItemInfo() {
@@ -365,6 +367,8 @@ public class ShopUI : BaseUI {
 
         if (ShopManager.Instance.TryUnlockItem(itemData)) {
             selectedItemActionButton?.GetComponent<UIButtonFeedback>()?.PlayUnlockSound();
+            ShopManager.Instance.OnPurchaseMade();
+            ShopManager.Instance.OnShopInteraction();
             RefreshAllCards();
         }
     }
@@ -385,6 +389,8 @@ public class ShopUI : BaseUI {
             } else {
                 feedback?.PlayUpgradeSound();
             }
+            ShopManager.Instance.OnPurchaseMade();
+            ShopManager.Instance.OnShopInteraction();
             RefreshAllCards();
         }
     }
@@ -394,6 +400,8 @@ public class ShopUI : BaseUI {
 
         if (ShopManager.Instance.TryBuyAmmo(selectedItemData)) {
             PlayAmmoSound(selectedItemData);
+            ShopManager.Instance.OnPurchaseMade();
+            ShopManager.Instance.OnShopInteraction();
             UpdateSelectedItemInfo();
         }
     }

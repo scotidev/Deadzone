@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: UnlockBarricades
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: UnlockBarricades
+  dialogues:
+  - clip: {fileID: 8300000, guid: 41ce4d688ff7cd744ba3dfeac3d57738, type: 3}
+    subtitle: Authorized for structural defense. I suggest reinforcing the corners;
+      humans always seem to forget the corners.
+  - clip: {fileID: 8300000, guid: 8b6e0456ae82ede4681e4450ea423e5c, type: 3}
+    subtitle: "I\u2019ve added defensive structures to the shop. My scanners indicate
+      the zombies find them 'mildly inconvenient' but 'crunchy and fun to break'."
+  - clip: {fileID: 8300000, guid: bd1922543c9722b47b2dfd742b482875, type: 3}
+    subtitle: Unlocking the 'Do Not Disturb' signs.
+  allowImmediateRepeat: 0

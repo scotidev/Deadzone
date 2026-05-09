@@ -13,6 +13,7 @@ namespace InfimaGames.LowPolyShooterPack {
         #region FIELDS
 
         private AudioSource bgmSource;
+        private AudioSource dialogueSource;
         private float bgmVolume = 0.5f;
         private float sfxVolume = 1f;
         private float dialogueVolume = 1f;
@@ -45,6 +46,17 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private void Awake() {
             InitializeBGMSource();
+            InitializeDialogueSource();
+        }
+
+        private void InitializeDialogueSource() {
+            var dialogueObject = new GameObject("Dialogue Source");
+            dialogueObject.transform.SetParent(transform);
+            
+            dialogueSource = dialogueObject.AddComponent<AudioSource>();
+            dialogueSource.spatialBlend = 1f;
+            dialogueSource.loop = false;
+            dialogueSource.playOnAwake = false;
         }
 
         #endregion
@@ -328,6 +340,37 @@ namespace InfimaGames.LowPolyShooterPack {
             audioSource.Play();
 
             StartCoroutine(DestroySourceWhenFinished(audioSource));
+        }
+
+        /// <summary>
+        /// Plays a 3D dialogue sound, stopping any currently playing dialogue first.
+        /// Used for merchant NPC dialogues that should be interrupted by new events.
+        /// </summary>
+        public void PlayDialogue3D(AudioClip clip, Vector3 position, float volumeScale = 1f, float minDistance = 1f, float maxDistance = 50f) {
+            if (clip == null || dialogueSource == null) return;
+
+            dialogueSource.Stop();
+            
+            dialogueSource.clip = clip;
+            dialogueSource.transform.position = position;
+            dialogueSource.spatialBlend = 1f;
+            dialogueSource.minDistance = minDistance;
+            dialogueSource.maxDistance = maxDistance;
+            dialogueSource.volume = dialogueVolume * volumeScale;
+            
+            dialogueSource.Play();
+        }
+
+        public void PauseDialogue() {
+            if (dialogueSource != null && dialogueSource.isPlaying) {
+                dialogueSource.Pause();
+            }
+        }
+
+        public void ResumeDialogue() {
+            if (dialogueSource != null && !dialogueSource.isPlaying && dialogueSource.clip != null) {
+                dialogueSource.UnPause();
+            }
         }
 
         /// <summary>

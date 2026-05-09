@@ -122,6 +122,27 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <param name="maxDistance">Maximum distance where the sound can still be heard.</param>
         void PlaySFX3DAttached(AudioClip clip, Transform sourceTransform, float volumeScale = 1f, float minDistance = 1f, float maxDistance = 500f);
 
+        /// <summary>
+        /// Plays a 3D dialogue sound, stopping any currently playing dialogue first.
+        /// Used for merchant NPC dialogues that should be interrupted by new events.
+        /// </summary>
+        /// <param name="clip">Dialogue clip to play.</param>
+        /// <param name="position">Position in the 3D world where the sound will be played.</param>
+        /// <param name="volumeScale">Per-clip volume multiplier (0 to 1).</param>
+        /// <param name="minDistance">Minimum distance where the sound is at maximum volume.</param>
+        /// <param name="maxDistance">Maximum distance where the sound can still be heard.</param>
+        void PlayDialogue3D(AudioClip clip, Vector3 position, float volumeScale = 1f, float minDistance = 1f, float maxDistance = 50f);
+
+        /// <summary>
+        /// Pauses the currently playing dialogue sound.
+        /// </summary>
+        void PauseDialogue();
+
+        /// <summary>
+        /// Resumes a paused dialogue sound.
+        /// </summary>
+        void ResumeDialogue();
+
         #endregion
     }
 }

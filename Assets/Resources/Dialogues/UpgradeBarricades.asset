@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: UpgradeBarricades
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: UpgradeBarricades
+  dialogues:
+  - clip: {fileID: 8300000, guid: 79e5dd9014191a54ca012830930142df, type: 3}
+    subtitle: "I\u2019ve added anti-shatter coating. Now, even if they hit it with
+      a sledgehammer, it\u2019ll just look at them with cold, stony indifference."
+  - clip: {fileID: 8300000, guid: b9b3bd779a91345439276dffea9b87e9, type: 3}
+    subtitle: "I\u2019ve optimized the barricade. It\u2019s so dense, gravity is
+      actually considering a lawsuit."
+  - clip: {fileID: 8300000, guid: 5b03c006108b2574887aed2625cb3de5, type: 3}
+    subtitle: "Upgraded to industrial grade. It\u2019s a solid cube of 'No.' If a
+      monster wants to come in, it\u2019ll have to ask very, very nicely. Or have
+      a crane."
+  allowImmediateRepeat: 0

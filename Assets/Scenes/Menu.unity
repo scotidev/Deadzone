@@ -707,7 +707,7 @@ PrefabInstance:
     - target: {fileID: 220689569456128382, guid: fe28f847f2c403c449a843af55b0356c,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -441
+      value: -390.47
       objectReference: {fileID: 0}
     - target: {fileID: 453385482935589611, guid: fe28f847f2c403c449a843af55b0356c,
         type: 3}
@@ -728,6 +728,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 395
+      objectReference: {fileID: 0}
+    - target: {fileID: 1515268296649584050, guid: fe28f847f2c403c449a843af55b0356c,
+        type: 3}
+      propertyPath: m_Name
+      value: Controls
       objectReference: {fileID: 0}
     - target: {fileID: 2834029096698904205, guid: fe28f847f2c403c449a843af55b0356c,
         type: 3}
@@ -837,7 +842,7 @@ PrefabInstance:
     - target: {fileID: 3278800041030584576, guid: fe28f847f2c403c449a843af55b0356c,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4363987917937856873, guid: fe28f847f2c403c449a843af55b0356c,
         type: 3}
@@ -879,12 +884,26 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 11500000, guid: e2d55a8344ae2ca42b2830b625d7b3a1,
-        type: 3}
+      objectReference: {fileID: 1733953559}
     - target: {fileID: 4938164110695300884, guid: fe28f847f2c403c449a843af55b0356c,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4938164110695300884, guid: fe28f847f2c403c449a843af55b0356c,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnExitClick
+      objectReference: {fileID: 0}
+    - target: {fileID: 4938164110695300884, guid: fe28f847f2c403c449a843af55b0356c,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: MenuManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 4938164110695300884, guid: fe28f847f2c403c449a843af55b0356c,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 5434496581998076305, guid: fe28f847f2c403c449a843af55b0356c,
         type: 3}
@@ -1478,7 +1497,23 @@ MonoBehaviour:
   pressedScale: {x: 0.95, y: 0.95, z: 1}
   scaleSpeed: 12
   hoverSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
+  hoverVolume: 1
   clickSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
+  clickVolume: 1
+  unlockSound: {fileID: 0}
+  unlockVolume: 1
+  upgradeSound: {fileID: 0}
+  upgradeVolume: 1
+  maxedOutSound: {fileID: 0}
+  maxedOutVolume: 1
+  ammoClickSound: {fileID: 0}
+  ammoClickVolume: 1
+  vestClickSound: {fileID: 0}
+  vestClickVolume: 1
+  suppliesClickSound: {fileID: 0}
+  suppliesClickVolume: 1
+  disabledClickSound: {fileID: 0}
+  disabledClickVolume: 1
   useBoundFix: 1
   clickPrecision: 0.1
   cursorTexture: {fileID: 2800000, guid: ba4f5bafbbec70c4c96d9feddb5fdbc6, type: 3}
@@ -1721,7 +1756,23 @@ MonoBehaviour:
   pressedScale: {x: 0.95, y: 0.95, z: 1}
   scaleSpeed: 12
   hoverSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
+  hoverVolume: 1
   clickSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
+  clickVolume: 1
+  unlockSound: {fileID: 0}
+  unlockVolume: 1
+  upgradeSound: {fileID: 0}
+  upgradeVolume: 1
+  maxedOutSound: {fileID: 0}
+  maxedOutVolume: 1
+  ammoClickSound: {fileID: 0}
+  ammoClickVolume: 1
+  vestClickSound: {fileID: 0}
+  vestClickVolume: 1
+  suppliesClickSound: {fileID: 0}
+  suppliesClickVolume: 1
+  disabledClickSound: {fileID: 0}
+  disabledClickVolume: 1
   useBoundFix: 1
   clickPrecision: 0.1
   cursorTexture: {fileID: 2800000, guid: ba4f5bafbbec70c4c96d9feddb5fdbc6, type: 3}
@@ -2126,7 +2177,23 @@ MonoBehaviour:
   pressedScale: {x: 0.95, y: 0.95, z: 1}
   scaleSpeed: 12
   hoverSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
+  hoverVolume: 1
   clickSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
+  clickVolume: 1
+  unlockSound: {fileID: 0}
+  unlockVolume: 1
+  upgradeSound: {fileID: 0}
+  upgradeVolume: 1
+  maxedOutSound: {fileID: 0}
+  maxedOutVolume: 1
+  ammoClickSound: {fileID: 0}
+  ammoClickVolume: 1
+  vestClickSound: {fileID: 0}
+  vestClickVolume: 1
+  suppliesClickSound: {fileID: 0}
+  suppliesClickVolume: 1
+  disabledClickSound: {fileID: 0}
+  disabledClickVolume: 1
   useBoundFix: 1
   clickPrecision: 0.1
   cursorTexture: {fileID: 2800000, guid: ba4f5bafbbec70c4c96d9feddb5fdbc6, type: 3}
@@ -16432,7 +16499,23 @@ MonoBehaviour:
   pressedScale: {x: 0.95, y: 0.95, z: 1}
   scaleSpeed: 12
   hoverSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
+  hoverVolume: 1
   clickSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
+  clickVolume: 1
+  unlockSound: {fileID: 0}
+  unlockVolume: 1
+  upgradeSound: {fileID: 0}
+  upgradeVolume: 1
+  maxedOutSound: {fileID: 0}
+  maxedOutVolume: 1
+  ammoClickSound: {fileID: 0}
+  ammoClickVolume: 1
+  vestClickSound: {fileID: 0}
+  vestClickVolume: 1
+  suppliesClickSound: {fileID: 0}
+  suppliesClickVolume: 1
+  disabledClickSound: {fileID: 0}
+  disabledClickVolume: 1
   useBoundFix: 1
   clickPrecision: 0.1
   cursorTexture: {fileID: 2800000, guid: ba4f5bafbbec70c4c96d9feddb5fdbc6, type: 3}
@@ -16898,7 +16981,23 @@ MonoBehaviour:
   pressedScale: {x: 0.95, y: 0.95, z: 1}
   scaleSpeed: 12
   hoverSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
+  hoverVolume: 1
   clickSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
+  clickVolume: 1
+  unlockSound: {fileID: 0}
+  unlockVolume: 1
+  upgradeSound: {fileID: 0}
+  upgradeVolume: 1
+  maxedOutSound: {fileID: 0}
+  maxedOutVolume: 1
+  ammoClickSound: {fileID: 0}
+  ammoClickVolume: 1
+  vestClickSound: {fileID: 0}
+  vestClickVolume: 1
+  suppliesClickSound: {fileID: 0}
+  suppliesClickVolume: 1
+  disabledClickSound: {fileID: 0}
+  disabledClickVolume: 1
   useBoundFix: 1
   clickPrecision: 0.1
   cursorTexture: {fileID: 2800000, guid: ba4f5bafbbec70c4c96d9feddb5fdbc6, type: 3}

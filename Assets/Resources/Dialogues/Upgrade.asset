@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: Upgrade
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: Upgrade
+  dialogues:
+  - clip: {fileID: 8300000, guid: d0d82f04c814b414db2977224c6c2111, type: 3}
+    subtitle: Good choice. This will give you the edge you need.
+  - clip: {fileID: 8300000, guid: 286e439b88a7a4f409006ac3e43abf7b, type: 3}
+    subtitle: I can certainly improve that for you. Just a moment.
+  - clip: {fileID: 8300000, guid: 927c5555c5ce9b143be4ac01a11d92e1, type: 3}
+    subtitle: I'm glad to see you're investing in your future.
+  - clip: {fileID: 8300000, guid: ca7382b4fd83a7a4c9f2e494086f7b79, type: 3}
+    subtitle: "Installation successful. I\u2019ve removed the 'Eco-Friendly' limiter.
+      We\u2019re going for maximum carbon footprint today."
+  - clip: {fileID: 8300000, guid: c03e8af5654c4584f8431cc14b4300d0, type: 3}
+    subtitle: "It\u2019s now a masterpiece of destruction!"
+  - clip: {fileID: 8300000, guid: a2f19917cefae1f46a4d11872ec1a608, type: 3}
+    subtitle: "It\u2019s now faster, louder, and deadlier."
+  - clip: {fileID: 8300000, guid: d5058883f3079c648bf418de8521af44, type: 3}
+    subtitle: "I\u2019ve bypassed the factory limiters. It\u2019s now illegal in
+      forty-two countries that no longer exist. You're welcome."
+  - clip: {fileID: 8300000, guid: 42419dafbfdf934409aa81d3185628bd, type: 3}
+    subtitle: "I\u2019ve optimized the recoil. If you still manage to hit the ceiling,
+      I\u2019m retiring to a calculator."
+  - clip: {fileID: 8300000, guid: 1e3111e230f40cc49b36f90c465f63f2, type: 3}
+    subtitle: "I\u2019ve tightened the tolerances. Now, if you miss, it is statistically,
+      mathematically, and undeniably your fault."
+  - clip: {fileID: 8300000, guid: 002642ab2e387474983671a6c969659f, type: 3}
+    subtitle: "Modifications complete. I\u2019d give it a 1010."
+  - clip: {fileID: 8300000, guid: 2f68593c518627948b2315cb97457dbb, type: 3}
+    subtitle: Upgrade finished!
+  - clip: {fileID: 8300000, guid: db75e54b23898894faf0f82688e956dd, type: 3}
+    subtitle: Upgrading finished. Treat it well out there.
+  allowImmediateRepeat: 0

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: BuyAmmoMedkit
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: BuyAmmoMedkit
+  dialogues:
+  - clip: {fileID: 8300000, guid: d4a006ce34856704d8641b4eaee3b6a4, type: 3}
+    subtitle: "Biological maintenance required I\u2019ve got the goo for you."
+  - clip: {fileID: 8300000, guid: 819d19307b3d320459bfd54c2a622c92, type: 3}
+    subtitle: Healing supplies. Because duct tape and a prayer only get you so far
+      in this economy.
+  - clip: {fileID: 8300000, guid: 78ede8a2b890dff42a5b963e96045f57, type: 3}
+    subtitle: "More bandages Did you try running\_away\_from the zombies this time
+      Just a thought."
+  - clip: {fileID: 8300000, guid: a66fe85ef44191d4f9267bb64cde611d, type: 3}
+    subtitle: 'There goes one ''Not Dying Today'' pack. '
+  allowImmediateRepeat: 0

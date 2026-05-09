@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a74ae37aa44994abc8c00f4fc138d6, type: 3}
+  m_Name: BuyAmmoBarricades
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantDialogueCategorySO
+  categoryName: BuyAmmoBarricades
+  dialogues:
+  - clip: {fileID: 8300000, guid: d1ca798986a8ad14c9653c4a985060d6, type: 3}
+    subtitle: "Ah, the introvert\u2019s choice. Nothing says 'go away' like a pile
+      of reinforced concrete."
+  - clip: {fileID: 8300000, guid: c34b2c2293016f3429012536c8cce8d7, type: 3}
+    subtitle: Defense is just offense for people who like to hide. I approve.
+  - clip: {fileID: 8300000, guid: 59e63f497a280a14b99e1eb3556c5d15, type: 3}
+    subtitle: More barricades coming up!
+  - clip: {fileID: 8300000, guid: 8aa549339daa75c40b4a20de381174e9, type: 3}
+    subtitle: This will keep them out for a while.
+  allowImmediateRepeat: 0
