@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5364921614556074546}
   - component: {fileID: 7747604859157594833}
   - component: {fileID: 5192029264721592234}
+  - component: {fileID: 4999267769305766098}
   m_Layer: 5
   m_Name: ShopItemCard
   m_TagString: Untagged
@@ -94,12 +95,32 @@ MonoBehaviour:
   itemIcon: {fileID: 1411858391140275840}
   itemNameText: {fileID: 5929533789082197697}
   itemLevelText: {fileID: 7644160779616832618}
-  unlockUpgradeButton: {fileID: 0}
-  unlockUpgradeButtonText: {fileID: 0}
   cardBackground: {fileID: 7747604859157594833}
   lockedColor: {r: 0, g: 0, b: 0, a: 1}
   unlockedColor: {r: 0, g: 0.57861626, b: 0.0031515332, a: 1}
   maxLevelColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &4999267769305766098
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175313377975955395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 195960afc80676e4f9cd954ce369d72f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonFeedback
+  normalScale: {x: 1, y: 1, z: 1}
+  selectedScale: {x: 1.15, y: 1.15, z: 1}
+  pressedScale: {x: 0.95, y: 0.95, z: 1}
+  scaleSpeed: 15
+  hoverSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
+  clickSound: {fileID: 8300000, guid: 7f6f9ec2a66688d4486acc5332b66daa, type: 3}
+  useBoundFix: 0
+  clickPrecision: 0.5
+  cursorTexture: {fileID: 2800000, guid: ba4f5bafbbec70c4c96d9feddb5fdbc6, type: 3}
+  cursorHotspot: {x: 0, y: 0}
 --- !u!1 &1391108883041144932
 GameObject:
   m_ObjectHideFlags: 0

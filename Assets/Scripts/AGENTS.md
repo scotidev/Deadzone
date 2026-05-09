@@ -230,6 +230,10 @@ Contains scripts related to user interface, menus, and HUD elements.
 
 /// Menu Image Scale. Handles menu background animation.
 
+### /UI/UIButtonFeedback.cs
+
+/// UI Button Feedback. Unified controller for visual scale animation and audio feedback on hover/click events. Replaces MenuImageScale and MenuButtonAudio.
+
 ### /UI/LogoIntro.cs
 
 /// Logo Intro. Handles logo animation at game start.
