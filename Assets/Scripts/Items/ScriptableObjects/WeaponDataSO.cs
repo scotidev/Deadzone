@@ -31,7 +31,7 @@ public class WeaponDataSO : ItemDataSO {
 
     #region PROPERTIES
 
-    public override int MaxAmmo => 300;
+    // MaxAmmo is inherited from ItemDataSO, allowing it to be configured per weapon in the Inspector
 
     #endregion
 
@@ -86,7 +86,7 @@ public class WeaponDataSO : ItemDataSO {
         return new[] { 
             GetDamageAtLevel(level), 
             GetFireRateAtLevel(level), // Don't divide by 100f - let normalization handle it
-            (float)GetMagazineCapacityAtLevel(level)
+            (float)GetMaxAmmoAtLevel(level)
         };
     }
 

@@ -12,17 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c5a88350b350884291d825a29b39298, type: 3}
   m_Name: ShopPistol
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemDataSO
-  itemID: 1
-  itemName: Pistol
-  itemDescription: 'The Pistol item. Type: Weapon'
   itemData: {fileID: 11400000, guid: 41adb49d70ee55a47916910a6a68c0d5, type: 2}
   icon: {fileID: 21300000, guid: 74db8f47f97906a44a4461b1d19d466f, type: 3}
   previewPrefab: {fileID: 189091626145577203, guid: 464d2b315a1ed6b408948cc2fc04e8f7,
     type: 3}
+  previewScale: {x: 2000, y: 1500, z: 2000}
+  previewPositionOffset: {x: 0, y: -50, z: 0}
+  previewRotationOffset: {x: 0, y: 0, z: 0}
   unlockCost: 0
   baseUpgradeCost: 100
-  ammoCost: 50
-  ammoAmountPerPurchase: 30
-  levelToUnlockExclusive: 9
-  exclusiveUpgradeCost: 5000
-  exclusivePowerDescription: 
+  upgradeCostMultiplier: 1.5
+  costPerPurchase: 50
+  quantityPerPurchase: 30

@@ -12,17 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c5a88350b350884291d825a29b39298, type: 3}
   m_Name: ShopBearTrap
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemDataSO
-  itemID: 8
-  itemName: BearTrap
-  itemDescription: 'The BearTrap item. Type: Buildable'
   itemData: {fileID: 11400000, guid: 2ee417fe5d4f8624cb57e022c9b6539b, type: 2}
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 0e612009a5eca1e4c8d958dba841cfcb, type: 3}
   previewPrefab: {fileID: 2098750606393556748, guid: d586bea722cf8174ab3f5f29394ebfc4,
     type: 3}
-  unlockCost: 0
-  baseUpgradeCost: 100
-  ammoCost: 50
-  ammoAmountPerPurchase: 30
-  levelToUnlockExclusive: 9
-  exclusiveUpgradeCost: 5000
-  exclusivePowerDescription: 
+  previewScale: {x: 20000, y: 20000, z: 20000}
+  previewPositionOffset: {x: 0, y: -75, z: 0}
+  previewRotationOffset: {x: 0, y: 0, z: 0}
+  unlockCost: 500
+  baseUpgradeCost: 500
+  upgradeCostMultiplier: 1.5
+  costPerPurchase: 100
+  quantityPerPurchase: 1

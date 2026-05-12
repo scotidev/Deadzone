@@ -11,7 +11,7 @@ public class GrenadeDataSO : ItemDataSO {
 
     #region PROPERTIES
 
-    public override int MaxAmmo => 10;
+    // MaxAmmo is inherited from ItemDataSO, allowing it to be configured per item in the Inspector
 
     #endregion
 
@@ -20,11 +20,12 @@ public class GrenadeDataSO : ItemDataSO {
     public override float[] GetStatValues() => new[] { damage, radius, (float)MaxAmmo };
 
     public override float[] GetStatValues(int level) {
+        level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
         float levelFactor = 1f + (level - 1) * 0.1f;
         return new[] { 
             damage * levelFactor, 
             radius * levelFactor, 
-            (float)MaxAmmo 
+            (float)GetMaxAmmoAtLevel(level) 
         };
     }
 }

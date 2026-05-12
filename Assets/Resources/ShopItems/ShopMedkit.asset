@@ -12,17 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c5a88350b350884291d825a29b39298, type: 3}
   m_Name: ShopMedkit
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemDataSO
-  itemID: 4
-  itemName: Medkit
-  itemDescription: 'The Medkit item. Type: Consumable'
   itemData: {fileID: 11400000, guid: 9edddb426f160634a93fcd956ead4fc0, type: 2}
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: b280f46e5f2caa94eaf7e78d3c582579, type: 3}
   previewPrefab: {fileID: 5236713190237981952, guid: 01288bca9e4d3554a8f2244985236692,
     type: 3}
+  previewScale: {x: 25000, y: 25000, z: 25000}
+  previewPositionOffset: {x: 0, y: -75, z: 0}
+  previewRotationOffset: {x: 270, y: 0, z: 0}
   unlockCost: 0
   baseUpgradeCost: 100
-  ammoCost: 50
-  ammoAmountPerPurchase: 30
-  levelToUnlockExclusive: 9
-  exclusiveUpgradeCost: 5000
-  exclusivePowerDescription: 
+  upgradeCostMultiplier: 1.5
+  costPerPurchase: 50
+  quantityPerPurchase: 30

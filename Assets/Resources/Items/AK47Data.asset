@@ -15,11 +15,13 @@ MonoBehaviour:
   itemID: 2
   itemName: AK47
   maxUpgradeLevel: 10
-  maxAmmo: 500
-  baseDamage: 20
+  maxAmmo: 300
+  baseAmmo: 30
+  ammoScaling: 1
+  baseDamage: 10
   baseFireRate: 300
   baseMagazineCapacity: 30
-  damageScaling: 0.5
+  damageScaling: 0.25
   fireRateScaling: 0.05
   maxFireRate: 500
   magazineScaling: 0.1

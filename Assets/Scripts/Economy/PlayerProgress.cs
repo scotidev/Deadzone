@@ -32,10 +32,10 @@ public class PlayerProgress : MonoBehaviour {
     private Dictionary<string, int> itemLevels = new Dictionary<string, int>(); // Unified levels for all items (weapons, buildables, consumables)
     private Dictionary<string, int> weaponReserveAmmo = new Dictionary<string, int>();
     private Dictionary<string, int> buildableQuantities = new Dictionary<string, int>();
-    
+
     // REFATORAÇÃO: Adicionado suporte a consumíveis genéricos (medkit, grenade, etc)
     private Dictionary<string, int> consumableQuantities = new Dictionary<string, int>();
-    
+
     public const int MAX_UPGRADE_LEVEL = 10;
     public const int MAX_BUILDABLE_QUANTITY = 5;
     public const int MAX_CONSUMABLE_QUANTITY = 10; // Default, pode ser overridden por item
@@ -65,7 +65,7 @@ public class PlayerProgress : MonoBehaviour {
     /// Pistol (weaponID "Pistol") is unlocked by default.
     /// </summary>
     private void InitializeDefaults() {
-        UnlockWeaponInternal("Pistol");
+        UnlockWeaponInternal("1");
     }
 
     #region UNLOCKS
@@ -93,20 +93,16 @@ public class PlayerProgress : MonoBehaviour {
         else if (itemData.ItemData is BuildableDataSO) {
             UnlockBuildableInternal(itemData.ItemID, quantity);
             Debug.Log($"[PlayerProgress] Unlocked buildable: {itemData.ItemID}");
-        }
-        else if (itemData.ItemData is MedkitDataSO) {
+        } else if (itemData.ItemData is MedkitDataSO) {
             UnlockConsumableInternal(itemData.ItemID, quantity);
             Debug.Log($"[PlayerProgress] Unlocked medkit: {itemData.ItemID}");
-        }
-        else if (itemData.ItemData is GrenadeDataSO) {
+        } else if (itemData.ItemData is GrenadeDataSO) {
             UnlockConsumableInternal(itemData.ItemID, quantity);
             Debug.Log($"[PlayerProgress] Unlocked grenade: {itemData.ItemID}");
-        }
-        else if (itemData.ItemData is VestDataSO) {
+        } else if (itemData.ItemData is VestDataSO) {
             UnlockConsumableInternal(itemData.ItemID, 1); // Vest is always quantity 1
             Debug.Log($"[PlayerProgress] Unlocked vest: {itemData.ItemID}");
-        }
-        else {
+        } else {
             Debug.LogWarning($"[PlayerProgress] Unsupported item type for unlocking: {itemData.ItemData.GetType().Name} (ID: {itemData.ItemID})");
         }
     }
@@ -126,7 +122,7 @@ public class PlayerProgress : MonoBehaviour {
         if (!weaponLevels.ContainsKey(weaponID)) {
             weaponLevels[weaponID] = 1;
         }
-        
+
         // CONCEITO: Initialize unified itemLevels dictionary alongside weaponLevels
         // This ensures GetItemLevel() can find the level for any item type
         if (!itemLevels.ContainsKey(weaponID)) {
@@ -160,7 +156,7 @@ public class PlayerProgress : MonoBehaviour {
         } else {
             Debug.LogWarning($"[PlayerProgress] Buildable {buildableID} already unlocked with quantity {consumableQuantities[buildableID]}");
         }
-        
+
         // CONCEITO: Initialize unified itemLevels dictionary for buildables
         // This ensures buildables can be upgraded just like weapons
         if (!itemLevels.ContainsKey(buildableID)) {
@@ -182,7 +178,7 @@ public class PlayerProgress : MonoBehaviour {
         if (!consumableQuantities.ContainsKey(consumableID)) {
             consumableQuantities[consumableID] = initialQuantity;
         }
-        
+
         // CONCEITO: Initialize unified itemLevels dictionary for consumables
         // This ensures consumables can be upgraded just like weapons
         if (!itemLevels.ContainsKey(consumableID)) {
@@ -297,7 +293,7 @@ public class PlayerProgress : MonoBehaviour {
         }
 
         itemLevels[itemID] = currentLevel + 1;
-        
+
         // Also sync weaponLevels for backwards compatibility
         if (unlockedWeapons.ContainsKey(itemID)) {
             weaponLevels[itemID] = itemLevels[itemID];
@@ -329,13 +325,13 @@ public class PlayerProgress : MonoBehaviour {
         if (itemLevels.TryGetValue(itemID, out int level)) {
             return level;
         }
-        
+
         // Fallback to weaponLevels for backwards compatibility
         return GetWeaponLevel(itemID);
     }
 
     // REFATORAÇÃO: o check deve ser se a arma está no maximo nivel mas isso deve ser dinamico, barricadas por exemplo pode ir até o nivel 5, a pistola até o nivel 10. O nível máximo de upgrade para cada item pode ser definido no ScriptableObject do item, permitindo que diferentes tipos de itens tenham diferentes limites de upgrade. O método IsItemMaxLevel(string itemID) pode verificar o tipo do item e comparar o nível atual com o nível máximo definido no SO do item para determinar se o item está no nível máximo.
-/// <summary>
+    /// <summary>
     /// Checks if a weapon is at maximum level.
     /// </summary>
     /// <param name="weaponID">The weapon to check.</param>
@@ -353,7 +349,7 @@ public class PlayerProgress : MonoBehaviour {
     public int GetItemMaxLevel(string itemID) {
         // Try to find the ShopItemDataSO to get the max level from its ItemData
         var shopItemData = GetShopItemData(itemID);
-        
+
         if (shopItemData != null && shopItemData.ItemData != null) {
             // Check different item types for their max level - use base class MaxUpgradeLevel from ItemDataSO
             // For VestDataSO, the MaxUpgradeLevel is set to 5 in the inspector (inherits from ItemDataSO)
@@ -373,6 +369,63 @@ public class PlayerProgress : MonoBehaviour {
     /// <returns>True if at maximum level for this specific item.</returns>
     public bool IsItemMaxLevel(string itemID) {
         return GetItemLevel(itemID) >= GetItemMaxLevel(itemID);
+    }
+
+    /// <summary>
+    /// Gets the maximum ammo/quantity for an item at a specific level.
+    /// This is the SINGLE SOURCE OF TRUTH for max ammo validation across the entire codebase.
+    /// Calculates: min(baseAmmo * (1 + ammoScaling * (level - 1)), MaxAmmo)
+    /// 
+    /// This method centralizes ammo limit logic to eliminate redundancy in AmmoManager and ShopManager.
+    /// Both should use this method instead of directly reading MaxAmmo.
+    /// </summary>
+    /// <param name="itemID">The item to get max ammo for.</param>
+    /// <param name="level">The upgrade level to calculate ammo at.</param>
+    /// <returns>Maximum ammo/quantity for the item at this level, or 10 (default) if item not found.</returns>
+    public int GetMaxAmmoAtLevel(string itemID, int level) {
+        var shopItemData = GetShopItemData(itemID);
+        
+        if (shopItemData?.ItemData == null) {
+            Debug.LogWarning($"[PlayerProgress] GetMaxAmmoAtLevel: Could not find item data for {itemID}. Returning default 10.");
+            return 10; // Default fallback
+        }
+        
+        // Delegate to ItemDataSO's GetMaxAmmoAtLevel() which handles the scaling formula
+        return shopItemData.ItemData.GetMaxAmmoAtLevel(level);
+    }
+
+    /// <summary>
+    /// Gets the current ammo/quantity for ANY item type (weapons, buildables, consumables).
+    /// This is a smart dispatcher that routes to the correct storage location based on item type.
+    /// Returns 0 for Vest since it uses a special armor system (not quantity-based).
+    /// SINGLE ENTRY POINT for UI queries about current item amounts.
+    /// </summary>
+    public int GetCurrentAmmoForItem(string itemID) {
+        var shopItemData = GetShopItemData(itemID);
+        if (shopItemData?.ItemData == null) {
+            return 0;
+        }
+        
+        // Weapons: stored in weaponReserveAmmo dictionary
+        if (shopItemData.ItemData is WeaponDataSO) {
+            return GetWeaponReserveAmmo(itemID);
+        }
+        
+        // Buildables (BearTrap, Barricade, ExplosiveBarrel) and Consumables (Grenade, Medkit):
+        // All stored in consumableQuantities dictionary
+        if (shopItemData.ItemData is BuildableDataSO ||
+            shopItemData.ItemData is MedkitDataSO ||
+            shopItemData.ItemData is GrenadeDataSO) {
+            return GetConsumableQuantity(itemID);
+        }
+        
+        // Vest: uses special armor system (percentage-based, 0-100), not quantity-based
+        // Handled separately in GetAmmoStatus() which accesses Vest component directly
+        if (shopItemData.ItemData is VestDataSO) {
+            return 0;
+        }
+        
+        return 0;
     }
 
     /// <summary>
@@ -473,11 +526,11 @@ public class PlayerProgress : MonoBehaviour {
     #endregion
 
     #region CONSUMABLES
-    
+
     // REFATORAÇÃO RESOLVIDA: Consumíveis (medkit, grenade) agora têm suporte completo
     // com métodos específicos para gerenciar quantidade. Buildables também usam esses
     // métodos pois têm a mesma semântica: quantidade limitada que é consumida ao usar.
-    
+
     /// <summary>
     /// Gets the current quantity of a consumable or buildable item.
     /// </summary>
@@ -486,7 +539,7 @@ public class PlayerProgress : MonoBehaviour {
     public int GetConsumableQuantity(string itemID) {
         return consumableQuantities.TryGetValue(itemID, out int qty) ? qty : 0;
     }
-    
+
     /// <summary>
     /// Adds quantity to a consumable or buildable item.
     /// Respects the maximum limit.
@@ -497,19 +550,19 @@ public class PlayerProgress : MonoBehaviour {
     /// <returns>True if quantity was added (not already at max).</returns>
     public bool AddConsumable(string itemID, int amount, int maxAmount = MAX_CONSUMABLE_QUANTITY) {
         int currentQty = GetConsumableQuantity(itemID);
-        
+
         if (currentQty >= maxAmount) {
             Debug.LogWarning($"[PlayerProgress] {itemID} quantity is already at max ({maxAmount}).");
             return false;
         }
-        
+
         int newQty = Mathf.Min(currentQty + amount, maxAmount);
         consumableQuantities[itemID] = newQty;
-        
+
         Debug.Log($"[PlayerProgress] Added {amount} {itemID}. New total: {newQty}/{maxAmount}");
         return true;
     }
-    
+
     /// <summary>
     /// Consumes (decrements) a consumable or buildable item.
     /// </summary>
@@ -518,12 +571,12 @@ public class PlayerProgress : MonoBehaviour {
     /// <returns>True if enough quantity was available to consume.</returns>
     public bool ConsumeItem(string itemID, int amount) {
         int currentQty = GetConsumableQuantity(itemID);
-        
+
         if (currentQty < amount) {
             Debug.LogWarning($"[PlayerProgress] Not enough {itemID} to consume (have {currentQty}, need {amount}).");
             return false;
         }
-        
+
         consumableQuantities[itemID] = currentQty - amount;
         Debug.Log($"[PlayerProgress] Consumed {amount} {itemID}. Remaining: {consumableQuantities[itemID]}");
         return true;

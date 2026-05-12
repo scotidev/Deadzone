@@ -45,7 +45,6 @@ public class AmmoManager : MonoBehaviour {
         ItemDataSO itemData = shopItem.ItemData;
         int cost = shopItem.CostPerPurchase;
         int quantity = shopItem.QuantityPerPurchase;
-        int maxAmount = shopItem.MaxAmmo;
 
         if (itemData == null) {
             Debug.LogWarning($"[AmmoManager] ItemData is null for {itemID}!");
@@ -57,6 +56,11 @@ public class AmmoManager : MonoBehaviour {
             Debug.LogWarning($"[AmmoManager] Insufficient funds! Need {cost - GetCurrentCurrency()} more.");
             return false;
         }
+
+        // Get the current item level and calculate max ammo dynamically
+        // This replaces hardcoded shopItem.MaxAmmo with level-dependent limit
+        int currentLevel = PlayerProgress.Instance.GetItemLevel(itemID);
+        int maxAmount = PlayerProgress.Instance.GetMaxAmmoAtLevel(itemID, currentLevel);
 
         // Handle based on item type
         bool success = false;

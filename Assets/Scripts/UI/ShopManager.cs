@@ -378,7 +378,8 @@ public class ShopManager : MonoBehaviour {
         }
 
         int currentAmount = PlayerProgress.Instance.GetWeaponReserveAmmo(itemData.ItemID);
-        int maxAmount = itemData.MaxAmmo;
+        int currentLevel = PlayerProgress.Instance.GetItemLevel(itemData.ItemID);
+        int maxAmount = PlayerProgress.Instance.GetMaxAmmoAtLevel(itemData.ItemID, currentLevel);
         int cost = itemData.CostPerPurchase;
 
         return currentAmount < maxAmount &&
@@ -388,10 +389,13 @@ public class ShopManager : MonoBehaviour {
 
     /// <summary>
     /// Gets current ammo status for an item.
+    /// Uses smart dispatcher GetCurrentAmmoForItem() to return the correct current amount
+    /// based on where that item type stores its data (weapons dict vs consumables dict).
     /// </summary>
     public (int current, int max) GetAmmoStatus(ShopItemDataSO itemData) {
         if (itemData == null || PlayerProgress.Instance == null) return (0, 0);
 
+        // Vest: special case - uses armor system (percentage-based), not quantity-based
         if (itemData.ItemData is VestDataSO) {
             Vest vest = Vest.GetFromPlayer(playerCharacter);
             if (vest != null) {
@@ -400,8 +404,12 @@ public class ShopManager : MonoBehaviour {
             return (0, 0);
         }
 
-        int current = PlayerProgress.Instance.GetWeaponReserveAmmo(itemData.ItemID);
-        int max = itemData.MaxAmmo;
+        // All other items: use smart dispatcher to route to correct storage location
+        // Weapons → GetWeaponReserveAmmo()
+        // Buildables/Consumables → GetConsumableQuantity()
+        int current = PlayerProgress.Instance.GetCurrentAmmoForItem(itemData.ItemID);
+        int currentLevel = PlayerProgress.Instance.GetItemLevel(itemData.ItemID);
+        int max = PlayerProgress.Instance.GetMaxAmmoAtLevel(itemData.ItemID, currentLevel);
         return (current, max);
     }
 
@@ -453,7 +461,8 @@ public class ShopManager : MonoBehaviour {
         }
 
         int currentAmount = PlayerProgress.Instance.GetWeaponReserveAmmo(itemData.ItemID);
-        int maxAmount = itemData.MaxAmmo;
+        int currentLevel = PlayerProgress.Instance.GetItemLevel(itemData.ItemID);
+        int maxAmount = PlayerProgress.Instance.GetMaxAmmoAtLevel(itemData.ItemID, currentLevel);
 
         if (currentAmount >= maxAmount) {
             return ShopButtonDisabledReason.FullAmmo;

@@ -10,6 +10,8 @@ public static class WeaponStatsCalculator {
     private static float _globalMaxFireRate = 1f;
     private static float _globalMaxAmmo = 1f;
     private static float _globalMaxVestResistance = 1f;
+    private static float _globalMaxRadius = 1f;
+    private static float _globalMaxHeal = 1f;
     
     // Flag to track if calculation has been done
     private static bool _hasCalculatedGlobalMax = false;
@@ -51,11 +53,18 @@ public static class WeaponStatsCalculator {
     #region METHODS
     
     /// <summary>
-    /// Calculates the global maximum values for weapon stats by scanning all relevant assets.
-    /// This should be called once at game startup (e.g., in ShopManager.Awake()).
+    /// Calculates the global maximum values for weapon stats by scanning provided shop items.
+    /// Call with the list of configured ShopItemDataSO from ShopUI.
     /// </summary>
-    public static void CalculateGlobalMaxValues() {
-        // Prevent recalculation
+    /// <param name="shopItemDatas">List of all shop items containing the ItemData to scan.</param>
+    public static void CalculateGlobalMaxValues(System.Collections.Generic.List<ShopItemDataSO> shopItemDatas = null) {
+        // Prevent recalculation ONLY if no valid list is provided
+        // If a valid list is passed, always recalculate to ensure correct normalization
+        if (_hasCalculatedGlobalMax && (shopItemDatas != null && shopItemDatas.Count > 0)) {
+            _hasCalculatedGlobalMax = false; // Allow recalculation with proper data
+        }
+        
+        // If already calculated with no new data, skip
         if (_hasCalculatedGlobalMax) return;
         
         // Reset values
@@ -63,17 +72,27 @@ public static class WeaponStatsCalculator {
         _globalMaxFireRate = 1f;
         _globalMaxAmmo = 1f;
         _globalMaxVestResistance = 1f;
+        _globalMaxRadius = 1f;
+        _globalMaxHeal = 1f;
         
-        // APPROACH: Load ShopItemDataSO assets (which are likely in Resources)
-        // Then extract their ItemData references to get WeaponDataSO, VestDataSO, etc.
-        var shopItemDatas = Resources.LoadAll<ShopItemDataSO>("");
+        // If no list provided, try to load from Resources
+        if (shopItemDatas == null || shopItemDatas.Count == 0) {
+            shopItemDatas = new System.Collections.Generic.List<ShopItemDataSO>(
+                Resources.LoadAll<ShopItemDataSO>("")
+            );
+        }
         
-        if (shopItemDatas == null || shopItemDatas.Length == 0) {
+        if (shopItemDatas == null || shopItemDatas.Count == 0) {
+            // Fallback to hardcoded values if nothing found
             _globalMaxDamage = MAX_DAMAGE_WEAPON;
             _globalMaxFireRate = MAX_FIRE_RATE;
             _globalMaxAmmo = MAX_AMMO_WEAPON;
             _globalMaxVestResistance = 100f * (1f + 0.25f * 9f); // Vest max at level 10
+            _globalMaxRadius = MAX_GRENADE_RADIUS;
+            _globalMaxHeal = MAX_HEAL;
+            Debug.LogWarning("[WeaponStatsCalculator] No shop items found! Using fallback values. Stat bars may display incorrectly.");
         } else {
+            // Iterate through all shop items and calculate max values
             foreach (var shopItem in shopItemDatas) {
                 if (shopItem?.ItemData == null) continue;
                 
@@ -98,6 +117,12 @@ public static class WeaponStatsCalculator {
                     }
                     else if (label.Contains("resistance")) {
                         if (value > _globalMaxVestResistance) _globalMaxVestResistance = value;
+                    }
+                    else if (label.Contains("radius")) {
+                        if (value > _globalMaxRadius) _globalMaxRadius = value;
+                    }
+                    else if (label.Contains("heal")) {
+                        if (value > _globalMaxHeal) _globalMaxHeal = value;
                     }
                 }
             }
@@ -130,6 +155,30 @@ public static class WeaponStatsCalculator {
         return _globalMaxAmmo;
     }
     
+    /// <summary>
+    /// Gets the global maximum resistance value (for normalization 0-1)
+    /// </summary>
+    public static float GetGlobalMaxResistance() {
+        if (!_hasCalculatedGlobalMax) CalculateGlobalMaxValues();
+        return _globalMaxVestResistance;
+    }
+    
+    /// <summary>
+    /// Gets the global maximum radius value (for normalization 0-1)
+    /// </summary>
+    public static float GetGlobalMaxRadius() {
+        if (!_hasCalculatedGlobalMax) CalculateGlobalMaxValues();
+        return _globalMaxRadius;
+    }
+    
+    /// <summary>
+    /// Gets the global maximum heal value (for normalization 0-1)
+    /// </summary>
+    public static float GetGlobalMaxHeal() {
+        if (!_hasCalculatedGlobalMax) CalculateGlobalMaxValues();
+        return _globalMaxHeal;
+    }
+    
     public static float GetMaxValueForStat(string statName) {
         // Calculate global max values if not done yet
         if (!_hasCalculatedGlobalMax) CalculateGlobalMaxValues();
@@ -147,13 +196,13 @@ public static class WeaponStatsCalculator {
             result = _globalMaxAmmo;
         }
         else if (lowerName.Contains("heal")) {
-            result = MAX_HEAL; // Medkit heal doesn't scale globally for now
+            result = _globalMaxHeal;
         }
         else if (lowerName.Contains("resistance")) {
             result = _globalMaxVestResistance;
         }
         else if (lowerName.Contains("radius")) {
-            result = MAX_GRENADE_RADIUS; // Grenade radius doesn't scale globally for now
+            result = _globalMaxRadius;
         }
         
         return result;
@@ -163,6 +212,28 @@ public static class WeaponStatsCalculator {
         float maxValue = GetMaxValueForStat(statName);
         if (maxValue <= 0f) return 0f;
         return Mathf.Clamp01(value / maxValue);
+    }
+    
+    /// <summary>
+    /// Resets the global max values calculation flag, allowing recalculation.
+    /// Useful for testing or if item data changes at runtime.
+    /// </summary>
+    public static void ResetCalculation() {
+        _hasCalculatedGlobalMax = false;
+    }
+    
+    /// <summary>
+    /// Gets current calculated values for debugging.
+    /// </summary>
+    public static void LogCurrentMaxValues() {
+        Debug.Log($"[WeaponStatsCalculator] Current Max Values:\n" +
+                  $"  Damage: {_globalMaxDamage}\n" +
+                  $"  Fire Rate: {_globalMaxFireRate}\n" +
+                  $"  Ammo: {_globalMaxAmmo}\n" +
+                  $"  Healing: {_globalMaxHeal}\n" +
+                  $"  Resistance: {_globalMaxVestResistance}\n" +
+                  $"  Radius: {_globalMaxRadius}\n" +
+                  $"  Calculated: {_hasCalculatedGlobalMax}");
     }
     
     #endregion

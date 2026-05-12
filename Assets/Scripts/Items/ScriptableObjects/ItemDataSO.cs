@@ -12,6 +12,8 @@ public abstract class ItemDataSO : ScriptableObject {
     [SerializeField] private string itemName;
     [SerializeField] private int maxUpgradeLevel = 10;
     [SerializeField] private int maxAmmo = 10;
+    [SerializeField] private int baseAmmo = 10;
+    [SerializeField] private float ammoScaling = 0.1f;
 
     #endregion
 
@@ -21,6 +23,8 @@ public abstract class ItemDataSO : ScriptableObject {
     public string ItemName => itemName;
     public virtual int MaxUpgradeLevel => maxUpgradeLevel;
     public virtual int MaxAmmo => maxAmmo;
+    public int BaseAmmo => baseAmmo;
+    public float AmmoScaling => ammoScaling;
 
     #endregion
 
@@ -47,6 +51,25 @@ public abstract class ItemDataSO : ScriptableObject {
     /// <param name="level">The upgrade level (1-based).</param>
     /// <returns>An array of statistical values at the specified level.</returns>
     public abstract float[] GetStatValues(int level);
+
+    /// <summary>
+    /// Calculates the maximum ammo/quantity at a given upgrade level.
+    /// Formula: min(baseAmmo * (1 + ammoScaling * (level - 1)), MaxAmmo)
+    /// This ensures that ammo scaling never exceeds the MaxAmmo cap.
+    /// </summary>
+    /// <param name="level">The upgrade level (1-based).</param>
+    /// <returns>The maximum ammo/quantity capped by MaxAmmo.</returns>
+    public int GetMaxAmmoAtLevel(int level) {
+        // Clamp level to valid range to prevent edge cases
+        level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
+
+        // Apply scaling formula: baseAmmo * (1 + ammoScaling * (level - 1))
+        // This gives: level 1 = baseAmmo, level 2 = baseAmmo * (1 + ammoScaling), etc.
+        float scaledAmmo = baseAmmo * (1f + ammoScaling * (level - 1));
+
+        // Cap by MaxAmmo and convert to int
+        return Mathf.Min((int)scaledAmmo, MaxAmmo);
+    }
 
     #endregion
 }

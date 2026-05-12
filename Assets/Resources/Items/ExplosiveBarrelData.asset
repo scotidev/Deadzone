@@ -15,12 +15,14 @@ MonoBehaviour:
   itemID: 7
   itemName: Barrel
   maxUpgradeLevel: 5
-  maxAmount: 5
-  damage: 100
+  maxAmmo: 10
+  baseAmmo: 10
+  ammoScaling: 0.1
+  damage: 50
   explosionRadius: 50
   health: 100
   displayStats: 000000000300000002000000
-  damageScaling: 0.1
+  damageScaling: 0.15
   resistanceScaling: 0.1
   realPrefab: {fileID: 8426833715630008873, guid: a3d893de50bf5b0429696987e48b2ae7,
     type: 3}

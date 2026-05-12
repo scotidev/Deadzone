@@ -269,8 +269,8 @@ public class ShopUI : BaseUI {
         float[] currentValues = itemData.GetStatValues(currentLevel);
         float[] nextValues = isUnlocked ? itemData.GetStatValues(nextLevel) : new float[currentValues.Length]; // If locked, upgrade shows 0 progress
 
-        // Force calculation of global max values to ensure they're ready
-        WeaponStatsCalculator.CalculateGlobalMaxValues();
+        // Calculate global max values using the shop items list - this ensures all items are scanned for max values
+        WeaponStatsCalculator.CalculateGlobalMaxValues(shopItems);
 
         for (int i = 0; i < labels.Length && i < 3; i++) {
             GameObject barObj = Instantiate(statBarPrefab, statsContainer);

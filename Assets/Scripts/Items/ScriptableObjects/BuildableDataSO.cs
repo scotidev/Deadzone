@@ -50,7 +50,7 @@ public class BuildableDataSO : ItemDataSO {
     public float Damage => damage;
     public int ExplosionRadius => explosionRadius;
     public float Resistance => health;
-    public override int MaxAmmo => 10;
+    // MaxAmmo is inherited from ItemDataSO, allowing it to be configured per item in the Inspector
     public GameObject RealPrefab => realPrefab;
     public GameObject GhostPrefab => ghostPrefab;
     public Vector3 PlacementRotationEuler => placementRotationEuler;
@@ -90,7 +90,7 @@ public class BuildableDataSO : ItemDataSO {
         float levelFactor = 1f + (level - 1) * 0.1f;
 
         if (displayStats == null || displayStats.Length == 0) {
-            return new[] { (float)MaxAmmo };
+            return new[] { (float)GetMaxAmmoAtLevel(level) };
         }
 
         float[] values = new float[displayStats.Length];
@@ -104,7 +104,7 @@ public class BuildableDataSO : ItemDataSO {
                     values[i] = health * (1f + resistanceScaling * (level - 1));
                     break;
                 case BuildableStatType.Ammo:
-                    values[i] = MaxAmmo;
+                    values[i] = GetMaxAmmoAtLevel(level);
                     break;
                 case BuildableStatType.Radius:
                     values[i] = explosionRadius;

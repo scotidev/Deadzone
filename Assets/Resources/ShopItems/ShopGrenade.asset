@@ -12,17 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c5a88350b350884291d825a29b39298, type: 3}
   m_Name: ShopGrenade
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemDataSO
-  itemID: 5
-  itemName: Grenade
-  itemDescription: 'The Grenade item. Type: Consumable'
   itemData: {fileID: 11400000, guid: 17364a04fbc054749b78bfe16ea4ebcd, type: 2}
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 8942701d581772d479a62c8ae512cac7, type: 3}
   previewPrefab: {fileID: 1415792643396714694, guid: f694e7b468bd5d74fa3b963ff27d0038,
     type: 3}
+  previewScale: {x: 15000, y: 15000, z: 15000}
+  previewPositionOffset: {x: 0, y: -75, z: 0}
+  previewRotationOffset: {x: 270, y: 0, z: 0}
   unlockCost: 0
   baseUpgradeCost: 100
-  ammoCost: 50
-  ammoAmountPerPurchase: 30
-  levelToUnlockExclusive: 9
-  exclusiveUpgradeCost: 5000
-  exclusivePowerDescription: 
+  upgradeCostMultiplier: 1.5
+  costPerPurchase: 50
+  quantityPerPurchase: 30

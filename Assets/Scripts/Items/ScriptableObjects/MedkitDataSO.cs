@@ -15,7 +15,7 @@ public class MedkitDataSO : ItemDataSO {
 
     #region PROPERTIES
 
-    public override int MaxAmmo => 10;
+    // MaxAmmo is inherited from ItemDataSO, allowing it to be configured per medkit in the Inspector
 
     #endregion
 
@@ -28,7 +28,7 @@ public class MedkitDataSO : ItemDataSO {
         float levelFactor = 1f + healScaling * (level - 1);
         return new[] { 
             healAmount * levelFactor, 
-            (float)MaxAmmo 
+            (float)GetMaxAmmoAtLevel(level) 
         };
     }
 }

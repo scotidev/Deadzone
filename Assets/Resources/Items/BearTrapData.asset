@@ -15,16 +15,18 @@ MonoBehaviour:
   itemID: 8
   itemName: Bear Trap
   maxUpgradeLevel: 5
-  maxAmount: 5
+  maxAmmo: 10
+  baseAmmo: 2
+  ammoScaling: 1
   damage: 50
-  explosionRadius: 10
+  explosionRadius: 0
   health: 0
   displayStats: 0000000002000000
-  damageScaling: 0.1
-  resistanceScaling: 0.1
+  damageScaling: 0.25
+  resistanceScaling: 0
   realPrefab: {fileID: 2098750606393556748, guid: d586bea722cf8174ab3f5f29394ebfc4,
     type: 3}
   ghostPrefab: {fileID: 2098750606393556748, guid: 4e0e7e27cdf88f048ab15b910a61cea8,
     type: 3}
-  placementRotationEuler: {x: 0, y: 0, z: 0}
-  overlapBoxSize: {x: 1, y: 1, z: 1}
+  placementRotationEuler: {x: 270, y: 0, z: 0}
+  overlapBoxSize: {x: 1, y: 0.1, z: 1}
