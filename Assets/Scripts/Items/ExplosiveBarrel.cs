@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
 using InfimaGames.LowPolyShooterPack;
+using Deadzone.Interfaces;
+using Deadzone.UI;
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
@@ -28,12 +30,21 @@ namespace InfimaGames.LowPolyShooterPack {
         [SerializeField] private float explosionForce = 4000.0f;
         [SerializeField] private float explosionDamage = 50f;
 
+        [Header("Audio Clips")]
+        [SerializeField] private AudioClip equipClip;
+        [SerializeField] private float equipVolume = 1f;
+        [SerializeField] private AudioClip placementClip;
+        [SerializeField] private float placementVolume = 1f;
+        [SerializeField] private AudioClip explosionClip;
+        [SerializeField] private float explosionVolume = 1f;
+
         #endregion
 
         #region FIELDS
 
         private bool shouldExplode = false;
         private bool routineStarted = false;
+        private IAudioManagerService audioService;
 
         #endregion
 
@@ -71,6 +82,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Start placement mode (ghost preview appears).
         /// </summary>
         public override void OnSelected() {
+            PlayEquipSound();
             if (BuildingController.Instance != null && barrelData != null) {
                 BuildingController.Instance.StartPlacement(barrelData);
             }
@@ -96,7 +108,7 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Check if barrel is unlocked (for selection). Quantity check happens in OnUse().
+        /// Check if barrel is unlocked AND has quantity in inventory.
         /// </summary>
         public override bool CanBeUsed() {
             if (PlayerProgress.Instance == null) {
@@ -104,12 +116,19 @@ namespace InfimaGames.LowPolyShooterPack {
             }
 
             bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(GetItemID());
-            return isUnlocked;
+            int quantity = PlayerProgress.Instance.GetBuildableQuantity(GetItemID());
+            if (isUnlocked && quantity <= 0)
+                FeedbackMessageUI.Instance?.Show();
+            return isUnlocked && quantity > 0;
         }
 
         #endregion
 
         #region UNITY LIFECYCLE
+
+        private void Awake() {
+            audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+        }
 
         private void Update() {
             // CONCEITO: Verificar a cada frame se o barril deve explodir.
@@ -152,6 +171,8 @@ namespace InfimaGames.LowPolyShooterPack {
             // Barris não explodem instantaneamente, levam um tempo pequeno.
             float randomDelay = Random.Range(minTime, maxTime);
             yield return new WaitForSeconds(randomDelay);
+
+            PlayExplosionSound();
 
             // Trigger slow-motion effect
             // CONCEITO: O operador "?." (null-conditional operator) chama o método
@@ -213,6 +234,28 @@ namespace InfimaGames.LowPolyShooterPack {
 
             // Destroy the barrel gameobject
             Destroy(gameObject);
+        }
+
+        #endregion
+
+        #region AUDIO
+
+        public void PlayEquipSound() {
+            if (equipClip != null && audioService != null) {
+                audioService.PlaySFX2D(equipClip, equipVolume);
+            }
+        }
+
+        public void PlayPlacementSound() {
+            if (placementClip != null && audioService != null) {
+                audioService.PlaySFX2D(placementClip, placementVolume);
+            }
+        }
+
+        private void PlayExplosionSound() {
+            if (explosionClip != null && audioService != null) {
+                audioService.PlaySFX3D(explosionClip, transform.position, explosionVolume);
+            }
         }
 
         #endregion

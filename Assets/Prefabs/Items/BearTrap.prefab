@@ -76,7 +76,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 803e416c34811fe459bc108f85a68c05,
         type: 3}
       propertyPath: m_Name
-      value: BearTrap_Open
+      value: BearTrap
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 803e416c34811fe459bc108f85a68c05,
         type: 3}
@@ -94,7 +94,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 803e416c34811fe459bc108f85a68c05,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5511595361331208036}
+      addedObject: {fileID: 3125353306815250467}
   m_SourcePrefab: {fileID: 100100000, guid: 803e416c34811fe459bc108f85a68c05, type: 3}
 --- !u!1 &2098750606393556748 stripped
 GameObject:
@@ -117,36 +117,33 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.012365875, y: 0.012399648, z: 0.0033933574}
   m_Center: {x: 0.000013809204, y: -0.0002760589, z: 0.0014555217}
---- !u!54 &5511595361331208036
-Rigidbody:
+--- !u!114 &3125353306815250467
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2098750606393556748}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e406a21c24102704f8ef7f7f6597c7c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InfimaGames.LowPolyShooterPack.BearTrap
+  bearTrapData: {fileID: 11400000, guid: 2ee417fe5d4f8624cb57e022c9b6539b, type: 2}
+  hudIcon: {fileID: 0}
+  equipClip: {fileID: 8300000, guid: 69d4a4ba1355bc847a97ccf2c9129f01, type: 3}
+  equipVolume: 1
+  placementClip: {fileID: 8300000, guid: 8069f62150699d447aa5389b03087a7b, type: 3}
+  placementVolume: 0.1
+  triggerClip: {fileID: 8300000, guid: 57ed416a1f767ab45966f457e8cddc96, type: 3}
+  triggerVolume: 0.3
+  closedTrapPrefab: {fileID: 6012301066699370685, guid: a58e9543afbb278469455794ed21fe5c,
+    type: 3}
+  stunDurationSeconds: 3
+  closedTrapDestructionTimeSeconds: 2

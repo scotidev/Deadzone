@@ -1,5 +1,6 @@
 using UnityEngine;
 using InfimaGames.LowPolyShooterPack;
+using Deadzone.Interfaces;
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
@@ -11,7 +12,27 @@ namespace InfimaGames.LowPolyShooterPack {
         
         [SerializeField] private MedkitDataSO medkitData;
         [SerializeField] private Sprite hudIcon;
+
+        [Header("Audio Clips")]
+        [SerializeField] private AudioClip equipClip;
+        [SerializeField] private float equipVolume = 1f;
+        [SerializeField] private AudioClip useClip;
+        [SerializeField] private float useVolume = 1f;
         
+        #endregion
+
+        #region FIELDS
+
+        private IAudioManagerService audioService;
+
+        #endregion
+
+        #region UNITY
+
+        private void Awake() {
+            audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+        }
+
         #endregion
         
         #region ITEM BEHAVIOUR IMPLEMENTATION
@@ -52,6 +73,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Activate visual representation (medkit model in hand).
         /// </summary>
         public override void OnSelected() {
+            PlayEquipSound();
             gameObject.SetActive(true);
         }
         
@@ -77,6 +99,7 @@ namespace InfimaGames.LowPolyShooterPack {
             PlayerHealth playerHealth = GetComponentInParent<PlayerHealth>();
             if (playerHealth != null) {
                 playerHealth.Heal(medkitData.healAmount);
+                PlayUseSound();
                 
                 // Consume 1 medkit from inventory
                 if (PlayerProgress.Instance != null) {
@@ -102,6 +125,22 @@ namespace InfimaGames.LowPolyShooterPack {
             return isUnlocked;
         }
         
+        #endregion
+
+        #region AUDIO
+
+        private void PlayEquipSound() {
+            if (equipClip != null && audioService != null) {
+                audioService.PlaySFX2D(equipClip, equipVolume);
+            }
+        }
+
+        private void PlayUseSound() {
+            if (useClip != null && audioService != null) {
+                audioService.PlaySFX2D(useClip, useVolume);
+            }
+        }
+
         #endregion
     }
 }

@@ -1,6 +1,7 @@
 using InfimaGames.LowPolyShooterPack;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Deadzone.Interfaces;
 
 // REFATORAÇÃO: Esse script deveria ser um Service do ServiceLocator? Talvez. 
 // REFATORAÇÃO: Adicionar feedbacks para o player StartPlacement por exemplo: tocar um som de erro se não tiver o item, ou um som de confirmação quando começar a colocar.
@@ -39,6 +40,7 @@ public class BuildingController : MonoBehaviour {
     private GameObject currentGhost;
     private GhostObject currentGhostObject;
     private BuildableDataSO selectedItem;
+    private IAudioManagerService audioService;
 
     #endregion
 
@@ -59,6 +61,7 @@ public class BuildingController : MonoBehaviour {
         else
             Destroy(gameObject);
 
+        audioService = ServiceLocator.Current.Get<IAudioManagerService>();
         ResolvePlayerCharacter();
     }
 
@@ -192,13 +195,28 @@ public class BuildingController : MonoBehaviour {
                 overlapMask
             );
 
-            currentGhostObject?.SetPlaceable(collisions.Length == 0);
+            currentGhostObject?.SetPlaceable(HasInventoryQuantity() && collisions.Length == 0);
 
             currentGhost.SetActive(true);
         }
         else {
             currentGhost.SetActive(false);
         }
+    }
+
+    /// <summary>
+    /// Checks if the player has at least one buildable in inventory.
+    /// Used to force the ghost to red when out of items.
+    /// </summary>
+    private bool HasInventoryQuantity() {
+        if (PlayerProgress.Instance == null || selectedItem == null)
+            return false;
+
+        string buildableID = GetBuildableID(selectedItem);
+        if (string.IsNullOrEmpty(buildableID))
+            return false;
+
+        return PlayerProgress.Instance.GetBuildableQuantity(buildableID) > 0;
     }
 
     /// <summary>
@@ -239,6 +257,28 @@ public class BuildingController : MonoBehaviour {
         GameObject placedObject = Instantiate(selectedItem.RealPrefab,
             currentGhost.transform.position,
             Quaternion.Euler(selectedItem.PlacementRotationEuler));
+
+        // Try to play placement sound if the placed object has the method
+        if (placedObject != null) {
+            // Try Barricade
+            Barricade barricade = placedObject.GetComponent<Barricade>();
+            if (barricade != null) {
+                barricade.PlayPlacementSound();
+            }
+            
+            // Try BearTrap
+            BearTrap bearTrap = placedObject.GetComponent<BearTrap>();
+            if (bearTrap != null) {
+                bearTrap.PlayPlacementSound();
+                bearTrap.SetPlaced(true);
+            }
+            
+            // Try ExplosiveBarrel
+            ExplosiveBarrel explosiveBarrel = placedObject.GetComponent<ExplosiveBarrel>();
+            if (explosiveBarrel != null) {
+                explosiveBarrel.PlayPlacementSound();
+            }
+        }
 
         CancelPlacement();
     }

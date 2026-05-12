@@ -1,5 +1,6 @@
 using UnityEngine;
 using InfimaGames.LowPolyShooterPack;
+using Deadzone.Interfaces;
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
@@ -13,6 +14,28 @@ namespace InfimaGames.LowPolyShooterPack {
         [SerializeField] private Sprite hudIcon;
         [SerializeField] private GameObject grenadePrefab;
         [SerializeField] private float throwForce = 20f;
+
+        [Header("Audio Clips")]
+        [SerializeField] private AudioClip equipClip;
+        [SerializeField] private float equipVolume = 1f;
+        [SerializeField] private AudioClip pinPullClip;
+        [SerializeField] private float pinPullVolume = 1f;
+        [SerializeField] private AudioClip throwClip;
+        [SerializeField] private float throwVolume = 1f;
+
+        #endregion
+
+        #region FIELDS
+
+        private IAudioManagerService audioService;
+
+        #endregion
+
+        #region UNITY
+
+        private void Awake() {
+            audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+        }
 
         #endregion
 
@@ -44,6 +67,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Activate visual representation (grenade model in hand).
         /// </summary>
         public override void OnSelected() {
+            PlayEquipSound();
             gameObject.SetActive(true);
         }
 
@@ -78,6 +102,8 @@ namespace InfimaGames.LowPolyShooterPack {
                 return;
             }
 
+            PlayPinPullSound();
+
             Character character = GetComponentInParent<Character>();
             if (character == null) {
                 return;
@@ -96,6 +122,8 @@ namespace InfimaGames.LowPolyShooterPack {
             if (rb != null) {
                 rb.linearVelocity = cameraTransform.forward * throwForce;
             }
+
+            PlayThrowSound();
 
             // Consume 1 grenade from inventory
             if (PlayerProgress.Instance != null) {
@@ -118,6 +146,28 @@ namespace InfimaGames.LowPolyShooterPack {
             bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(GetItemID());
             Debug.Log($"[Grenade] CanBeUsed check: ID={GetItemID()}, Unlocked={isUnlocked}");
             return isUnlocked;
+        }
+
+        #endregion
+
+        #region AUDIO
+
+        private void PlayEquipSound() {
+            if (equipClip != null && audioService != null) {
+                audioService.PlaySFX2D(equipClip, equipVolume);
+            }
+        }
+
+        private void PlayPinPullSound() {
+            if (pinPullClip != null && audioService != null) {
+                audioService.PlaySFX2D(pinPullClip, pinPullVolume);
+            }
+        }
+
+        private void PlayThrowSound() {
+            if (throwClip != null && audioService != null) {
+                audioService.PlaySFX2D(throwClip, throwVolume);
+            }
         }
 
         #endregion

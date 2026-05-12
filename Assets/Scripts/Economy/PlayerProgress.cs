@@ -248,7 +248,7 @@ public class PlayerProgress : MonoBehaviour {
             return false;
         }
 
-        buildableQuantities[buildableID] = currentQty - 1;
+        consumableQuantities[buildableID] = currentQty - 1;
         return true;
     }
 
