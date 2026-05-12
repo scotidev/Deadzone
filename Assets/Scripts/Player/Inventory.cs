@@ -150,7 +150,6 @@ namespace InfimaGames.LowPolyShooterPack {
                 return;
             }
 
-
             // Deseleciona item atual (se houver)
             if (currentlySelected != null) {
                 currentlySelected.OnDeselected();
@@ -272,6 +271,8 @@ namespace InfimaGames.LowPolyShooterPack {
 
         public override WeaponBehaviour GetEquipped() => equipped;
         public override int GetEquippedIndex() => equippedIndex;
+
+        public override ItemBehaviour GetEquippedItem() => currentlySelected;
 
         /// <summary>
         /// Maps weapon array index to weapon ID for unlock checking.

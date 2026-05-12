@@ -31,7 +31,13 @@ namespace InfimaGames.LowPolyShooterPack
         /// Returns the currently equipped index. Meaning the index in the weapon array of the equipped weapon.
         /// </summary>
         public abstract int GetEquippedIndex();
-        
+
+        /// <summary>
+        /// Returns the currently equipped ItemBehaviour (weapon, medkit, grenade, buildable, etc).
+        /// Works for ALL item types, not just weapons.
+        /// </summary>
+        public abstract ItemBehaviour GetEquippedItem();
+
         #endregion
         
         #region METHODS

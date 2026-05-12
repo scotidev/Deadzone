@@ -153,12 +153,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e14c7979ef6ba54d93a1154e229a980, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Barricade
+  barricadeData: {fileID: 11400000, guid: 83c9cb67eaa9ae740972afe1e131aa5f, type: 2}
+  hudIcon: {fileID: 21300000, guid: 453e35e9c0d764e479ca46958537c1a5, type: 3}
   maxHealth: 100
   currentHealth: 0
   barricadeRenderer: {fileID: 3571858063844239097}
   greenColor: {r: 0, g: 1, b: 0, a: 1}
   yellowColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   redColor: {r: 1, g: 0, b: 0, a: 1}
+  equipClip: {fileID: 0}
+  equipVolume: 1
+  placementClip: {fileID: 0}
+  placementVolume: 1
+  destroyClip: {fileID: 0}
+  destroyVolume: 1
 --- !u!208 &5866901180975809863
 NavMeshObstacle:
   m_ObjectHideFlags: 0

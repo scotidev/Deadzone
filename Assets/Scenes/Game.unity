@@ -3143,6 +3143,12 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 296845646180736025, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: spriteBody
+      value: 
+      objectReference: {fileID: 21300000, guid: 7ed2aa66df505f4469a4d93b94758991,
+        type: 3}
     - target: {fileID: 1628012635517256272, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: enemyHealthBarUI
@@ -3203,6 +3209,12 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2790647054785603866, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: spriteBody
+      value: 
+      objectReference: {fileID: 21300000, guid: ced04b8cd488ed14997370042243f587,
+        type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3336,11 +3348,6 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 701770664}
-    - target: {fileID: 5288298871472432223, guid: 4a06de3311b20f6468eed9a93caa2de3,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 5864479340680642005, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: playerHealth
@@ -3351,11 +3358,6 @@ PrefabInstance:
       propertyPath: vest
       value: 
       objectReference: {fileID: 1776962859}
-    - target: {fileID: 7482382592317702187, guid: 4a06de3311b20f6468eed9a93caa2de3,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 9036732885671563424, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: m_Name

@@ -5295,7 +5295,8 @@ PrefabInstance:
       propertyPath: buildingController
       value: 
       objectReference: {fileID: 8306842215324100105}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8163229473432397683, guid: 19eadcf8fbed56b4da77ca94c1b4145f, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 2748913124992463393, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
@@ -5721,7 +5722,7 @@ MonoBehaviour:
   prefabProjectile: {fileID: 1086664671600574, guid: 5953171a59c27394e9ad5cbb564affa8,
     type: 3}
   controller: {fileID: 22100000, guid: 257eac322a7afde43bfa9aa9e60baa84, type: 2}
-  spriteBody: {fileID: 21300000, guid: 5de2ff934a8b3ea4ebfe923a6f958686, type: 3}
+  spriteBody: {fileID: 21300000, guid: 196d8999911e7ca428ad273d6237280c, type: 3}
   audioClipHolster: {fileID: 8300000, guid: 8c4ede782a70c6e4b9e515d40d6e6e69, type: 3}
   audioClipUnholster: {fileID: 8300000, guid: 4aaa78b2722c0344cb0363a3980adf64, type: 3}
   audioClipReload: {fileID: 8300000, guid: 125edb9e36f963249bc792cca38492b1, type: 3}
@@ -5855,14 +5856,16 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3125353306815250467, guid: d586bea722cf8174ab3f5f29394ebfc4,
+        type: 3}
+      propertyPath: hudIcon
+      value: 
+      objectReference: {fileID: 21300000, guid: 4f1ea62e291a0ae4180e2475c97652c7,
+        type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 2098750606393556748, guid: d586bea722cf8174ab3f5f29394ebfc4,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 4644589444395815987}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d586bea722cf8174ab3f5f29394ebfc4, type: 3}
 --- !u!4 &250736790388087377 stripped
 Transform:
@@ -5870,26 +5873,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1518093412564041703}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &590283145988030699 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2098750606393556748, guid: d586bea722cf8174ab3f5f29394ebfc4,
-    type: 3}
-  m_PrefabInstance: {fileID: 1518093412564041703}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &4644589444395815987
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 590283145988030699}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e406a21c24102704f8ef7f7f6597c7c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InfimaGames.LowPolyShooterPack.BearTrap
-  bearTrapData: {fileID: 11400000, guid: 2ee417fe5d4f8624cb57e022c9b6539b, type: 2}
-  hudIcon: {fileID: 0}
 --- !u!1001 &2192146040408848582
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5987,7 +5970,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InfimaGames.LowPolyShooterPack.ExplosiveBarrel
   barrelData: {fileID: 11400000, guid: 5459b9cf2e95280489f71eefa12d9aa7, type: 2}
-  hudIcon: {fileID: 0}
+  hudIcon: {fileID: 21300000, guid: 2689258424bb356499833176b1db7aa4, type: 3}
   explosionPrefab: {fileID: 4296680985399300, guid: ca26d7307564ff848b29e32bbe6279ef,
     type: 3}
   destroyedBarrelPrefab: {fileID: 483574, guid: 69583eba87a3a60449692cb2c09f4706,
@@ -5997,6 +5980,12 @@ MonoBehaviour:
   explosionRadius: 12.5
   explosionForce: 4000
   explosionDamage: 50
+  equipClip: {fileID: 0}
+  equipVolume: 1
+  placementClip: {fileID: 0}
+  placementVolume: 1
+  explosionClip: {fileID: 0}
+  explosionVolume: 1
 --- !u!4 &7682632613763548253 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8426833715630193819, guid: a3d893de50bf5b0429696987e48b2ae7,
@@ -6091,37 +6080,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4801012474186836054, guid: f694e7b468bd5d74fa3b963ff27d0038,
+        type: 3}
+      propertyPath: grenadeData
+      value: 
+      objectReference: {fileID: 11400000, guid: 17364a04fbc054749b78bfe16ea4ebcd,
+        type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1415792643396714694, guid: f694e7b468bd5d74fa3b963ff27d0038,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7672709990780778680}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f694e7b468bd5d74fa3b963ff27d0038, type: 3}
---- !u!1 &2421689997517208427 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1415792643396714694, guid: f694e7b468bd5d74fa3b963ff27d0038,
-    type: 3}
-  m_PrefabInstance: {fileID: 3620460689541626797}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &7672709990780778680
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2421689997517208427}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30ac18e12974c6b4eae2f67f89c09267, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InfimaGames.LowPolyShooterPack.Grenade
-  grenadeData: {fileID: 11400000, guid: 17364a04fbc054749b78bfe16ea4ebcd, type: 2}
-  hudIcon: {fileID: 0}
-  grenadePrefab: {fileID: 185426, guid: ba67efa6dcab9a54aac7e607f17f759c, type: 3}
-  throwForce: 20
 --- !u!4 &3085038949254652369 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1796434070523452028, guid: f694e7b468bd5d74fa3b963ff27d0038,
@@ -6430,4 +6399,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InfimaGames.LowPolyShooterPack.Medkit
   medkitData: {fileID: 11400000, guid: 9edddb426f160634a93fcd956ead4fc0, type: 2}
-  hudIcon: {fileID: 0}
+  hudIcon: {fileID: 21300000, guid: 6e55f822aeb067d47beac9c2c0bf1f89, type: 3}
+  equipClip: {fileID: 0}
+  equipVolume: 1
+  useClip: {fileID: 0}
+  useVolume: 1

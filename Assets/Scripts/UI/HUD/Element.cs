@@ -9,6 +9,7 @@
 // Precisamos colocar o hitmarker herdando daqui
 
 using UnityEngine;
+using InfimaGames.LowPolyShooterPack;
 
 namespace InfimaGames.LowPolyShooterPack.Interface {
     /// <summary>
@@ -22,6 +23,7 @@ namespace InfimaGames.LowPolyShooterPack.Interface {
         protected CharacterBehaviour playerCharacter;
         protected InventoryBehaviour playerCharacterInventory;
         protected WeaponBehaviour equippedWeapon;
+        protected ItemBehaviour equippedItem;
 
         #endregion
 
@@ -53,6 +55,7 @@ namespace InfimaGames.LowPolyShooterPack.Interface {
                 return;
 
             equippedWeapon = playerCharacterInventory.GetEquipped();
+            equippedItem = playerCharacterInventory.GetEquippedItem();
 
             Tick();
         }

@@ -66,5 +66,37 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f150817b5fc1be745a05fb43d86ddb4c,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4801012474186836054}
   m_SourcePrefab: {fileID: 100100000, guid: f150817b5fc1be745a05fb43d86ddb4c, type: 3}
+--- !u!1 &1415792643396714694 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: f150817b5fc1be745a05fb43d86ddb4c,
+    type: 3}
+  m_PrefabInstance: {fileID: 2262089290815700375}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4801012474186836054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1415792643396714694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30ac18e12974c6b4eae2f67f89c09267, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InfimaGames.LowPolyShooterPack.Grenade
+  grenadeData: {fileID: 0}
+  hudIcon: {fileID: 21300000, guid: 5285286a74e5b2a44a7beb88bf7acfe5, type: 3}
+  grenadePrefab: {fileID: 0}
+  throwForce: 20
+  equipClip: {fileID: 0}
+  equipVolume: 1
+  pinPullClip: {fileID: 0}
+  pinPullVolume: 1
+  throwClip: {fileID: 0}
+  throwVolume: 1
