@@ -75,6 +75,12 @@ namespace InfimaGames.LowPolyShooterPack {
         public override void OnSelected() {
             Debug.Log($"[Barricade] OnSelected called");
             PlayEquipSound();
+            // FIXED: Set current ammo to 1 when buildable is selected (1 in hand ready to place).
+            if (PlayerProgress.Instance != null) {
+                string id = GetItemID();
+                int total = PlayerProgress.Instance.GetItemTotal(id);
+                PlayerProgress.Instance.SetItemCurrent(id, total > 0 ? 1 : 0);
+            }
             if (BuildingController.Instance != null && barricadeData != null) {
                 Debug.Log($"[Barricade] Starting placement with BuildingController");
                 BuildingController.Instance.StartPlacement(barricadeData);

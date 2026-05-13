@@ -52,6 +52,9 @@ namespace InfimaGames.LowPolyShooterPack {
         private CharacterBehaviour characterBehaviour;
         private Transform playerCamera;
         private int ammunitionCurrent;
+        // LEGACY: Kept for ForceInitialize guard only. The persistent initialization
+        // flag is now stored in PlayerProgress.IsAmmoInitialized() to survive weapon cloning.
+        private bool hasInitializedAmmo;
 
         private MagazineBehaviour magazineBehaviour;
         private MuzzleBehaviour muzzleBehaviour;
@@ -78,8 +81,13 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Called both by Start() and by OnSelected() to ensure initialization.
         /// </summary>
         public void ForceInitialize() {
-            // Avoid re-initializing if already done
-            if (magazineBehaviour != null && muzzleBehaviour != null) {
+            Debug.Log($"[Weapon] ForceInitialize: hasInitializedAmmo={hasInitializedAmmo}, magazine={magazineBehaviour != null}, muzzle={muzzleBehaviour != null}");
+
+            // FIXED: Use hasInitializedAmmo as additional guard to prevent re-initializing
+            // ammo values (current and total) after the weapon was already set up.
+            // This prevents ForceInitialize from resetting ammo to max when called
+            // from WeaponBehaviour.OnSelected() on re-selection (e.g. after placing a buildable).
+            if (hasInitializedAmmo && magazineBehaviour != null && muzzleBehaviour != null) {
                 Debug.Log($"[Weapon] ForceInitialize: Already initialized, skipping");
                 return;
             }
@@ -89,22 +97,56 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         private void InitializeWeapon() {
-            Debug.Log($"[Weapon] InitializeWeapon: attachmentManager = {attachmentManager}");
-            
+            int ammoBeforeInit = PlayerProgress.Instance != null ? PlayerProgress.Instance.GetItemCurrent(itemID) : -1;
+            int totalBeforeInit = PlayerProgress.Instance != null ? PlayerProgress.Instance.GetItemTotal(itemID) : -1;
+            Debug.Log($"[Weapon] InitializeWeapon START: itemID={itemID}, hasInitializedAmmo={hasInitializedAmmo}, ammoBefore={ammoBeforeInit}, totalBefore={totalBeforeInit}, attachmentManager={attachmentManager}");
+
             if (attachmentManager == null) {
                 Debug.LogWarning($"[Weapon] InitializeWeapon: attachmentManager is NULL!");
                 return;
             }
 
-            Debug.Log($"[Weapon] InitializeWeapon: Getting magazine and muzzle from attachmentManager");
             magazineBehaviour = attachmentManager.GetEquippedMagazine();
             muzzleBehaviour = attachmentManager.GetEquippedMuzzle();
 
             Debug.Log($"[Weapon] InitializeWeapon: magazineBehaviour={magazineBehaviour}, muzzleBehaviour={muzzleBehaviour}");
 
             if (magazineBehaviour != null) {
-                ammunitionCurrent = magazineBehaviour.GetAmmunitionTotal();
-                Debug.Log($"[Weapon] Initialized: magazine found, ammo = {ammunitionCurrent}");
+                if (PlayerProgress.Instance != null) {
+                    int maxCurrent = magazineBehaviour.GetAmmunitionTotal();
+                    
+                    // FIXED: Use persistent IsAmmoInitialized() from PlayerProgress instead of
+                    // per-instance hasInitializedAmmo. This prevents cloned weapons from
+                    // re-initializing ammo (resetting total to max).
+                    if (!PlayerProgress.Instance.IsAmmoInitialized(itemID)) {
+                        // First time this WEAPON TYPE is initialized.
+                        // Give starting ammo: full magazine + one reserve.
+                        PlayerProgress.Instance.SetItemCurrent(itemID, maxCurrent);
+                        Debug.Log($"[Weapon] SetItemCurrent({itemID}, {maxCurrent}): first init, ammo was {ammoBeforeInit}");
+                        
+                        int currentTotal = PlayerProgress.Instance.GetItemTotal(itemID);
+                        if (currentTotal <= 0) {
+                            PlayerProgress.Instance.SetItemTotal(itemID, maxCurrent);
+                            Debug.Log($"[Weapon] FIRST INIT: SetItemTotal({itemID}, {maxCurrent}) - starting reserve ammo");
+                        } else {
+                            Debug.Log($"[Weapon] FIRST INIT: total already {currentTotal}, NOT overriding");
+                        }
+                        PlayerProgress.Instance.MarkAmmoInitialized(itemID);
+                        ammunitionCurrent = maxCurrent;
+                    } else {
+                        // Already initialized - sync from PlayerProgress (read-only).
+                        // This ensures cloned weapons don't reset current to max,
+                        // and weapons remember their actual magazine state.
+                        ammunitionCurrent = PlayerProgress.Instance.GetItemCurrent(itemID);
+                        Debug.Log($"[Weapon] Already initialized: local ammo synced from PP={ammunitionCurrent}, maxCurrent={maxCurrent}");
+                    }
+                    
+                    hasInitializedAmmo = true;
+                } else {
+                    ammunitionCurrent = magazineBehaviour.GetAmmunitionTotal();
+                }
+                
+                Debug.Log($"[Weapon] Final ammunitionCurrent = {ammunitionCurrent}");
             } else {
                 Debug.LogWarning($"[Weapon] InitializeWeapon: magazineBehaviour is NULL after attachment lookup!");
             }
@@ -167,8 +209,48 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #region METHODS
 
+        /// <summary>
+        /// Reload the weapon by transferring ammo from inventory to magazine.
+        /// Uses PlayerProgress.ReloadItem() which handles the transfer logic.
+        /// </summary>
         public override void Reload() {
+            Debug.Log($"[Weapon] Reload START: itemID={itemID}, ammunitionCurrent={ammunitionCurrent}, IsFull={IsFull()}, hasInitializedAmmo={hasInitializedAmmo}");
+            
+            // FIXED: Check if magazine is already full - no need to reload.
+            if (IsFull()) {
+                Debug.Log($"[Weapon] Reload called but magazine is already full.");
+                return;
+            }
+
+            // FIXED: Check if there's reserve ammo available.
+            // If no reserve and magazine isn't full, play empty-click sound and skip animation.
+            if (PlayerProgress.Instance != null) {
+                int total = PlayerProgress.Instance.GetItemTotal(itemID);
+                int current = PlayerProgress.Instance.GetItemCurrent(itemID);
+                int maxCurrent = PlayerProgress.Instance.GetItemMaxCurrent(itemID);
+                Debug.Log($"[Weapon] Reload check: total={total}, current={current}, maxCurrent={maxCurrent}");
+                if (total <= 0) {
+                    // No reserve ammo - play a feedback sound instead of reload animation.
+                    // This gives the player clear audio feedback that they're out of ammo.
+                    if (audioClipFireEmpty != null) {
+                        AudioSource.PlayClipAtPoint(audioClipFireEmpty, transform.position);
+                    }
+                    Debug.Log($"[Weapon] Cannot reload {itemID} - no reserve ammo available.");
+                    return;
+                }
+            }
+
+            // CONCEITO: Reload animation depends on whether magazine is empty or not
             animator.Play(HasAmmunition() ? "Reload" : "Reload Empty", 0, 0.0f);
+
+            // NEW: Use PlayerProgress to handle reload (transfer from total to current)
+            // This respects the weapon's max magazine capacity based on upgrades
+            if (PlayerProgress.Instance != null) {
+                PlayerProgress.Instance.ReloadItem(itemID);
+                // Sync local variable with PlayerProgress
+                ammunitionCurrent = PlayerProgress.Instance.GetItemCurrent(itemID);
+                Debug.Log($"[Weapon] Reload END: ammunitionCurrent={ammunitionCurrent}, total={PlayerProgress.Instance.GetItemTotal(itemID)}");
+            }
         }
         
         public override void Fire(float spreadMultiplier = 1.0f) {
@@ -202,7 +284,19 @@ namespace InfimaGames.LowPolyShooterPack {
 
             const string stateName = "Fire";
             animator.Play(stateName, 0, 0.0f);
-            ammunitionCurrent = Mathf.Clamp(ammunitionCurrent - 1, 0, magazineBehaviour.GetAmmunitionTotal());
+            
+            // NEW: Decrement ammo from current magazine
+            // This directly affects what is displayed on the HUD
+            ammunitionCurrent = Mathf.Max(0, ammunitionCurrent - 1);
+            
+            // SYNC: Update PlayerProgress to match local change
+            if (PlayerProgress.Instance != null) {
+                int ppBefore = PlayerProgress.Instance.GetItemCurrent(itemID);
+                PlayerProgress.Instance.SetItemCurrent(itemID, ammunitionCurrent);
+                if (ammunitionCurrent == 0 && ppBefore > 0) {
+                    Debug.Log($"[Weapon] Fire: magazine EMPTY now. PP_current before={ppBefore}, total={PlayerProgress.Instance.GetItemTotal(itemID)}");
+                }
+            }
 
             muzzleBehaviour.Effect();
 
@@ -222,8 +316,28 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         public override void FillAmmunition(int amount) {
-            ammunitionCurrent = amount != 0 ? Mathf.Clamp(ammunitionCurrent + amount,
-                0, GetAmmunitionTotal()) : magazineBehaviour.GetAmmunitionTotal();
+            // FIXED: When amount == 0 (called from reload animation event), sync from PlayerProgress
+            // instead of bypassing the ammo system by filling to max unconditionally.
+            // This ensures the reserve ammo system is respected and UI stays in sync.
+            if (amount == 0) {
+                // Sync local ammunitionCurrent from PlayerProgress (already updated by ReloadItem)
+                // This respects the actual ammo transferred from reserve to magazine.
+                if (PlayerProgress.Instance != null) {
+                    ammunitionCurrent = PlayerProgress.Instance.GetItemCurrent(itemID);
+                } else {
+                    // Fallback if no PlayerProgress: keep current value unchanged
+                }
+            } else {
+                // For explicit amount fills (e.g. from power-ups), clamp to magazine capacity
+                ammunitionCurrent = Mathf.Clamp(ammunitionCurrent + amount,
+                    0, GetAmmunitionTotal());
+            }
+            
+            // SYNC: Always sync back to PlayerProgress after any fill operation
+            // This ensures the HUD (which reads from PlayerProgress) shows the correct value
+            if (PlayerProgress.Instance != null) {
+                PlayerProgress.Instance.SetItemCurrent(itemID, ammunitionCurrent);
+            }
         }
 
         public override void EjectCasing() {

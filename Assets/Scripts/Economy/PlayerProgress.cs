@@ -31,10 +31,17 @@ public class PlayerProgress : MonoBehaviour {
     private Dictionary<string, int> weaponLevels = new Dictionary<string, int>();
     private Dictionary<string, int> itemLevels = new Dictionary<string, int>(); // Unified levels for all items (weapons, buildables, consumables)
     private Dictionary<string, int> weaponReserveAmmo = new Dictionary<string, int>();
+    private HashSet<string> ammoInitialized = new HashSet<string>();
     private Dictionary<string, int> buildableQuantities = new Dictionary<string, int>();
 
     // REFATORAÇÃO: Adicionado suporte a consumíveis genéricos (medkit, grenade, etc)
     private Dictionary<string, int> consumableQuantities = new Dictionary<string, int>();
+
+    // NOVO: Unified ammo/quantity system
+    // itemCurrentAmmo: quantidade na mão (magazine para armas, 1 para consumíveis/buildables quando em uso)
+    // itemTotalAmmo: quantidade no inventário (reserva)
+    private Dictionary<string, int> itemCurrentAmmo = new Dictionary<string, int>();
+    private Dictionary<string, int> itemTotalAmmo = new Dictionary<string, int>();
 
     public const int MAX_UPGRADE_LEVEL = 10;
     public const int MAX_BUILDABLE_QUANTITY = 5;
@@ -109,7 +116,7 @@ public class PlayerProgress : MonoBehaviour {
 
     /// <summary>
     /// Unlocks a weapon, making it available for use.
-    /// Also initializes its level to 1 if not already set.
+    /// Also initializes its level to 1 and ammo to 0 (player must buy ammo).
     /// </summary>
     /// <param name="weaponID">The unique identifier of the weapon.</param>
     private void UnlockWeaponInternal(string weaponID) {
@@ -134,12 +141,15 @@ public class PlayerProgress : MonoBehaviour {
             weaponReserveAmmo[weaponID] = 0;
         }
 
+        // NEW: Initialize unified ammo system (current = 0, total = 0)
+        InitializeItemAmmo(weaponID, 1);
+
         Debug.Log($"[PlayerProgress] Unlocked weapon (internal): {weaponID}");
     }
 
     /// <summary>
     /// Unlocks a buildable item (Barricade, ExplosiveBarrel, BearTrap).
-    /// Marks it as unlocked and initializes quantity to specified amount.
+    /// Marks it as unlocked and initializes quantity to 0 (player must buy first).
     /// </summary>
     private void UnlockBuildableInternal(string buildableID, int initialQuantity = 1) {
         if (!unlockedBuildables.ContainsKey(buildableID)) {
@@ -162,11 +172,14 @@ public class PlayerProgress : MonoBehaviour {
         if (!itemLevels.ContainsKey(buildableID)) {
             itemLevels[buildableID] = 1;
         }
+
+        // NEW: Initialize unified ammo system (current = 0, total = 0)
+        InitializeItemAmmo(buildableID, 1);
     }
 
     /// <summary>
     /// Unlocks a consumable item (Medkit, Grenade, Vest).
-    /// Marks it as unlocked and initializes quantity to specified amount.
+    /// Marks it as unlocked and initializes quantity to 0 (player must buy first).
     /// </summary>
     private void UnlockConsumableInternal(string consumableID, int initialQuantity = 1) {
         if (!unlockedConsumables.ContainsKey(consumableID)) {
@@ -184,6 +197,9 @@ public class PlayerProgress : MonoBehaviour {
         if (!itemLevels.ContainsKey(consumableID)) {
             itemLevels[consumableID] = 1;
         }
+
+        // NEW: Initialize unified ammo system (current = 0, total = 0)
+        InitializeItemAmmo(consumableID, 1);
 
         Debug.Log($"[PlayerProgress] Unlocked consumable (internal): {consumableID} with quantity {initialQuantity}");
     }
@@ -226,30 +242,27 @@ public class PlayerProgress : MonoBehaviour {
     // REFATORAÇÃO: deviamos checar não só a quantidade de buildables, mas de granadas e medkits tbm.
     /// <summary>
     /// Gets the current quantity of a buildable item in inventory.
+    /// Now uses the unified GetItemTotal() system.
     /// </summary>
     /// <param name="buildableID">The buildable type ID.</param>
-    /// <returns>Current quantity (0-5).</returns>
+    /// <returns>Current quantity.</returns>
     public int GetBuildableQuantity(string buildableID) {
-        // Use consumableQuantities (unified storage for buildables, medkits, grenades)
-        // This matches where UnlockBuildableInternal() writes the quantity
-        return consumableQuantities.TryGetValue(buildableID, out int qty) ? qty : 0;
+        // NEW: Use unified GetItemTotal() instead of reading directly from consumableQuantities
+        // This ensures sync with the new system
+        return GetItemTotal(buildableID);
     }
 
     // REFATORAÇÃO: aqui a mesma coisa do método acima, não é so o buildable que é consumido ao usar, é o medkit e a granada. Se zerarmos nosso inventario (usarmos todos) ele deve ficar em 0, mas nao precisa ser desbloqueado novamente, apenas comprado munição, o que adiciona esse mesmo item ao inventario novamente.
     /// <summary>
     /// Consumes a buildable item (when placing it in the world).
+    /// Now uses the unified UseItem() system instead of manipulating consumableQuantities directly.
     /// </summary>
     /// <param name="buildableID">The buildable type ID.</param>
     /// <returns>True if an item was available to consume.</returns>
     public bool ConsumeBuildable(string buildableID) {
-        int currentQty = GetBuildableQuantity(buildableID);
-
-        if (currentQty <= 0) {
-            return false;
-        }
-
-        consumableQuantities[buildableID] = currentQty - 1;
-        return true;
+        // NEW: Use unified UseItem() instead of manual manipulation
+        // This ensures sync with the new itemTotalAmmo dictionary
+        return UseItem(buildableID, 1);
     }
 
     #endregion
@@ -445,58 +458,286 @@ public class PlayerProgress : MonoBehaviour {
 
     #endregion
 
+    #region UNIFIED AMMO/QUANTITY SYSTEM
+
+    /// <summary>
+    /// Initializes ammo/quantity for an item when it's unlocked.
+    /// Sets current = 0 and total = 0 initially (player must buy ammo).
+    /// For weapons: current = 0, total = 0 (player must buy ammo first).
+    /// For consumables/buildables: current = 0, total = 0 (player must buy first).
+    /// </summary>
+    /// <param name="itemID">The item to initialize.</param>
+    /// <param name="level">The upgrade level of the item.</param>
+    public void InitializeItemAmmo(string itemID, int level = 1) {
+        // LOG DIAGNÓSTICO: Verificar quando InitializeItemAmmo é chamado
+        System.Diagnostics.StackTrace stackTrace = new System.Diagnostics.StackTrace(true);
+        string callerInfo = "Unknown";
+        if (stackTrace.FrameCount > 1) {
+            var frame = stackTrace.GetFrame(1);
+            callerInfo = $"{frame.GetMethod().DeclaringType?.Name}.{frame.GetMethod().Name}";
+        }
+        Debug.Log($"[PlayerProgress] InitializeItemAmmo CALLED by {callerInfo}: itemID={itemID}, level={level}");
+
+        var shopItemData = GetShopItemData(itemID);
+        if (shopItemData?.ItemData == null) {
+            Debug.LogWarning($"[PlayerProgress] InitializeItemAmmo: Could not find item data for {itemID}");
+            return;
+        }
+
+        int maxCurrent = shopItemData.ItemData.GetMaxCurrentCapacityAtLevel(level);
+        
+        int oldCurrent = GetItemCurrent(itemID);
+        int oldTotal = GetItemTotal(itemID);
+        
+        // Initialize current ammo (start with empty magazine for weapons, 0 for consumables)
+        itemCurrentAmmo[itemID] = 0;
+        
+        // Initialize total ammo (start with 0, player must buy ammo)
+        itemTotalAmmo[itemID] = 0;
+
+        Debug.Log($"[PlayerProgress] InitializeItemAmmo: {itemID} current {oldCurrent}->0, total {oldTotal}->0 (maxCurrent={maxCurrent})");
+    }
+
+    /// <summary>
+    /// Gets the current quantity in hand (magazine for weapons, 1 for consumables when selected).
+    /// CONCEITO: This is the amount currently being used (in the magazine or in hand).
+    /// </summary>
+    /// <param name="itemID">The item to check.</param>
+    /// <returns>Current quantity in hand (0 if not found or item not unlocked).</returns>
+    public int GetItemCurrent(string itemID) {
+        return itemCurrentAmmo.TryGetValue(itemID, out int current) ? current : 0;
+    }
+
+    /// <summary>
+    /// Gets the total quantity in inventory (reserve).
+    /// CONCEITO: This is the amount stored in inventory, not currently in use.
+    /// </summary>
+    /// <param name="itemID">The item to check.</param>
+    /// <returns>Total quantity in inventory (0 if not found or item not unlocked).</returns>
+    public int GetItemTotal(string itemID) {
+        return itemTotalAmmo.TryGetValue(itemID, out int total) ? total : 0;
+    }
+
+    /// <summary>
+    /// Gets the maximum capacity for current (magazine/hand).
+    /// For weapons: scales with magazine scaling. For consumables: always 1.
+    /// </summary>
+    /// <param name="itemID">The item to check.</param>
+    /// <param name="level">The upgrade level (defaults to current level).</param>
+    /// <returns>Maximum current capacity.</returns>
+    public int GetItemMaxCurrent(string itemID, int level = -1) {
+        if (level == -1) {
+            level = GetItemLevel(itemID);
+        }
+
+        var shopItemData = GetShopItemData(itemID);
+        if (shopItemData?.ItemData == null) {
+            return 1; // Default fallback
+        }
+
+        return shopItemData.ItemData.GetMaxCurrentCapacityAtLevel(level);
+    }
+
+    /// <summary>
+    /// Gets the maximum total capacity (total ammo/quantity allowed).
+    /// This is determined by the MaxAmmo field in ItemDataSO and scales with upgrade level.
+    /// </summary>
+    /// <param name="itemID">The item to check.</param>
+    /// <param name="level">The upgrade level (defaults to current level).</param>
+    /// <returns>Maximum total capacity.</returns>
+    public int GetItemMaxTotal(string itemID, int level = -1) {
+        if (level == -1) {
+            level = GetItemLevel(itemID);
+        }
+
+        return GetMaxAmmoAtLevel(itemID, level);
+    }
+
+    /// <summary>
+    /// Adds ammo/quantity to the inventory (total).
+    /// Respects the maximum limit for this item at its current level.
+    /// </summary>
+    /// <param name="itemID">The item to add ammo to.</param>
+    /// <param name="amount">Amount to add.</param>
+    /// <returns>True if ammo was added (not already at max).</returns>
+    public bool AddItemAmmo(string itemID, int amount) {
+        int level = GetItemLevel(itemID);
+        int currentTotal = GetItemTotal(itemID);
+        int maxTotal = GetItemMaxTotal(itemID, level);
+
+        if (currentTotal >= maxTotal) {
+            Debug.LogWarning($"[PlayerProgress] {itemID} inventory is already at max ({maxTotal}).");
+            return false;
+        }
+
+        int newTotal = Mathf.Min(currentTotal + amount, maxTotal);
+        itemTotalAmmo[itemID] = newTotal;
+
+        Debug.Log($"[PlayerProgress] Added {amount} ammo to {itemID}. Total: {newTotal}/{maxTotal}");
+        return true;
+    }
+
+    /// <summary>
+    /// Uses an item (reduces total).
+    /// For weapons: reduces total first (when firing empty magazine), then handles reload.
+    /// For consumables/buildables: reduces total when used.
+    /// </summary>
+    /// <param name="itemID">The item being used.</param>
+    /// <param name="amount">Amount to consume (default 1).</param>
+    /// <returns>True if item was consumed successfully.</returns>
+    public bool UseItem(string itemID, int amount = 1) {
+        int currentTotal = GetItemTotal(itemID);
+
+        if (currentTotal < amount) {
+            Debug.LogWarning($"[PlayerProgress] Not enough {itemID} to use (have {currentTotal}, need {amount}).");
+            return false;
+        }
+
+        itemTotalAmmo[itemID] = currentTotal - amount;
+        Debug.Log($"[PlayerProgress] Used {amount} {itemID}. Remaining in inventory: {itemTotalAmmo[itemID]}");
+        return true;
+    }
+
+    /// <summary>
+    /// Sets the current ammo/quantity in hand.
+    /// Used by weapons after reload or during initialization.
+    /// </summary>
+    /// <param name="itemID">The item to set.</param>
+    /// <param name="amount">New amount in hand.</param>
+    public void SetItemCurrent(string itemID, int amount) {
+        int level = GetItemLevel(itemID);
+        int maxCurrent = GetItemMaxCurrent(itemID, level);
+        int oldValue = GetItemCurrent(itemID);
+        
+        // Clamp to valid range
+        int clamped = Mathf.Clamp(amount, 0, maxCurrent);
+        itemCurrentAmmo[itemID] = clamped;
+
+        // LOG DIAGNÓSTICO: Só logar se realmente mudou ou for chamada externa
+        if (oldValue != clamped) {
+            Debug.Log($"[PlayerProgress] SetItemCurrent CHANGED: {itemID} {oldValue} -> {clamped}/{maxCurrent}");
+        }
+    }
+
+    /// <summary>
+    /// Checks if starting ammo has been granted to this weapon type.
+    /// FIXED: Uses persistent HashSet in PlayerProgress (not per-instance field),
+    /// so it works correctly even if weapons are cloned or destroyed.
+    /// </summary>
+    public bool IsAmmoInitialized(string itemID) {
+        return ammoInitialized.Contains(itemID);
+    }
+
+    /// <summary>
+    /// Marks a weapon type as having received its starting ammo.
+    /// This ensures InitializeWeapon() only grants starting ammo once per item type,
+    /// even if the weapon GameObject is cloned or re-initialized.
+    /// </summary>
+    public void MarkAmmoInitialized(string itemID) {
+        if (!ammoInitialized.Contains(itemID)) {
+            ammoInitialized.Add(itemID);
+            Debug.Log($"[PlayerProgress] Marked {itemID} ammo as initialized");
+        }
+    }
+
+    /// <summary>
+    /// Sets the total ammo/quantity in inventory.
+    /// Used by weapons during initialization to set starting reserve ammo.
+    /// CONCEITO: This is the reserve/inventory amount, not the magazine/hand amount.
+    /// </summary>
+    /// <param name="itemID">The item to set.</param>
+    /// <param name="amount">New total amount in inventory.</param>
+    public void SetItemTotal(string itemID, int amount) {
+        int maxTotal = GetItemMaxTotal(itemID);
+        int oldValue = GetItemTotal(itemID);
+        int clamped = Mathf.Max(0, amount);
+        itemTotalAmmo[itemID] = clamped;
+        // LOG DIAGNÓSTICO: Rastrear qualquer alteração no total
+        if (oldValue != clamped) {
+            Debug.Log($"[PlayerProgress] SetItemTotal CHANGED: {itemID} {oldValue} -> {clamped}/{maxTotal}");
+        }
+    }
+
+    /// <summary>
+    /// Transfers ammo from total (inventory) to current (magazine/hand).
+    /// Used when reloading a weapon.
+    /// </summary>
+    /// <param name="itemID">The item to reload.</param>
+    /// <returns>Amount of ammo transferred (0 if not possible).</returns>
+    public int ReloadItem(string itemID) {
+        int level = GetItemLevel(itemID);
+        int maxCurrent = GetItemMaxCurrent(itemID, level);
+        int currentCurrent = GetItemCurrent(itemID);
+        int currentTotal = GetItemTotal(itemID);
+
+        // Calculate how many bullets to transfer
+        int ammoNeeded = maxCurrent - currentCurrent;
+        int ammoAvailable = currentTotal;
+        int ammoToTransfer = Mathf.Min(ammoNeeded, ammoAvailable);
+
+        if (ammoToTransfer > 0) {
+            // Transfer: reduce total, increase current
+            itemTotalAmmo[itemID] = currentTotal - ammoToTransfer;
+            itemCurrentAmmo[itemID] = currentCurrent + ammoToTransfer;
+
+            Debug.Log($"[PlayerProgress] Reloaded {itemID}: transferred {ammoToTransfer} bullets. Current: {itemCurrentAmmo[itemID]}/{maxCurrent}, Total: {itemTotalAmmo[itemID]}");
+        } else {
+            Debug.LogWarning($"[PlayerProgress] Cannot reload {itemID} - no ammo available in total or magazine full.");
+        }
+
+        return ammoToTransfer;
+    }
+
+    #endregion
+
     #region AMMO AND QUANTITY
     // SHOPUI DEVE USAR ESSES MÉTODOS.é importante verificar se quando clicamos para comprar, o script do shop está chamando esse método para adicionar munição a arma, e nao usando um método dentro do proprio shop ou o método abaixo AddWeaponReserveAmmo(). É preciso analisar se esse método abaixo é realmente necessario e qual a melhor abordagem para de fato implementar a compra de munições.
 
     /// COMO DITO NO inicio, tudo bem ter um método só para adicionar munição para armas, e outro método para adicionar quantidade para buildables, pois a lógica de cada um é diferente. Para as armas, o jogador compra munição que é adicionada à reserva, e quando recarrega, essa munição é consumida mas a arma permanece no inventário. Para os buildables, o jogador compra uma quantidade que é adicionada ao inventário, e quando usa um buildable (coloca no mundo), essa quantidade é consumida e o item pode desaparecer do inventário se a quantidade chegar a zero. Então faz sentido ter métodos separados para lidar com a lógica específica de cada tipo de item.
     /// <summary>
     /// Adds reserve ammo for a weapon, respecting the maximum limit.
+    /// NEW: Uses unified AddItemAmmo() system while maintaining backward compatibility with weaponReserveAmmo.
     /// </summary>
     /// <param name="weaponID">The weapon to add ammo for.</param>
     /// <param name="amount">Amount of ammo to add.</param>
     /// <param name="maxReserve">Maximum reserve ammo allowed.</param>
     /// <returns>True if ammo was added (not already at max).</returns>
     public bool AddReserveAmmo(string weaponID, int amount, int maxReserve) {
-        int currentAmmo = GetReserveAmmo(weaponID);
-
-        if (currentAmmo >= maxReserve) {
-            Debug.LogWarning($"[PlayerProgress] {weaponID} reserve ammo is already at max ({maxReserve}).");
-            return false;
+        // NEW: Use unified AddItemAmmo() instead of manipulating weaponReserveAmmo directly
+        // This ensures sync with the new itemTotalAmmo dictionary
+        bool added = AddItemAmmo(weaponID, amount);
+        
+        // LEGACY: Also update weaponReserveAmmo for backward compatibility
+        if (added) {
+            int currentAmmo = GetReserveAmmo(weaponID);
+            weaponReserveAmmo[weaponID] = GetItemTotal(weaponID);
         }
-
-        int newAmmo = Mathf.Min(currentAmmo + amount, maxReserve);
-        weaponReserveAmmo[weaponID] = newAmmo;
-
-        Debug.Log($"[PlayerProgress] Added {amount} reserve ammo to {weaponID}. New total: {newAmmo}/{maxReserve}");
-        return true;
+        
+        return added;
     }
 
     /// <summary>
     /// Spends reserve ammo (when reloading).
+    /// NEW: Uses unified UseItem() system.
     /// </summary>
     /// <param name="weaponID">The weapon to consume ammo from.</param>
     /// <param name="amount">Amount of ammo to consume.</param>
     /// <returns>True if enough ammo was available.</returns>
     public bool SpendReserveAmmo(string weaponID, int amount) {
-        int currentAmmo = GetReserveAmmo(weaponID);
-
-        // Check if enough ammo
-        if (currentAmmo < amount) {
-            return false;
-        }
-
-        // Deduct ammo
-        weaponReserveAmmo[weaponID] = currentAmmo - amount;
-        return true;
+        // NEW: Use unified UseItem() instead of manipulating weaponReserveAmmo directly
+        // This ensures sync with the new itemTotalAmmo dictionary
+        return UseItem(weaponID, amount);
     }
 
     /// <summary>
     /// Gets the current reserve ammo for a weapon.
+    /// NEW: Uses unified GetItemTotal() system.
     /// </summary>
     /// <param name="weaponID">The weapon to check.</param>
     /// <returns>Current reserve ammo count.</returns>
     public int GetReserveAmmo(string weaponID) {
-        return weaponReserveAmmo.TryGetValue(weaponID, out int ammo) ? ammo : 0;
+        // NEW: Use unified GetItemTotal() instead of reading directly from weaponReserveAmmo
+        return GetItemTotal(weaponID);
     }
 
     /// <summary>
@@ -511,16 +752,16 @@ public class PlayerProgress : MonoBehaviour {
 
     /// <summary>
     /// Public wrapper for AddReserveAmmo to maintain consistent naming convention.
-    /// Adds reserve ammo for a weapon without specifying max (used by Shop UI).
+    /// Adds reserve ammo for a weapon (used by Shop UI).
+    /// FIXED: Now uses unified AddItemAmmo() instead of writing to legacy weaponReserveAmmo.
     /// </summary>
     /// <param name="weaponID">The weapon to add ammo for.</param>
     /// <param name="amount">Amount of ammo to add.</param>
     public void AddWeaponReserveAmmo(string weaponID, int amount) {
-        // This is a simplified wrapper that doesn't enforce max limit
-        // The caller (ShopUI) handles max limit enforcement
-        int currentAmmo = GetReserveAmmo(weaponID);
-        weaponReserveAmmo[weaponID] = currentAmmo + amount;
-        Debug.Log($"[PlayerProgress] Added {amount} reserve ammo to {weaponID}. New total: {weaponReserveAmmo[weaponID]}");
+        // FIXED: Use unified AddItemAmmo() which updates itemTotalAmmo (the single source of truth)
+        // The legacy weaponReserveAmmo dict is no longer used for writes
+        AddItemAmmo(weaponID, amount);
+        Debug.Log($"[PlayerProgress] Added {amount} reserve ammo to {weaponID} via unified system.");
     }
 
     #endregion
@@ -533,53 +774,41 @@ public class PlayerProgress : MonoBehaviour {
 
     /// <summary>
     /// Gets the current quantity of a consumable or buildable item.
+    /// Now uses the unified GetItemTotal() system.
     /// </summary>
     /// <param name="itemID">The consumable/buildable item ID.</param>
-    /// <returns>Current quantity (0 if not found).</returns>
+    /// <returns>Current quantity.</returns>
     public int GetConsumableQuantity(string itemID) {
-        return consumableQuantities.TryGetValue(itemID, out int qty) ? qty : 0;
+        // NEW: Use unified GetItemTotal() instead of reading directly from consumableQuantities
+        // This ensures sync with the new system
+        return GetItemTotal(itemID);
     }
 
     /// <summary>
     /// Adds quantity to a consumable or buildable item.
-    /// Respects the maximum limit.
+    /// Respects the maximum limit using the unified system.
     /// </summary>
     /// <param name="itemID">The consumable/buildable item ID.</param>
     /// <param name="amount">Amount to add.</param>
-    /// <param name="maxAmount">Maximum amount allowed (default 10).</param>
+    /// <param name="maxAmount">Maximum amount allowed (default 10, overridden by ItemDataSO).</param>
     /// <returns>True if quantity was added (not already at max).</returns>
     public bool AddConsumable(string itemID, int amount, int maxAmount = MAX_CONSUMABLE_QUANTITY) {
-        int currentQty = GetConsumableQuantity(itemID);
-
-        if (currentQty >= maxAmount) {
-            Debug.LogWarning($"[PlayerProgress] {itemID} quantity is already at max ({maxAmount}).");
-            return false;
-        }
-
-        int newQty = Mathf.Min(currentQty + amount, maxAmount);
-        consumableQuantities[itemID] = newQty;
-
-        Debug.Log($"[PlayerProgress] Added {amount} {itemID}. New total: {newQty}/{maxAmount}");
-        return true;
+        // NEW: Use unified AddItemAmmo() instead of manual manipulation
+        // This ensures sync with the new system and respects ItemDataSO max values
+        return AddItemAmmo(itemID, amount);
     }
 
     /// <summary>
     /// Consumes (decrements) a consumable or buildable item.
+    /// Now uses the unified UseItem() system instead of manipulating consumableQuantities directly.
     /// </summary>
     /// <param name="itemID">The consumable/buildable item ID.</param>
     /// <param name="amount">Amount to consume.</param>
     /// <returns>True if enough quantity was available to consume.</returns>
     public bool ConsumeItem(string itemID, int amount) {
-        int currentQty = GetConsumableQuantity(itemID);
-
-        if (currentQty < amount) {
-            Debug.LogWarning($"[PlayerProgress] Not enough {itemID} to consume (have {currentQty}, need {amount}).");
-            return false;
-        }
-
-        consumableQuantities[itemID] = currentQty - amount;
-        Debug.Log($"[PlayerProgress] Consumed {amount} {itemID}. Remaining: {consumableQuantities[itemID]}");
-        return true;
+        // NEW: Use unified UseItem() instead of manual manipulation
+        // This ensures sync with the new itemTotalAmmo dictionary
+        return UseItem(itemID, amount);
     }
 
     #endregion

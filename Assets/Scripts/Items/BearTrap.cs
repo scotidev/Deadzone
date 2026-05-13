@@ -278,6 +278,14 @@ namespace InfimaGames.LowPolyShooterPack
         public override void OnSelected()
         {
             PlayEquipSound();
+            // FIXED: Set current ammo to 1 when buildable is selected (1 in hand ready to place).
+            // This ensures TextAmmunitionCurrent shows 1 instead of 0.
+            if (PlayerProgress.Instance != null)
+            {
+                string id = GetItemID();
+                int total = PlayerProgress.Instance.GetItemTotal(id);
+                PlayerProgress.Instance.SetItemCurrent(id, total > 0 ? 1 : 0);
+            }
             if (BuildingController.Instance != null && bearTrapData != null)
             {
                 BuildingController.Instance.StartPlacement(bearTrapData);

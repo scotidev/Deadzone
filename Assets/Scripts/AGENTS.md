@@ -62,6 +62,14 @@ Contains scripts related to player character logic, movement, inventory, health,
 
 /// Crouch Debug Helper. Debug tool for testing crouch functionality.
 
+## /Items
+
+Contains scripts related to item definitions and data containers.
+
+### /Items/ScriptableObjects/TutorialStepSO.cs
+
+/// Tutorial Step SO. ScriptableObject that defines a single tutorial step with text, image, completion type (OnMouseMove, OnWASDPress, OnItemSelected, OnAttack, OnTimeout, OnJumpPress, OnCrouchPress, OnRunPress, OnReloadPress, OnMeleePress), optional completion parameter, timeout, and runtime Setup() method for dynamic creation.
+
 ## /Weapons
 
 Contains scripts related to weapon mechanics, attachments, projectiles, and weapon data.
@@ -293,6 +301,18 @@ Contains scripts related to user interface, menus, and HUD elements.
 ### /UI/HUD/TextTutorial.cs
 
 /// Text Tutorial. Shows tutorial messages.
+
+### /UI/HUD/TutorialUI.cs
+
+/// Tutorial UI. Displays tutorial step text and image with fade in/out animation. Uses Graphic[] array for alpha transitions (no CanvasGroup). Plays SFX on show via IAudio.PlaySFX2D(). Coordinates with TutorialManager for sequential step display.
+
+### /UI/TutorialManager.cs
+
+/// Tutorial Manager. Singleton that orchestrates the tutorial system: maintains a pending queue processed sequentially, checks completion conditions (movement, look, jump, crouch, run, reload, melee, attack, item selection), handles timeouts with auto-advance, monitors ammo conditions for reload/melee prompts, and listens to shop events for unlock tutorials.
+
+### /UI/TutorialTriggerZone.cs
+
+/// Tutorial Trigger Zone. Attach to any Collider (isTrigger) in the scene. OnTriggerEnter detects the player (via GetComponentInParent<CharacterBehaviour>) and queues a TutorialStepSO via TutorialManager.QueueTutorial(). Supports triggerOnce to disable after first activation.
 
 ### /UI/HUD/MerchantSubtitleUI.cs
 

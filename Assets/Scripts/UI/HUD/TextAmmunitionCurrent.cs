@@ -24,22 +24,28 @@ namespace InfimaGames.LowPolyShooterPack.Interface {
 
         #region METHODS
 
-        protected override void Tick() {
-            // CONCEITO: Early return pattern prevents null reference errors.
-            // If weapon is null, skip this frame update. Better than crashing!
-            if (equippedWeapon == null)
-                return;
+    protected override void Tick() {
+        // CONCEITO: Early return pattern prevents null reference errors.
+        // If no item is equipped, skip this frame update.
+        if (equippedItem == null)
+            return;
 
-            float current = equippedWeapon.GetAmmunitionCurrent();
-            float total = equippedWeapon.GetAmmunitionTotal();
+        // NEW: Get item ID and fetch ammo from PlayerProgress (single source of truth)
+        string itemID = equippedItem.GetItemID();
+        int current = PlayerProgress.Instance.GetItemCurrent(itemID);
+        int maxCurrent = PlayerProgress.Instance.GetItemMaxCurrent(itemID);
+        int total = PlayerProgress.Instance.GetItemTotal(itemID);
 
-            textMesh.text = current.ToString(CultureInfo.InvariantCulture);
+        // Display current ammo in magazine/hand
+        textMesh.text = current.ToString(CultureInfo.InvariantCulture);
 
-            if (updateColor) {
-                float colorAlpha = (current / total) * emptySpeed;
-                textMesh.color = Color.Lerp(emptyColor, Color.white, colorAlpha);
-            }
+        if (updateColor) {
+            // Color based on how full the magazine/hand is
+            float fillRatio = maxCurrent > 0 ? (current / (float)maxCurrent) : 0f;
+            float colorAlpha = fillRatio * emptySpeed;
+            textMesh.color = Color.Lerp(emptyColor, Color.white, colorAlpha);
         }
+    }
 
         #endregion
     }

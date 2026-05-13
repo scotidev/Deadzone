@@ -274,6 +274,16 @@ namespace InfimaGames.LowPolyShooterPack {
 
         public override ItemBehaviour GetEquippedItem() => currentlySelected;
 
+        /// <summary>Returns the 0-based slot index in the selectable items array for the given itemID. Returns -1 if not found.</summary>
+        public int GetSlotIndexForItemID(string itemID) {
+            if (selectableItems == null || string.IsNullOrEmpty(itemID)) return -1;
+            for (int i = 0; i < selectableItems.Length; i++) {
+                if (selectableItems[i] != null && selectableItems[i].GetItemID() == itemID)
+                    return i;
+            }
+            return -1;
+        }
+
         /// <summary>
         /// Maps weapon array index to weapon ID for unlock checking.
         /// This mapping should match the shop item order.

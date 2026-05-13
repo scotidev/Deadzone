@@ -246,11 +246,17 @@ public class BuildingController : MonoBehaviour {
             string buildableID = GetBuildableID(selectedItem);
 
             if (!string.IsNullOrEmpty(buildableID)) {
-                if (!PlayerProgress.Instance.ConsumeBuildable(buildableID)) {
+                // NEW: Use unified UseItem() instead of ConsumeBuildable()
+                // This updates the total inventory quantity
+                if (!PlayerProgress.Instance.UseItem(buildableID, 1)) {
                     Debug.LogWarning($"[BuildingController] Failed to consume {buildableID} - inventory empty!");
                     CancelPlacement();
                     return;
                 }
+                
+                // FIXED: Reset current ammo to 0 after placing the buildable.
+                // The "current" represents what's in hand - after placing, hand is empty.
+                PlayerProgress.Instance.SetItemCurrent(buildableID, 0);
             }
         }
 

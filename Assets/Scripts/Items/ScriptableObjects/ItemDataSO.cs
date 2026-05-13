@@ -15,6 +15,14 @@ public abstract class ItemDataSO : ScriptableObject {
     [SerializeField] private int baseAmmo = 10;
     [SerializeField] private float ammoScaling = 0.1f;
 
+    [Header("Current Capacity (Magazine/Hand)")]
+    [Tooltip("Maximum quantity that can be carried in hand. For weapons: magazine capacity. For consumables/buildables: 1 (always)")]
+    [SerializeField] private int baseCurrentCapacity = 1;
+    
+    [Tooltip("Scaling for current capacity per upgrade level. Only applies to weapons (for magazine expansion). 0 for consumables.")]
+    [Range(0f, 0.5f)]
+    [SerializeField] private float currentCapacityScaling = 0f;
+
     #endregion
 
     #region PROPERTIES
@@ -25,6 +33,8 @@ public abstract class ItemDataSO : ScriptableObject {
     public virtual int MaxAmmo => maxAmmo;
     public int BaseAmmo => baseAmmo;
     public float AmmoScaling => ammoScaling;
+    public int BaseCurrentCapacity => baseCurrentCapacity;
+    public float CurrentCapacityScaling => currentCapacityScaling;
 
     #endregion
 
@@ -69,6 +79,24 @@ public abstract class ItemDataSO : ScriptableObject {
 
         // Cap by MaxAmmo and convert to int
         return Mathf.Min((int)scaledAmmo, MaxAmmo);
+    }
+
+    /// <summary>
+    /// Calculates the current capacity (magazine/hand quantity) at a given upgrade level.
+    /// Formula: round(baseCurrentCapacity * (1 + currentCapacityScaling * (level - 1)))
+    /// For consumables/buildables, this is always 1. For weapons, this scales the magazine.
+    /// </summary>
+    /// <param name="level">The upgrade level (1-based).</param>
+    /// <returns>The current capacity (capped sensibly based on total ammo).</returns>
+    public int GetMaxCurrentCapacityAtLevel(int level) {
+        level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
+
+        // Apply scaling formula: baseCurrentCapacity * (1 + currentCapacityScaling * (level - 1))
+        float scaledCapacity = baseCurrentCapacity * (1f + currentCapacityScaling * (level - 1));
+        
+        // Convert to int and ensure it never exceeds the total ammo available
+        int capacity = Mathf.RoundToInt(scaledCapacity);
+        return Mathf.Min(capacity, GetMaxAmmoAtLevel(level));
     }
 
     #endregion

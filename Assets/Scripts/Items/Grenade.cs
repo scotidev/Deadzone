@@ -68,6 +68,12 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         public override void OnSelected() {
             PlayEquipSound();
+            // FIXED: Set current ammo to 1 when consumable is selected (1 in hand ready to use).
+            if (PlayerProgress.Instance != null) {
+                string id = GetItemID();
+                int total = PlayerProgress.Instance.GetItemTotal(id);
+                PlayerProgress.Instance.SetItemCurrent(id, total > 0 ? 1 : 0);
+            }
             gameObject.SetActive(true);
         }
 
@@ -126,8 +132,13 @@ namespace InfimaGames.LowPolyShooterPack {
             PlayThrowSound();
 
             // Consume 1 grenade from inventory
+            // NEW: Use unified UseItem() instead of ConsumeItem()
             if (PlayerProgress.Instance != null) {
-                PlayerProgress.Instance.ConsumeItem(GetItemID(), 1);
+                PlayerProgress.Instance.UseItem(GetItemID(), 1);
+                // FIXED: Reset current ammo to 0 after throwing.
+                // The "current" represents what's in hand - after throwing, hand is empty.
+                int remaining = PlayerProgress.Instance.GetItemTotal(GetItemID());
+                PlayerProgress.Instance.SetItemCurrent(GetItemID(), remaining > 0 ? 1 : 0);
             }
         }
 

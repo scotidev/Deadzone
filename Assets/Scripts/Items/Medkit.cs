@@ -102,8 +102,13 @@ namespace InfimaGames.LowPolyShooterPack {
                 PlayUseSound();
                 
                 // Consume 1 medkit from inventory
+                // NEW: Use unified UseItem() instead of ConsumeItem()
                 if (PlayerProgress.Instance != null) {
-                    PlayerProgress.Instance.ConsumeItem(GetItemID(), 1);
+                    PlayerProgress.Instance.UseItem(GetItemID(), 1);
+                    // FIXED: Reset current ammo to 0 after using.
+                    // The "current" represents what's in hand - after healing, hand is empty.
+                    int remaining = PlayerProgress.Instance.GetItemTotal(GetItemID());
+                    PlayerProgress.Instance.SetItemCurrent(GetItemID(), remaining > 0 ? 1 : 0);
                 }
             }
         }

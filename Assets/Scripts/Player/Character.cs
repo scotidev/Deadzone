@@ -218,6 +218,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private void PlayReloadAnimation() {
             string stateName = equippedWeapon.HasAmmunition() ? "Reload" : "Reload Empty";
+            Debug.Log($"[Character] PlayReloadAnimation: stateName={stateName}, equippedWeapon={equippedWeapon}, weaponID={equippedWeapon?.GetItemID()}");
 
             characterAnimator.Play(stateName, layerActions, 0.0f);
 
@@ -527,6 +528,35 @@ namespace InfimaGames.LowPolyShooterPack {
             switch (context) {
 
                 case { phase: InputActionPhase.Performed }:
+                    // SEGURANÇA: Verifica se há arma equipada antes de prosseguir.
+                    if (equippedWeapon == null)
+                        return;
+
+                    // FIX: Verifica se o pente já está cheio — não há nada para recarregar.
+                    if (equippedWeapon.IsFull())
+                        return;
+
+                    // FIX: Verifica se há munição na reserva ANTES de tocar a animação de reload.
+                    // Se não houver munição na reserva e o pente não está cheio, toca um som
+                    // de feedback (empty click) e retorna sem animação.
+                    if (PlayerProgress.Instance != null) {
+                        string id = equippedWeapon.GetItemID();
+                        int total = PlayerProgress.Instance.GetItemTotal(id);
+                        int localAmmo = equippedWeapon.GetAmmunitionCurrent();
+
+                        Debug.Log($"[Character] OnTryPlayReload: weaponID={id}, localAmmo={localAmmo}, PP_total={total}");
+
+                        if (total <= 0) {
+                            Debug.Log($"[Character] OnTryPlayReload: no reserve ammo — playing empty click.");
+                            AudioClip clip = equippedWeapon.GetAudioClipFireEmpty();
+                            if (clip != null) {
+                                AudioSource.PlayClipAtPoint(clip, transform.position);
+                            }
+                            return;
+                        }
+                    }
+
+                    // Todas as verificações passaram — pode tocar a animação de reload.
                     PlayReloadAnimation();
                     break;
             }
