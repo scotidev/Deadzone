@@ -149,8 +149,10 @@ public class PlayerProgress : MonoBehaviour {
 
     /// <summary>
     /// Unlocks a buildable item (Barricade, ExplosiveBarrel, BearTrap).
-    /// Marks it as unlocked and initializes quantity to 0 (player must buy first).
+    /// Marks it as unlocked and grants initialQuantity (default 1) in inventory.
     /// </summary>
+    /// <param name="buildableID">The unique identifier of the buildable item.</param>
+    /// <param name="initialQuantity">The quantity to grant on unlock (default is 1).</param>
     private void UnlockBuildableInternal(string buildableID, int initialQuantity = 1) {
         if (!unlockedBuildables.ContainsKey(buildableID)) {
             unlockedBuildables[buildableID] = true;
@@ -173,8 +175,10 @@ public class PlayerProgress : MonoBehaviour {
             itemLevels[buildableID] = 1;
         }
 
-        // NEW: Initialize unified ammo system (current = 0, total = 0)
+        // NEW: Initialize unified ammo system (current = 0, total = initialQuantity)
+        // The player receives 1 buildable item in inventory on unlock
         InitializeItemAmmo(buildableID, 1);
+        itemTotalAmmo[buildableID] = initialQuantity;
     }
 
     /// <summary>
@@ -310,6 +314,11 @@ public class PlayerProgress : MonoBehaviour {
         // Also sync weaponLevels for backwards compatibility
         if (unlockedWeapons.ContainsKey(itemID)) {
             weaponLevels[itemID] = itemLevels[itemID];
+        }
+
+        // Grant 1 quantity in inventory for buildables on each upgrade
+        if (unlockedBuildables.ContainsKey(itemID)) {
+            AddItemAmmo(itemID, 1);
         }
 
         Debug.Log($"[PlayerProgress] {itemID} upgraded to level {itemLevels[itemID]}");

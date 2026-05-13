@@ -34,6 +34,10 @@ public class ShopItemDataSO : ScriptableObject {
     [SerializeField] private int costPerPurchase = 50;
     [SerializeField] private int quantityPerPurchase = 30;
 
+    [Header("Tutorial")]
+    [Tooltip("Texto exibido no tutorial quando este item é desbloqueado na loja.")]
+    [SerializeField] private string unlockText = "pressione para selecionar";
+
     #endregion
 
     #region PROPERTIES
@@ -53,6 +57,7 @@ public class ShopItemDataSO : ScriptableObject {
     public int CostPerPurchase => costPerPurchase;
     public int QuantityPerPurchase => quantityPerPurchase;
     public int MaxAmmo => itemData?.MaxAmmo ?? 10;
+    public string UnlockText => unlockText;
 
     #endregion
 

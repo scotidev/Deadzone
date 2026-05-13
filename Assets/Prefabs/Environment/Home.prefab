@@ -67,6 +67,52 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SafeZone
   playerStartsOutside: 0
+--- !u!1 &556542641900566881
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5433084106584498658}
+  - component: {fileID: 4709068777343736929}
+  m_Layer: 8
+  m_Name: TutorialShoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5433084106584498658
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 556542641900566881}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.09, z: 84}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 695606353032406322}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4709068777343736929
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 556542641900566881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c2969436b84f824cbab8ebc9faffbad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deadzone.UI.TutorialTriggerZone
+  tutorialStep: {fileID: 11400000, guid: fdc2227cc3659864e87601df4cfd9177, type: 2}
+  triggerOnce: 1
 --- !u!1 &706056058516335190
 GameObject:
   m_ObjectHideFlags: 0
@@ -202,6 +248,74 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deadzone.UI.TutorialTriggerZone
   tutorialStep: {fileID: 11400000, guid: afcdea0c05671d7429d0f3c113eb7d25, type: 2}
+  triggerOnce: 1
+--- !u!1 &1031320911798940215
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3352187783717814354}
+  - component: {fileID: 2719865133664230631}
+  - component: {fileID: 4463000870616969562}
+  m_Layer: 8
+  m_Name: TutorialAim
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3352187783717814354
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031320911798940215}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.09, z: 84}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 695606353032406322}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &2719865133664230631
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031320911798940215}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2, z: 2}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &4463000870616969562
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031320911798940215}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c2969436b84f824cbab8ebc9faffbad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deadzone.UI.TutorialTriggerZone
+  tutorialStep: {fileID: 11400000, guid: f126054e5c446824da481ba2e56ded15, type: 2}
   triggerOnce: 1
 --- !u!1 &1228462635375835037
 GameObject:
@@ -1576,6 +1690,8 @@ Transform:
   - {fileID: 8312931533407256094}
   - {fileID: 5039806309053281416}
   - {fileID: 4708051616069091997}
+  - {fileID: 3352187783717814354}
+  - {fileID: 5433084106584498658}
   - {fileID: 5605734104683637857}
   - {fileID: 3794633322974123662}
   m_Father: {fileID: 0}

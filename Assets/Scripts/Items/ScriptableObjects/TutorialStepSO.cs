@@ -25,7 +25,9 @@ namespace Deadzone.UI {
         /// <summary>Completes when the player presses the reload key (R).</summary>
         OnReloadPress,
         /// <summary>Completes when the player presses the melee key (F).</summary>
-        OnMeleePress
+        OnMeleePress,
+        /// <summary>Completes when the player starts aiming (right mouse button / aim action).</summary>
+        OnAimPress
     }
 
     /// <summary>
@@ -56,6 +58,10 @@ namespace Deadzone.UI {
         [Tooltip("Override the default timeout from TutorialUI. 0 = use default.")]
         [SerializeField] private float timeout = 0f;
 
+        [Header("Auto-Chaining")]
+        [Tooltip("ID do próximo tutorial a ser exibido automaticamente quando este for concluído.")]
+        [SerializeField] private string nextStepId;
+
         #endregion
 
         #region PROPERTIES
@@ -66,6 +72,7 @@ namespace Deadzone.UI {
         public CompletionType CompletionType => completionType;
         public string CompletionParam => completionParam;
         public float Timeout => timeout;
+        public string NextStepId => nextStepId;
 
         #endregion
 
@@ -74,13 +81,14 @@ namespace Deadzone.UI {
         /// <summary>
         /// Configures this SO at runtime (used when creating dynamic tutorials via ScriptableObject.CreateInstance).
         /// </summary>
-        public void Setup(string id, string text, Sprite image, CompletionType type, string param, float time = 0f) {
+        public void Setup(string id, string text, Sprite image, CompletionType type, string param, float time = 0f, string nextId = "") {
             stepId = id;
             tutorialText = text;
             tutorialImage = image;
             completionType = type;
             completionParam = param;
             timeout = time;
+            nextStepId = nextId;
         }
 
         #endregion

@@ -34,9 +34,9 @@ namespace Deadzone.UI {
         [Tooltip("Tutorial steps that play when the game starts (e.g. mouse look, WASD).")]
         [SerializeField] private List<TutorialStepSO> startTutorials;
 
-        [Header("Shop Tutorial Templates")]
-        [Tooltip("Tutorial step shown after selecting an unlocked item: 'Left click to use'.")]
-        [SerializeField] private TutorialStepSO actionTutorialTemplate;
+        [Header("Shop Tutorial Sprites")]
+        [Tooltip("Sprites dos números de 1 a 8 (índice 0 = tecla 1, índice 7 = tecla 8).")]
+        [SerializeField] private Sprite[] numberSprites;
 
         [Header("Behavior")]
         [Tooltip("Minimum seconds a tutorial stays visible even if the action is detected early.")]
@@ -61,6 +61,7 @@ namespace Deadzone.UI {
         private bool wasJumping;
         private bool wasCrouching;
         private bool wasRunning;
+        private bool wasAiming;
         private bool previousHadAmmo;
         private int previousTotalAmmo;
         private bool isCompleting;
@@ -194,9 +195,24 @@ namespace Deadzone.UI {
         private void CompleteCurrentStep() {
             if (currentStep == null) return;
 
+            // Salva o ID do próximo tutorial antes de limpar o step atual
+            string nextId = currentStep.NextStepId;
+
             currentStep = null;
             elapsedTime = 0f;
             tutorialUI?.Hide();
+
+            // Auto-encadeamento: se este step especifica um próximo tutorial, enfileira ele
+            if (!string.IsNullOrEmpty(nextId)) {
+                TutorialStepSO nextStep = FindStepById(nextId);
+                if (nextStep != null) {
+                    pendingQueue.Clear();
+                    isProcessing = false;
+                    pendingQueue.Enqueue(nextStep);
+                    ProcessQueue();
+                    return;
+                }
+            }
 
             if (pendingQueue.Count > 0) {
                 ShowNextStep();
@@ -221,6 +237,13 @@ namespace Deadzone.UI {
             // Detect completion action once (don't lose it on the exact frame it happens)
             if (!completionTriggered)
                 completionTriggered = CheckCompletion();
+
+            // Interrupção imediata: se tem próximo step na fila e a ação foi detectada, pula sem fade out
+            if (completionTriggered && (!string.IsNullOrEmpty(currentStep.NextStepId) || pendingQueue.Count > 0)) {
+                tutorialUI?.Hide();
+                CompleteCurrentStep();
+                return;
+            }
 
             float timeout = currentStep.Timeout > 0f ? currentStep.Timeout : tutorialUI.DefaultStepTimeout;
             float fadeStartTime = Mathf.Max(timeout - tutorialUI.FadeOutDuration, 0f);
@@ -292,6 +315,13 @@ namespace Deadzone.UI {
 
                 case CompletionType.OnMeleePress: {
                     return Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame;
+                }
+
+                case CompletionType.OnAimPress: {
+                    bool currentlyAiming = playerCharacter != null && playerCharacter.IsAiming();
+                    bool justAimed = currentlyAiming && !wasAiming;
+                    wasAiming = currentlyAiming;
+                    return justAimed;
                 }
 
                 default:
@@ -383,39 +413,50 @@ namespace Deadzone.UI {
                 if (slotIndex < 0) continue;
 
                 int keyNumber = slotIndex + 1;
-                string itemName = GetItemDisplayName(itemID);
 
                 TutorialStepSO selectStep = ScriptableObject.CreateInstance<TutorialStepSO>();
                 selectStep.Setup(
                     $"unlock_select_{itemID}",
-                    $"Pressione {keyNumber} para selecionar {itemName}",
-                    null,
+                    GetItemUnlockText(itemID),
+                    numberSprites != null && keyNumber - 1 < numberSprites.Length ? numberSprites[keyNumber - 1] : null,
                     CompletionType.OnItemSelected,
                     itemID,
                     0f
                 );
 
-                QueueTutorial(selectStep);
+                pendingQueue.Enqueue(selectStep);
             }
 
             recentlyUnlockedItems.Clear();
 
-            TutorialStepSO actionStep = ScriptableObject.CreateInstance<TutorialStepSO>();
-            actionStep.Setup(
-                "unlock_action",
-                actionTutorialTemplate != null ? actionTutorialTemplate.TutorialText : "Clique com o botão esquerdo para usar o item",
-                actionTutorialTemplate?.TutorialImage,
-                CompletionType.OnAttack,
-                "",
-                actionTutorialTemplate != null ? actionTutorialTemplate.Timeout : 0f
-            );
-
-            QueueTutorial(actionStep);
+            if (!isProcessing)
+                ProcessQueue();
         }
 
         #endregion
 
         #region HELPERS
+
+        /// <summary>
+        /// Busca um TutorialStepSO pelo seu stepId.
+        /// Primeiro verifica na lista startTutorials, depois procura em todos os assets carregados.
+        /// </summary>
+        private TutorialStepSO FindStepById(string stepId) {
+            // Verifica na lista serializada de tutoriais iniciais
+            foreach (TutorialStepSO step in startTutorials) {
+                if (step != null && step.StepId == stepId)
+                    return step;
+            }
+
+            // Fallback: procura em todos os assets TutorialStepSO carregados
+            TutorialStepSO[] allSteps = Resources.FindObjectsOfTypeAll<TutorialStepSO>();
+            foreach (TutorialStepSO step in allSteps) {
+                if (step != null && step.StepId == stepId)
+                    return step;
+            }
+
+            return null;
+        }
 
         private void ResolvePlayer() {
             if (isResolved) return;
@@ -433,14 +474,14 @@ namespace Deadzone.UI {
                 ProcessQueue();
         }
 
-        private string GetItemDisplayName(string itemID) {
+        private string GetItemUnlockText(string itemID) {
             ShopItemDataSO[] allItems = Resources.FindObjectsOfTypeAll<ShopItemDataSO>();
             foreach (ShopItemDataSO shopItem in allItems) {
                 if (shopItem.ItemID == itemID)
-                    return shopItem.ItemName;
+                    return shopItem.UnlockText;
             }
 
-            return itemID;
+            return "pressione para selecionar";
         }
 
         #endregion

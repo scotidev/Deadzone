@@ -88,15 +88,15 @@ public class PlayerInteraction : MonoBehaviour {
         }
     }
 
-    /// <summary>
-    /// Performs a raycast from the camera center to detect interactable objects.
-    /// Updates the UI interaction prompt based on what the player is looking at.
-    /// </summary>
-    private void CheckForInteractable() {
+        /// <summary>
+        /// Performs a raycast from the camera center to detect interactable objects.
+        /// Updates the UI interaction prompt based on what the player is looking at.
+        /// </summary>
+        private void CheckForInteractable() {
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, interactionDistance, interactableLayer)) {
+        if (Physics.Raycast(ray, out hit, interactionDistance, interactableLayer, QueryTriggerInteraction.Ignore)) {
             Interactable interactable = hit.collider.GetComponentInParent<Interactable>();
 
             if (interactable != null) {

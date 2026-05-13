@@ -10,11 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f46f965bfa0a4314bbaf7984a6717ced, type: 3}
-  m_Name: Tutorial_Action
+  m_Name: Tutorial_Shoot
   m_EditorClassIdentifier: Assembly-CSharp::Deadzone.UI.TutorialStepSO
-  stepId: tutorial_action
-  tutorialText: "\"Clique com o bot\xE3o esquerdo para usar o item\""
+  stepId: tutorial_shoot
+  tutorialText: "\"Aperte o bot\xE3o esquerdo do mouse para atirar\""
   tutorialImage: {fileID: 0}
   completionType: 3
   completionParam: 
   timeout: 0
+  nextStepId: 
