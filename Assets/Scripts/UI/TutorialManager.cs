@@ -38,6 +38,10 @@ namespace Deadzone.UI {
         [Tooltip("Tutorial step shown after selecting an unlocked item: 'Left click to use'.")]
         [SerializeField] private TutorialStepSO actionTutorialTemplate;
 
+        [Header("Behavior")]
+        [Tooltip("Minimum seconds a tutorial stays visible even if the action is detected early.")]
+        [SerializeField] private float minimumDisplayTime = 2f;
+
         #endregion
 
         #region FIELDS
@@ -60,6 +64,7 @@ namespace Deadzone.UI {
         private bool previousHadAmmo;
         private int previousTotalAmmo;
         private bool isCompleting;
+        private bool completionTriggered;
 
         #endregion
 
@@ -113,6 +118,17 @@ namespace Deadzone.UI {
         public void QueueTutorial(TutorialStepSO step) {
             if (step == null) return;
 
+            // If a tutorial is already showing, interrupt it immediately
+            if (currentStep != null) {
+                tutorialUI?.Hide();
+                currentStep = null;
+                pendingQueue.Clear();
+                isProcessing = false;
+                elapsedTime = 0f;
+                isCompleting = false;
+                completionTriggered = false;
+            }
+
             pendingQueue.Enqueue(step);
 
             if (!isProcessing)
@@ -132,6 +148,8 @@ namespace Deadzone.UI {
             pendingQueue.Clear();
             isProcessing = false;
             elapsedTime = 0f;
+            isCompleting = false;
+            completionTriggered = false;
         }
 
         private void ProcessQueue() {
@@ -169,6 +187,7 @@ namespace Deadzone.UI {
             shownSteps.Add(currentStep.StepId);
 
             elapsedTime = 0f;
+            completionTriggered = false;
             tutorialUI?.Show(currentStep.TutorialText, currentStep.TutorialImage);
         }
 
@@ -199,10 +218,17 @@ namespace Deadzone.UI {
 
             elapsedTime += Time.deltaTime;
 
+            // Detect completion action once (don't lose it on the exact frame it happens)
+            if (!completionTriggered)
+                completionTriggered = CheckCompletion();
+
             float timeout = currentStep.Timeout > 0f ? currentStep.Timeout : tutorialUI.DefaultStepTimeout;
             float fadeStartTime = Mathf.Max(timeout - tutorialUI.FadeOutDuration, 0f);
 
-            if (CheckCompletion() || elapsedTime >= fadeStartTime) {
+            bool canCompleteByAction = completionTriggered && elapsedTime >= minimumDisplayTime;
+            bool canCompleteByTimeout = elapsedTime >= fadeStartTime;
+
+            if (canCompleteByAction || canCompleteByTimeout) {
                 BeginCompletion();
             }
         }
