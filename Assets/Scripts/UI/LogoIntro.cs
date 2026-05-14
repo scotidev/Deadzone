@@ -106,7 +106,7 @@ public class LogoIntro : MonoBehaviour {
     }
 
     private void GoToMenu() {
-        SceneLoader.Instance?.LoadMenu();
+        SceneLoader.Instance?.LoadScene("Menu");
     }
 
     #endregion

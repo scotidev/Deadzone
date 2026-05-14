@@ -134,7 +134,7 @@ public class PauseManager : MonoBehaviour {
     public void BackToMainMenu() {
         GameManager.Instance?.ResumeTime();
         GameManager.Instance?.SetState(GameState.MainMenu);
-        SceneLoader.Instance.LoadMenu();
+        SceneLoader.Instance.LoadScene("Menu");
     }
 
     /// <summary>

@@ -32,14 +32,10 @@ public class SceneLoader : MonoBehaviour {
     #region METHODS
 
     /// <summary>
-    /// Loads the main menu scene.
+    /// Loads any scene by name.
     /// </summary>
-    public void LoadMenu() => SceneManager.LoadScene("Menu");
-
-    /// <summary>
-    /// Loads the main game scene.
-    /// </summary>
-    public void LoadGame() => SceneManager.LoadScene("Game");
+    /// <param name="sceneName">Name of the scene to load.</param>
+    public void LoadScene(string sceneName) => SceneManager.LoadScene(sceneName);
 
     #endregion
 }

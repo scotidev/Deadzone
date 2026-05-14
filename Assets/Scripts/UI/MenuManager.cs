@@ -16,6 +16,9 @@ public class MenuManager : MonoBehaviour {
     [Header("Audio")]
     [SerializeField] private AudioClip menuBGM;
 
+    [Header("Select Map")]
+    [SerializeField] private string selectMapSceneName = "SelectMap";
+
     #endregion
 
     #region UNITY
@@ -30,10 +33,11 @@ public class MenuManager : MonoBehaviour {
     #region METHODS
 
     /// <summary>
-    /// Loads the game scene.
+    /// Loads the map selection scene.
     /// </summary>
     public void OnNewGameClick() {
-        SceneLoader.Instance.LoadGame();
+        // We route through SceneLoader so all scene transitions stay centralized in one system.
+        SceneLoader.Instance?.LoadScene(selectMapSceneName);
     }
 
     /// <summary>
