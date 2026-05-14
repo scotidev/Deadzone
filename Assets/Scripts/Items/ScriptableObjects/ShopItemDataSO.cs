@@ -75,8 +75,11 @@ public class ShopItemDataSO : ScriptableObject {
     /// <returns>Cost for the next upgrade</returns>
     public int GetUpgradeCost(int currentLevel) {
         if (currentLevel < 1) currentLevel = 1;
+        // Calcula o custo exponencial bruto: baseUpgradeCost * (multiplier ^ currentLevel)
         float exponentialCost = baseUpgradeCost * Mathf.Pow(upgradeCostMultiplier, currentLevel);
-        return unlockCost + Mathf.RoundToInt(exponentialCost);
+        // Soma o custo de unlock (mantido exato) e arredonda para baixo na centena
+        int rawCost = unlockCost + Mathf.RoundToInt(exponentialCost);
+        return (rawCost / 100) * 100;
     }
 
     #endregion

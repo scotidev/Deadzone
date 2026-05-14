@@ -42,7 +42,9 @@ public class UpgradeManager : MonoBehaviour {
     /// Formula: baseUpgradeCost × currentLevel × 1.5 (exponential scaling)
     /// </summary>
     private int CalculateUpgradeCost(int baseUpgradeCost, int currentLevel) {
-        return Mathf.RoundToInt(baseUpgradeCost * currentLevel * 1.5f);
+        // Calcula o custo linear e arredonda para baixo na centena
+        int rawCost = Mathf.RoundToInt(baseUpgradeCost * currentLevel * 1.5f);
+        return (rawCost / 100) * 100;
     }
 
 /// <summary>

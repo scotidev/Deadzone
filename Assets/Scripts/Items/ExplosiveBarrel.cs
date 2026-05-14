@@ -220,10 +220,18 @@ namespace InfimaGames.LowPolyShooterPack {
                     }
                 }
 
-                // Damage enemies in radius
+                // Damage enemies in radius, scaled by upgrade level
                 EnemyBase enemy = hit.GetComponent<EnemyBase>();
                 if (enemy != null) {
-                    enemy.TakeDamage(explosionDamage);
+                    float damage = explosionDamage;
+                    if (PlayerProgress.Instance != null && barrelData != null) {
+                        int level = PlayerProgress.Instance.GetItemLevel(GetItemID());
+                        float baseDamage = barrelData.Damage;
+                        if (baseDamage > 0f) {
+                            damage = explosionDamage * (barrelData.GetDamageAtLevel(level) / baseDamage);
+                        }
+                    }
+                    enemy.TakeDamage(damage);
                 }
             }
 

@@ -84,10 +84,16 @@ namespace InfimaGames.LowPolyShooterPack
                 return;
             }
 
-            // Apply damage from trap data
+            // Apply damage from trap data, scaled by upgrade level
             if (bearTrapData != null)
             {
-                enemy.TakeDamage(bearTrapData.Damage);
+                float damage = bearTrapData.Damage;
+                if (PlayerProgress.Instance != null)
+                {
+                    int level = PlayerProgress.Instance.GetItemLevel(GetItemID());
+                    damage = bearTrapData.GetDamageAtLevel(level);
+                }
+                enemy.TakeDamage(damage);
             }
             else
             {

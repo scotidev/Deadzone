@@ -1,10 +1,6 @@
 using InfimaGames.LowPolyShooterPack;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Deadzone.Interfaces;
-
-// REFATORAÇÃO: Esse script deveria ser um Service do ServiceLocator? Talvez. 
-// REFATORAÇÃO: Adicionar feedbacks para o player StartPlacement por exemplo: tocar um som de erro se não tiver o item, ou um som de confirmação quando começar a colocar.
 
 /// <summary>
 /// Controller responsible for managing the building mechanics in the game.
@@ -20,10 +16,8 @@ public class BuildingController : MonoBehaviour {
 
     #region SERIALIZED FIELDS
 
-    [Header("Buildable Items")]
-    [SerializeField] private BuildableDataSO barricade;
-    [SerializeField] private BuildableDataSO explosiveBarrel;
-    [SerializeField] private BuildableDataSO bearTrap;
+    [Header("Audio")]
+    [SerializeField] private AudioClip invalidPlacementSound;
 
     [Header("Detection Settings")]
     [SerializeField] private LayerMask groundLayer;
@@ -45,9 +39,6 @@ public class BuildingController : MonoBehaviour {
     #endregion
 
     #region PROPERTIES
-    public BuildableDataSO Barricade => barricade;
-    public BuildableDataSO ExplosiveBarrel => explosiveBarrel;
-    public BuildableDataSO BearTrap => bearTrap;
     public BuildableDataSO CurrentSelectedItem => selectedItem;
     public bool IsPlacing => currentGhost != null;
 
@@ -99,20 +90,6 @@ public class BuildingController : MonoBehaviour {
 
         if (item == null) {
             return;
-        }
-
-        if (PlayerProgress.Instance != null) {
-            string buildableID = GetBuildableID(item);
-
-            if (!string.IsNullOrEmpty(buildableID)) {
-                int quantity = PlayerProgress.Instance.GetBuildableQuantity(buildableID);
-
-                if (quantity <= 0) {
-                    //FUTURAMENTE DEVE TOCAR UM SOM DE ERRO AQUI PARA DAR FEEDBACK AUDITIVO AO JOGADOR
-                    Debug.LogWarning($"[BuildingController] No {buildableID} in inventory! Purchase from shop first.");
-                    return;
-                }
-            }
         }
 
         if (selectedItem == item) {
@@ -198,8 +175,7 @@ public class BuildingController : MonoBehaviour {
             currentGhostObject?.SetPlaceable(HasInventoryQuantity() && collisions.Length == 0);
 
             currentGhost.SetActive(true);
-        }
-        else {
+        } else {
             currentGhost.SetActive(false);
         }
     }
@@ -238,7 +214,11 @@ public class BuildingController : MonoBehaviour {
     private void TryPlaceObject() {
         if (currentGhost == null || !currentGhost.activeSelf) return;
 
-        if (currentGhostObject == null || !currentGhostObject.IsPlaceable()) return;
+        if (currentGhostObject == null || !currentGhostObject.IsPlaceable()) {
+            if (invalidPlacementSound != null)
+                audioService.PlaySFX2D(invalidPlacementSound);
+            return;
+        }
 
         if (selectedItem.RealPrefab == null) return;
 
@@ -253,7 +233,7 @@ public class BuildingController : MonoBehaviour {
                     CancelPlacement();
                     return;
                 }
-                
+
                 // FIXED: Reset current ammo to 0 after placing the buildable.
                 // The "current" represents what's in hand - after placing, hand is empty.
                 PlayerProgress.Instance.SetItemCurrent(buildableID, 0);
@@ -270,15 +250,21 @@ public class BuildingController : MonoBehaviour {
             Barricade barricade = placedObject.GetComponent<Barricade>();
             if (barricade != null) {
                 barricade.PlayPlacementSound();
+                float health = selectedItem.Resistance;
+                if (PlayerProgress.Instance != null) {
+                    int level = PlayerProgress.Instance.GetItemLevel(selectedItem.ItemID);
+                    health = selectedItem.GetResistanceAtLevel(level);
+                }
+                barricade.Initialize(health);
             }
-            
+
             // Try BearTrap
             BearTrap bearTrap = placedObject.GetComponent<BearTrap>();
             if (bearTrap != null) {
                 bearTrap.PlayPlacementSound();
                 bearTrap.SetPlaced(true);
             }
-            
+
             // Try ExplosiveBarrel
             ExplosiveBarrel explosiveBarrel = placedObject.GetComponent<ExplosiveBarrel>();
             if (explosiveBarrel != null) {
@@ -321,7 +307,7 @@ public class BuildingController : MonoBehaviour {
         DestroyCurrentGhost();
         selectedItem = null;
         playerCharacter?.SetHolstered(false);
-        
+
         // CRITICAL: Restore the last equipped weapon after placement is canceled
         // Otherwise the weapon stays invisible (holstered) but never actually re-selected
         Debug.Log($"[BuildingController] CancelPlacement: Restoring last weapon");

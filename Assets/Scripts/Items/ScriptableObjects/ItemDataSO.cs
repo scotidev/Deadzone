@@ -15,10 +15,9 @@ public abstract class ItemDataSO : ScriptableObject {
     [SerializeField] private int baseAmmo = 10;
     [SerializeField] private float ammoScaling = 0.1f;
 
-    [Header("Current Capacity (Magazine/Hand)")]
     [Tooltip("Maximum quantity that can be carried in hand. For weapons: magazine capacity. For consumables/buildables: 1 (always)")]
     [SerializeField] private int baseCurrentCapacity = 1;
-    
+
     [Tooltip("Scaling for current capacity per upgrade level. Only applies to weapons (for magazine expansion). 0 for consumables.")]
     [Range(0f, 0.5f)]
     [SerializeField] private float currentCapacityScaling = 0f;
@@ -93,7 +92,7 @@ public abstract class ItemDataSO : ScriptableObject {
 
         // Apply scaling formula: baseCurrentCapacity * (1 + currentCapacityScaling * (level - 1))
         float scaledCapacity = baseCurrentCapacity * (1f + currentCapacityScaling * (level - 1));
-        
+
         // Convert to int and ensure it never exceeds the total ammo available
         int capacity = Mathf.RoundToInt(scaledCapacity);
         return Mathf.Min(capacity, GetMaxAmmoAtLevel(level));

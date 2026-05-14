@@ -61,6 +61,26 @@ public class BuildableDataSO : ItemDataSO {
 
     #region METHODS
 
+    /// <summary>
+    /// Gets the scaled damage value at the specified upgrade level.
+    /// </summary>
+    /// <param name="level">The upgrade level (1-based).</param>
+    /// <returns>The damage value scaled by damageScaling per level.</returns>
+    public float GetDamageAtLevel(int level) {
+        level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
+        return damage * (1f + damageScaling * (level - 1));
+    }
+
+    /// <summary>
+    /// Gets the scaled resistance (health) value at the specified upgrade level.
+    /// </summary>
+    /// <param name="level">The upgrade level (1-based).</param>
+    /// <returns>The resistance value scaled by resistanceScaling per level.</returns>
+    public float GetResistanceAtLevel(int level) {
+        level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
+        return health * (1f + resistanceScaling * (level - 1));
+    }
+
     private string GetStatLabel(BuildableStatType stat) {
         switch (stat) {
             case BuildableStatType.Damage: return "Damage";
