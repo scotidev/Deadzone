@@ -1,4 +1,5 @@
 ﻿using InfimaGames.LowPolyShooterPack;
+using Deadzone.Interfaces;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -84,8 +85,10 @@ public class Projectile : MonoBehaviour {
         }
 
         if (collision.transform.tag == "ExplosiveBarrel") {
-            collision.transform.gameObject.GetComponent
-                <ExplosiveBarrelScript>().explode = true;
+            IDamageable damageable = collision.transform.gameObject.GetComponent<IDamageable>();
+            if (damageable != null) {
+                damageable.TakeDamage(damage);
+            }
             Destroy(gameObject);
         }
 

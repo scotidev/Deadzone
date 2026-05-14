@@ -30,6 +30,8 @@ public class BuildableDataSO : ItemDataSO {
     [SerializeField] private float damageScaling = 0.1f;
     [Tooltip("Resistance increase per level. 0.1f = +10% per level.")]
     [SerializeField] private float resistanceScaling = 0.1f;
+    [Tooltip("Radius increase per level. 0.1f = +10% per level.")]
+    [SerializeField] private float radiusScaling = 0.1f;
 
     [Header("Prefabs")]
     [SerializeField] private GameObject realPrefab;
@@ -81,6 +83,16 @@ public class BuildableDataSO : ItemDataSO {
         return health * (1f + resistanceScaling * (level - 1));
     }
 
+    /// <summary>
+    /// Gets the scaled radius value at the specified upgrade level.
+    /// </summary>
+    /// <param name="level">The upgrade level (1-based).</param>
+    /// <returns>The radius value scaled by radiusScaling per level.</returns>
+    public float GetRadiusAtLevel(int level) {
+        level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
+        return explosionRadius * (1f + radiusScaling * (level - 1));
+    }
+
     private string GetStatLabel(BuildableStatType stat) {
         switch (stat) {
             case BuildableStatType.Damage: return "Damage";
@@ -127,7 +139,7 @@ public class BuildableDataSO : ItemDataSO {
                     values[i] = GetMaxAmmoAtLevel(level);
                     break;
                 case BuildableStatType.Radius:
-                    values[i] = explosionRadius;
+                    values[i] = GetRadiusAtLevel(level);
                     break;
             }
         }

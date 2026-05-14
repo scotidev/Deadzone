@@ -26,9 +26,7 @@ namespace InfimaGames.LowPolyShooterPack {
         [SerializeField] private float maxTime = 0.25f;
 
         [Header("Explosion Options")]
-        [SerializeField] private float explosionRadius = 12.5f;
         [SerializeField] private float explosionForce = 4000.0f;
-        [SerializeField] private float explosionDamage = 50f;
 
         [Header("Audio Clips")]
         [SerializeField] private AudioClip equipClip;
@@ -164,6 +162,18 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
+        #region GIZMOS
+
+        private void OnDrawGizmosSelected() {
+            float radius = barrelData != null ? barrelData.ExplosionRadius : 5f;
+            Gizmos.color = new Color(1f, 0.3f, 0f, 0.3f);
+            Gizmos.DrawSphere(transform.position, radius);
+            Gizmos.color = new Color(1f, 0.3f, 0f, 0.6f);
+            Gizmos.DrawWireSphere(transform.position, radius);
+        }
+
+        #endregion
+
         #region EXPLOSION LOGIC
 
         /// <summary>
@@ -191,15 +201,22 @@ namespace InfimaGames.LowPolyShooterPack {
                 Instantiate(destroyedBarrelPrefab, transform.position, transform.rotation);
             }
 
-            // Calculate explosion force
-            float finalExplosionForce = explosionForce;
+            // Get scaled radius and damage from BuildableDataSO
+            // CONCEITO: O raio e dano escalam com o nível de upgrade do item.
+            float radius = barrelData.ExplosionRadius;
+            float damage = barrelData.Damage;
+            if (PlayerProgress.Instance != null) {
+                int level = PlayerProgress.Instance.GetItemLevel(GetItemID());
+                radius = barrelData.GetRadiusAtLevel(level);
+                damage = barrelData.GetDamageAtLevel(level);
+            }
 
             // Apply explosion physics
             // CONCEITO: Physics.OverlapSphere encontra todos os colisores
-            // dentro de uma esfera de raio 'explosionRadius' centrada em 'explosionPos'.
+            // dentro de uma esfera de raio 'radius' centrada em 'explosionPos'.
             // Isso nos dá todos os objetos atingidos pela explosão.
             Vector3 explosionPos = transform.position;
-            Collider[] colliders = Physics.OverlapSphere(explosionPos, explosionRadius);
+            Collider[] colliders = Physics.OverlapSphere(explosionPos, radius);
 
             foreach (Collider hit in colliders) {
                 // Apply explosion force to rigidbodies
@@ -207,7 +224,7 @@ namespace InfimaGames.LowPolyShooterPack {
                 if (rb != null) {
                     // CONCEITO: AddExplosionForce aplica uma força radial
                     // que simula uma explosão física realista.
-                    rb.AddExplosionForce(finalExplosionForce * 50, explosionPos, explosionRadius);
+                    rb.AddExplosionForce(explosionForce * 50, explosionPos, radius);
                 }
 
                 // Chain reaction: trigger other explosive barrels
@@ -221,16 +238,11 @@ namespace InfimaGames.LowPolyShooterPack {
                 }
 
                 // Damage enemies in radius, scaled by upgrade level
+                // CONCEITO: O dano vem do BuildableDataSO (única fonte de verdade).
+                // GetDamageAtLevel(level) já aplica o damageScaling configurado no SO.
+                if (barrelData == null) continue;
                 EnemyBase enemy = hit.GetComponent<EnemyBase>();
                 if (enemy != null) {
-                    float damage = explosionDamage;
-                    if (PlayerProgress.Instance != null && barrelData != null) {
-                        int level = PlayerProgress.Instance.GetItemLevel(GetItemID());
-                        float baseDamage = barrelData.Damage;
-                        if (baseDamage > 0f) {
-                            damage = explosionDamage * (barrelData.GetDamageAtLevel(level) / baseDamage);
-                        }
-                    }
                     enemy.TakeDamage(damage);
                 }
             }
