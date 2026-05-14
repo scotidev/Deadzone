@@ -39,8 +39,8 @@ public class MenuManager : MonoBehaviour {
     /// Loads the map selection scene.
     /// </summary>
     public void OnNewGameClick() {
-        // We route through SceneLoader so all scene transitions stay centralized in one system.
-        SceneLoader.Instance?.LoadScene(selectMapSceneName);
+        // Carrega a SelectMap sem loading screen (transição rápida entre menus).
+        SceneLoader.Instance?.LoadSceneImmediate(selectMapSceneName);
     }
 
     /// <summary>

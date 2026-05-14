@@ -25,6 +25,10 @@ public class SceneLoader : MonoBehaviour {
              "Must have a LoadingScreenUI component on its root.")]
     [SerializeField] private GameObject loadingScreenPrefab;
 
+    [Tooltip("Tempo mínimo em segundos que a loading screen fica visível. " +
+             "A barra de progresso leva esse tempo pra encher, mesmo em cenas leves.")]
+    [SerializeField] private float minLoadingDuration = 2f;
+
     #endregion
 
     #region FIELDS
@@ -82,6 +86,15 @@ public class SceneLoader : MonoBehaviour {
     }
 
     /// <summary>
+    /// Carrega uma cena imediatamente, sem loading screen.
+    /// Usado para transições rápidas como Menu → SelectMap.
+    /// </summary>
+    /// <param name="sceneName">Nome da cena a ser carregada.</param>
+    public void LoadSceneImmediate(string sceneName) {
+        SceneManager.LoadScene(sceneName);
+    }
+
+    /// <summary>
     /// Coroutine que carrega a cena de forma assíncrona enquanto exibe
     /// uma tela de loading com barra de progresso.
     /// </summary>
@@ -97,36 +110,50 @@ public class SceneLoader : MonoBehaviour {
         // (2) Avisa o GameManager que estamos carregando.
         GameManager.Instance?.SetState(GameState.Loading);
 
-        // (3) Espera UM FRAME para dar tempo da loading screen renderizar
+        // (3) Marca o tempo real de início para calcular a barra mínima.
+        float startTime = Time.realtimeSinceStartup;
+
+        // (4) Espera UM FRAME para dar tempo da loading screen renderizar
         //     na tela antes do LoadSceneAsync começar o trabalho pesado.
         yield return null;
 
-        // (4) Inicia o carregamento assíncrono da cena.
+        // (5) Inicia o carregamento assíncrono da cena.
         AsyncOperation asyncOp = SceneManager.LoadSceneAsync(sceneName);
 
         // Impede que a cena seja ativada automaticamente,
         // assim controlamos quando fazer a transição.
         asyncOp.allowSceneActivation = false;
 
-        // (5) Enquanto a cena carrega (progress vai de 0 até 0.9),
-        //     atualizamos a barra de progresso em tempo real.
-        while (asyncOp.progress < 0.9f) {
-            // Normaliza o progress: 0 → 0.9 vira 0 → 1 na barra.
-            float normalizedProgress = Mathf.Clamp01(asyncOp.progress / 0.9f);
-            _loadingUI?.SetProgress(normalizedProgress);
-            // Espera um frame antes de checar denovo.
+        // (6) Loop único: a barra mostra o MENOR valor entre o progresso real
+        //     do carregamento (0→1) e o progresso do tempo decorrido (0→1 em 2s).
+        //     Resultado: a barra demora no mínimo 2s pra encher, mesmo em cenas
+        //     leves, e se a cena for pesada ela segue o progresso real.
+        while (true) {
+            // Progresso real do carregamento (0 → 0.9 normalizado pra 0 → 1).
+            float loadingProgress = Mathf.Clamp01(asyncOp.progress / 0.9f);
+            // Progresso do tempo decorrido (de 0 a 1 em minLoadingDuration segundos).
+            float timeProgress = (Time.realtimeSinceStartup - startTime) / minLoadingDuration;
+            // Usa o menor dos dois — a barra nunca pula na frente.
+            float displayProgress = Mathf.Min(loadingProgress, timeProgress, 1f);
+
+            _loadingUI?.SetProgress(displayProgress);
+
+            // Sai do loop quando BOTH loading e tempo mínimo estão completos.
+            if (asyncOp.progress >= 0.9f && timeProgress >= 1f)
+                break;
+
             yield return null;
         }
 
-        // (6) Cena totalmente carregada em memória.
-        //     Mostra 100% na barra e dá uma pequena pausa pra dar feedback visual.
+        // (7) Cena carregada + tempo mínimo cumprido.
+        //     Garante 100% na barra.
         _loadingUI?.SetProgress(1f);
-        yield return new WaitForSecondsRealtime(0.25f);
+        yield return null;
 
-        // (7) Esconde a loading screen ANTES de ativar a nova cena.
+        // (9) Esconde a loading screen ANTES de ativar a nova cena.
         _loadingUI?.Hide();
 
-        // (8) Agora ativa a nova cena.
+        // (10) Agora ativa a nova cena.
         //     Os Awake() e Start() da nova cena vão rodar aqui.
         asyncOp.allowSceneActivation = true;
 
@@ -134,7 +161,7 @@ public class SceneLoader : MonoBehaviour {
         while (!asyncOp.isDone)
             yield return null;
 
-        // (9) Desativa a loading (fica guardada pra próxima transição).
+        // (11) Desativa a loading (fica guardada pra próxima transição).
         if (_loadingInstance != null)
             _loadingInstance.SetActive(false);
     }
