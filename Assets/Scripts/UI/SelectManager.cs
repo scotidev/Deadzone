@@ -1,11 +1,10 @@
-using System.Collections;
 using UnityEngine;
 using InfimaGames.LowPolyShooterPack;
 using UnityEngine.UI;
 
 /// <summary>
-/// Controls the map selection screen, including hover scale feedback,
-/// background preview transitions, and loading the selected map scene.
+/// Controls the map selection screen, including background preview
+/// transitions and loading the selected map scene.
 /// </summary>
 public class SelectManager : MonoBehaviour {
 
@@ -26,7 +25,7 @@ public class SelectManager : MonoBehaviour {
         [Tooltip("Map identifier used by SelectManager methods")]
         public MapOption option;
 
-        [Tooltip("UI element that scales when this map is hovered")]
+        [Tooltip("UI element representing this map card")]
         public RectTransform mapCard;
 
         [Tooltip("Background object shown while hovering/selecting this map")]
@@ -44,33 +43,12 @@ public class SelectManager : MonoBehaviour {
     [Tooltip("Configuration for City, Desert, and Forest map cards")]
     [SerializeField] private MapEntry[] mapEntries;
 
-    [Tooltip("Scale for map cards while idle")]
-    [SerializeField] private Vector3 normalScale = Vector3.one;
-
-    [Tooltip("Scale for map cards while hovered")]
-    [SerializeField] private Vector3 hoveredScale = new Vector3(1.08f, 1.08f, 1f);
-
-    [Tooltip("Seconds used to animate card scale")]
-    [SerializeField] private float cardScaleDuration = 0.12f;
-
     [Header("Audio")]
     [Tooltip("BGM played while the map selection screen is active")]
     [SerializeField] private AudioClip selectScreenBGM;
 
     [Tooltip("Smooth fade duration when starting selection screen BGM")]
     [SerializeField] private float selectScreenBGMFadeDuration = 0.5f;
-
-    [Tooltip("SFX played when hovering a map card")]
-    [SerializeField] private AudioClip mapHoverSFX;
-
-    [Tooltip("SFX played when selecting a map")]
-    [SerializeField] private AudioClip mapSelectSFX;
-
-    [Tooltip("Volume multiplier for map hover SFX")]
-    [SerializeField] private float mapHoverVolume = 1f;
-
-    [Tooltip("Volume multiplier for map select SFX")]
-    [SerializeField] private float mapSelectVolume = 1f;
 
     private GameObject selectedBackgroundObject;
     private IAudioManagerService audioService;
@@ -87,7 +65,6 @@ public class SelectManager : MonoBehaviour {
 
         InitializeBackgroundImages();
         ConfigureBackgroundRaycastBehavior();
-        ResetAllCardsScale();
     }
 
     /// <summary>
@@ -115,7 +92,6 @@ public class SelectManager : MonoBehaviour {
     /// Handles hover exit for any map card, restoring selected or default visuals.
     /// </summary>
     public void OnMapHoverExit() {
-        ResetAllCardsScale();
         ShowSelectedOrDefaultBackground();
     }
 
@@ -141,7 +117,7 @@ public class SelectManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Applies hover feedback to a map card and starts its background preview.
+    /// Shows the background preview for a hovered map card.
     /// </summary>
     /// <param name="option">The hovered map option.</param>
     private void HandleMapHoverEnter(MapOption option) {
@@ -150,11 +126,6 @@ public class SelectManager : MonoBehaviour {
             return;
         }
 
-        // We play a 2D hover sound because UI audio should not be spatialized in world coordinates.
-        audioService?.PlaySFX2D(mapHoverSFX, mapHoverVolume);
-
-        ResetAllCardsScale();
-        AnimateCardScale(entry.mapCard, hoveredScale);
         ShowEntryBackground(entry);
     }
 
@@ -167,9 +138,6 @@ public class SelectManager : MonoBehaviour {
         if (entry == null || string.IsNullOrWhiteSpace(entry.sceneName)) {
             return;
         }
-
-        // We confirm selection with a 2D UI sound before scene transition for immediate user feedback.
-        audioService?.PlaySFX2D(mapSelectSFX, mapSelectVolume);
 
         // We persist the selected background object so hover exit returns to this selection.
         selectedBackgroundObject = entry.previewBackgroundObject;
@@ -279,67 +247,6 @@ public class SelectManager : MonoBehaviour {
         // We initialize object mode so only the default background stays active at startup.
         ShowBackgroundObject(defaultBackgroundObject);
         selectedBackgroundObject = defaultBackgroundObject;
-    }
-
-    /// <summary>
-    /// Resets all map cards to idle scale.
-    /// </summary>
-    private void ResetAllCardsScale() {
-        if (mapEntries == null || mapEntries.Length == 0) {
-            return;
-        }
-
-        for (int i = 0; i < mapEntries.Length; i++) {
-            if (mapEntries[i] == null || mapEntries[i].mapCard == null) {
-                continue;
-            }
-
-            AnimateCardScale(mapEntries[i].mapCard, normalScale);
-        }
-    }
-
-    /// <summary>
-    /// Animates one card scale to the target value.
-    /// </summary>
-    /// <param name="targetCard">Card transform to animate.</param>
-    /// <param name="targetScale">Final scale value.</param>
-    private void AnimateCardScale(RectTransform targetCard, Vector3 targetScale) {
-        if (targetCard == null) {
-            return;
-        }
-
-        StartCoroutine(ScaleCardRoutine(targetCard, targetScale));
-    }
-
-    /// <summary>
-    /// Smoothly interpolates a card scale over time.
-    /// </summary>
-    /// <param name="targetCard">Card transform to animate.</param>
-    /// <param name="targetScale">Final scale value.</param>
-    /// <returns>Enumerator used by Unity coroutine system.</returns>
-    private IEnumerator ScaleCardRoutine(RectTransform targetCard, Vector3 targetScale) {
-        if (cardScaleDuration <= 0f) {
-            targetCard.localScale = targetScale;
-            yield break;
-        }
-
-        // We capture the starting scale so interpolation always begins at the current visual state.
-        Vector3 startScale = targetCard.localScale;
-
-        // Time is accumulated from 0 to duration to produce a normalized interpolation value.
-        float elapsedTime = 0f;
-
-        while (elapsedTime < cardScaleDuration) {
-            elapsedTime += Time.deltaTime;
-            float normalizedTime = Mathf.Clamp01(elapsedTime / cardScaleDuration);
-
-            // Lerp blends start and target scale using normalizedTime for smooth motion.
-            targetCard.localScale = Vector3.Lerp(startScale, targetScale, normalizedTime);
-            yield return null;
-        }
-
-        // We snap to final value so floating-point rounding does not leave tiny visual offsets.
-        targetCard.localScale = targetScale;
     }
 
 }

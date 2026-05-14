@@ -242,6 +242,10 @@ Contains scripts related to user interface, menus, and HUD elements.
 
 /// UI Button Feedback. Unified controller for visual scale animation and audio feedback on hover/click events. Replaces MenuImageScale and MenuButtonAudio.
 
+### /UI/MapCardRelay.cs
+
+/// Map Card Relay. Generic relay that forwards pointer events (hover enter, hover exit, click) as UnityEvents. Works alongside UIButtonFeedback to separate feedback from domain logic.
+
 ### /UI/LogoIntro.cs
 
 /// Logo Intro. Handles logo animation at game start.

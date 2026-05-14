@@ -206,6 +206,7 @@ GameObject:
   - component: {fileID: 330158825}
   - component: {fileID: 330158824}
   - component: {fileID: 330158823}
+  - component: {fileID: 330158827}
   - component: {fileID: 330158826}
   m_Layer: 5
   m_Name: City
@@ -336,11 +337,95 @@ MonoBehaviour:
   m_GameObject: {fileID: 330158821}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: afbb2a0e41aa35d45acc917a271ccf6c, type: 3}
+  m_Script: {fileID: 11500000, guid: 195960afc80676e4f9cd954ce369d72f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MapCardPointerRelay
-  selectManager: {fileID: 727601866}
-  option: 0
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonFeedback
+  normalScale: {x: 1, y: 1, z: 1}
+  selectedScale: {x: 1.15, y: 1.15, z: 1}
+  pressedScale: {x: 0.95, y: 0.95, z: 1}
+  scaleSpeed: 12
+  hoverSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
+  hoverVolume: 1
+  clickSound: {fileID: 8300000, guid: 7f6f9ec2a66688d4486acc5332b66daa, type: 3}
+  clickVolume: 1
+  unlockSound: {fileID: 0}
+  unlockVolume: 1
+  upgradeSound: {fileID: 0}
+  upgradeVolume: 1
+  maxedOutSound: {fileID: 0}
+  maxedOutVolume: 1
+  ammoClickSound: {fileID: 0}
+  ammoClickVolume: 1
+  vestClickSound: {fileID: 0}
+  vestClickVolume: 1
+  suppliesClickSound: {fileID: 0}
+  suppliesClickVolume: 1
+  disabledClickSound: {fileID: 0}
+  disabledClickVolume: 1
+  onDisabledClick:
+    m_PersistentCalls:
+      m_Calls: []
+  useBoundFix: 0
+  clickPrecision: 0.5
+  cursorTexture: {fileID: 2800000, guid: ba4f5bafbbec70c4c96d9feddb5fdbc6, type: 3}
+  cursorHotspot: {x: 0, y: 0}
+--- !u!114 &330158827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330158821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ce3ad0e9cc81ed43ba18dc0046f5275, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapCardRelay
+  onHoverEnter:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 727601866}
+        m_TargetAssemblyTypeName: SelectManager, Assembly-CSharp
+        m_MethodName: OnCityHoverEnter
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onHoverExit:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 727601866}
+        m_TargetAssemblyTypeName: SelectManager, Assembly-CSharp
+        m_MethodName: OnMapHoverExit
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 727601866}
+        m_TargetAssemblyTypeName: SelectManager, Assembly-CSharp
+        m_MethodName: OnCitySelect
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &407196308
 GameObject:
   m_ObjectHideFlags: 0
@@ -552,15 +637,8 @@ MonoBehaviour:
     mapCard: {fileID: 1579313876}
     previewBackgroundObject: {fileID: 2089712175}
     sceneName: DesertMap
-  normalScale: {x: 1, y: 1, z: 1}
-  hoveredScale: {x: 1.08, y: 1.08, z: 1}
-  cardScaleDuration: 0.12
   selectScreenBGM: {fileID: 8300000, guid: 83a71ae40bd916a4ca79dbfdbe9b45ab, type: 3}
   selectScreenBGMFadeDuration: 0.5
-  mapHoverSFX: {fileID: 8300000, guid: 7f6f9ec2a66688d4486acc5332b66daa, type: 3}
-  mapSelectSFX: {fileID: 8300000, guid: a541b6abf9983ee419edebd1a88e53db, type: 3}
-  mapHoverVolume: 1
-  mapSelectVolume: 1
 --- !u!4 &727601867
 Transform:
   m_ObjectHideFlags: 0
@@ -662,6 +740,8 @@ GameObject:
   - component: {fileID: 1362481971}
   - component: {fileID: 1362481973}
   - component: {fileID: 1362481972}
+  - component: {fileID: 1362481975}
+  - component: {fileID: 1362481974}
   m_Layer: 5
   m_Name: Forest
   m_TagString: Untagged
@@ -726,6 +806,68 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1362481970}
   m_CullTransparentMesh: 1
+--- !u!114 &1362481974
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1362481970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 195960afc80676e4f9cd954ce369d72f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonFeedback
+  normalScale: {x: 1, y: 1, z: 1}
+  selectedScale: {x: 1.15, y: 1.15, z: 1}
+  pressedScale: {x: 0.95, y: 0.95, z: 1}
+  scaleSpeed: 12
+  hoverSound: {fileID: 0}
+  hoverVolume: 1
+  clickSound: {fileID: 0}
+  clickVolume: 1
+  unlockSound: {fileID: 0}
+  unlockVolume: 1
+  upgradeSound: {fileID: 0}
+  upgradeVolume: 1
+  maxedOutSound: {fileID: 0}
+  maxedOutVolume: 1
+  ammoClickSound: {fileID: 0}
+  ammoClickVolume: 1
+  vestClickSound: {fileID: 0}
+  vestClickVolume: 1
+  suppliesClickSound: {fileID: 0}
+  suppliesClickVolume: 1
+  disabledClickSound: {fileID: 0}
+  disabledClickVolume: 1
+  onDisabledClick:
+    m_PersistentCalls:
+      m_Calls: []
+  useBoundFix: 0
+  clickPrecision: 0.5
+  cursorTexture: {fileID: 0}
+  cursorHotspot: {x: 0, y: 0}
+--- !u!114 &1362481975
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1362481970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ce3ad0e9cc81ed43ba18dc0046f5275, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapCardRelay
+  onHoverEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  onHoverExit:
+    m_PersistentCalls:
+      m_Calls: []
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1489730616
 GameObject:
   m_ObjectHideFlags: 0
@@ -775,6 +917,7 @@ GameObject:
   - component: {fileID: 1579313879}
   - component: {fileID: 1579313878}
   - component: {fileID: 1579313877}
+  - component: {fileID: 1579313881}
   - component: {fileID: 1579313880}
   m_Layer: 5
   m_Name: Desert
@@ -905,11 +1048,95 @@ MonoBehaviour:
   m_GameObject: {fileID: 1579313875}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: afbb2a0e41aa35d45acc917a271ccf6c, type: 3}
+  m_Script: {fileID: 11500000, guid: 195960afc80676e4f9cd954ce369d72f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MapCardPointerRelay
-  selectManager: {fileID: 727601866}
-  option: 1
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonFeedback
+  normalScale: {x: 1, y: 1, z: 1}
+  selectedScale: {x: 1.15, y: 1.15, z: 1}
+  pressedScale: {x: 0.95, y: 0.95, z: 1}
+  scaleSpeed: 12
+  hoverSound: {fileID: 8300000, guid: 5e982fe8444309e47a8bf047183f7647, type: 3}
+  hoverVolume: 1
+  clickSound: {fileID: 8300000, guid: 7f6f9ec2a66688d4486acc5332b66daa, type: 3}
+  clickVolume: 1
+  unlockSound: {fileID: 0}
+  unlockVolume: 1
+  upgradeSound: {fileID: 0}
+  upgradeVolume: 1
+  maxedOutSound: {fileID: 0}
+  maxedOutVolume: 1
+  ammoClickSound: {fileID: 0}
+  ammoClickVolume: 1
+  vestClickSound: {fileID: 0}
+  vestClickVolume: 1
+  suppliesClickSound: {fileID: 0}
+  suppliesClickVolume: 1
+  disabledClickSound: {fileID: 0}
+  disabledClickVolume: 1
+  onDisabledClick:
+    m_PersistentCalls:
+      m_Calls: []
+  useBoundFix: 0
+  clickPrecision: 0.5
+  cursorTexture: {fileID: 2800000, guid: ba4f5bafbbec70c4c96d9feddb5fdbc6, type: 3}
+  cursorHotspot: {x: 0, y: 0}
+--- !u!114 &1579313881
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1579313875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ce3ad0e9cc81ed43ba18dc0046f5275, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapCardRelay
+  onHoverEnter:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 727601866}
+        m_TargetAssemblyTypeName: SelectManager, Assembly-CSharp
+        m_MethodName: OnDesertHoverEnter
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onHoverExit:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 727601866}
+        m_TargetAssemblyTypeName: SelectManager, Assembly-CSharp
+        m_MethodName: OnMapHoverExit
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 727601866}
+        m_TargetAssemblyTypeName: SelectManager, Assembly-CSharp
+        m_MethodName: OnDesertSelect
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1828597729
 GameObject:
   m_ObjectHideFlags: 0
@@ -1196,7 +1423,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2089712176
 RectTransform:
   m_ObjectHideFlags: 0
