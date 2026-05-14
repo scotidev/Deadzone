@@ -1830,11 +1830,26 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 701770664}
+    - target: {fileID: 5003024657873822239, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5003024657873822239, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5864479340680642005, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: playerHealth
       value: 
       objectReference: {fileID: 1776962870}
+    - target: {fileID: 6304367731676265496, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7016419823468125405, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: vest

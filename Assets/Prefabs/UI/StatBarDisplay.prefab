@@ -147,8 +147,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -170.2, y: 0}
-  m_SizeDelta: {x: 50, y: 50}
+  m_AnchoredPosition: {x: -178.24, y: 5.7}
+  m_SizeDelta: {x: 77.2709, y: 77.2714}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4012693194798614637
 CanvasRenderer:
@@ -178,9 +178,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 4018198181d84534f95d251e982e30bb, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -251,9 +251,9 @@ MonoBehaviour:
   iconFireRate: {fileID: 21300000, guid: cd2c3a5be12be4c4d9f344f7b3fe4415, type: 3}
   iconAmmo: {fileID: 21300000, guid: 0ebbd9ed53dc7a94fbee9e6d5d366a96, type: 3}
   iconCrit: {fileID: 0}
-  iconHeal: {fileID: 0}
+  iconHeal: {fileID: 21300000, guid: 196d8999911e7ca428ad273d6237280c, type: 3}
   iconResistance: {fileID: 21300000, guid: 81d7f53cac010ba429ce2b58b03530f1, type: 3}
-  iconRadius: {fileID: 0}
+  iconRadius: {fileID: 21300000, guid: 80cf61617ff2086458e041d0d585f6d2, type: 3}
   iconDefault: {fileID: 21300000, guid: 196d8999911e7ca428ad273d6237280c, type: 3}
 --- !u!1 &5382022366099712353
 GameObject:

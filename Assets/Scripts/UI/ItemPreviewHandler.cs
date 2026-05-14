@@ -69,7 +69,7 @@ public class ItemPreviewHandler : MonoBehaviour {
     /// </summary>
     private void RotatePreview() {
         if (activePreviewModel == null) return;
-        activePreviewModel.transform.Rotate(Vector3.up, rotationSpeed * Time.unscaledDeltaTime, Space.Self);
+        activePreviewModel.transform.Rotate(Vector3.up, rotationSpeed * Time.unscaledDeltaTime, Space.World);
     }
 
     /// <summary>

@@ -23,7 +23,6 @@ public class StatBarDisplay : MonoBehaviour {
     [SerializeField] private Sprite iconDamage;
     [SerializeField] private Sprite iconFireRate;
     [SerializeField] private Sprite iconAmmo;
-    [SerializeField] private Sprite iconCrit;
     [SerializeField] private Sprite iconHeal;
     [SerializeField] private Sprite iconResistance;
     [SerializeField] private Sprite iconRadius;
@@ -88,7 +87,6 @@ public class StatBarDisplay : MonoBehaviour {
         if (lower.Contains("damage")) return iconDamage;
         if (lower.Contains("fire rate") || lower.Contains("firerate")) return iconFireRate;
         if (lower.Contains("ammo") || lower.Contains("magazine")) return iconAmmo;
-        if (lower.Contains("crit")) return iconCrit;
         if (lower.Contains("heal")) return iconHeal;
         if (lower.Contains("resistance") || lower.Contains("resist")) return iconResistance;
         if (lower.Contains("radius")) return iconRadius;

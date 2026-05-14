@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 2348802}
   - component: {fileID: 5414722}
   - component: {fileID: 6441334}
-  - component: {fileID: 11415462}
   m_Layer: 0
   m_Name: P_LPSP_DMG_Barrel
   m_TagString: ExplosiveBarrel
@@ -29,13 +28,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 185426}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3336508
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -141,25 +140,3 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -6888592040382724874, guid: ab38534e2f6f42f468da880b2ee19deb, type: 3}
---- !u!114 &11415462
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 185426}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f00dbda9bdee23645ace6aa6df24f827, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  explode: 0
-  explosionPrefab: {fileID: 4296680985399300, guid: ca26d7307564ff848b29e32bbe6279ef,
-    type: 3}
-  destroyedBarrelPrefab: {fileID: 483574, guid: 69583eba87a3a60449692cb2c09f4706,
-    type: 3}
-  minTime: 0.05
-  maxTime: 0.25
-  explosionRadius: 3
-  explosionForce: 5000
-  explosionDamage: 50
