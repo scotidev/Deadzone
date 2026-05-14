@@ -46,7 +46,7 @@ public class LogoIntro : MonoBehaviour {
 
     private void Start() {
         audioManagerService = ServiceLocator.Current.Get<IAudioManagerService>();
-        GameManager.Instance?.SetState(GameState.Loader);
+        GameManager.Instance?.SetState(GameState.Intro);
 
         if (videoPlayer != null) {
             videoPlayer.source = VideoSource.Url;

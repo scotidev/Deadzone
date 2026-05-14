@@ -59,17 +59,10 @@ namespace InfimaGames.LowPolyShooterPack
 
             #endregion
 
-            #region Scene Loader
-
-            // Cria o SceneLoader para gerenciar transições entre scenes
-            // Permite carregar Menu, Game, etc de qualquer lugar
-            var sceneLoaderObject = new GameObject("Scene Loader");
-            var sceneLoaderComponent = sceneLoaderObject.AddComponent<SceneLoader>();
-            
-            // Marca como DontDestroyOnLoad para persistir entre scenes
-            Object.DontDestroyOnLoad(sceneLoaderObject);
-
-            #endregion
+            // NOTA: SceneLoader não é mais criado aqui.
+            // Ele deve ser colocado manualmente na cena Intro (ex-Loader)
+            // com o prefab da Loading Screen já atribuído no Inspector.
+            // O Awake() dele cuida do singleton + DontDestroyOnLoad.
         }
     }
 }

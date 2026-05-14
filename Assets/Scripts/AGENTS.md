@@ -250,6 +250,10 @@ Contains scripts related to user interface, menus, and HUD elements.
 
 /// Logo Intro. Handles logo animation at game start.
 
+### /UI/LoadingScreenUI.cs
+
+/// Loading Screen UI. Controls the loading screen (show/hide/update progress bar). Shows a progress bar (Image.fillAmount) while SceneLoader loads a scene asynchronously.
+
 ### /UI/CanvasSpawner.cs
 
 /// Canvas Spawner. Spawns UI canvases for different screens.

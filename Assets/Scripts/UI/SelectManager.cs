@@ -57,6 +57,9 @@ public class SelectManager : MonoBehaviour {
     /// Initializes visual defaults for backgrounds and map cards.
     /// </summary>
     private void Start() {
+        // We are in a menu context, so the GameState should be MainMenu.
+        GameManager.Instance?.SetState(GameState.MainMenu);
+
         // We resolve the shared audio service from the locator so this screen uses the same audio pipeline as the whole game.
         audioService = ServiceLocator.Current.Get<IAudioManagerService>();
 

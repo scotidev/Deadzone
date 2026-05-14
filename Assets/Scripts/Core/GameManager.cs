@@ -7,7 +7,8 @@ using UnityEngine;
 /// Enum that represents every top-level state the game can be in.
 /// </summary>
 public enum GameState {
-    Loader,
+    Intro,
+    Loading,
     MainMenu,
     Playing,
     Paused,
@@ -47,7 +48,7 @@ public class GameManager : MonoBehaviour {
 
     #region PROPERTIES
 
-    public GameState State { get; private set; } = GameState.Loader;
+    public GameState State { get; private set; } = GameState.Intro;
 
     #endregion
 

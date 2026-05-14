@@ -24,6 +24,9 @@ public class MenuManager : MonoBehaviour {
     #region UNITY
 
     private void Start() {
+        // Avisa o GameManager que estamos no Menu Principal.
+        GameManager.Instance?.SetState(GameState.MainMenu);
+
         var audioService = ServiceLocator.Current.Get<IAudioManagerService>();
         audioService?.PlayBGM(menuBGM, true, 1.0f);
     }
