@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &9098579316990742905
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8039438068870310506}
+  - component: {fileID: 7743605349707640007}
+  m_Layer: 0
+  m_Name: WaveManager
+  m_TagString: Untagged
+  m_Icon: {fileID: -1412012063857583412, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8039438068870310506
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9098579316990742905}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7743605349707640007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9098579316990742905}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13cd7832a8e97e8449eadca86125c029, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WaveManager
+  enemyTypes:
+  - prefab: {fileID: 270316871960866942, guid: d1d09725d5529fe44abda6963954f7a8, type: 3}
+    minimumWave: 1
+    spawnWeight: 10
+    isBoss: 0
+  - prefab: {fileID: 4449994615583783604, guid: accf882275ba880409157b70de5f2086,
+      type: 3}
+    minimumWave: 0
+    spawnWeight: 5
+    isBoss: 0
+  - prefab: {fileID: 8945000935841565596, guid: 703d07df9fd097242bc7a67f2dc6b0f3,
+      type: 3}
+    minimumWave: 0
+    spawnWeight: 0.5
+    isBoss: 0
+  lightWaveClip: {fileID: 8300000, guid: 4d1a460e72cda124f8326871633b0f55, type: 3}
+  mediumWaveClip: {fileID: 8300000, guid: e9f874b77ea42684895afa87ebb91c79, type: 3}
+  hardWaveClip: {fileID: 8300000, guid: c1c57a6d2bea6be4faa7ef7346e05a1c, type: 3}
+  bossWaveClip: {fileID: 8300000, guid: e4619c3f7711ee24081265a48fc8c76a, type: 3}
+  lastLightWave: 3
+  lastMediumWave: 7
+  initialGrowthRate: 0.25
+  growthDecrement: 0.02
+  minGrowthRate: 0.05
+  maxEnemiesPerWave: 500
+  maxEnemiesAliveAtOnce: 10
+  spawners:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  waveUI: {fileID: 0}
+  ambientBGM: {fileID: 8300000, guid: 83a71ae40bd916a4ca79dbfdbe9b45ab, type: 3}
+  ambientBGMVolume: 1
+  combatBGM: {fileID: 8300000, guid: 8256864b0ef1d1749aaf1adef81995c0, type: 3}
+  combatBGMVolume: 0.323

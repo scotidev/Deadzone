@@ -85,10 +85,18 @@ public class EnemyAttack : MonoBehaviour {
     #region METHODS
 
     /// <summary>
-    /// Checks for the presence of an undestroyed barricade along the path between the current object and the player,
-    /// and updates the current barricade reference if one is detected.
+    /// Checks whether a barricade is actually blocking the path to the player.
+    /// First uses the NavMesh to see if the player is reachable — if yes, no barricade is blocking.
+    /// Only falls back to a raycast when the NavMesh path is blocked, to identify which barricade.
     /// </summary>
     private void CheckForBarricadeOnPath() {
+        // If the player is reachable via NavMesh, no barricade is blocking the path
+        if (enemyFollow != null && enemyFollow.CanReachPlayer()) {
+            currentBarricade = null;
+            return;
+        }
+
+        // NavMesh path is blocked — find the barricade in the way
         Vector3 directionToPlayer = (playerTransform.position - transform.position).normalized;
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
         float checkDist = Mathf.Min(distanceToPlayer, barricadeCheckDistance);
@@ -104,13 +112,21 @@ public class EnemyAttack : MonoBehaviour {
 
     /// <summary>
     /// Handles the logic for attacking the current barricade when the enemy is within range and the attack cooldown has
-    /// elapsed.
+    /// elapsed. Re-checks each frame whether the path to the player has cleared — if so, abandons the barricade and chases.
     /// </summary>
     /// <param name="distanceToPlayer">The distance, in world units, between the enemy and the player. Used to determine if the enemy is close enough
     /// to attack the barricade.</param>
     private void HandleBarricadeAttack(float distanceToPlayer) {
         if (currentBarricade.IsDestroyed) {
             currentBarricade = null;
+            return;
+        }
+
+        // Re-check if the player is now reachable (barricade was destroyed by another enemy,
+        // or the player moved to a position where the path is clear)
+        if (enemyFollow != null && enemyFollow.CanReachPlayer()) {
+            currentBarricade = null;
+            enemyFollow.SetMovementEnabled(true);
             return;
         }
 

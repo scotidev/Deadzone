@@ -81,6 +81,20 @@ public class EnemyFollow : MonoBehaviour {
     }
 
     /// <summary>
+    /// Checks whether the player is reachable via the NavMesh.
+    /// Returns true if there is a complete path (no obstruction).
+    /// Used by EnemyAttack to decide if a barricade is actually blocking the way.
+    /// </summary>
+    public bool CanReachPlayer() {
+        if (playerTransform == null || agent == null || !agent.isOnNavMesh)
+            return false;
+
+        NavMeshPath path = new NavMeshPath();
+        agent.CalculatePath(playerTransform.position, path);
+        return path.status == NavMeshPathStatus.PathComplete;
+    }
+
+    /// <summary>
     /// Returns the Transform of the player (found by FindPlayer).
     /// Called by EnemyAttack.Start() to get the player reference
     /// without needing another GameObject.FindWithTag() call.

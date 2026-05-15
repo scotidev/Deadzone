@@ -41,6 +41,9 @@ namespace InfimaGames.LowPolyShooterPack {
         private void Start() {
             rotationCharacter = playerCharacter.transform.localRotation;
             rotationCamera = transform.localRotation;
+
+            float savedSensitivity = PlayerPrefs.GetFloat("MouseSensitivity", 1.0f);
+            sensitivity = new Vector2(savedSensitivity, savedSensitivity);
         }
         private void LateUpdate() {
             Vector2 frameInput = playerCharacter.IsCursorLocked() ? playerCharacter.GetInputLook() : default;
@@ -87,6 +90,10 @@ namespace InfimaGames.LowPolyShooterPack {
             rotation.x = Mathf.Tan(0.5f * Mathf.Deg2Rad * pitch);
 
             return rotation;
+        }
+
+        public void SetSensitivity(float value) {
+            sensitivity = new Vector2(value, value);
         }
 
         #endregion

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using InfimaGames.LowPolyShooterPack;
+using IGameMode = InfimaGames.LowPolyShooterPack.IGameModeService;
 
 /// <summary>
 /// Manages the options menu UI including mouse sensitivity and volume settings.
@@ -50,8 +51,10 @@ public class OptionsUI : BaseUI {
     #region METHODS
 
     private void BindControls() {
-        if (mouseSensitivitySlider != null)
+        if (mouseSensitivitySlider != null) {
+            mouseSensitivitySlider.minValue = 0.1f;
             mouseSensitivitySlider.onValueChanged.AddListener(OnMouseSensitivityChanged);
+        }
 
         if (masterVolumeSlider != null)
             masterVolumeSlider.onValueChanged.AddListener(OnMasterVolumeChanged);
@@ -73,6 +76,17 @@ public class OptionsUI : BaseUI {
 
     private void OnMouseSensitivityChanged(float value) {
         SaveSetting(SENSITIVITY_KEY, value);
+        ApplySensitivityToCamera(value);
+    }
+
+    private void ApplySensitivityToCamera(float value) {
+        var gameMode = ServiceLocator.Current?.Get<IGameMode>();
+        var player = gameMode?.GetPlayerCharacter();
+        if (player != null) {
+            var cameraLook = player.GetComponentInChildren<CameraLook>(true);
+            if (cameraLook != null)
+                cameraLook.SetSensitivity(value);
+        }
     }
 
     private void OnMasterVolumeChanged(float value) {
@@ -109,6 +123,7 @@ public class OptionsUI : BaseUI {
         if (mouseSensitivitySlider != null) {
             float sensitivity = PlayerPrefs.GetFloat(SENSITIVITY_KEY, 1.0f);
             mouseSensitivitySlider.value = sensitivity;
+            ApplySensitivityToCamera(sensitivity);
         }
 
         if (masterVolumeSlider != null) {
