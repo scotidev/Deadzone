@@ -19,18 +19,64 @@ public class LoadingScreenUI : MonoBehaviour {
     [Tooltip("(Opcional) Texto que mostra a porcentagem, ex: '75%'.")]
     [SerializeField] private Text percentageText;
 
+    [Header("Background")]
+    [Tooltip("Image que vai exibir o fundo do loading screen.")]
+    [SerializeField] private Image backgroundImage;
+
+    [Tooltip("Array de sprites de fundo. Um aleatório é escolhido a cada loading, " +
+             "nunca repetindo o mesmo duas vezes seguidas.")]
+    [SerializeField] private Sprite[] backgroundSprites;
+
+    #endregion
+
+    #region FIELDS
+
+    // Guarda o índice do último sprite que tocou pra não repetir.
+    private int _lastBackgroundIndex = -1;
+
     #endregion
 
     #region METHODS
 
     /// <summary>
-    /// Torna a tela de loading visível e reseta a barra para 0%.
+    /// Torna a tela de loading visível, reseta a barra para 0%
+    /// e sorteia um fundo aleatório.
     /// </summary>
     public void Show() {
         // Ativa o GameObject (que contém o Canvas e tudo da loading screen).
         gameObject.SetActive(true);
         // Começa com a barra vazia.
         SetProgress(0f);
+        // Sorteia um sprite de fundo diferente do último.
+        PickRandomBackground();
+    }
+
+    /// <summary>
+    /// Sorteia um sprite do array <see cref="backgroundSprites"/> que seja
+    /// diferente do último que tocou. Se o array tiver menos de 2 elementos,
+    /// sempre pega o índice 0 (ou não faz nada se estiver vazio).
+    /// </summary>
+    private void PickRandomBackground() {
+        // Se não tem Image de fundo ou não tem sprites, não faz nada.
+        if (backgroundImage == null || backgroundSprites == null || backgroundSprites.Length == 0)
+            return;
+
+        // Se só tem um sprite, usa ele sempre.
+        if (backgroundSprites.Length == 1) {
+            backgroundImage.sprite = backgroundSprites[0];
+            _lastBackgroundIndex = 0;
+            return;
+        }
+
+        // Sorteia um índice diferente do último.
+        int randomIndex;
+        do {
+            randomIndex = Random.Range(0, backgroundSprites.Length);
+        } while (randomIndex == _lastBackgroundIndex);
+
+        // Aplica o sprite sorteado e guarda o índice.
+        backgroundImage.sprite = backgroundSprites[randomIndex];
+        _lastBackgroundIndex = randomIndex;
     }
 
     /// <summary>

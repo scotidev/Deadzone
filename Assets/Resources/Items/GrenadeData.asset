@@ -15,6 +15,10 @@ MonoBehaviour:
   itemID: 5
   itemName: Grenade
   maxUpgradeLevel: 5
-  damage: 50
-  radius: 20
-  maxAmount: 10
+  maxAmmo: 10
+  baseAmmo: 10
+  ammoScaling: 0.1
+  baseCurrentCapacity: 1
+  currentCapacityScaling: 0
+  damage: 30
+  radius: 5
