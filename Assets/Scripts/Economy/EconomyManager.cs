@@ -28,7 +28,6 @@ public class EconomyManager : MonoBehaviour {
 
     private int currentCurrency;
     public event Action<int> OnCurrencyChanged;
-    public event Action<int> OnPurchaseSuccess;
     public event Action<int, int> OnPurchaseFailed;
 
     #endregion
@@ -93,12 +92,10 @@ public class EconomyManager : MonoBehaviour {
         }
 
         if (cost == 0) {
-            OnPurchaseSuccess?.Invoke(0);
             return true;
         }
 
         if (currentCurrency < cost) {
-            // Adicionar feedback visual/auditivo para o jogador aqui, como um som de erro ou uma animação de shake na UI
             OnPurchaseFailed?.Invoke(cost, currentCurrency);
             return false;
         }
@@ -106,7 +103,6 @@ public class EconomyManager : MonoBehaviour {
         currentCurrency -= cost;
 
         OnCurrencyChanged?.Invoke(currentCurrency);
-        OnPurchaseSuccess?.Invoke(cost);
 
         return true;
     }

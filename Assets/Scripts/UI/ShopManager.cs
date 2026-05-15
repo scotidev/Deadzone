@@ -49,8 +49,6 @@ public class ShopManager : MonoBehaviour {
 
     public static event Action<string> ItemUnlocked;
     public static event Action<string, int> AmmoPurchased;
-    public static event Action CurrencyChanged;
-    public static event Action ItemStateChanged;
     public static event Action<bool> ShopClosed;
     public static event Action PlayerAFK;
 
@@ -264,7 +262,6 @@ public class ShopManager : MonoBehaviour {
         ItemUnlocked?.Invoke(itemData.ItemID);
 
         NotifyItemUnlocked(itemData);
-        ItemStateChanged?.Invoke();
         return true;
     }
 
@@ -289,14 +286,13 @@ public class ShopManager : MonoBehaviour {
             return false;
         }
 
-        if (!UpgradeManager.Instance.TryUpgradeItem(itemData.ItemID, itemData.BaseUpgradeCost, itemData.ItemData)) {
+        if (!UpgradeManager.Instance.TryUpgradeItem(itemData.ItemID, cost, itemData.ItemData)) {
             return false;
         }
 
         Debug.Log($"[ShopManager] Upgraded {itemData.ItemName} to level {PlayerProgress.Instance.GetItemLevel(itemData.ItemID)}!");
 
         NotifyItemUpgraded(itemData);
-        ItemStateChanged?.Invoke();
         return true;
     }
 
@@ -335,8 +331,6 @@ public class ShopManager : MonoBehaviour {
 
         if (success) {
             AmmoPurchased?.Invoke(itemData.ItemID, itemData.QuantityPerPurchase);
-            CurrencyChanged?.Invoke();
-            ItemStateChanged?.Invoke();
         }
 
         return success;

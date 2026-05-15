@@ -200,6 +200,12 @@ Transform:
   m_Children: []
   m_Father: {fileID: 47282072}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &319255688 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7611240822196635457, guid: 4a06de3311b20f6468eed9a93caa2de3,
+    type: 3}
+  m_PrefabInstance: {fileID: 8804758483903302830}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &321194189
 GameObject:
   m_ObjectHideFlags: 0
@@ -1632,11 +1638,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 466750875561227307, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2511525708182192631, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: enemyHealthBarUI
       value: 
       objectReference: {fileID: 712135210}
+    - target: {fileID: 2516333807737273769, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2765326547094986479, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: m_Name
@@ -1692,6 +1708,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3342056554219627230, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1705,6 +1726,38 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 573869143855422148, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_text
+      value: '`$ 0`'
+      objectReference: {fileID: 0}
+    - target: {fileID: 573869143855422148, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 899c88ca15c7596409666929f26e7d4f,
+        type: 2}
+    - target: {fileID: 573869143855422148, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_fontColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 573869143855422148, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_fontColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 573869143855422148, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 4396737174247318078, guid: 899c88ca15c7596409666929f26e7d4f,
+        type: 2}
+    - target: {fileID: 573869143855422148, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4278255360
+      objectReference: {fileID: 0}
     - target: {fileID: 886604357082832192, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -1850,6 +1903,11 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6622792130004569768, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: hudRoot
+      value: 
+      objectReference: {fileID: 319255688}
     - target: {fileID: 7016419823468125405, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: vest

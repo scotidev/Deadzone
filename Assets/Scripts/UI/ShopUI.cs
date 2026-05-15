@@ -70,6 +70,10 @@ public class ShopUI : BaseUI {
         base.Awake();
         Instance = this;
         BindButtons();
+    }
+
+    protected override void Start() {
+        base.Start();
         SubscribeToCurrencyEvents();
     }
 
@@ -110,14 +114,15 @@ public class ShopUI : BaseUI {
     }
 
     private void SubscribeToCurrencyEvents() {
-        ShopManager.CurrencyChanged += OnCurrencyChanged;
+        EconomyManager.Instance.OnCurrencyChanged += OnCurrencyChanged;
     }
 
     private void UnsubscribeFromCurrencyEvents() {
-        ShopManager.CurrencyChanged -= OnCurrencyChanged;
+        if (EconomyManager.Instance != null)
+            EconomyManager.Instance.OnCurrencyChanged -= OnCurrencyChanged;
     }
 
-    private void OnCurrencyChanged() {
+    private void OnCurrencyChanged(int newAmount) {
         UpdateCurrencyDisplay();
 
         if (selectedItemData != null) {

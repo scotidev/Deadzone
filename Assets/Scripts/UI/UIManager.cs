@@ -28,6 +28,7 @@ public class UIManager : MonoBehaviour {
 
     [Header("HUD")]
     [SerializeField] private WaveUI waveUI;
+    [SerializeField] private GameObject hudRoot;
 
     #endregion
 
@@ -62,6 +63,7 @@ public class UIManager : MonoBehaviour {
     /// </summary>
     public void ShowShop() {
         HideAllPanels();
+        if (hudRoot != null) hudRoot.SetActive(false);
         if (shopUI != null)
             shopUI.Show();
     }
@@ -97,6 +99,7 @@ public class UIManager : MonoBehaviour {
         if (shopUI != null) shopUI.Hide();
         if (optionsUI != null) optionsUI.Hide();
         if (controlsUI != null) controlsUI.Hide();
+        if (hudRoot != null) hudRoot.SetActive(true);
     }
 
     /// <summary>
