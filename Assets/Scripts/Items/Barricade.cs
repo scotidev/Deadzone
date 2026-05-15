@@ -3,8 +3,13 @@ using InfimaGames.LowPolyShooterPack;
 using Deadzone.Interfaces;
 using Deadzone.UI;
 
-// REFATORAÇÃO: as cores na verdade vão ser texturas, ou pinturas diferentes, precisamos de rachaduras progressivas.
-// REFATORAÇÃO: esse script deveria fazer parte do BuildableDataSO ou nao? Analise necessaria
+// CONCEITO: Este script agora segue o princípio da responsabilidade única.
+// maxHealth NÃO é mais um campo serializado — cada instância lê seu valor
+// diretamente do BuildableDataSO.GetResistanceAtLevel() via PlayerProgress.
+// O SO é a única fonte da verdade para os dados de design.
+//
+// CONCEITO: A cor foi substituída por um array de materiais (damageStateMaterials),
+// permitindo texturas de rachadura progressiva em vez de simples tintas.
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
@@ -19,15 +24,11 @@ namespace InfimaGames.LowPolyShooterPack {
         [SerializeField] private BuildableDataSO barricadeData;
         [SerializeField] private Sprite hudIcon;
 
-        [Header("Barricade Settings")]
-        [SerializeField] private float maxHealth = 100f;
-        [SerializeField] private float currentHealth;
-
         [Header("Visual Feedback")]
+        [Tooltip("Renderer whose material will be swapped as damage progresses.")]
         [SerializeField] private Renderer barricadeRenderer;
-        [SerializeField] private Color greenColor = Color.green;
-        [SerializeField] private Color yellowColor = Color.yellow;
-        [SerializeField] private Color redColor = Color.red;
+        [Tooltip("Materials for each damage state: 0=Intact (>66%), 1=Damaged (>33%), 2=Heavy (>0%), 3=Critical (<=0%).")]
+        [SerializeField] private Material[] damageStateMaterials;
 
         [Header("Audio Clips")]
         [SerializeField] private AudioClip equipClip;
@@ -42,6 +43,8 @@ namespace InfimaGames.LowPolyShooterPack {
         #region FIELDS
 
         private IAudioManagerService audioService;
+        private float maxHealth;
+        private float currentHealth;
 
         #endregion
 
@@ -130,12 +133,6 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
-        #region FIELDS
-
-        private Color currentColor;
-
-        #endregion
-
         #region PROPERTIES
 
         public float HealthFraction => maxHealth > 0f ? currentHealth / maxHealth : 0f;
@@ -147,15 +144,17 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private void Awake() {
             audioService = ServiceLocator.Current.Get<IAudioManagerService>();
-            
-            currentHealth = maxHealth;
+
+            // CONCEITO: Inicializa a saúde lendo do BuildableDataSO + nível do jogador.
+            // O valor serializado antigo (maxHealth = 100f) foi removido — o SO é a fonte da verdade.
+            InitializeHealth();
 
             if (barricadeRenderer == null)
                 barricadeRenderer = GetComponent<Renderer>();
         }
 
         private void Start() {
-            UpdateBarricadeColor();
+            UpdateBarricadeVisual();
         }
 
         #endregion
@@ -163,13 +162,26 @@ namespace InfimaGames.LowPolyShooterPack {
         #region METHODS
 
         /// <summary>
-        /// Initializes the barricade's health and visual state. Should be called after instantiating the barricade.
+        /// Reads the barricade's max health from BuildableDataSO scaled by the player's current upgrade level.
+        /// CONCEITO: O SO define o valor base + scaling por nível. PlayerProgress fornece o nível atual.
+        /// Isso garante que barricadas recém-colocadas sempre usem o nível de upgrade mais recente.
         /// </summary>
-        /// <param name="health"></param>
-        public void Initialize(float health) {
-            maxHealth = health;
+        private void InitializeHealth() {
+            if (barricadeData == null) {
+                Debug.LogWarning("[Barricade] barricadeData is null, cannot initialize health!", gameObject);
+                return;
+            }
+
+            // CONCEITO: Lê o nível de upgrade atual do jogador para este item.
+            // Se PlayerProgress ainda não estiver disponível, usa level 1 como fallback.
+            int level = PlayerProgress.Instance?.GetItemLevel(GetItemID()) ?? 1;
+
+            // CONCEITO: GetResistanceAtLevel(level) aplica resistanceScaling configurado no SO.
+            // level 1 = valor base do SO; level N = valor base * (1 + resistanceScaling * (N-1)).
+            maxHealth = barricadeData.GetResistanceAtLevel(level);
             currentHealth = maxHealth;
-            UpdateBarricadeColor();
+
+            Debug.Log($"[Barricade] Initialized: maxHealth={maxHealth}, level={level}, itemID={GetItemID()}");
         }
 
         /// <summary>
@@ -182,7 +194,7 @@ namespace InfimaGames.LowPolyShooterPack {
             if (currentHealth <= 0f) return;
 
             currentHealth -= amount;
-            UpdateBarricadeColor();
+            UpdateBarricadeVisual();
 
             if (currentHealth <= 0f) {
                 DestroyBarricade();
@@ -190,24 +202,34 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Updates the barricade's color based on its current health percentage.
+        /// Swaps the barricade's material based on current health percentage.
+        /// CONCEITO: Ao invés de tintar a cor via código, trocamos o material inteiro.
+        /// Isso permite usar texturas com rachaduras progressivas definidas pelo artista.
+        /// Índices: 0=Intact (>66%), 1=Damaged (>33%), 2=Heavy (>0%), 3=Critical (<=0%).
         /// </summary>
-        private void UpdateBarricadeColor() {
+        private void UpdateBarricadeVisual() {
             if (barricadeRenderer == null) return;
+            if (damageStateMaterials == null || damageStateMaterials.Length == 0) return;
 
             float healthPercent = maxHealth > 0f ? currentHealth / maxHealth : 0f;
 
-            if (healthPercent > 0.66f) {
-                currentColor = greenColor;
-            }
-            else if (healthPercent > 0.33f) {
-                currentColor = yellowColor;
-            }
-            else {
-                currentColor = redColor;
-            }
+            // CONCEITO: Mapeia a fração de vida para um índice no array de materiais.
+            // Se o array não tiver material suficiente para o índice calculado,
+            // usa o último material disponível como fallback.
+            int index;
+            if (healthPercent > 0.66f)
+                index = 0;
+            else if (healthPercent > 0.33f)
+                index = 1;
+            else if (healthPercent > 0f)
+                index = 2;
+            else
+                index = 3;
 
-            barricadeRenderer.material.color = currentColor;
+            // Clamp: se o array for menor que 4, usa o último elemento como fallback
+            index = Mathf.Clamp(index, 0, damageStateMaterials.Length - 1);
+
+            barricadeRenderer.material = damageStateMaterials[index];
         }
 
         /// <summary>

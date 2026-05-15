@@ -30,12 +30,14 @@ namespace InfimaGames.LowPolyShooterPack {
         #region BGM
 
         /// <summary>
-        /// Plays a background music track (BGM).
+        /// Plays a background music track (BGM) with a per-track volume.
+        /// The final volume is BGM master volume (SetBGMVolume) * this per-track volume.
         /// </summary>
         /// <param name="clip">Clip to play.</param>
         /// <param name="loop">If true, the music will loop when it finishes.</param>
         /// <param name="fadeDuration">Fade in/out duration in seconds for smooth transitions.</param>
-        void PlayBGM(AudioClip clip, bool loop = true, float fadeDuration = 0f);
+        /// <param name="volume">Per-track volume multiplier (0 to 1). Applied on top of the master BGM volume.</param>
+        void PlayBGM(AudioClip clip, bool loop = true, float fadeDuration = 0f, float volume = 1f);
 
         /// <summary>
         /// Stops the current background music.

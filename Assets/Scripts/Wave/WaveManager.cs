@@ -57,7 +57,11 @@ public class WaveManager : MonoBehaviour {
 
     [Header("Music Settings")]
     [SerializeField] private AudioClip ambientBGM;
+    [Range(0f, 1f)]
+    [SerializeField] private float ambientBGMVolume = 1f;
     [SerializeField] private AudioClip combatBGM;
+    [Range(0f, 1f)]
+    [SerializeField] private float combatBGMVolume = 1f;
 
     #endregion
 
@@ -93,7 +97,7 @@ public class WaveManager : MonoBehaviour {
     }
 
     private void Start() {
-        audioService?.PlayBGM(ambientBGM, true, 1.5f);
+        audioService?.PlayBGM(ambientBGM, true, 1.5f, ambientBGMVolume);
     }
 
     private void OnEnable() {
@@ -135,7 +139,7 @@ public class WaveManager : MonoBehaviour {
         currentWaveEnemyTypes = GetAvailableEnemyTypes(currentWave);
         PlayWaveStartSound();
 
-        audioService?.PlayBGM(combatBGM, true, 1.0f);
+        audioService?.PlayBGM(combatBGM, true, 1.0f, combatBGMVolume);
 
         StartCoroutine(SpawnInitialBatch());
 
@@ -217,7 +221,7 @@ public class WaveManager : MonoBehaviour {
             EconomyManager.Instance.AddCurrency(waveReward);
         }
 
-        audioService?.PlayBGM(ambientBGM, true, 2.0f);
+        audioService?.PlayBGM(ambientBGM, true, 2.0f, ambientBGMVolume);
     }
 
     /// <summary>

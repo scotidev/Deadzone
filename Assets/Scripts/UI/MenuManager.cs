@@ -15,6 +15,8 @@ public class MenuManager : MonoBehaviour {
 
     [Header("Audio")]
     [SerializeField] private AudioClip menuBGM;
+    [Range(0f, 1f)]
+    [SerializeField] private float menuBGMVolume = 1f;
 
     [Header("Select Map")]
     [SerializeField] private string selectMapSceneName = "SelectMap";
@@ -28,7 +30,7 @@ public class MenuManager : MonoBehaviour {
         GameManager.Instance?.SetState(GameState.MainMenu);
 
         var audioService = ServiceLocator.Current.Get<IAudioManagerService>();
-        audioService?.PlayBGM(menuBGM, true, 1.0f);
+        audioService?.PlayBGM(menuBGM, true, 1.0f, menuBGMVolume);
     }
 
     #endregion

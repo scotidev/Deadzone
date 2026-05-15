@@ -1568,7 +1568,9 @@ MonoBehaviour:
   - {fileID: 1980653463}
   waveUI: {fileID: 967513580}
   ambientBGM: {fileID: 8300000, guid: 83a71ae40bd916a4ca79dbfdbe9b45ab, type: 3}
+  ambientBGMVolume: 1
   combatBGM: {fileID: 8300000, guid: 8256864b0ef1d1749aaf1adef81995c0, type: 3}
+  combatBGMVolume: 0.323
 --- !u!4 &2046954784
 Transform:
   m_ObjectHideFlags: 0
@@ -1638,21 +1640,31 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 466750875561227307, guid: a20c4961b0655574e9f91c372538fa9f,
+    - target: {fileID: 21942733976301129, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
-      propertyPath: m_IsActive
-      value: 0
+      propertyPath: jumpForce
+      value: 35
+      objectReference: {fileID: 0}
+    - target: {fileID: 636208667352920233, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 636208667352920233, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 636208667352920233, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 2511525708182192631, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: enemyHealthBarUI
       value: 
       objectReference: {fileID: 712135210}
-    - target: {fileID: 2516333807737273769, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2765326547094986479, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: m_Name
@@ -1708,10 +1720,15 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3342056554219627230, guid: a20c4961b0655574e9f91c372538fa9f,
+    - target: {fileID: 4336079613599663351, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
-      propertyPath: m_IsActive
-      value: 0
+      propertyPath: wallLayer.m_Bits
+      value: 82176
+      objectReference: {fileID: 0}
+    - target: {fileID: 4995604989063611033, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_Size.x
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

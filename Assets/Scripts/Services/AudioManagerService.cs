@@ -3,18 +3,21 @@
 using System.Collections;
 using UnityEngine;
 
-namespace InfimaGames.LowPolyShooterPack {
+namespace InfimaGames.LowPolyShooterPack
+{
     /// <summary>
     /// Manages the spawning and playing of sounds.
     /// Implements the IAudioManagerService interface, providing a centralized way to handle all audio playback in the game.
     /// </summary>
-    public class AudioManagerService : MonoBehaviour, IAudioManagerService {
+    public class AudioManagerService : MonoBehaviour, IAudioManagerService
+    {
 
         #region FIELDS
 
         private AudioSource bgmSource;
         private AudioSource dialogueSource;
         private float bgmVolume = 0.5f;
+        private float currentTrackVolume = 1f;
         private float sfxVolume = 1f;
         private float dialogueVolume = 1f;
 
@@ -25,7 +28,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <summary>
         /// Contains data related to playing a OneShot audio.
         /// </summary>
-        private readonly struct OneShotCoroutine {
+        private readonly struct OneShotCoroutine
+        {
             public AudioClip Clip { get; }
             public AudioSettings Settings { get; }
             public float Delay { get; }
@@ -33,7 +37,8 @@ namespace InfimaGames.LowPolyShooterPack {
             /// <summary>
             /// Constructor.
             /// </summary>
-            public OneShotCoroutine(AudioClip clip, AudioSettings settings, float delay) {
+            public OneShotCoroutine(AudioClip clip, AudioSettings settings, float delay)
+            {
                 Clip = clip;
                 Settings = settings;
                 Delay = delay;
@@ -44,15 +49,17 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #region UNITY
 
-        private void Awake() {
+        private void Awake()
+        {
             InitializeBGMSource();
             InitializeDialogueSource();
         }
 
-        private void InitializeDialogueSource() {
+        private void InitializeDialogueSource()
+        {
             var dialogueObject = new GameObject("Dialogue Source");
             dialogueObject.transform.SetParent(transform);
-            
+
             dialogueSource = dialogueObject.AddComponent<AudioSource>();
             dialogueSource.spatialBlend = 1f;
             dialogueSource.loop = false;
@@ -66,10 +73,12 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <summary>
         /// Destroys the audio source once it has finished playing.
         /// </summary>
-        private IEnumerator DestroySourceWhenFinished(AudioSource source) {
+        private IEnumerator DestroySourceWhenFinished(AudioSource source)
+        {
             yield return new WaitWhile(() => source != null && source.isPlaying);
 
-            if (source != null && source.gameObject != null) {
+            if (source != null && source.gameObject != null)
+            {
                 DestroyImmediate(source.gameObject);
             }
         }
@@ -77,7 +86,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <summary>
         /// Waits for a certain amount of time before starting to play a one shot sound.
         /// </summary>
-        private IEnumerator PlayOneShotAfterDelay(OneShotCoroutine value) {
+        private IEnumerator PlayOneShotAfterDelay(OneShotCoroutine value)
+        {
             yield return new WaitForSeconds(value.Delay);
             PlayOneShot_Internal(value.Clip, value.Settings);
         }
@@ -85,7 +95,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <summary>
         /// Internal PlayOneShot. Basically does the whole function's name!
         /// </summary>
-        private void PlayOneShot_Internal(AudioClip clip, AudioSettings settings) {
+        private void PlayOneShot_Internal(AudioClip clip, AudioSettings settings)
+        {
             if (clip == null)
                 return;
 
@@ -107,43 +118,50 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Initalizes the AudioSource responsible for the background music.
         /// This avoids the need for a manual setup in the Inspector and ensures that the BGM source is always configured correctly when the AudioManager is created.
         /// </summary>
-        private void InitializeBGMSource() {
+        private void InitializeBGMSource()
+        {
             bgmSource = gameObject.AddComponent<AudioSource>();
 
             bgmSource.spatialBlend = 0f;
 
             bgmSource.playOnAwake = false;
 
-            bgmSource.volume = bgmVolume;
+            bgmSource.volume = bgmVolume * currentTrackVolume;
         }
 
         /// <summary>
         /// Plays a background music.
         /// If a BGM is already playing, it will be replaced by the new one.
         /// </summary>
-        public void PlayBGM(AudioClip clip, bool loop = true, float fadeDuration = 0f) {
+        public void PlayBGM(AudioClip clip, bool loop = true, float fadeDuration = 0f, float volume = 1f)
+        {
             if (clip == null || bgmSource == null) return;
 
-            if (fadeDuration > 0f && bgmSource.isPlaying) {
-                StartCoroutine(FadeBGM(clip, loop, fadeDuration));
+            if (fadeDuration > 0f && bgmSource.isPlaying)
+            {
+                StartCoroutine(FadeBGM(clip, loop, fadeDuration, volume));
                 return;
             }
 
+            currentTrackVolume = Mathf.Clamp01(volume);
             bgmSource.clip = clip;
             bgmSource.loop = loop;
+            bgmSource.volume = bgmVolume * currentTrackVolume;
             bgmSource.Play();
         }
 
         /// <summary>
         /// Coroutine that fades out the current music and fades in the new one.
         /// </summary>
-        private IEnumerator FadeBGM(AudioClip newClip, bool loop, float duration) {
+        private IEnumerator FadeBGM(AudioClip newClip, bool loop, float duration, float trackVolume)
+        {
             if (bgmSource == null) yield break;
 
             float startVolume = bgmSource.volume;
             float elapsed = 0f;
 
-            while (elapsed < duration / 2f) {
+            while (elapsed < duration / 2f)
+            {
                 if (bgmSource == null) yield break;
 
                 elapsed += Time.deltaTime;
@@ -153,6 +171,9 @@ namespace InfimaGames.LowPolyShooterPack {
 
             if (bgmSource == null) yield break;
 
+            currentTrackVolume = Mathf.Clamp01(trackVolume);
+            float targetVolume = bgmVolume * currentTrackVolume;
+
             bgmSource.Stop();
             bgmSource.clip = newClip;
             bgmSource.loop = loop;
@@ -160,29 +181,33 @@ namespace InfimaGames.LowPolyShooterPack {
 
             elapsed = 0f;
 
-            while (elapsed < duration / 2f) {
+            while (elapsed < duration / 2f)
+            {
                 if (bgmSource == null) yield break;
 
                 elapsed += Time.deltaTime;
-                bgmSource.volume = Mathf.Lerp(0f, startVolume, elapsed / (duration / 2f));
+                bgmSource.volume = Mathf.Lerp(0f, targetVolume, elapsed / (duration / 2f));
                 yield return null;
             }
 
             if (bgmSource == null) yield break;
 
-            bgmSource.volume = startVolume;
+            bgmSource.volume = targetVolume;
         }
 
         /// <summary>
         /// Stops the current background music.
         /// </summary>
-        public void StopBGM(float fadeDuration = 0f) {
+        public void StopBGM(float fadeDuration = 0f)
+        {
             if (bgmSource == null) return;
 
-            if (fadeDuration > 0f && bgmSource.isPlaying) {
+            if (fadeDuration > 0f && bgmSource.isPlaying)
+            {
                 StartCoroutine(FadeOutBGM(fadeDuration));
             }
-            else {
+            else
+            {
                 bgmSource.Stop();
             }
         }
@@ -190,13 +215,15 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <summary>
         /// Coroutine that fades out the current music and stops it.
         /// </summary>
-        private IEnumerator FadeOutBGM(float duration) {
+        private IEnumerator FadeOutBGM(float duration)
+        {
             if (bgmSource == null) yield break;
 
             float startVolume = bgmSource.volume;
             float elapsed = 0f;
 
-            while (elapsed < duration) {
+            while (elapsed < duration)
+            {
                 if (bgmSource == null) yield break;
 
                 elapsed += Time.deltaTime;
@@ -213,16 +240,18 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <summary>
         /// Sets the master volume for background music.
         /// </summary>
-        public void SetBGMVolume(float volume) {
+        public void SetBGMVolume(float volume)
+        {
             bgmVolume = Mathf.Clamp01(volume);
             if (bgmSource != null)
-                bgmSource.volume = bgmVolume;
+                bgmSource.volume = bgmVolume * currentTrackVolume;
         }
 
         /// <summary>
         /// Returns the current background music volume.
         /// </summary>
-        public float GetBGMVolume() {
+        public float GetBGMVolume()
+        {
             return bgmVolume;
         }
 
@@ -236,7 +265,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <param name="clip">Audio clip to play.</param>
         /// <param name="volumeScale">Per-call volume scale.</param>
         /// </summary>
-        public void PlaySFX2D(AudioClip clip, float volumeScale = 1f) {
+        public void PlaySFX2D(AudioClip clip, float volumeScale = 1f)
+        {
             Play2DClip(clip, sfxVolume, volumeScale);
         }
 
@@ -246,7 +276,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <param name="clip">Audio clip to play.</param>
         /// <param name="volumeScale">Per-call volume scale.</param>
         /// </summary>
-        public void PlayDialogue2D(AudioClip clip, float volumeScale = 1f) {
+        public void PlayDialogue2D(AudioClip clip, float volumeScale = 1f)
+        {
             Play2DClip(clip, dialogueVolume, volumeScale);
         }
 
@@ -256,7 +287,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <param name="clip">Clip to play.</param>
         /// <param name="masterVolume">Category master volume.</param>
         /// <param name="volumeScale">Per-call volume scale.</param>
-        private void Play2DClip(AudioClip clip, float masterVolume, float volumeScale) {
+        private void Play2DClip(AudioClip clip, float masterVolume, float volumeScale)
+        {
             if (clip == null) return;
 
             float finalVolume = Mathf.Clamp01(masterVolume * volumeScale);
@@ -274,14 +306,16 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Sets the master volume for sound effects.
         /// Affects both 2D and 3D SFX.
         /// </summary>
-        public void SetSFXVolume(float volume) {
+        public void SetSFXVolume(float volume)
+        {
             sfxVolume = Mathf.Clamp01(volume);
         }
 
         /// <summary>
         /// Returns the current sound effects volume.
         /// </summary>
-        public float GetSFXVolume() {
+        public float GetSFXVolume()
+        {
             return sfxVolume;
         }
 
@@ -289,7 +323,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Sets the dialogue master volume.
         /// </summary>
         /// <param name="volume">Volume value in the [0, 1] range.</param>
-        public void SetDialogueVolume(float volume) {
+        public void SetDialogueVolume(float volume)
+        {
             dialogueVolume = Mathf.Clamp01(volume);
         }
 
@@ -297,7 +332,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Gets the current dialogue master volume.
         /// </summary>
         /// <returns>Dialogue volume in the [0, 1] range.</returns>
-        public float GetDialogueVolume() {
+        public float GetDialogueVolume()
+        {
             return dialogueVolume;
         }
 
@@ -309,7 +345,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Plays a 3D sound effect at a specific position in the world.
         /// The sound's volume will be based on the listener's distance (camera/player).
         /// </summary>
-        public void PlaySFX3D(AudioClip clip, Vector3 position, float volumeScale = 1f, float minDistance = 1f, float maxDistance = 500f) {
+        public void PlaySFX3D(AudioClip clip, Vector3 position, float volumeScale = 1f, float minDistance = 1f, float maxDistance = 500f)
+        {
             if (clip == null) return;
 
             var audioObject = new GameObject($"SFX 3D -> {clip.name}");
@@ -327,7 +364,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Plays a 3D sound effect that follows a Transform.
         /// Useful for continuous sounds or sounds from moving objects.
         /// </summary>
-        public void PlaySFX3DAttached(AudioClip clip, Transform sourceTransform, float volumeScale = 1f, float minDistance = 1f, float maxDistance = 500f) {
+        public void PlaySFX3DAttached(AudioClip clip, Transform sourceTransform, float volumeScale = 1f, float minDistance = 1f, float maxDistance = 500f)
+        {
             if (clip == null || sourceTransform == null) return;
 
             var audioObject = new GameObject($"SFX 3D Attached -> {clip.name}");
@@ -346,29 +384,34 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Plays a 3D dialogue sound, stopping any currently playing dialogue first.
         /// Used for merchant NPC dialogues that should be interrupted by new events.
         /// </summary>
-        public void PlayDialogue3D(AudioClip clip, Vector3 position, float volumeScale = 1f, float minDistance = 1f, float maxDistance = 50f) {
+        public void PlayDialogue3D(AudioClip clip, Vector3 position, float volumeScale = 1f, float minDistance = 1f, float maxDistance = 50f)
+        {
             if (clip == null || dialogueSource == null) return;
 
             dialogueSource.Stop();
-            
+
             dialogueSource.clip = clip;
             dialogueSource.transform.position = position;
             dialogueSource.spatialBlend = 1f;
             dialogueSource.minDistance = minDistance;
             dialogueSource.maxDistance = maxDistance;
             dialogueSource.volume = dialogueVolume * volumeScale;
-            
+
             dialogueSource.Play();
         }
 
-        public void PauseDialogue() {
-            if (dialogueSource != null && dialogueSource.isPlaying) {
+        public void PauseDialogue()
+        {
+            if (dialogueSource != null && dialogueSource.isPlaying)
+            {
                 dialogueSource.Pause();
             }
         }
 
-        public void ResumeDialogue() {
-            if (dialogueSource != null && !dialogueSource.isPlaying && dialogueSource.clip != null) {
+        public void ResumeDialogue()
+        {
+            if (dialogueSource != null && !dialogueSource.isPlaying && dialogueSource.clip != null)
+            {
                 dialogueSource.UnPause();
             }
         }
@@ -377,7 +420,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Configures an AudioSource for 3D spatial sound.
         /// Centralizes the configuration to avoid duplicate code.
         /// </summary>
-        private void ConfigureAudioSource3D(AudioSource source, AudioClip clip, float volumeScale, float minDistance, float maxDistance) {
+        private void ConfigureAudioSource3D(AudioSource source, AudioClip clip, float volumeScale, float minDistance, float maxDistance)
+        {
             source.clip = clip;
             source.volume = sfxVolume * volumeScale;
 
@@ -400,7 +444,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Legacy method maintained for compatibility with existing code.
         /// Uses the internal AudioSettings system.
         /// </summary>
-        public void PlayOneShot(AudioClip clip, AudioSettings settings = default) {
+        public void PlayOneShot(AudioClip clip, AudioSettings settings = default)
+        {
             PlayOneShot_Internal(clip, settings);
         }
 
@@ -408,7 +453,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Legacy method maintained for compatibility with existing code.
         /// Plays a sound after a specified delay.
         /// </summary>
-        public void PlayOneShotDelayed(AudioClip clip, AudioSettings settings = default, float delay = 1.0f) {
+        public void PlayOneShotDelayed(AudioClip clip, AudioSettings settings = default, float delay = 1.0f)
+        {
             StartCoroutine(nameof(PlayOneShotAfterDelay), new OneShotCoroutine(clip, settings, delay));
         }
 

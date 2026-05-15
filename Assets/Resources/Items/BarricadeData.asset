@@ -14,17 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildableDataSO
   itemID: 6
   itemName: Barricade
-  maxUpgradeLevel: 3
-  maxAmount: 5
+  maxUpgradeLevel: 5
+  maxAmmo: 10
+  baseAmmo: 2
+  ammoScaling: 1
+  baseCurrentCapacity: 1
+  currentCapacityScaling: 0
   damage: 0
   explosionRadius: 0
-  health: 100
+  health: 50
   displayStats: 0100000002000000
-  damageScaling: 0.1
-  resistanceScaling: 0.1
-  realPrefab: {fileID: 6655631503875209216, guid: 479f383ee9ae21740a9eccfd474ddbdf,
+  damageScaling: 0
+  resistanceScaling: 0.5
+  radiusScaling: 0
+  realPrefab: {fileID: 5372157676634379281, guid: f246e5f9a74712a438f5af027106af0d,
     type: 3}
-  ghostPrefab: {fileID: 6655631503875209216, guid: 83d7ecfc4543a4041a3821b0609c2850,
+  ghostPrefab: {fileID: 4477471319208393098, guid: 09375b7d804d60e47813d41fa4740a45,
     type: 3}
   placementRotationEuler: {x: 0, y: 0, z: 0}
-  overlapBoxSize: {x: 1, y: 1, z: 1}
+  overlapBoxSize: {x: 1, y: 1.1, z: 1}

@@ -47,6 +47,10 @@ public class SelectManager : MonoBehaviour {
     [Tooltip("BGM played while the map selection screen is active")]
     [SerializeField] private AudioClip selectScreenBGM;
 
+    [Range(0f, 1f)]
+    [Tooltip("Per-track volume for the selection screen BGM")]
+    [SerializeField] private float selectScreenBGMVolume = 1f;
+
     [Tooltip("Smooth fade duration when starting selection screen BGM")]
     [SerializeField] private float selectScreenBGMFadeDuration = 0.5f;
 
@@ -64,7 +68,7 @@ public class SelectManager : MonoBehaviour {
         audioService = ServiceLocator.Current.Get<IAudioManagerService>();
 
         // We start the selection screen BGM once, keeping music management centralized in the audio service.
-        audioService?.PlayBGM(selectScreenBGM, true, selectScreenBGMFadeDuration);
+        audioService?.PlayBGM(selectScreenBGM, true, selectScreenBGMFadeDuration, selectScreenBGMVolume);
 
         InitializeBackgroundImages();
         ConfigureBackgroundRaycastBehavior();

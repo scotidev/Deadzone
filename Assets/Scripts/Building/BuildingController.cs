@@ -145,6 +145,10 @@ public class BuildingController : MonoBehaviour {
     /// and not obstructed by other objects. The method also ensures the ghost is not positioned too close to the player
     /// and visually indicates whether the placement area is valid.</remarks>
     private void UpdateGhostPosition() {
+        // LOG TEMPORÁRIO — debug overlap entre buildables
+        string buildableName = selectedItem != null ? $"{selectedItem.ItemID}/{selectedItem.ItemName}" : "NULL";
+        Debug.Log($"[OVERLAP] >>> Updating ghost for: {buildableName} <<<");
+
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
         LayerMask groundMask = groundLayer.value != 0 ? groundLayer : Physics.DefaultRaycastLayers;
@@ -165,6 +169,10 @@ public class BuildingController : MonoBehaviour {
             currentGhost.transform.rotation = Quaternion.Euler(selectedItem.PlacementRotationEuler);
             LayerMask overlapMask = wallLayer.value != 0 ? obstacleLayer | wallLayer : obstacleLayer;
 
+            // LOG TEMPORÁRIO — valores das layers
+            Debug.Log($"[OVERLAP] overlapMask.value={overlapMask.value}, obstacleLayer.value={obstacleLayer.value}, wallLayer.value={wallLayer.value}");
+            Debug.Log($"[OVERLAP] placementPos={placementPos}, halfExtents={selectedItem.OverlapBoxSize * 0.5f}");
+
             Collider[] collisions = Physics.OverlapBox(
                 placementPos,
                 selectedItem.OverlapBoxSize * 0.5f,
@@ -172,7 +180,18 @@ public class BuildingController : MonoBehaviour {
                 overlapMask
             );
 
-            currentGhostObject?.SetPlaceable(HasInventoryQuantity() && collisions.Length == 0);
+            // LOG TEMPORÁRIO — colliders detectados
+            Debug.Log($"[OVERLAP] collisions.Length={collisions.Length}");
+            for (int i = 0; i < collisions.Length; i++) {
+                Debug.Log($"[OVERLAP]   Hit[{i}]: name={collisions[i].gameObject.name}, layer={LayerMask.LayerToName(collisions[i].gameObject.layer)}, tag={collisions[i].gameObject.tag}");
+            }
+
+            bool hasInventory = HasInventoryQuantity();
+            bool isPlaceable = hasInventory && collisions.Length == 0;
+            // LOG TEMPORÁRIO — resultado final
+            Debug.Log($"[OVERLAP] hasInventory={hasInventory}, isPlaceable={isPlaceable}");
+
+            currentGhostObject?.SetPlaceable(isPlaceable);
 
             currentGhost.SetActive(true);
         } else {
@@ -244,18 +263,15 @@ public class BuildingController : MonoBehaviour {
             currentGhost.transform.position,
             Quaternion.Euler(selectedItem.PlacementRotationEuler));
 
-        // Try to play placement sound if the placed object has the method
+        // Try to play placement sound and initialize if the placed object has the method
         if (placedObject != null) {
             // Try Barricade
             Barricade barricade = placedObject.GetComponent<Barricade>();
             if (barricade != null) {
                 barricade.PlayPlacementSound();
-                float health = selectedItem.Resistance;
-                if (PlayerProgress.Instance != null) {
-                    int level = PlayerProgress.Instance.GetItemLevel(selectedItem.ItemID);
-                    health = selectedItem.GetResistanceAtLevel(level);
-                }
-                barricade.Initialize(health);
+                // CONCEITO: A barricada agora se auto-inicializa no Awake() lendo do
+                // BuildableDataSO.GetResistanceAtLevel() via PlayerProgress.
+                // O BuildingController não precisa mais calcular ou passar health.
             }
 
             // Try BearTrap
