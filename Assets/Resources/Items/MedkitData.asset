@@ -15,6 +15,10 @@ MonoBehaviour:
   itemID: 4
   itemName: Medkit
   maxUpgradeLevel: 3
-  healAmount: 100
-  healSpeed: 5
-  maxAmount: 3
+  maxAmmo: 3
+  baseAmmo: 1
+  ammoScaling: 1
+  baseCurrentCapacity: 1
+  currentCapacityScaling: 0
+  healAmount: 25
+  levelMultiplier: 2

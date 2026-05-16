@@ -51,6 +51,10 @@ namespace InfimaGames.LowPolyShooterPack
 
         private void Awake()
         {
+            sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            bgmVolume = PlayerPrefs.GetFloat("BGMVolume", 0.5f);
+            AudioListener.volume = PlayerPrefs.GetFloat("MasterVolume", 1f);
+
             InitializeBGMSource();
             InitializeDialogueSource();
         }

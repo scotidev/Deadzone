@@ -27,7 +27,6 @@ public class ShopUI : BaseUI {
     [SerializeField] private Button closeButton;
     [SerializeField] private TextMeshProUGUI currencyText;
     [SerializeField] private TextMeshProUGUI selectedItemNameText;
-    [SerializeField] private TextMeshProUGUI selectedItemDescriptionText;
 
     [Header("Dynamic Stats")]
     [SerializeField] private Transform statsContainer;
@@ -224,7 +223,7 @@ public class ShopUI : BaseUI {
 
     private void UpdateSelectedItemInfo() {
         if (selectedItemData == null) {
-            SetSelectedInfoTexts(string.Empty, string.Empty);
+            SetSelectedInfoTexts(string.Empty);
             ClearStatBars();
             UpdateActionButton(null, 0);
             ClearAmmoDisplay();
@@ -232,17 +231,15 @@ public class ShopUI : BaseUI {
         }
 
         string itemName = selectedItemData.ItemName;
-        string description = selectedItemData.Description;
 
-        SetSelectedInfoTexts(itemName, description);
+        SetSelectedInfoTexts(itemName);
         BuildDynamicStats();
         UpdateAmmoDisplay(selectedItemData.ItemID);
         UpdateActionButton(selectedItemData, 0);
     }
 
-    private void SetSelectedInfoTexts(string itemName, string description) {
+    private void SetSelectedInfoTexts(string itemName) {
         if (selectedItemNameText != null) selectedItemNameText.text = itemName;
-        if (selectedItemDescriptionText != null) selectedItemDescriptionText.text = description;
     }
 
     private void BuildDynamicStats() {
@@ -449,11 +446,9 @@ public class ShopUI : BaseUI {
 
         if (itemData.ItemData is VestDataSO) {
             feedback.PlayVestClickSound();
-        }
-        else if (itemData.ItemData is WeaponDataSO) {
+        } else if (itemData.ItemData is WeaponDataSO) {
             feedback.PlayAmmoClickSound();
-        }
-        else {
+        } else {
             feedback.PlaySuppliesClickSound();
         }
     }

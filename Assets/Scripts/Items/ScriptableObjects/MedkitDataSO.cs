@@ -10,8 +10,8 @@ public class MedkitDataSO : ItemDataSO {
     public float healAmount;
 
     [Header("Upgrade Settings")]
-    [Tooltip("Heal amount increase per level. 0.1f = +10% per level.")]
-    [SerializeField] private float healScaling = 0.1f;
+    [Tooltip("Multiplicador de cura por nível. 2f = dobra a cada nível.")]
+    [SerializeField] private float levelMultiplier = 2f;
 
     #region PROPERTIES
 
@@ -25,9 +25,8 @@ public class MedkitDataSO : ItemDataSO {
 
     public override float[] GetStatValues(int level) {
         level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
-        float levelFactor = 1f + healScaling * (level - 1);
         return new[] { 
-            healAmount * levelFactor, 
+            healAmount * Mathf.Pow(levelMultiplier, level - 1), 
             (float)GetMaxAmmoAtLevel(level) 
         };
     }

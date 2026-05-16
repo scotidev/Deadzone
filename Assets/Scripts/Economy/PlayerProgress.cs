@@ -34,9 +34,6 @@ public class PlayerProgress : MonoBehaviour {
     private HashSet<string> ammoInitialized = new HashSet<string>();
     private Dictionary<string, int> buildableQuantities = new Dictionary<string, int>();
 
-    // REFATORAÇÃO: Adicionado suporte a consumíveis genéricos (medkit, grenade, etc)
-    private Dictionary<string, int> consumableQuantities = new Dictionary<string, int>();
-
     // NOVO: Unified ammo/quantity system
     // itemCurrentAmmo: quantidade na mão (magazine para armas, 1 para consumíveis/buildables quando em uso)
     // itemTotalAmmo: quantidade no inventário (reserva)
@@ -160,22 +157,10 @@ public class PlayerProgress : MonoBehaviour {
             unlockedBuildables[buildableID] = true;
         }
 
-        // CRÍTICO: Use consumableQuantities (unified storage) instead of buildableQuantities
-        // GetBuildableQuantity() reads from consumableQuantities, so we must write there too
-        if (!consumableQuantities.ContainsKey(buildableID)) {
-            consumableQuantities[buildableID] = initialQuantity;
-            Debug.Log($"[PlayerProgress] Unlocked buildable (internal): {buildableID} with quantity {initialQuantity}");
-        } else {
-            Debug.LogWarning($"[PlayerProgress] Buildable {buildableID} already unlocked with quantity {consumableQuantities[buildableID]}");
-        }
-
-        // CONCEITO: Initialize unified itemLevels dictionary for buildables
-        // This ensures buildables can be upgraded just like weapons
         if (!itemLevels.ContainsKey(buildableID)) {
             itemLevels[buildableID] = 1;
         }
 
-        // NEW: Initialize unified ammo system (current = 0, total = initialQuantity)
         // The player receives 1 buildable item in inventory on unlock
         InitializeItemAmmo(buildableID, 1);
         itemTotalAmmo[buildableID] = initialQuantity;
@@ -192,20 +177,12 @@ public class PlayerProgress : MonoBehaviour {
             unlockedConsumables[consumableID] = true;
         }
 
-        if (!consumableQuantities.ContainsKey(consumableID)) {
-            consumableQuantities[consumableID] = initialQuantity;
-        }
-
-        // CONCEITO: Initialize unified itemLevels dictionary for consumables
-        // This ensures consumables can be upgraded just like weapons
         if (!itemLevels.ContainsKey(consumableID)) {
             itemLevels[consumableID] = 1;
         }
 
-        // NEW: Initialize unified ammo system (current = 0, total = 0)
         InitializeItemAmmo(consumableID, 1);
-
-        Debug.Log($"[PlayerProgress] Unlocked consumable (internal): {consumableID} with quantity {initialQuantity}");
+        itemTotalAmmo[consumableID] = initialQuantity;
     }
 
     /// <summary>
@@ -243,7 +220,6 @@ public class PlayerProgress : MonoBehaviour {
         return false;
     }
 
-    // REFATORAÇÃO: deviamos checar não só a quantidade de buildables, mas de granadas e medkits tbm.
     /// <summary>
     /// Gets the current quantity of a buildable item in inventory.
     /// Now uses the unified GetItemTotal() system.
@@ -251,21 +227,15 @@ public class PlayerProgress : MonoBehaviour {
     /// <param name="buildableID">The buildable type ID.</param>
     /// <returns>Current quantity.</returns>
     public int GetBuildableQuantity(string buildableID) {
-        // NEW: Use unified GetItemTotal() instead of reading directly from consumableQuantities
-        // This ensures sync with the new system
         return GetItemTotal(buildableID);
     }
 
-    // REFATORAÇÃO: aqui a mesma coisa do método acima, não é so o buildable que é consumido ao usar, é o medkit e a granada. Se zerarmos nosso inventario (usarmos todos) ele deve ficar em 0, mas nao precisa ser desbloqueado novamente, apenas comprado munição, o que adiciona esse mesmo item ao inventario novamente.
     /// <summary>
     /// Consumes a buildable item (when placing it in the world).
-    /// Now uses the unified UseItem() system instead of manipulating consumableQuantities directly.
     /// </summary>
     /// <param name="buildableID">The buildable type ID.</param>
     /// <returns>True if an item was available to consume.</returns>
     public bool ConsumeBuildable(string buildableID) {
-        // NEW: Use unified UseItem() instead of manual manipulation
-        // This ensures sync with the new itemTotalAmmo dictionary
         return UseItem(buildableID, 1);
     }
 
@@ -316,8 +286,8 @@ public class PlayerProgress : MonoBehaviour {
             weaponLevels[itemID] = itemLevels[itemID];
         }
 
-        // Grant 1 quantity in inventory for buildables on each upgrade
-        if (unlockedBuildables.ContainsKey(itemID)) {
+        // Grant 1 quantity for buildables and consumables on each upgrade
+        if (unlockedBuildables.ContainsKey(itemID) || unlockedConsumables.ContainsKey(itemID)) {
             AddItemAmmo(itemID, 1);
         }
 
@@ -434,7 +404,7 @@ public class PlayerProgress : MonoBehaviour {
         }
         
         // Buildables (BearTrap, Barricade, ExplosiveBarrel) and Consumables (Grenade, Medkit):
-        // All stored in consumableQuantities dictionary
+        // Uses unified GetItemTotal() via GetConsumableQuantity()
         if (shopItemData.ItemData is BuildableDataSO ||
             shopItemData.ItemData is MedkitDataSO ||
             shopItemData.ItemData is GrenadeDataSO) {
@@ -783,40 +753,34 @@ public class PlayerProgress : MonoBehaviour {
 
     /// <summary>
     /// Gets the current quantity of a consumable or buildable item.
-    /// Now uses the unified GetItemTotal() system.
+    /// Uses unified system via GetItemTotal().
     /// </summary>
     /// <param name="itemID">The consumable/buildable item ID.</param>
     /// <returns>Current quantity.</returns>
     public int GetConsumableQuantity(string itemID) {
-        // NEW: Use unified GetItemTotal() instead of reading directly from consumableQuantities
-        // This ensures sync with the new system
         return GetItemTotal(itemID);
     }
 
     /// <summary>
     /// Adds quantity to a consumable or buildable item.
-    /// Respects the maximum limit using the unified system.
+    /// Uses unified system via AddItemAmmo().
     /// </summary>
     /// <param name="itemID">The consumable/buildable item ID.</param>
     /// <param name="amount">Amount to add.</param>
     /// <param name="maxAmount">Maximum amount allowed (default 10, overridden by ItemDataSO).</param>
     /// <returns>True if quantity was added (not already at max).</returns>
     public bool AddConsumable(string itemID, int amount, int maxAmount = MAX_CONSUMABLE_QUANTITY) {
-        // NEW: Use unified AddItemAmmo() instead of manual manipulation
-        // This ensures sync with the new system and respects ItemDataSO max values
         return AddItemAmmo(itemID, amount);
     }
 
     /// <summary>
     /// Consumes (decrements) a consumable or buildable item.
-    /// Now uses the unified UseItem() system instead of manipulating consumableQuantities directly.
+    /// Uses unified system via UseItem().
     /// </summary>
     /// <param name="itemID">The consumable/buildable item ID.</param>
     /// <param name="amount">Amount to consume.</param>
     /// <returns>True if enough quantity was available to consume.</returns>
     public bool ConsumeItem(string itemID, int amount) {
-        // NEW: Use unified UseItem() instead of manual manipulation
-        // This ensures sync with the new itemTotalAmmo dictionary
         return UseItem(itemID, amount);
     }
 

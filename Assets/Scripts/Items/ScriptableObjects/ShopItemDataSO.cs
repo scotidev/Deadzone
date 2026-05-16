@@ -9,9 +9,6 @@ public class ShopItemDataSO : ScriptableObject {
 
     #region SERIALIZED FIELDS
 
-    [Header("Identity")]
-    [TextArea(2, 4)] private string itemDescription;
-
     [Header("Item Data Reference")]
     [SerializeField] private ItemDataSO itemData;
 
@@ -44,7 +41,6 @@ public class ShopItemDataSO : ScriptableObject {
 
     public string ItemID => itemData?.ItemID ?? string.Empty;
     public string ItemName => itemData?.ItemName ?? string.Empty;
-    public string Description => itemDescription;
     public ItemDataSO ItemData => itemData;
     public Sprite Icon => icon;
     public GameObject PreviewPrefab => previewPrefab;
@@ -85,13 +81,6 @@ public class ShopItemDataSO : ScriptableObject {
     #endregion
 
     #region SETTERS
-
-    /// <summary>
-    /// Set the item description (for editor configuration only).
-    /// </summary>
-    public void SetItemDescription(string newDescription) {
-        itemDescription = newDescription;
-    }
 
     /// <summary>
     /// Set the item data reference (for editor configuration only).

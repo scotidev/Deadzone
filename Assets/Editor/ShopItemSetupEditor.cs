@@ -70,7 +70,6 @@ public class ShopItemSetupEditor : EditorWindow {
             // Cria a instância do ShopItemDataSO
             ShopItemDataSO shopItem = ScriptableObject.CreateInstance<ShopItemDataSO>();
             
-            shopItem.SetItemDescription($"The {item.Name} item. Type: {item.Type}");
             shopItem.SetPreviewPrefab(Resources.Load<GameObject>($"Prefabs/Items/{item.PreviewPrefab}"));
 
             // Salva o asset

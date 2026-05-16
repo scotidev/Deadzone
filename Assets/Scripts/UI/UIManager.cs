@@ -1,4 +1,5 @@
 using UnityEngine;
+using Deadzone.UI;
 
 // refatoração: o UI  da wave deve ficar aqui? se parar pra analisar, o HUD do player vem do Element.cs e ElementText.cs, o que é um pouco inconsistente. Talvez seja melhor criar um HUDManager para lidar com os elementos do HUD, e deixar o UIManager apenas para os painéis de menu e interação. Assim, o UIManager fica mais focado em gerenciar as interfaces de usuário relacionadas a menus e interações, enquanto o HUDManager cuida dos elementos do HUD durante o jogo. ai pra isso precisariamos analisar como está feita o HUD do player todo, como as armas são mostradas, os icones, a vida, e unificar tudo em um HUD só, e o UIManager só cuida dos painéis de menu e interação. isso deixaria a arquitetura mais limpa e organizada, com responsabilidades bem definidas para cada manager.
 
@@ -29,6 +30,9 @@ public class UIManager : MonoBehaviour {
     [Header("HUD")]
     [SerializeField] private WaveUI waveUI;
     [SerializeField] private GameObject hudRoot;
+
+    [Header("Visual Feedback")]
+    [SerializeField] private HealFeedbackUI healFeedbackUI;
 
     #endregion
 
@@ -144,6 +148,17 @@ public class UIManager : MonoBehaviour {
             ShowInteractionPrompt(message);
         else
             HideInteractionPrompt();
+    }
+
+    /// <summary>
+    /// Shows the heal visual feedback effect on screen edges.
+    /// Called by Medkit when successfully healing the player.
+    /// </summary>
+    /// <param name="duration">How long the effect lasts in seconds.</param>
+    public void ShowHealFeedback(float duration) {
+        if (healFeedbackUI != null) {
+            healFeedbackUI.Show(duration);
+        }
     }
 
     #endregion

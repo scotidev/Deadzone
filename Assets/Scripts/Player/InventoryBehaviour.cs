@@ -56,6 +56,13 @@ namespace InfimaGames.LowPolyShooterPack
         /// <returns>Weapon that was just equipped.</returns>
         public abstract WeaponBehaviour Equip(int index);
 
+        /// <summary>
+        /// Attempts to use the currently equipped item.
+        /// If it's a weapon, does nothing (Character handles weapon firing).
+        /// If it's a consumable/buildable, calls OnUse().
+        /// </summary>
+        public abstract void TryUseEquippedItem();
+
         #endregion
     }
 }

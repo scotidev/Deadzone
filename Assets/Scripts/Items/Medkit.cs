@@ -1,6 +1,7 @@
 using UnityEngine;
 using InfimaGames.LowPolyShooterPack;
 using Deadzone.Interfaces;
+using Deadzone.UI;
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
@@ -18,6 +19,13 @@ namespace InfimaGames.LowPolyShooterPack {
         [SerializeField] private float equipVolume = 1f;
         [SerializeField] private AudioClip useClip;
         [SerializeField] private float useVolume = 1f;
+        [SerializeField] private AudioClip reliefClip;
+        [SerializeField] private float reliefVolume = 1f;
+        [SerializeField] private AudioClip denyClip;
+        [SerializeField] private float denyVolume = 1f;
+
+        [Header("Visual Feedback")]
+        [SerializeField] private float feedbackDuration = 1f;
         
         #endregion
 
@@ -74,6 +82,11 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         public override void OnSelected() {
             PlayEquipSound();
+            if (PlayerProgress.Instance != null) {
+                string id = GetItemID();
+                int total = PlayerProgress.Instance.GetItemTotal(id);
+                PlayerProgress.Instance.SetItemCurrent(id, total > 0 ? 1 : 0);
+            }
             gameObject.SetActive(true);
         }
         
@@ -86,31 +99,57 @@ namespace InfimaGames.LowPolyShooterPack {
         }
         
         /// <summary>
-        /// NORMAL use: player presses fire button.
-        /// Heals the player by medkitData.healAmount.
-        /// CONCEITO: A cura é baseada no SO. Se mudar o SO, o comportamento muda automaticamente.
+        /// Use the medkit: heal the player based on upgrade level.
+        /// If health is at 100%, play deny sound and do not consume the item.
+        /// If no medkit in hand, play deny sound.
         /// </summary>
         public override void OnUse() {
             if (!CanBeUsed() || medkitData == null) {
                 Debug.LogWarning("[Medkit] Cannot use medkit (not unlocked or no quantity).", gameObject);
                 return;
             }
-            
-            PlayerHealth playerHealth = GetComponentInParent<PlayerHealth>();
-            if (playerHealth != null) {
-                playerHealth.Heal(medkitData.healAmount);
-                PlayUseSound();
-                
-                // Consume 1 medkit from inventory
-                // NEW: Use unified UseItem() instead of ConsumeItem()
-                if (PlayerProgress.Instance != null) {
-                    PlayerProgress.Instance.UseItem(GetItemID(), 1);
-                    // FIXED: Reset current ammo to 0 after using.
-                    // The "current" represents what's in hand - after healing, hand is empty.
-                    int remaining = PlayerProgress.Instance.GetItemTotal(GetItemID());
-                    PlayerProgress.Instance.SetItemCurrent(GetItemID(), remaining > 0 ? 1 : 0);
+
+            if (PlayerProgress.Instance != null) {
+                int currentInHand = PlayerProgress.Instance.GetItemCurrent(GetItemID());
+                if (currentInHand <= 0) {
+                    PlayDenySound();
+                    Debug.Log("[Medkit] No medkit in hand, cannot use.");
+                    return;
                 }
             }
+            
+            PlayerHealth playerHealth = GetComponentInParent<PlayerHealth>();
+            if (playerHealth == null) {
+                Debug.LogWarning("[Medkit] PlayerHealth not found!", gameObject);
+                return;
+            }
+
+            if (playerHealth.GetHealthFraction() >= 1f) {
+                PlayDenySound();
+                Debug.Log("[Medkit] Health already at 100%, cannot use medkit.");
+                return;
+            }
+
+            int currentLevel = 1;
+            if (PlayerProgress.Instance != null) {
+                currentLevel = PlayerProgress.Instance.GetItemLevel(GetItemID());
+            }
+
+            float[] statValues = medkitData.GetStatValues(currentLevel);
+            float healAmount = statValues[0];
+
+            playerHealth.Heal(healAmount);
+            PlayUseSound();
+            PlayReliefSound();
+            ShowHealFeedback();
+
+            if (PlayerProgress.Instance != null) {
+                PlayerProgress.Instance.UseItem(GetItemID(), 1);
+                int remaining = PlayerProgress.Instance.GetItemTotal(GetItemID());
+                PlayerProgress.Instance.SetItemCurrent(GetItemID(), remaining > 0 ? 1 : 0);
+            }
+
+            Debug.Log($"[Medkit] Healed for {healAmount} HP. Level: {currentLevel}");
         }
         
         /// <summary>
@@ -122,11 +161,7 @@ namespace InfimaGames.LowPolyShooterPack {
                 return false;
             }
             
-            // CONCEITO: CanBeUsed() é para seleção, apenas verifica se desbloqueado.
-            // A checagem de quantidade/ammo é feita em OnUse(), não em CanBeUsed().
-            // Isso permite selecionar qualquer item desbloqueado, mesmo sem quantidade.
             bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(GetItemID());
-            Debug.Log($"[Medkit] CanBeUsed check: ID={GetItemID()}, Unlocked={isUnlocked}");
             return isUnlocked;
         }
         
@@ -143,6 +178,28 @@ namespace InfimaGames.LowPolyShooterPack {
         private void PlayUseSound() {
             if (useClip != null && audioService != null) {
                 audioService.PlaySFX2D(useClip, useVolume);
+            }
+        }
+
+        private void PlayDenySound() {
+            if (denyClip != null && audioService != null) {
+                audioService.PlaySFX2D(denyClip, denyVolume);
+            }
+        }
+
+        private void PlayReliefSound() {
+            if (reliefClip != null && audioService != null) {
+                audioService.PlaySFX2D(reliefClip, reliefVolume);
+            }
+        }
+
+        #endregion
+
+        #region VISUAL FEEDBACK
+
+        private void ShowHealFeedback() {
+            if (UIManager.Instance != null) {
+                UIManager.Instance.ShowHealFeedback(feedbackDuration);
             }
         }
 
