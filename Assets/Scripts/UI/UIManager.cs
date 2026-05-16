@@ -57,9 +57,11 @@ public class UIManager : MonoBehaviour {
     /// Exhibits the pause menu and hides all other panels.
     /// </summary>
     public void ShowPauseMenu() {
+        Debug.Log("[UIManager] ShowPauseMenu()");
         HideAllPanels();
         if (pauseUI != null)
             pauseUI.Show();
+        LogVisiblePanels("[UIManager] depois de ShowPauseMenu:");
     }
 
     /// <summary>
@@ -76,22 +78,26 @@ public class UIManager : MonoBehaviour {
     /// Exhibits the options panel (keeping the pause panel hidden)
     /// </summary>
     public void ShowOptions() {
+        Debug.Log("[UIManager] ShowOptions()");
         if (pauseUI != null)
             pauseUI.Hide();
 
         if (optionsUI != null)
             optionsUI.Show();
+        LogVisiblePanels("[UIManager] depois de ShowOptions:");
     }
 
     /// <summary>
     /// Exhibits the controls panel (keeping the pause panel hidden)
     /// </summary>
     public void ShowControls() {
+        Debug.Log("[UIManager] ShowControls()");
         if (pauseUI != null)
             pauseUI.Hide();
 
         if (controlsUI != null)
             controlsUI.Show();
+        LogVisiblePanels("[UIManager] depois de ShowControls:");
     }
 
     /// <summary>
@@ -99,11 +105,13 @@ public class UIManager : MonoBehaviour {
     /// Hides all overlays.
     /// </summary>
     public void HideAllPanels() {
+        Debug.Log("[UIManager] HideAllPanels()");
         if (pauseUI != null) pauseUI.Hide();
         if (shopUI != null) shopUI.Hide();
         if (optionsUI != null) optionsUI.Hide();
         if (controlsUI != null) controlsUI.Hide();
         if (hudRoot != null) hudRoot.SetActive(true);
+        LogVisiblePanels("[UIManager] depois de HideAllPanels:");
     }
 
     /// <summary>
@@ -160,6 +168,21 @@ public class UIManager : MonoBehaviour {
             healFeedbackUI.Show(duration);
         }
     }
+    /// <summary>
+    /// Debug: logs quais painéis estão visíveis no momento.
+    /// </summary>
+    public void LogVisiblePanels(string context) {
+        int count = 0;
+        string visible = "";
+
+        if (pauseUI != null && pauseUI.IsVisible()) { count++; visible += " [PauseUI]"; }
+        if (shopUI != null && shopUI.IsVisible()) { count++; visible += " [ShopUI]"; }
+        if (optionsUI != null && optionsUI.IsVisible()) { count++; visible += " [OptionsUI]"; }
+        if (controlsUI != null && controlsUI.IsVisible()) { count++; visible += " [ControlsUI]"; }
+
+        Debug.Log($"{context} {count} painel(is) visível(is):{visible}");
+    }
 
     #endregion
+
 }

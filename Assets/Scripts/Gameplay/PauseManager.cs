@@ -61,10 +61,14 @@ public class PauseManager : MonoBehaviour {
     /// Reads keyboard input each frame and toggles or closes menus when the Escape key is pressed.
     /// </summary>
     private void HandlePauseInput() {
-        if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame)
+        bool escPressed = Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
+        if (!escPressed)
             return;
 
+        Debug.Log($"[PauseManager] ESC detectado no HandlePauseInput() | isPaused={isPaused} | Time.timeScale={Time.timeScale}");
+
         if (GameManager.Instance?.State == GameState.Shopping) {
+            Debug.Log("[PauseManager] No shopping, fechando shop");
             ShopManager.Instance?.CloseShop();
             return;
         }
@@ -86,6 +90,7 @@ public class PauseManager : MonoBehaviour {
     /// Pauses the game: freezes time via <see cref="GameManager.PauseTime"/>, shows the pause menu, and unlocks the cursor.
     /// </summary>
     public void PauseGame() {
+        Debug.Log("[PauseManager] PauseGame()");
         ResolvePlayerCharacter();
         isPaused = true;
         GameManager.Instance?.SetState(GameState.Paused);
@@ -110,6 +115,7 @@ public class PauseManager : MonoBehaviour {
     /// Resumes the game: restores time via <see cref="GameManager.ResumeTime"/>, hides all menus, and locks the cursor back to the viewport.
     /// </summary>
     public void ResumeGame() {
+        Debug.Log($"[PauseManager] ResumeGame() | Stack:\n{new System.Diagnostics.StackTrace(true)}");
         ResolvePlayerCharacter();
         GameManager.Instance?.ResumeTime();
         isPaused = false;

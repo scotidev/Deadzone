@@ -88,6 +88,7 @@ public class GameManager : MonoBehaviour {
     /// The desired time multiplier. 1.0 = normal speed, 0.5 = half speed.
     /// </param>
     public void SetTimeScale(float scale) {
+        Debug.Log($"[GameManager] SetTimeScale({scale}) | _baseTimeScale={_baseTimeScale} | Stack:\n{new System.Diagnostics.StackTrace(true)}");
         _baseTimeScale = scale;
 
         Time.timeScale = scale;

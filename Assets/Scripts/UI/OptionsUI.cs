@@ -105,12 +105,17 @@ public class OptionsUI : BaseUI {
     }
 
     private void OnBackClick() {
+        Debug.Log("[OptionsUI] OnBackClick() - ANTES de Hide()");
         Hide();
+        Debug.Log("[OptionsUI] OnBackClick() - DEPOIS de Hide(), ANTES de ShowPauseMenu()");
         if (UIManager.Instance != null)
             UIManager.Instance.ShowPauseMenu();
+        Debug.Log("[OptionsUI] OnBackClick() - DEPOIS de ShowPauseMenu()");
+        UIManager.Instance?.LogVisiblePanels("[OptionsUI] depois de OnBackClick:");
     }
 
     protected override void OnEscapePressed() {
+        Debug.Log("[OptionsUI] OnEscapePressed()");
         OnBackClick();
     }
 

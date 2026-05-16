@@ -84,6 +84,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// When activated ( value = true), it disables cursor locking (making it visible) and updates the cursor state in Unity.
         /// </summary>
         public override void SetInterfaceMode(bool value) {
+            Debug.Log($"[Character] SetInterfaceMode({value}) chamado de:\n{new System.Diagnostics.StackTrace(true)}");
             interfaceMode = value;
             cursorLocked = !interfaceMode;
             UpdateCursorState();

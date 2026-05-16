@@ -81,8 +81,10 @@ public abstract class BaseUI : MonoBehaviour {
         if (!CloseOnEscape || !IsVisible())
             return;
 
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) {
+            Debug.Log($"[BaseUI] HandleEscapeClose() fechando {GetType().Name} via ESC");
             OnEscapePressed();
+        }
     }
 
     /// <summary>

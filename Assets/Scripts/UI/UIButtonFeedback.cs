@@ -114,7 +114,7 @@ public class UIButtonFeedback : MonoBehaviour,
     }
 
     private void Update() {
-        transform.localScale = Vector3.Lerp(transform.localScale, targetScale, Time.deltaTime * scaleSpeed);
+        transform.localScale = Vector3.Lerp(transform.localScale, targetScale, Time.unscaledDeltaTime * scaleSpeed);
     }
 
     public void OnPointerEnter(PointerEventData e) {

@@ -31,6 +31,9 @@ public class WaveManager : MonoBehaviour {
     [SerializeField] private int lastLightWave = 3;
     [SerializeField] private int lastMediumWave = 7;
 
+    [Header("Wave Clear SFX")]
+    [SerializeField] private AudioClip waveClearClip;
+
     [Header("Wave")]
 
     [Tooltip("Growth rate from wave 1 to 2.")]
@@ -222,6 +225,7 @@ public class WaveManager : MonoBehaviour {
         }
 
         audioService?.PlayBGM(ambientBGM, true, 2.0f, ambientBGMVolume);
+        audioService?.PlaySFX2D(waveClearClip);
     }
 
     /// <summary>

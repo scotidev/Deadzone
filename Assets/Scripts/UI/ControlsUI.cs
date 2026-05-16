@@ -48,15 +48,20 @@ public class ControlsUI : BaseUI {
     /// Handles the Back button click event.
     /// </summary>
     private void OnBackClick() {
+        Debug.Log("[ControlsUI] OnBackClick() - ANTES de Hide()");
         Hide();
+        Debug.Log("[ControlsUI] OnBackClick() - DEPOIS de Hide(), ANTES de ShowPauseMenu()");
         if (UIManager.Instance != null)
             UIManager.Instance.ShowPauseMenu();
+        Debug.Log("[ControlsUI] OnBackClick() - DEPOIS de ShowPauseMenu()");
+        UIManager.Instance?.LogVisiblePanels("[ControlsUI] depois de OnBackClick:");
     }
 
     /// <summary>
     /// Handles Escape key behavior by reusing the Back action.
     /// </summary>
     protected override void OnEscapePressed() {
+        Debug.Log("[ControlsUI] OnEscapePressed()");
         OnBackClick();
     }
 
