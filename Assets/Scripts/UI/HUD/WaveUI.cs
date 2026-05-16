@@ -88,7 +88,7 @@ public class WaveUI : BaseUI {
     /// </summary>
     public void UpdateEnemiesRemaining(int count) {
         if (enemiesRemainingText != null)
-            enemiesRemainingText.text = $"ENEMIES {count}";
+            enemiesRemainingText.text = $"{count} ENEMIES";
     }
 
     /// <summary>

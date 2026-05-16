@@ -38,6 +38,12 @@ namespace Deadzone.UI {
         [Tooltip("Sprites dos números de 1 a 8 (índice 0 = tecla 1, índice 7 = tecla 8).")]
         [SerializeField] private Sprite[] numberSprites;
 
+        [Header("Tutorial Icons")]
+        [Tooltip("Sprite exibido no tutorial de recarga (tecla R).")]
+        [SerializeField] private Sprite reloadIcon;
+        [Tooltip("Sprite exibido no tutorial de ataque melee (tecla F).")]
+        [SerializeField] private Sprite meleeIcon;
+
         [Header("Behavior")]
         [Tooltip("Minimum seconds a tutorial stays visible even if the action is detected early.")]
         [SerializeField] private float minimumDisplayTime = 2f;
@@ -78,8 +84,6 @@ namespace Deadzone.UI {
                 Destroy(gameObject);
                 return;
             }
-
-            tutorialUI?.Hide();
         }
 
         private void Start() {
@@ -359,7 +363,7 @@ namespace Deadzone.UI {
                     step.Setup(
                         stepId,
                         "Aperte R para recarregar",
-                        null,
+                        reloadIcon,
                         CompletionType.OnReloadPress,
                         "",
                         0f
@@ -376,7 +380,7 @@ namespace Deadzone.UI {
                     step.Setup(
                         stepId,
                         "Aperte F para ataque melee",
-                        null,
+                        meleeIcon,
                         CompletionType.OnMeleePress,
                         "",
                         0f

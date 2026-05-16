@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 using InfimaGames.LowPolyShooterPack;
 using IAudio = InfimaGames.LowPolyShooterPack.IAudioManagerService;
 
@@ -20,7 +20,7 @@ namespace Deadzone.UI {
         #region SERIALIZED FIELDS
 
         [Header("References")]
-        [SerializeField] private Text messageText;
+        [SerializeField] private TMP_Text messageText;
 
         [Header("Settings")]
         [SerializeField] private float displayDuration = 1.5f;

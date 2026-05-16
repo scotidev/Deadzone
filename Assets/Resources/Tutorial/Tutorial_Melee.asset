@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: Tutorial_Melee
   m_EditorClassIdentifier: Assembly-CSharp::Deadzone.UI.TutorialStepSO
   stepId: tutorial_melee
-  tutorialText: '"Aperte F para ataque melee" '
-  tutorialImage: {fileID: 0}
+  tutorialText: Press [F] for melee attack.
+  tutorialImage: {fileID: 21300000, guid: f8d4b38fb8e5d524ab535b0b66f06475, type: 3}
   completionType: 9
   completionParam: 
   timeout: 0
+  nextStepId: 

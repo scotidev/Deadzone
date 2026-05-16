@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: Tutorial_Reload
   m_EditorClassIdentifier: Assembly-CSharp::Deadzone.UI.TutorialStepSO
   stepId: tutorial_reload
-  tutorialText: '"Aperte R para recarregar" '
-  tutorialImage: {fileID: 0}
+  tutorialText: Press [R] to reload.
+  tutorialImage: {fileID: 21300000, guid: 5323aee9afedf8b46bb07ba35507c194, type: 3}
   completionType: 8
   completionParam: 
   timeout: 0
+  nextStepId: 

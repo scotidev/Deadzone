@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: Tutorial_WASD
   m_EditorClassIdentifier: Assembly-CSharp::Deadzone.UI.TutorialStepSO
   stepId: tutorial_wasd
-  tutorialText: '"Use WASD para se movimentar"'
-  tutorialImage: {fileID: 0}
+  tutorialText: Press [WASD] to move around.
+  tutorialImage: {fileID: 21300000, guid: fe64187cac3c37943bf1fc9094b373cd, type: 3}
   completionType: 1
   completionParam: 
   timeout: 0
+  nextStepId: 

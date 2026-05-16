@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: Tutorial_MouseLook
   m_EditorClassIdentifier: Assembly-CSharp::Deadzone.UI.TutorialStepSO
   stepId: tutorial_mouse
-  tutorialText: '"Mova o mouse para mirar"'
-  tutorialImage: {fileID: 0}
+  tutorialText: Use [MOUSE] to look around.
+  tutorialImage: {fileID: 21300000, guid: 49dd64455a97db64c8db028eb7659081, type: 3}
   completionType: 0
   completionParam: 
   timeout: 0
+  nextStepId: 

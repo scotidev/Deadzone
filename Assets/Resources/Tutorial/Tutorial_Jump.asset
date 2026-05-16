@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: Tutorial_Jump
   m_EditorClassIdentifier: Assembly-CSharp::Deadzone.UI.TutorialStepSO
   stepId: tutorial_jump
-  tutorialText: "\"Aperte Espa\xE7o para pular\"  "
-  tutorialImage: {fileID: 0}
+  tutorialText: Press [SPACEBAR] to jump.
+  tutorialImage: {fileID: 21300000, guid: bc6998f389f8d0e499c19b9a217fcfcb, type: 3}
   completionType: 5
   completionParam: 
   timeout: 0
+  nextStepId: 
