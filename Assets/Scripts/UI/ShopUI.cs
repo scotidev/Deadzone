@@ -134,6 +134,8 @@ public class ShopUI : BaseUI {
 
         int currentCurrency = EconomyManager.Instance.GetCurrentCurrency();
         currencyText.text = $"${currentCurrency:N0}";
+
+        currencyText.GetComponent<TextScalePulse>()?.Pulse();
     }
 
     private void PopulateShopItems() {

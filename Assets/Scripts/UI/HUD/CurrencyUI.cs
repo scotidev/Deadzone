@@ -1,8 +1,5 @@
-using System.Collections;
 using TMPro;
 using UnityEngine;
-
-// REFATORAÇÃO: esse script nao deveria herdar de ElementText? analise necessaria.
 
 /// <summary>
 /// UI component that displays the player's current currency in the HUD.
@@ -21,20 +18,6 @@ public class CurrencyUI : MonoBehaviour {
     [SerializeField] private string prefix = "$";
     [SerializeField] private bool useThousandsSeparator = true;
 
-    [Header("Animation (Optional)")]
-
-    [Tooltip("If true, currency text will briefly scale up when it changes.")]
-    [SerializeField] private bool animateOnChange = true;
-    [SerializeField] private float animationScale = 1.2f;
-    [SerializeField] private float animationDuration = 0.2f;
-
-    #endregion
-
-    #region FIELDS
-
-    private Vector3 originalScale;
-    private Coroutine animationCoroutine;
-
     #endregion
 
     #region UNITY
@@ -42,10 +25,7 @@ public class CurrencyUI : MonoBehaviour {
     private void Awake() {
         if (currencyText == null) {
             enabled = false;
-            return;
         }
-
-        originalScale = currencyText.transform.localScale;
     }
 
     private void Start() {
@@ -73,7 +53,7 @@ public class CurrencyUI : MonoBehaviour {
     #region METHODS
 
     /// <summary>
-    /// Updates the currency display text with the new amount, applying formatting and triggering animation if enabled.
+    /// Updates the currency display text with the new amount and triggers the scale pulse animation.
     /// </summary>
     /// <param name="newAmount">The new currency amount.</param>
     private void UpdateCurrencyDisplay(int newAmount) {
@@ -85,35 +65,7 @@ public class CurrencyUI : MonoBehaviour {
 
         currencyText.text = $"{prefix}{formattedAmount}";
 
-        if (animateOnChange && gameObject.activeInHierarchy) {
-            TriggerAnimation();
-        }
-    }
-
-    /// <summary>
-    /// Starts the text animation by stopping any currently running animation and initiating a new animation sequence.
-    /// </summary>
-    private void TriggerAnimation() {
-        if (animationCoroutine != null) {
-            StopCoroutine(animationCoroutine);
-        }
-        animationCoroutine = StartCoroutine(AnimateTextRoutine());
-    }
-
-    /// <summary>
-    /// Coroutine that smoothly scales the currency text up to the specified animation scale and then back down to its original scale over the defined duration.
-    /// </summary>
-    private IEnumerator AnimateTextRoutine() {
-        float timer = 0f;
-        while (timer < animationDuration) {
-            timer += Time.deltaTime;
-            float progress = timer / animationDuration;
-            float currentScale = Mathf.Lerp(animationScale, 1f, progress);
-            currencyText.transform.localScale = originalScale * currentScale;
-            yield return null;
-        }
-        currencyText.transform.localScale = originalScale;
-        animationCoroutine = null;
+        currencyText.GetComponent<TextScalePulse>()?.Pulse();
     }
 
     #endregion
