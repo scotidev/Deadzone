@@ -13,7 +13,8 @@ public enum GameState {
     Playing,
     Paused,
     Shopping,
-    InWave
+    InWave,
+    GameOver
 }
 
 /// <summary>

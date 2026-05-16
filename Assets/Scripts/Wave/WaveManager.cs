@@ -27,12 +27,16 @@ public class WaveManager : MonoBehaviour {
     [SerializeField] private AudioClip mediumWaveClip;
     [SerializeField] private AudioClip hardWaveClip;
     [SerializeField] private AudioClip bossWaveClip;
+    [Range(0f, 1f)]
+    [SerializeField] private float waveStartSFXVolume = 1f;
 
     [SerializeField] private int lastLightWave = 3;
     [SerializeField] private int lastMediumWave = 7;
 
     [Header("Wave Clear SFX")]
     [SerializeField] private AudioClip waveClearClip;
+    [Range(0f, 1f)]
+    [SerializeField] private float waveClearSFXVolume = 1f;
 
     [Header("Wave")]
 
@@ -225,7 +229,7 @@ public class WaveManager : MonoBehaviour {
         }
 
         audioService?.PlayBGM(ambientBGM, true, 2.0f, ambientBGMVolume);
-        audioService?.PlaySFX2D(waveClearClip);
+        audioService?.PlaySFX2D(waveClearClip, waveClearSFXVolume);
     }
 
     /// <summary>
@@ -267,7 +271,7 @@ public class WaveManager : MonoBehaviour {
         if (ShouldDelayWaveStartSound())
             StartCoroutine(PlayWaveStartSoundDelayed(clip));
         else
-            audioService?.PlaySFX2D(clip);
+            audioService?.PlaySFX2D(clip, waveStartSFXVolume);
     }
 
     /// <summary>
@@ -276,7 +280,7 @@ public class WaveManager : MonoBehaviour {
     private IEnumerator PlayWaveStartSoundDelayed(AudioClip clip) {
         yield return new WaitForSeconds(0.5f);
 
-        audioService?.PlaySFX2D(clip);
+        audioService?.PlaySFX2D(clip, waveStartSFXVolume);
     }
 
     /// <summary>

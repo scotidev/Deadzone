@@ -1377,11 +1377,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 261090877746194963, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2511525708182192631, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: enemyHealthBarUI
@@ -1442,76 +1437,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5143599863992337040, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: useClip
-      value: 
-      objectReference: {fileID: 8300000, guid: ee8f324c1adf9fc4e9058baad21abe4c, type: 3}
-    - target: {fileID: 5143599863992337040, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: denyClip
-      value: 
-      objectReference: {fileID: 8300000, guid: e1cbcafb4ebbffd40b757175de7f4ba0, type: 3}
-    - target: {fileID: 5143599863992337040, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: equipClip
-      value: 
-      objectReference: {fileID: 8300000, guid: 69d4a4ba1355bc847a97ccf2c9129f01, type: 3}
-    - target: {fileID: 5143599863992337040, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: reliefClip
-      value: 
-      objectReference: {fileID: 8300000, guid: 0f92351aec36f11428d23e5f50821c62, type: 3}
-    - target: {fileID: 5143599863992337040, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: reliefVolume
-      value: 0.4
-      objectReference: {fileID: 0}
-    - target: {fileID: 5143599863992337040, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: feedbackDuration
-      value: 2.7
-      objectReference: {fileID: 0}
-    - target: {fileID: 8451269814698746098, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_LocalScale.x
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 8451269814698746098, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_LocalScale.y
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 8451269814698746098, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_LocalScale.z
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 8451269814698746098, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8451269814698746098, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8451269814698746098, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9080138323114719816, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_Name
-      value: Medkit
-      objectReference: {fileID: 0}
-    - target: {fileID: 9080138323114719816, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1535,6 +1460,16 @@ PrefabInstance:
       propertyPath: waveClearClip
       value: 
       objectReference: {fileID: 8300000, guid: db8eb663b74ae4545b50e1c4dbf0999b, type: 3}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: waveClearSFXVolume
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: waveStartSFXVolume
+      value: 0.7
+      objectReference: {fileID: 0}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
       propertyPath: 'spawners.Array.data[0]'
@@ -1623,6 +1558,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2035910356015834724, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: playerCharacter
+      value: 
+      objectReference: {fileID: 1413941464}
     - target: {fileID: 3462812099456698194, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: m_Pivot.x
@@ -1723,36 +1663,16 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3735099708511216369, guid: 4a06de3311b20f6468eed9a93caa2de3,
-        type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -40
-      objectReference: {fileID: 0}
     - target: {fileID: 4073393092371575394, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: playerCharacter
       value: 
       objectReference: {fileID: 1413941464}
-    - target: {fileID: 5003024657873822239, guid: 4a06de3311b20f6468eed9a93caa2de3,
-        type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5003024657873822239, guid: 4a06de3311b20f6468eed9a93caa2de3,
-        type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5864479340680642005, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: playerHealth
       value: 
       objectReference: {fileID: 1776962870}
-    - target: {fileID: 6304367731676265496, guid: 4a06de3311b20f6468eed9a93caa2de3,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 7016419823468125405, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: vest

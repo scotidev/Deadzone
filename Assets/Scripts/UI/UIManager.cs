@@ -26,6 +26,7 @@ public class UIManager : MonoBehaviour {
     [SerializeField] private OptionsUI optionsUI;
     [SerializeField] private ControlsUI controlsUI;
     [SerializeField] private InteractionPromptUI interactionPromptUI;
+    [SerializeField] private GameOverUI gameOverUI;
 
     [Header("HUD")]
     [SerializeField] private WaveUI waveUI;
@@ -115,6 +116,29 @@ public class UIManager : MonoBehaviour {
     }
 
     /// <summary>
+    /// Exhibits the Game Over panel and hides all panels and HUD.
+    /// Called by GameOverManager when the player dies.
+    /// </summary>
+    public void ShowGameOver(int wave) {
+        Debug.Log("[UIManager] ShowGameOver()");
+        HideAllPanels();
+        if (hudRoot != null) hudRoot.SetActive(false);
+        if (gameOverUI != null) {
+            gameOverUI.SetWaveNumber(wave);
+            gameOverUI.Show();
+        }
+        LogVisiblePanels("[UIManager] depois de ShowGameOver:");
+    }
+
+    /// <summary>
+    /// Hides the Game Over panel.
+    /// </summary>
+    public void HideGameOver() {
+        if (gameOverUI != null)
+            gameOverUI.Hide();
+    }
+
+    /// <summary>
     /// Exhibits the wave HUD. 
     /// </summary>
     public void ShowWaveHUD() {
@@ -179,6 +203,7 @@ public class UIManager : MonoBehaviour {
         if (shopUI != null && shopUI.IsVisible()) { count++; visible += " [ShopUI]"; }
         if (optionsUI != null && optionsUI.IsVisible()) { count++; visible += " [OptionsUI]"; }
         if (controlsUI != null && controlsUI.IsVisible()) { count++; visible += " [ControlsUI]"; }
+        if (gameOverUI != null && gameOverUI.IsVisible()) { count++; visible += " [GameOverUI]"; }
 
         Debug.Log($"{context} {count} painel(is) visível(is):{visible}");
     }

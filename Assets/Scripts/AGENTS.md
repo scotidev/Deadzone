@@ -214,6 +214,10 @@ Contains scripts related to user interface, menus, and HUD elements.
 
 /// Weapon Preview Handler. Handles weapon preview in the shop.
 
+### /UI/GameOverUI.cs
+
+/// Game Over UI. Displays the wave reached and provides Try Again / Quit buttons.
+
 ### /UI/PauseUI.cs
 
 /// Pause UI. Handles pause menu display.
@@ -385,6 +389,10 @@ Contains scripts related to economy, upgrades, and player progression.
 ## /Gameplay
 
 Contains general gameplay scripts.
+
+### /Gameplay/GameOverManager.cs
+
+/// Game Over Manager. Orchestrates the game over flow: plays death sound, unlocks cursor, shows Game Over panel.
 
 ### /Gameplay/PauseManager.cs
 

@@ -72,6 +72,56 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5128553377722973692, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: useClip
+      value: 
+      objectReference: {fileID: 8300000, guid: ee8f324c1adf9fc4e9058baad21abe4c, type: 3}
+    - target: {fileID: 5128553377722973692, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: denyClip
+      value: 
+      objectReference: {fileID: 8300000, guid: e1cbcafb4ebbffd40b757175de7f4ba0, type: 3}
+    - target: {fileID: 5128553377722973692, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: equipClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 69d4a4ba1355bc847a97ccf2c9129f01, type: 3}
+    - target: {fileID: 5128553377722973692, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: reliefClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 0f92351aec36f11428d23e5f50821c62, type: 3}
+    - target: {fileID: 5128553377722973692, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: reliefVolume
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5128553377722973692, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: feedbackDuration
+      value: 2.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8432152278379913118, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8432152278379913118, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8432152278379913118, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9101446637433488676, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: m_Name
+      value: Medkit
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 2141614169492703363, guid: 19eadcf8fbed56b4da77ca94c1b4145f, type: 3}
@@ -198,6 +248,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Barricade
+      objectReference: {fileID: 0}
+    - target: {fileID: 5372157676634379281, guid: f246e5f9a74712a438f5af027106af0d,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
