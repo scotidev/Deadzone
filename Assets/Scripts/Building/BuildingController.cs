@@ -245,6 +245,9 @@ public class BuildingController : MonoBehaviour {
             string buildableID = GetBuildableID(selectedItem);
 
             if (!string.IsNullOrEmpty(buildableID)) {
+                int beforeQty = PlayerProgress.Instance.GetItemTotal(buildableID);
+                Debug.Log($"[BuildingController] TryPlaceObject: attempting to place {buildableID} ({selectedItem.ItemName}). before={beforeQty}");
+
                 // NEW: Use unified UseItem() instead of ConsumeBuildable()
                 // This updates the total inventory quantity
                 if (!PlayerProgress.Instance.UseItem(buildableID, 1)) {
@@ -253,9 +256,18 @@ public class BuildingController : MonoBehaviour {
                     return;
                 }
 
+                int afterQty = PlayerProgress.Instance.GetItemTotal(buildableID);
+                Debug.Log($"[BuildingController] TryPlaceObject: UseItem succeeded for {buildableID}. remaining={afterQty}");
+
                 // FIXED: Reset current ammo to 0 after placing the buildable.
                 // The "current" represents what's in hand - after placing, hand is empty.
                 PlayerProgress.Instance.SetItemCurrent(buildableID, 0);
+
+                if (afterQty > 0) {
+                    Debug.Log($"[BuildingController] TryPlaceObject: remaining > 0, EXPECTED BEHAVIOR: keep item selected. (current code will still CancelPlacement)");
+                } else {
+                    Debug.Log($"[BuildingController] TryPlaceObject: used last {buildableID} - EXPECTED: auto-equip pistol");
+                }
             }
         }
 

@@ -143,15 +143,23 @@ namespace InfimaGames.LowPolyShooterPack {
                 return;
             }
 
+            // LOG: Attempting selection - report item id, total and CanBeUsed result
+            string newItemID = newItem.GetItemID();
+            int newItemTotal = PlayerProgress.Instance != null ? PlayerProgress.Instance.GetItemTotal(newItemID) : -1;
+            bool canBeUsed = (index == 0) || newItem.CanBeUsed();
+            Debug.Log($"[Inventory] SelectItem attempt: index={index}, itemID={newItemID}, total={newItemTotal}, canBeUsed={canBeUsed}");
+
             // SAFETY: Always allow first item (Pistol/index 0) to be selected, even during Init()
             // This ensures player always has a weapon equipped at game start.
             // For other items, validate via CanBeUsed() check.
-            if (index != 0 && !newItem.CanBeUsed()) {
+            if (index != 0 && !canBeUsed) {
+                Debug.Log($"[Inventory] SelectItem blocked: index={index}, itemID={newItemID} - CanBeUsed returned false");
                 return;
             }
 
             // Deseleciona item atual (se houver)
             if (currentlySelected != null) {
+                Debug.Log($"[Inventory] Deselecting current item: prevIndex={currentSelectionIndex}, prevItemID={currentlySelected.GetItemID()}");
                 currentlySelected.OnDeselected();
                 currentlySelected.gameObject.SetActive(false);
             }
@@ -161,6 +169,8 @@ namespace InfimaGames.LowPolyShooterPack {
             currentSelectionIndex = index;
             currentlySelected.gameObject.SetActive(true);
             currentlySelected.OnSelected();
+
+            Debug.Log($"[Inventory] Selected: index={index}, itemID={newItemID}, totalAfterSelect={PlayerProgress.Instance?.GetItemTotal(newItemID)}");
 
             // Se for arma, também atualiza compatibilidade com Character
             if (newItem is WeaponBehaviour weapon) {
@@ -209,6 +219,7 @@ namespace InfimaGames.LowPolyShooterPack {
             for (int i = 0; i < selectableItems.Length; i++) {
                 ItemBehaviour item = selectableItems[i];
                 if (item is WeaponBehaviour weapon && (i == 0 || weapon.CanBeUsed())) {
+                    Debug.Log($"[Inventory] RestoreLastWeapon: selecting index={i}, itemID={item.GetItemID()}");
                     SelectItem(i);
                     return;
                 }
@@ -232,6 +243,7 @@ namespace InfimaGames.LowPolyShooterPack {
         // A lógica de armas agora é gerenciada por WeaponBehaviour.OnSelected().
 
         public override WeaponBehaviour Equip(int index) {
+            Debug.Log($"[Inventory] Equip requested: index={index}, previousEquipped={equippedIndex}");
             if (weapons == null || index > weapons.Length - 1 || equippedIndex == index)
                 return equipped;
 
@@ -248,6 +260,7 @@ namespace InfimaGames.LowPolyShooterPack {
             equipped = weapons[equippedIndex];
             equipped.gameObject.SetActive(true);
 
+            Debug.Log($"[Inventory] Equipped: index={equippedIndex}, weaponID={GetWeaponIDForIndex(equippedIndex)}");
             return equipped;
         }
 
@@ -316,7 +329,14 @@ namespace InfimaGames.LowPolyShooterPack {
                 return;
             }
 
+            string id = currentlySelected != null ? currentlySelected.GetItemID() : "null";
+            int total = PlayerProgress.Instance != null && currentlySelected != null ? PlayerProgress.Instance.GetItemTotal(id) : -1;
+            Debug.Log($"[Inventory] TryUseEquippedItem: itemID={id}, totalBeforeUse={total}");
+
             currentlySelected?.OnUse();
+
+            int totalAfter = PlayerProgress.Instance != null && currentlySelected != null ? PlayerProgress.Instance.GetItemTotal(id) : -1;
+            Debug.Log($"[Inventory] TryUseEquippedItem: itemID={id}, totalAfterUse={totalAfter}");
         }
 
         #endregion

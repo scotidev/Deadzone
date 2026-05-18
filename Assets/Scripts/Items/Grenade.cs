@@ -90,11 +90,14 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Subscribe to Fire input callbacks.
         /// </summary>
         public override void OnSelected() {
+            // LOG: report selection and inventory
+            string id = GetItemID();
+            int total = PlayerProgress.Instance != null ? PlayerProgress.Instance.GetItemTotal(id) : -1;
+            Debug.Log($"[Grenade] OnSelected: itemID={id}, total={total}");
+
             // CONCEITO: Verificar se tem ammo ANTES de equipar.
             // CanBeUsed() já valida isso, então isto é apenas precaução.
             if (PlayerProgress.Instance != null) {
-                string id = GetItemID();
-                int total = PlayerProgress.Instance.GetItemTotal(id);
                 
                 // Se sem ammo e conseguiu chegar aqui (bug), não ativar
                 if (total <= 0) {
@@ -117,6 +120,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Deactivate visual and unsubscribe from input.
         /// </summary>
         public override void OnDeselected() {
+            Debug.Log($"[Grenade] OnDeselected: itemID={GetItemID()}, state={currentState}");
             // CONCEITO: Se player trocou de item enquanto puxava a granada,
             // cancelar qualquer ação em andamento (hold).
             if (currentState == GrenadeState.Pinned) {
@@ -211,6 +215,8 @@ namespace InfimaGames.LowPolyShooterPack {
             if (currentState != GrenadeState.Idle) {
                 return;
             }
+
+            Debug.Log($"[Grenade] OnFireStarted: itemID={GetItemID()}, state={currentState}");
 
             // Ensure audioService is available.
             EnsureAudioService();
@@ -311,8 +317,10 @@ namespace InfimaGames.LowPolyShooterPack {
                 PlayerProgress.Instance.UseItem(GetItemID(), 1);
                 int remaining = PlayerProgress.Instance.GetItemTotal(GetItemID());
                 PlayerProgress.Instance.SetItemCurrent(GetItemID(), remaining > 0 ? 1 : 0);
+                Debug.Log($"[Grenade] ThrowGrenade: itemID={GetItemID()}, remainingAfterUse={remaining}");
 
                 if (remaining <= 0) {
+                    Debug.Log($"[Grenade] ThrowGrenade: used last grenade, auto-equipping pistol (ID=1, index=0)");
                     // If we just used the last grenade, equip default pistol (slot 0).
                     Character charComponent = GetComponentInParent<Character>();
                     if (charComponent != null) {

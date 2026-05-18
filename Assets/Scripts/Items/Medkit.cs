@@ -81,10 +81,12 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Activate visual representation (medkit model in hand).
         /// </summary>
         public override void OnSelected() {
+            string id = GetItemID();
+            int total = PlayerProgress.Instance != null ? PlayerProgress.Instance.GetItemTotal(id) : -1;
+            Debug.Log($"[Medkit] OnSelected: itemID={id}, total={total}");
+
             PlayEquipSound();
             if (PlayerProgress.Instance != null) {
-                string id = GetItemID();
-                int total = PlayerProgress.Instance.GetItemTotal(id);
                 PlayerProgress.Instance.SetItemCurrent(id, total > 0 ? 1 : 0);
             }
             gameObject.SetActive(true);
@@ -147,6 +149,7 @@ namespace InfimaGames.LowPolyShooterPack {
                 PlayerProgress.Instance.UseItem(GetItemID(), 1);
                 int remaining = PlayerProgress.Instance.GetItemTotal(GetItemID());
                 PlayerProgress.Instance.SetItemCurrent(GetItemID(), remaining > 0 ? 1 : 0);
+                Debug.Log($"[Medkit] OnUse: itemID={GetItemID()}, remainingAfterUse={remaining}");
             }
 
             Debug.Log($"[Medkit] Healed for {healAmount} HP. Level: {currentLevel}");

@@ -338,6 +338,12 @@ namespace InfimaGames.LowPolyShooterPack {
 
             const string boolName = "Holstered";
             characterAnimator.SetBool(boolName, holstered);
+
+            // LOG: report holster events and currently equipped item
+            Inventory inv = inventory as Inventory;
+            int eqIndex = inv != null ? inv.GetEquippedIndex() : -1;
+            string eqID = inv != null && inv.GetEquippedItem() != null ? inv.GetEquippedItem().GetItemID() : "null";
+            Debug.Log($"[Character] SetHolstered({value}) called. equippedIndex={eqIndex}, equippedItemID={eqID}");
         }
 
         #region ACTION CHECKS
