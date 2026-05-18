@@ -57,12 +57,9 @@ namespace InfimaGames.LowPolyShooterPack
 
         private void Awake()
         {
-            Debug.Log("[AudioManagerService] Awake() called - Instance created");
-            
             // Singleton check: Se já existe uma instância, destroir esta
             if (instance != null && instance != this)
             {
-                Debug.LogWarning("[AudioManagerService] Duplicate instance detected! Destroying this instance and keeping the existing one.");
                 Destroy(gameObject);
                 return;
             }
@@ -76,8 +73,6 @@ namespace InfimaGames.LowPolyShooterPack
 
             InitializeBGMSource();
             InitializeDialogueSource();
-            
-            Debug.Log("[AudioManagerService] Awake() complete - Ready for audio playback");
         }
 
         private void InitializeDialogueSource()
@@ -93,8 +88,8 @@ namespace InfimaGames.LowPolyShooterPack
 
         private void OnDestroy()
         {
-            Debug.LogError("[AudioManagerService] OnDestroy() called - INSTANCE IS BEING DESTROYED!");
-            Debug.LogError("CRITICAL: AudioManagerService is being destroyed. This may cause MissingReferenceException in audio callbacks!");
+            if (instance == this)
+                instance = null;
         }
 
         #endregion

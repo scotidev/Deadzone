@@ -29,7 +29,6 @@ namespace InfimaGames.LowPolyShooterPack
         public T Get<T>() where T : IGameService
         {
             string key = typeof(T).Name;
-            Debug.Log($"[ServiceLocator] Get<{key}>() called");
             
             if (!services.ContainsKey(key))
             {
@@ -45,7 +44,6 @@ namespace InfimaGames.LowPolyShooterPack
                 throw new InvalidOperationException($"Service {key} is null");
             }
 
-            Debug.Log($"[ServiceLocator] Get<{key}>() SUCCESS - Service retrieved");
             return (T)service;
         }
 

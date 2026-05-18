@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using System.Collections;
 using InfimaGames.LowPolyShooterPack;
 using Deadzone.Interfaces;
+using Deadzone.UI;
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
@@ -56,10 +57,6 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private void Awake() {
             audioService = ServiceLocator.Current.Get<IAudioManagerService>();
-            Debug.Log($"[Grenade] Awake: audioService obtained: {(audioService != null ? "SUCCESS ✓" : "NULL ✗")}");
-            if (audioService == null) {
-                Debug.LogError("[Grenade] CRITICAL: audioService is null at Awake time!");
-            }
         }
 
         #endregion
@@ -101,7 +98,6 @@ namespace InfimaGames.LowPolyShooterPack {
                 
                 // Se sem ammo e conseguiu chegar aqui (bug), não ativar
                 if (total <= 0) {
-                    Debug.Log("[Grenade] OnSelected: Out of ammo! Not activating.");
                     return;
                 }
                 
@@ -150,15 +146,13 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         public override bool CanBeUsed() {
             if (PlayerProgress.Instance == null) {
-                Debug.LogWarning($"[Grenade] CanBeUsed: PlayerProgress.Instance is NULL!");
                 return false;
             }
 
-            // CONCEITO: CanBeUsed() verifica se o item está desbloqueado E tem munição.
-            // Inventory.SelectItem() usa isso para decidir se permite equipar.
             bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(GetItemID());
             int totalAmmo = PlayerProgress.Instance.GetItemTotal(GetItemID());
-            
+            if (isUnlocked && totalAmmo <= 0)
+                FeedbackMessageUI.Instance?.Show();
             return isUnlocked && totalAmmo > 0;
         }
 
@@ -213,35 +207,16 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Pull pin and enter Pinned state.
         /// </summary>
         private void OnFireStarted(InputAction.CallbackContext context) {
-            Debug.Log("[Grenade] OnFireStarted called");
-            Debug.Log($"  currentState: {currentState}");
-            Debug.Log($"  audioService before check: {(audioService != null ? "Valid ✓" : "NULL ✗")}");
-            
-            // CONCEITO: Só proceder se estamos no estado Idle.
-            // Se já estiver Pinned ou Thrown, ignorar.
+            // Only proceed if in Idle state.
             if (currentState != GrenadeState.Idle) {
-                Debug.Log("[Grenade] OnFireStarted: Ignoring (not in Idle state)");
                 return;
             }
 
-            // CONCEITO: Re-cache audioService se ficar null (pode ser destruído entre Awake e agora).
-            // Isso evita MissingReferenceException ao tentar chamar PlayPinPullSound.
-            if (audioService == null) {
-                Debug.LogWarning("[Grenade] OnFireStarted: audioService is null, attempting re-cache...");
-                audioService = ServiceLocator.Current.Get<IAudioManagerService>();
-                Debug.Log($"  Re-cache result: {(audioService != null ? "SUCCESS ✓" : "FAILED ✗")}");
-                if (audioService == null) {
-                    Debug.LogError("[Grenade] CRITICAL: Re-cache failed! audioService still null!");
-                    return;
-                }
-            }
+            // Ensure audioService is available.
+            EnsureAudioService();
 
-            // CONCEITO: Transição de estado: Idle → Pinned
-            // O estado muda ANTES de tocar som para evitar race conditions
             currentState = GrenadeState.Pinned;
-            
             PlayPinPullSound();
-            Debug.Log("[Grenade] Pin pulled - ready to throw!");
         }
 
         /// <summary>
@@ -280,9 +255,8 @@ namespace InfimaGames.LowPolyShooterPack {
             // A visual da granada continua na mão (porque não desativamos), e os callbacks agora estão re-inscritos.
             if (PlayerProgress.Instance != null && 
                 PlayerProgress.Instance.GetItemTotal(GetItemID()) > 0) {
-                currentState = GrenadeState.Idle; // Volta ao estado Idle para poder lançar novamente
-                SubscribeToFireInput(); // Re-inscrever para o próximo lançamento
-                Debug.Log("[Grenade] Ready to throw again! (callbacks re-subscribed)");
+                currentState = GrenadeState.Idle; // Back to Idle to allow another throw
+                SubscribeToFireInput(); // Re-subscribe for the next throw
             }
         }
 
@@ -337,12 +311,23 @@ namespace InfimaGames.LowPolyShooterPack {
                 PlayerProgress.Instance.UseItem(GetItemID(), 1);
                 int remaining = PlayerProgress.Instance.GetItemTotal(GetItemID());
                 PlayerProgress.Instance.SetItemCurrent(GetItemID(), remaining > 0 ? 1 : 0);
-                Debug.Log($"[Grenade] Thrown! Remaining grenades: {remaining}");
+
+                if (remaining <= 0) {
+                    // If we just used the last grenade, equip default pistol (slot 0).
+                    Character charComponent = GetComponentInParent<Character>();
+                    if (charComponent != null) {
+                        // Try to equip weapon in slot 0 (default pistol)
+                        charComponent.TryEquipWeapon(0);
+                    }
+
+                    // Deactivate grenade visuals and unsubscribe from input.
+                    UnsubscribeFromFireInput();
+                    gameObject.SetActive(false);
+                    currentState = GrenadeState.Idle;
+                }
             }
 
-            // CONCEITO: NÃO desativar mais o gameObject aqui.
-            // A mão do player (Grenade.cs) continua ativa para relançar se houver mais ammo.
-            // Se não houver mais ammo, o estado já trata disso no próximo lançamento.
+            // The grenade hand object remains active if we still have ammo.
         }
 
         #endregion
@@ -357,53 +342,31 @@ namespace InfimaGames.LowPolyShooterPack {
         {
             if (audioService == null)
             {
-                Debug.LogWarning("[Grenade] audioService is null, attempting to re-cache...");
                 audioService = ServiceLocator.Current.Get<IAudioManagerService>();
-                
-                if (audioService == null)
-                {
-                    Debug.LogError("[Grenade] CRITICAL: audioService still null after re-cache attempt!");
-                }
-                else
-                {
-                    Debug.Log("[Grenade] audioService re-cached successfully");
-                }
             }
         }
 
         private void PlayEquipSound() {
-            Debug.Log("[Grenade] PlayEquipSound called");
             EnsureAudioService();
             
             if (equipClip != null && audioService != null) {
                 audioService.PlaySFX2D(equipClip, equipVolume);
-                Debug.Log("[Grenade] PlayEquipSound: SUCCESS");
-            } else {
-                Debug.LogWarning($"[Grenade] PlayEquipSound: Skipped - equipClip={equipClip}, audioService={audioService}");
             }
         }
 
         private void PlayPinPullSound() {
-            Debug.Log("[Grenade] PlayPinPullSound called");
             EnsureAudioService();
             
             if (pinPullClip != null && audioService != null) {
                 audioService.PlaySFX2D(pinPullClip, pinPullVolume);
-                Debug.Log("[Grenade] PlayPinPullSound: Sound played successfully");
-            } else {
-                Debug.LogWarning($"[Grenade] PlayPinPullSound: Skipped - pinPullClip={pinPullClip}, audioService={audioService}");
             }
         }
 
         private void PlayThrowSound() {
-            Debug.Log("[Grenade] PlayThrowSound called");
             EnsureAudioService();
             
             if (throwClip != null && audioService != null) {
                 audioService.PlaySFX2D(throwClip, throwVolume);
-                Debug.Log("[Grenade] PlayThrowSound: SUCCESS");
-            } else {
-                Debug.LogWarning($"[Grenade] PlayThrowSound: Skipped - throwClip={throwClip}, audioService={audioService}");
             }
         }
 

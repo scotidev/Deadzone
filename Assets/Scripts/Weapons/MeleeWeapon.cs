@@ -26,6 +26,10 @@ namespace InfimaGames.LowPolyShooterPack {
 
         [SerializeField] private Vector3 visualLocalScale = new Vector3(0.08f, 0.16f, 0.8f);
 
+        [Header("Audio")]
+        [SerializeField] private AudioClip meleeSFX;
+        [SerializeField] private float meleeSFXVolume = 1f;
+
         #endregion
 
         #region FIELDS
@@ -36,6 +40,7 @@ namespace InfimaGames.LowPolyShooterPack {
         private GameObject meleeVisual;
         private readonly Collider[] meleeHits = new Collider[16];
         private bool isAttacking;
+        private IAudioManagerService audioService;
 
         #endregion
 
@@ -46,6 +51,8 @@ namespace InfimaGames.LowPolyShooterPack {
             if (playerCharacter != null) {
                 playerCapsule = playerCharacter.GetComponent<CapsuleCollider>();
             }
+
+            audioService = ServiceLocator.Current.Get<IAudioManagerService>();
         }
 
         private void Start() {
@@ -94,6 +101,11 @@ namespace InfimaGames.LowPolyShooterPack {
         private IEnumerator MeleeAttackRoutine() {
             if (meleeVisual != null)
                 meleeVisual.SetActive(true);
+
+            // Play melee SFX when attack starts.
+            if (meleeSFX != null && audioService != null) {
+                audioService.PlaySFX2D(meleeSFX, meleeSFXVolume);
+            }
 
             PerformMeleeDamage();
 

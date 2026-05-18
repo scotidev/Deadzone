@@ -157,12 +157,14 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         public override bool CanBeUsed() {
             if (PlayerProgress.Instance == null) {
-                Debug.LogWarning($"[Medkit] CanBeUsed: PlayerProgress.Instance is NULL!");
                 return false;
             }
             
             bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(GetItemID());
-            return isUnlocked;
+            int total = PlayerProgress.Instance.GetItemTotal(GetItemID());
+            if (isUnlocked && total <= 0)
+                FeedbackMessageUI.Instance?.Show();
+            return isUnlocked && total > 0;
         }
         
         #endregion
