@@ -75,6 +75,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6549564779973745457}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f150817b5fc1be745a05fb43d86ddb4c,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -4292536730309691764}
   m_SourcePrefab: {fileID: 100100000, guid: f150817b5fc1be745a05fb43d86ddb4c, type: 3}
 --- !u!1 &6438997379768857801 stripped
 GameObject:
@@ -130,3 +134,23 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.009221792
   m_Center: {x: 0.0015955078, y: 0.000000003492459, z: 0.0008189048}
+--- !u!114 &-4292536730309691764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6438997379768857801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6779eb6a965ab904ebaa12b2d78433e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InfimaGames.LowPolyShooterPack.GrenadeThrown
+  grenadeData: {fileID: 11400000, guid: 17364a04fbc054749b78bfe16ea4ebcd, type: 2}
+  fuseTime: 3
+  explosionVFXPrefab: {fileID: 4296680985399300, guid: ca26d7307564ff848b29e32bbe6279ef,
+    type: 3}
+  minExplosionDelay: 0.05
+  maxExplosionDelay: 0.25
+  explosionClip: {fileID: 8300000, guid: 2efb170ee6b6441409a38fd3b141abd2, type: 3}
+  explosionVolume: 1
