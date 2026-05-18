@@ -7,7 +7,8 @@ using UnityEngine.InputSystem;
 /// Allows interaction through a configurable key.
 /// Also detects enemies for the health bar UI system.
 /// </summary>
-public class PlayerInteraction : MonoBehaviour {
+public class PlayerInteraction : MonoBehaviour
+{
 
     #region SERIALIZED FIELDS
 
@@ -17,6 +18,7 @@ public class PlayerInteraction : MonoBehaviour {
 
     [Header("Enemy Detection")]
     [SerializeField] private float enemyDetectionDistance = 50f;
+    [SerializeField] private LayerMask uiLayerMask; // Layer mask to ignore UI elements
     [SerializeField] private EnemyHealthBarUI enemyHealthBarUI;
 
     #endregion
@@ -31,13 +33,15 @@ public class PlayerInteraction : MonoBehaviour {
 
     #region UNITY
 
-    private void Start() {
+    private void Start()
+    {
         playerCamera = GetComponent<Camera>();
         if (playerCamera == null)
             playerCamera = Camera.main;
     }
 
-    private void Update() {
+    private void Update()
+    {
         if (HandleShopOpenBlocking())
             return;
 
@@ -54,18 +58,22 @@ public class PlayerInteraction : MonoBehaviour {
     /// Handles blocking of interaction detection when the shop is open or the player is placing a building item.
     /// Clears current interactable and hides UI prompt if either mode is active.
     /// </summary>
-    private bool HandleShopOpenBlocking() {
+    private bool HandleShopOpenBlocking()
+    {
         bool shouldBlock = GameManager.Instance != null && GameManager.Instance.State == GameState.Shopping;
 
-        if (shouldBlock) {
-            if (currentInteractable != null) {
+        if (shouldBlock)
+        {
+            if (currentInteractable != null)
+            {
                 currentInteractable = null;
 
                 if (UIManager.Instance != null)
                     UIManager.Instance.ToggleInteractionPrompt(false);
             }
 
-            if (currentTargetedEnemy != null) {
+            if (currentTargetedEnemy != null)
+            {
                 currentTargetedEnemy = null;
                 if (enemyHealthBarUI != null)
                     enemyHealthBarUI.SetTargetEnemy(null);
@@ -79,31 +87,38 @@ public class PlayerInteraction : MonoBehaviour {
     /// Processes player input for interacting with objects.
     /// Triggers interaction when E key is pressed and a valid interactable is detected.
     /// </summary>
-    private void HandleInteractionInput() {
+    private void HandleInteractionInput()
+    {
         if (GameManager.Instance != null && GameManager.Instance.State == GameState.Shopping)
             return;
 
-        if (currentInteractable != null && Keyboard.current.eKey.wasPressedThisFrame) {
+        if (currentInteractable != null && Keyboard.current.eKey.wasPressedThisFrame)
+        {
             currentInteractable.Interact();
         }
     }
 
-        /// <summary>
-        /// Performs a raycast from the camera center to detect interactable objects.
-        /// Updates the UI interaction prompt based on what the player is looking at.
-        /// </summary>
-        private void CheckForInteractable() {
+    /// <summary>
+    /// Performs a raycast from the camera center to detect interactable objects.
+    /// Updates the UI interaction prompt based on what the player is looking at.
+    /// </summary>
+    private void CheckForInteractable()
+    {
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, interactionDistance, interactableLayer, QueryTriggerInteraction.Ignore)) {
+        if (Physics.Raycast(ray, out hit, interactionDistance, interactableLayer, QueryTriggerInteraction.Ignore))
+        {
             Interactable interactable = hit.collider.GetComponentInParent<Interactable>();
 
-            if (interactable != null) {
-                if (currentInteractable != interactable) {
+            if (interactable != null)
+            {
+                if (currentInteractable != interactable)
+                {
                     currentInteractable = interactable;
 
-                    if (UIManager.Instance != null) {
+                    if (UIManager.Instance != null)
+                    {
                         UIManager.Instance.ToggleInteractionPrompt(true, interactable.GetInteractionPrompt());
                     }
                 }
@@ -111,10 +126,12 @@ public class PlayerInteraction : MonoBehaviour {
             }
         }
 
-        if (currentInteractable != null) {
+        if (currentInteractable != null)
+        {
             currentInteractable = null;
 
-            if (UIManager.Instance != null) {
+            if (UIManager.Instance != null)
+            {
                 UIManager.Instance.ToggleInteractionPrompt(false);
             }
         }
@@ -124,29 +141,50 @@ public class PlayerInteraction : MonoBehaviour {
     /// Performs a raycast to detect enemies for health bar display.
     /// Uses a longer range than interaction raycast.
     /// </summary>
-    private void CheckForEnemy() {
+    private void CheckForEnemy()
+    {
         if (enemyHealthBarUI == null) return;
 
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, enemyDetectionDistance)) {
-            EnemyBase enemy = hit.collider.GetComponentInParent<EnemyBase>();
+        if (Physics.Raycast(ray, out hit, enemyDetectionDistance, ~uiLayerMask))
+        { // Ignore UI layer
+            if (Physics.Raycast(ray, out hit, enemyDetectionDistance, ~uiLayerMask))
+            { // Ignore UI layer
+                EnemyBase enemy = hit.collider.GetComponentInParent<EnemyBase>();
 
-            if (enemy != null) {
-                if (currentTargetedEnemy != enemy) {
-                    currentTargetedEnemy = enemy;
-                    enemyHealthBarUI.SetTargetEnemy(enemy);
+                if (enemy != null)
+                {
+                    if (currentTargetedEnemy != enemy)
+                    {
+                        Debug.Log($"[PlayerInteraction] Detected new enemy: {enemy.name}. Setting as target.");
+                        currentTargetedEnemy = enemy;
+                        enemyHealthBarUI.SetTargetEnemy(enemy);
+                    }
+                    return;
                 }
-                return;
+            }
+            else
+            {
+                // Check if the raycast hit something on the UI layer, which should be ignored
+                RaycastHit uiHit;
+                if (Physics.Raycast(ray, out uiHit, enemyDetectionDistance, uiLayerMask))
+                {
+                    Debug.Log($"[PlayerInteraction] Raycast hit UI element: {uiHit.collider.gameObject.name}. Ignoring.");
+                }
+            }
+
+            // If no enemy is targeted or the raycast missed enemies (but might have hit UI first)
+            if (currentTargetedEnemy != null)
+            {
+                Debug.Log($"[PlayerInteraction] No enemy targeted or lost target. Current target was: {currentTargetedEnemy.name}. Setting target to null.");
+                currentTargetedEnemy = null;
+                enemyHealthBarUI.SetTargetEnemy(null);
             }
         }
 
-        if (currentTargetedEnemy != null) {
-            currentTargetedEnemy = null;
-            enemyHealthBarUI.SetTargetEnemy(null);
-        }
+    #endregion
     }
 
-    #endregion
 }

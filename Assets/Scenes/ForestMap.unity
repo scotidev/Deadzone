@@ -1382,6 +1382,11 @@ PrefabInstance:
       propertyPath: enemyHealthBarUI
       value: 
       objectReference: {fileID: 712135210}
+    - target: {fileID: 2511525708182192631, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: uiLayerMask.m_Bits
+      value: 32
+      objectReference: {fileID: 0}
     - target: {fileID: 2765326547094986479, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: m_Name
@@ -1436,6 +1441,41 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5995035238800786662, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5995035238800786662, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5995035238800786662, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5995035238800786662, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5995035238800786662, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5995035238800786662, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6375254728856297052, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1558,11 +1598,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1290420617321357537, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1305134437697123291, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 2035910356015834724, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: playerCharacter
       value: 
       objectReference: {fileID: 1413941464}
+    - target: {fileID: 2724496476334310179, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 2892387641530311617, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: m_IsActive
@@ -1673,11 +1728,21 @@ PrefabInstance:
       propertyPath: playerCharacter
       value: 
       objectReference: {fileID: 1413941464}
+    - target: {fileID: 5128286129037682136, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 5864479340680642005, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: playerHealth
       value: 
       objectReference: {fileID: 1776962870}
+    - target: {fileID: 6011782633416166291, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7016419823468125405, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
       propertyPath: vest
