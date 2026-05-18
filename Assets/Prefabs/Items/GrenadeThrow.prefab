@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &2262089290815700375
+--- !u!1001 &6168387575704062360
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -11,17 +11,17 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: f150817b5fc1be745a05fb43d86ddb4c,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 35.50124
+      value: -129.03075
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: f150817b5fc1be745a05fb43d86ddb4c,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 21.81173
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: f150817b5fc1be745a05fb43d86ddb4c,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.40193
+      value: -5.78823
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: f150817b5fc1be745a05fb43d86ddb4c,
         type: 3}
@@ -61,7 +61,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: f150817b5fc1be745a05fb43d86ddb4c,
         type: 3}
       propertyPath: m_Name
-      value: Grenade
+      value: GrenadeThrow
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -70,41 +70,63 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f150817b5fc1be745a05fb43d86ddb4c,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4801012474186836054}
+      addedObject: {fileID: -4399138419516243624}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f150817b5fc1be745a05fb43d86ddb4c,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6549564779973745457}
   m_SourcePrefab: {fileID: 100100000, guid: f150817b5fc1be745a05fb43d86ddb4c, type: 3}
---- !u!1 &1415792643396714694 stripped
+--- !u!1 &6438997379768857801 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: f150817b5fc1be745a05fb43d86ddb4c,
     type: 3}
-  m_PrefabInstance: {fileID: 2262089290815700375}
+  m_PrefabInstance: {fileID: 6168387575704062360}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4801012474186836054
-MonoBehaviour:
+--- !u!54 &-4399138419516243624
+Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1415792643396714694}
+  m_GameObject: {fileID: 6438997379768857801}
+  serializedVersion: 5
+  m_Mass: 0.1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!135 &6549564779973745457
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6438997379768857801}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30ac18e12974c6b4eae2f67f89c09267, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InfimaGames.LowPolyShooterPack.Grenade
-  grenadeData: {fileID: 11400000, guid: 17364a04fbc054749b78bfe16ea4ebcd, type: 2}
-  hudIcon: {fileID: 21300000, guid: 5285286a74e5b2a44a7beb88bf7acfe5, type: 3}
-  grenadePrefab: {fileID: 6438997379768857801, guid: 00c6a11b184e94d458215b983fcb700e,
-    type: 3}
-  throwForce: 20
-  fuseTime: 3
-  explosionVFXPrefab: {fileID: 4296680985399300, guid: ca26d7307564ff848b29e32bbe6279ef,
-    type: 3}
-  minExplosionDelay: 0.05
-  maxExplosionDelay: 0.25
-  equipClip: {fileID: 8300000, guid: 69d4a4ba1355bc847a97ccf2c9129f01, type: 3}
-  equipVolume: 1
-  pinPullClip: {fileID: 8300000, guid: 10fa542f1fb435240a7bc968216ef86a, type: 3}
-  pinPullVolume: 1
-  throwClip: {fileID: 8300000, guid: db8eb663b74ae4545b50e1c4dbf0999b, type: 3}
-  throwVolume: 1
-  explosionClip: {fileID: 8300000, guid: 2efb170ee6b6441409a38fd3b141abd2, type: 3}
-  explosionVolume: 1
+  serializedVersion: 3
+  m_Radius: 0.009221792
+  m_Center: {x: 0.0015955078, y: 0.000000003492459, z: 0.0008189048}

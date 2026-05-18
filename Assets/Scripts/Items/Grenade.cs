@@ -34,14 +34,6 @@ namespace InfimaGames.LowPolyShooterPack {
         [SerializeField] private GameObject grenadePrefab;
         [SerializeField] private float throwForce = 20f;
 
-        [Header("Detonation")]
-        [SerializeField] private float fuseTime = 3f;
-
-        [Header("Explosion VFX")]
-        [SerializeField] private Transform explosionVFXPrefab;
-        [SerializeField] private float minExplosionDelay = 0.05f;
-        [SerializeField] private float maxExplosionDelay = 0.25f;
-
         [Header("Audio Clips")]
         [SerializeField] private AudioClip equipClip;
         [SerializeField] private float equipVolume = 1f;
@@ -49,8 +41,6 @@ namespace InfimaGames.LowPolyShooterPack {
         [SerializeField] private float pinPullVolume = 1f;
         [SerializeField] private AudioClip throwClip;
         [SerializeField] private float throwVolume = 1f;
-        [SerializeField] private AudioClip explosionClip;
-        [SerializeField] private float explosionVolume = 1f;
 
         #endregion
 
@@ -59,7 +49,6 @@ namespace InfimaGames.LowPolyShooterPack {
         private IAudioManagerService audioService;
         private GrenadeState currentState = GrenadeState.Idle;
         private GameObject thrownGrenadeInstance;
-        private Coroutine detonationCoroutine;
 
         #endregion
 
@@ -303,113 +292,22 @@ namespace InfimaGames.LowPolyShooterPack {
                 rb.linearVelocity = cameraTransform.forward * throwForce;
             }
 
-            // CONCEITO: Iniciar a corrotina de detonação.
-            // Enquanto isso, desativar a visualização na mão já que lançamos.
-            detonationCoroutine = StartCoroutine(DetonateAfterDelay(grenadeData));
-            gameObject.SetActive(false);
+            // CONCEITO: O prefab lançado tem GrenadeThrown.cs anexado automaticamente.
+            // Esse script gerencia sua própria detonação de forma independente.
+            // Não é necessário referenciar aqui - StartCoroutine em GrenadeThrown.cs faz tudo.
 
-            // CONCEITO: Consumir 1 granAda do inventário.
+            // CONCEITO: Consumir 1 granada do inventário.
             // UseItem decrementa o total em inventário e ammo em mão.
             if (PlayerProgress.Instance != null) {
                 PlayerProgress.Instance.UseItem(GetItemID(), 1);
                 int remaining = PlayerProgress.Instance.GetItemTotal(GetItemID());
                 PlayerProgress.Instance.SetItemCurrent(GetItemID(), remaining > 0 ? 1 : 0);
-            }
-        }
-
-        #endregion
-
-        #region DETONATION LOGIC
-
-        /// <summary>
-        /// Coroutine to handle detonation with delay.
-        /// CONCEITO: IEnumerator permite pausar e retomar a execução.
-        /// "yield return new WaitForSeconds(time)" pausa a corrotina por 'time' segundos.
-        /// </summary>
-        private IEnumerator DetonateAfterDelay(GrenadeDataSO data) {
-            // CONCEITO: Delay aleatório pequeno torna a explosão mais realista.
-            // Grenadas não explodem instantaneamente quando batem no chão.
-            float randomDelay = Random.Range(minExplosionDelay, maxExplosionDelay);
-            yield return new WaitForSeconds(randomDelay);
-
-            // CONCEITO: Esperar pelo fuse time (3 segundos por padrão).
-            // Durante este tempo, a granada já está em voo.
-            yield return new WaitForSeconds(fuseTime);
-
-            // CONCEITO: Chegou a hora de explodir. Transicionar para estado Exploded.
-            currentState = GrenadeState.Exploded;
-
-            if (thrownGrenadeInstance != null) {
-                yield return StartCoroutine(Explode(thrownGrenadeInstance, data));
-            }
-        }
-
-        /// <summary>
-        /// Explode grenade at its current position.
-        /// Apply damage to enemies, physics force to rigidbodies, and spawn VFX.
-        /// </summary>
-        private IEnumerator Explode(GameObject grenadeObject, GrenadeDataSO data) {
-            if (data == null) {
-                Debug.LogWarning("[Grenade] GrenadeDataSO is null during explosion!");
-                yield break;
+                Debug.Log($"[Grenade] Thrown! Remaining grenades: {remaining}");
             }
 
-            Vector3 explosionPos = grenadeObject.transform.position;
-            
-            // CONCEITO: Tocar som de explosão 3D na posição da granada.
-            // Som 3D significa que a fonte é posicionada no mundo, afetando volume e pan por distância.
-            PlayExplosionSound(explosionPos);
-
-            // CONCEITO: Obter o nível da granada para escalar dano e raio.
-            // Level 1 = base, Level 2 = base * 1.1, Level 3 = base * 1.2, etc.
-            int grenadeLevel = 1;
-            if (PlayerProgress.Instance != null) {
-                grenadeLevel = PlayerProgress.Instance.GetItemLevel(GetItemID());
-            }
-
-            // CONCEITO: GetDamageAtLevel e GetRadiusAtLevel aplicam scaling automaticamente.
-            float damage = data.GetDamageAtLevel(grenadeLevel);
-            float radius = data.GetRadiusAtLevel(grenadeLevel);
-
-            // CONCEITO: Physics.OverlapSphere encontra todos os colisores
-            // dentro de uma esfera de raio 'radius' centrada em 'explosionPos'.
-            // Isso nos dá todos os objetos atingidos pela explosão.
-            Collider[] colliders = Physics.OverlapSphere(explosionPos, radius);
-
-            foreach (Collider hit in colliders) {
-                // CONCEITO: Se o collider tiver Rigidbody, aplicar força de explosão.
-                // AddExplosionForce simula uma onda de choque radial realista.
-                Rigidbody rb = hit.GetComponent<Rigidbody>();
-                if (rb != null) {
-                    rb.AddExplosionForce(5000f, explosionPos, radius);
-                }
-
-                // CONCEITO: Se for um inimigo, aplicar dano direto.
-                // Cada inimigo deve ter componente com tag "Enemy" ou interface IDamageable.
-                if (hit.CompareTag("Enemy")) {
-                    EnemyBase enemy = hit.GetComponent<EnemyBase>();
-                    if (enemy != null) {
-                        enemy.TakeDamage(damage);
-                    }
-                }
-            }
-
-            // CONCEITO: Raycast para baixo para encontrar o chão onde colocar o VFX.
-            // A maioria das explosões acontece perto do solo, então colocar efeito lá é visual.
-            RaycastHit hitInfo;
-            if (Physics.Raycast(explosionPos, Vector3.down, out hitInfo, 50f)) {
-                if (explosionVFXPrefab != null) {
-                    // CONCEITO: Instantiar VFX no ponto onde o raycast acertou o chão.
-                    // Rotacionar para que fique alinhado com a normal da superfície.
-                    Instantiate(explosionVFXPrefab, hitInfo.point,
-                        Quaternion.FromToRotation(Vector3.forward, hitInfo.normal));
-                }
-            }
-
-            // CONCEITO: Destruir o GameObject da granada lançada.
-            // Ela já explodiu, não precisa mais existir.
-            Destroy(grenadeObject);
-            thrownGrenadeInstance = null;
+            // CONCEITO: NÃO desativar mais o gameObject aqui.
+            // A mão do player (Grenade.cs) continua ativa para relançar se houver mais ammo.
+            // Se não houver mais ammo, o estado já trata disso no próximo lançamento.
         }
 
         #endregion
@@ -431,12 +329,6 @@ namespace InfimaGames.LowPolyShooterPack {
         private void PlayThrowSound() {
             if (throwClip != null && audioService != null) {
                 audioService.PlaySFX2D(throwClip, throwVolume);
-            }
-        }
-
-        private void PlayExplosionSound(Vector3 position) {
-            if (explosionClip != null && audioService != null) {
-                audioService.PlaySFX3D(explosionClip, position, explosionVolume);
             }
         }
 
