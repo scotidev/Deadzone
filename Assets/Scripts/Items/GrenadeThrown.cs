@@ -152,6 +152,12 @@ namespace InfimaGames.LowPolyShooterPack {
         /// CONCEITO: PlaySFX3D faz o som ouvido em 3D, com volume afetado pela distância do listener.
         /// </summary>
         private void PlayExplosionSound(Vector3 position) {
+            // CONCEITO: Re-cache audioService se ficar null (pode ser destruído entre Awake e agora).
+            // Isso evita MissingReferenceException ao tentar tocar som de explosão.
+            if (audioService == null) {
+                audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+            }
+            
             if (explosionClip != null && audioService != null) {
                 audioService.PlaySFX3D(explosionClip, position, explosionVolume);
                 Debug.Log($"[GrenadeThrown] Explosion sound played at {position}");

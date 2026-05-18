@@ -89,21 +89,23 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Subscribe to Fire input callbacks.
         /// </summary>
         public override void OnSelected() {
-            PlayEquipSound();
-            
-            // CONCEITO: Quando uma granada é selecionada, definir ammo atual como 1
-            // (representando 1 na mão pronto para usar). Se não houver em estoque, 0.
+            // CONCEITO: Verificar se tem ammo ANTES de equipar.
+            // CanBeUsed() já valida isso, então isto é apenas precaução.
             if (PlayerProgress.Instance != null) {
                 string id = GetItemID();
                 int total = PlayerProgress.Instance.GetItemTotal(id);
-                PlayerProgress.Instance.SetItemCurrent(id, total > 0 ? 1 : 0);
+                
+                // Se sem ammo e conseguiu chegar aqui (bug), não ativar
+                if (total <= 0) {
+                    Debug.Log("[Grenade] OnSelected: Out of ammo! Not activating.");
+                    return;
+                }
+                
+                PlayerProgress.Instance.SetItemCurrent(id, 1);
             }
             
-            // CONCEITO: Ativar o GameObject visual da granada (model na mão do player)
+            PlayEquipSound();
             gameObject.SetActive(true);
-            
-            // CONCEITO: Inscrever-se nos callbacks de input para fire (hold/release)
-            // Isso permite que a granada controle seu próprio comportamento sem depender do Character
             SubscribeToFireInput();
             
             // Reset state to Idle when selected
@@ -140,7 +142,7 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Check if grenade is unlocked for selection.
+        /// Check if grenade can be selected (unlocked AND has quantity available).
         /// </summary>
         public override bool CanBeUsed() {
             if (PlayerProgress.Instance == null) {
@@ -148,10 +150,12 @@ namespace InfimaGames.LowPolyShooterPack {
                 return false;
             }
 
-            // CONCEITO: CanBeUsed() verifica se o item está desbloqueado.
-            // Quantidade é verificada durante uso (OnFireCanceled).
+            // CONCEITO: CanBeUsed() verifica se o item está desbloqueado E tem munição.
+            // Inventory.SelectItem() usa isso para decidir se permite equipar.
             bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(GetItemID());
-            return isUnlocked;
+            int totalAmmo = PlayerProgress.Instance.GetItemTotal(GetItemID());
+            
+            return isUnlocked && totalAmmo > 0;
         }
 
         #endregion
@@ -211,6 +215,12 @@ namespace InfimaGames.LowPolyShooterPack {
                 return;
             }
 
+            // CONCEITO: Re-cache audioService se ficar null (pode ser destruído entre Awake e agora).
+            // Isso evita MissingReferenceException ao tentar chamar PlayPinPullSound.
+            if (audioService == null) {
+                audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+            }
+
             // CONCEITO: Transição de estado: Idle → Pinned
             // O estado muda ANTES de tocar som para evitar race conditions
             currentState = GrenadeState.Pinned;
@@ -249,6 +259,16 @@ namespace InfimaGames.LowPolyShooterPack {
             
             ThrowGrenade();
             PlayThrowSound();
+            
+            // CONCEITO: Se ainda tem ammo depois de lançar, re-inscrever callbacks de input.
+            // Isso permite que o player lance de novo SEM apertar a tecla 5 novamente.
+            // A visual da granada continua na mão (porque não desativamos), e os callbacks agora estão re-inscritos.
+            if (PlayerProgress.Instance != null && 
+                PlayerProgress.Instance.GetItemTotal(GetItemID()) > 0) {
+                currentState = GrenadeState.Idle; // Volta ao estado Idle para poder lançar novamente
+                SubscribeToFireInput(); // Re-inscrever para o próximo lançamento
+                Debug.Log("[Grenade] Ready to throw again! (callbacks re-subscribed)");
+            }
         }
 
         #endregion
