@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack
 {
@@ -28,13 +29,24 @@ namespace InfimaGames.LowPolyShooterPack
         public T Get<T>() where T : IGameService
         {
             string key = typeof(T).Name;
+            Debug.Log($"[ServiceLocator] Get<{key}>() called");
+            
             if (!services.ContainsKey(key))
             {
+                Debug.LogError($"[ServiceLocator] CRITICAL: Service '{key}' not registered!");
                 Log.kill($"{key} not registered with {GetType().Name}");
                 throw new InvalidOperationException();
             }
 
-            return (T)services[key];
+            var service = services[key];
+            if (service == null)
+            {
+                Debug.LogError($"[ServiceLocator] CRITICAL: Service '{key}' is NULL in registry!");
+                throw new InvalidOperationException($"Service {key} is null");
+            }
+
+            Debug.Log($"[ServiceLocator] Get<{key}>() SUCCESS - Service retrieved");
+            return (T)service;
         }
 
         /// <summary>

@@ -51,12 +51,16 @@ namespace InfimaGames.LowPolyShooterPack
 
         private void Awake()
         {
+            Debug.Log("[AudioManagerService] Awake() called - Instance created");
+            
             sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
             bgmVolume = PlayerPrefs.GetFloat("BGMVolume", 0.5f);
             AudioListener.volume = PlayerPrefs.GetFloat("MasterVolume", 1f);
 
             InitializeBGMSource();
             InitializeDialogueSource();
+            
+            Debug.Log("[AudioManagerService] Awake() complete - Ready for audio playback");
         }
 
         private void InitializeDialogueSource()
@@ -68,6 +72,12 @@ namespace InfimaGames.LowPolyShooterPack
             dialogueSource.spatialBlend = 1f;
             dialogueSource.loop = false;
             dialogueSource.playOnAwake = false;
+        }
+
+        private void OnDestroy()
+        {
+            Debug.LogError("[AudioManagerService] OnDestroy() called - INSTANCE IS BEING DESTROYED!");
+            Debug.LogError("CRITICAL: AudioManagerService is being destroyed. This may cause MissingReferenceException in audio callbacks!");
         }
 
         #endregion

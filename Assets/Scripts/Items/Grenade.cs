@@ -56,6 +56,10 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private void Awake() {
             audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+            Debug.Log($"[Grenade] Awake: audioService obtained: {(audioService != null ? "SUCCESS ✓" : "NULL ✗")}");
+            if (audioService == null) {
+                Debug.LogError("[Grenade] CRITICAL: audioService is null at Awake time!");
+            }
         }
 
         #endregion
@@ -209,16 +213,27 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Pull pin and enter Pinned state.
         /// </summary>
         private void OnFireStarted(InputAction.CallbackContext context) {
+            Debug.Log("[Grenade] OnFireStarted called");
+            Debug.Log($"  currentState: {currentState}");
+            Debug.Log($"  audioService before check: {(audioService != null ? "Valid ✓" : "NULL ✗")}");
+            
             // CONCEITO: Só proceder se estamos no estado Idle.
             // Se já estiver Pinned ou Thrown, ignorar.
             if (currentState != GrenadeState.Idle) {
+                Debug.Log("[Grenade] OnFireStarted: Ignoring (not in Idle state)");
                 return;
             }
 
             // CONCEITO: Re-cache audioService se ficar null (pode ser destruído entre Awake e agora).
             // Isso evita MissingReferenceException ao tentar chamar PlayPinPullSound.
             if (audioService == null) {
+                Debug.LogWarning("[Grenade] OnFireStarted: audioService is null, attempting re-cache...");
                 audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+                Debug.Log($"  Re-cache result: {(audioService != null ? "SUCCESS ✓" : "FAILED ✗")}");
+                if (audioService == null) {
+                    Debug.LogError("[Grenade] CRITICAL: Re-cache failed! audioService still null!");
+                    return;
+                }
             }
 
             // CONCEITO: Transição de estado: Idle → Pinned
@@ -335,20 +350,40 @@ namespace InfimaGames.LowPolyShooterPack {
         #region AUDIO
 
         private void PlayEquipSound() {
+            Debug.Log("[Grenade] PlayEquipSound called");
             if (equipClip != null && audioService != null) {
                 audioService.PlaySFX2D(equipClip, equipVolume);
+                Debug.Log("[Grenade] PlayEquipSound: SUCCESS");
+            } else {
+                Debug.LogWarning($"[Grenade] PlayEquipSound: Skipped - equipClip={equipClip}, audioService={audioService}");
             }
         }
 
         private void PlayPinPullSound() {
+            Debug.Log("[Grenade] PlayPinPullSound called");
+            Debug.Log($"  audioService: {(audioService != null ? "Valid ✓" : "NULL ✗")}");
+            Debug.Log($"  pinPullClip: {pinPullClip}");
+            
+            if (audioService == null) {
+                Debug.LogError("[Grenade] PlayPinPullSound: audioService is NULL! This will crash!");
+                return;
+            }
+            
             if (pinPullClip != null && audioService != null) {
                 audioService.PlaySFX2D(pinPullClip, pinPullVolume);
+                Debug.Log("[Grenade] PlayPinPullSound: Sound played successfully");
+            } else {
+                Debug.LogWarning($"[Grenade] PlayPinPullSound: Skipped - pinPullClip={pinPullClip}, audioService={audioService}");
             }
         }
 
         private void PlayThrowSound() {
+            Debug.Log("[Grenade] PlayThrowSound called");
             if (throwClip != null && audioService != null) {
                 audioService.PlaySFX2D(throwClip, throwVolume);
+                Debug.Log("[Grenade] PlayThrowSound: SUCCESS");
+            } else {
+                Debug.LogWarning($"[Grenade] PlayThrowSound: Skipped - throwClip={throwClip}, audioService={audioService}");
             }
         }
 
