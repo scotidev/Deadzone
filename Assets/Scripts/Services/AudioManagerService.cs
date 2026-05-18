@@ -12,6 +12,12 @@ namespace InfimaGames.LowPolyShooterPack
     public class AudioManagerService : MonoBehaviour, IAudioManagerService
     {
 
+        #region SINGLETON
+
+        private static AudioManagerService instance;
+
+        #endregion
+
         #region FIELDS
 
         private AudioSource bgmSource;
@@ -52,6 +58,17 @@ namespace InfimaGames.LowPolyShooterPack
         private void Awake()
         {
             Debug.Log("[AudioManagerService] Awake() called - Instance created");
+            
+            // Singleton check: Se já existe uma instância, destroir esta
+            if (instance != null && instance != this)
+            {
+                Debug.LogWarning("[AudioManagerService] Duplicate instance detected! Destroying this instance and keeping the existing one.");
+                Destroy(gameObject);
+                return;
+            }
+            
+            // Definir como instância única
+            instance = this;
             
             sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
             bgmVolume = PlayerPrefs.GetFloat("BGMVolume", 0.5f);

@@ -349,8 +349,32 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #region AUDIO
 
+        /// <summary>
+        /// Ensures audioService is cached. If null, attempts to re-cache from ServiceLocator.
+        /// This handles cases where AudioManagerService may have been destroyed and recreated.
+        /// </summary>
+        private void EnsureAudioService()
+        {
+            if (audioService == null)
+            {
+                Debug.LogWarning("[Grenade] audioService is null, attempting to re-cache...");
+                audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+                
+                if (audioService == null)
+                {
+                    Debug.LogError("[Grenade] CRITICAL: audioService still null after re-cache attempt!");
+                }
+                else
+                {
+                    Debug.Log("[Grenade] audioService re-cached successfully");
+                }
+            }
+        }
+
         private void PlayEquipSound() {
             Debug.Log("[Grenade] PlayEquipSound called");
+            EnsureAudioService();
+            
             if (equipClip != null && audioService != null) {
                 audioService.PlaySFX2D(equipClip, equipVolume);
                 Debug.Log("[Grenade] PlayEquipSound: SUCCESS");
@@ -361,13 +385,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private void PlayPinPullSound() {
             Debug.Log("[Grenade] PlayPinPullSound called");
-            Debug.Log($"  audioService: {(audioService != null ? "Valid ✓" : "NULL ✗")}");
-            Debug.Log($"  pinPullClip: {pinPullClip}");
-            
-            if (audioService == null) {
-                Debug.LogError("[Grenade] PlayPinPullSound: audioService is NULL! This will crash!");
-                return;
-            }
+            EnsureAudioService();
             
             if (pinPullClip != null && audioService != null) {
                 audioService.PlaySFX2D(pinPullClip, pinPullVolume);
@@ -379,6 +397,8 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private void PlayThrowSound() {
             Debug.Log("[Grenade] PlayThrowSound called");
+            EnsureAudioService();
+            
             if (throwClip != null && audioService != null) {
                 audioService.PlaySFX2D(throwClip, throwVolume);
                 Debug.Log("[Grenade] PlayThrowSound: SUCCESS");
