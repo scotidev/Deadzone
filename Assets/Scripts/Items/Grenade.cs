@@ -243,7 +243,14 @@ namespace InfimaGames.LowPolyShooterPack {
 
             // CONCEITO: Verificar se tem ammo antes de lançar.
             // Se não tiver, rescindir e retornar ao estado Idle.
-            if (!CanBeUsed() || !PlayerProgress.Instance.HasItem(GetItemID())) {
+            if (!CanBeUsed()) {
+                currentState = GrenadeState.Idle;
+                return;
+            }
+
+            // CONCEITO: Verificar se tem quantidade em inventário.
+            // GetItemTotal retorna o número total de granadas que o player tem.
+            if (PlayerProgress.Instance != null && PlayerProgress.Instance.GetItemTotal(GetItemID()) <= 0) {
                 currentState = GrenadeState.Idle;
                 return;
             }
