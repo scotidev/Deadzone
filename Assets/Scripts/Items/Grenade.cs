@@ -316,26 +316,22 @@ namespace InfimaGames.LowPolyShooterPack {
             if (PlayerProgress.Instance != null) {
                 PlayerProgress.Instance.UseItem(GetItemID(), 1);
                 int remaining = PlayerProgress.Instance.GetItemTotal(GetItemID());
-                PlayerProgress.Instance.SetItemCurrent(GetItemID(), remaining > 0 ? 1 : 0);
                 Debug.Log($"[Grenade] ThrowGrenade: itemID={GetItemID()}, remainingAfterUse={remaining}");
 
-                if (remaining <= 0) {
-                    Debug.Log($"[Grenade] ThrowGrenade: used last grenade, auto-equipping pistol (ID=1, index=0)");
-                    // If we just used the last grenade, equip default pistol (slot 0).
-                    Character charComponent = GetComponentInParent<Character>();
-                    if (charComponent != null) {
-                        // Try to equip weapon in slot 0 (default pistol)
-                        charComponent.TryEquipWeapon(0);
-                    }
-
-                    // Deactivate grenade visuals and unsubscribe from input.
-                    UnsubscribeFromFireInput();
-                    gameObject.SetActive(false);
-                    currentState = GrenadeState.Idle;
+                // NOVO: Verificar se chegou a zero
+                if (remaining > 0) {
+                    // Ainda há granadas: mantém equipado para lançar novamente
+                    PlayerProgress.Instance.SetItemCurrent(GetItemID(), 1);
+                    Debug.Log($"[Grenade] ThrowGrenade: remaining={remaining}, keep grenades equipped");
+                    // The grenade hand object remains active, re-subscribed in OnFireCanceled
+                } else {
+                    // Última granada lançada: volta à pistola com animação
+                    PlayerProgress.Instance.SetItemCurrent(GetItemID(), 0);
+                    Debug.Log($"[Grenade] ThrowGrenade: used last grenade, auto-equipping weapon");
+                    
+                    EquipWeaponAutomatically();
                 }
             }
-
-            // The grenade hand object remains active if we still have ammo.
         }
 
         #endregion
@@ -376,6 +372,24 @@ namespace InfimaGames.LowPolyShooterPack {
             if (throwClip != null && audioService != null) {
                 audioService.PlaySFX2D(throwClip, throwVolume);
             }
+        }
+
+        #endregion
+
+        #region HELPER METHODS
+
+        /// <summary>
+        /// Automatically equips the default weapon (pistol) when grenade quantity reaches zero.
+        /// Uses smooth animation transition via Character.TryRestoreWeaponSmoothly().
+        /// CONCEITO: Assim como no Medkit, delegamos a responsabilidade da animação
+        /// ao Character para garantir que o braço abaixe antes da troca ocorrer.
+        /// </summary>
+        private void EquipWeaponAutomatically() {
+            Character character = GetComponentInParent<Character>();
+            if (character == null) return;
+
+            // Chama a nova lógica suave
+            character.TryRestoreWeaponSmoothly();
         }
 
         #endregion

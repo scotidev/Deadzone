@@ -123,6 +123,16 @@ namespace InfimaGames.LowPolyShooterPack {
                         Debug.Log($"[GrenadeThrown] Enemy hit for {damage} damage at level {grenadeLevel}");
                     }
                 }
+
+                // Chain reaction: trigger other explosive barrels
+                // CONCEITO: Se a explosão acertar um barril explosivo,
+                // aquele barril também explodirá (reação em cadeia).
+                if (hit.transform.CompareTag("ExplosiveBarrel")) {
+                    ExplosiveBarrel otherBarrel = hit.GetComponent<ExplosiveBarrel>();
+                    if (otherBarrel != null) {
+                        otherBarrel.TakeDamage(0);
+                    }
+                }
             }
 
             // CONCEITO: Raycast para baixo para encontrar o chão onde colocar o VFX.

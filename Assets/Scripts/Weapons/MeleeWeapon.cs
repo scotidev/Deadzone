@@ -40,6 +40,7 @@ namespace InfimaGames.LowPolyShooterPack {
         private GameObject meleeVisual;
         private readonly Collider[] meleeHits = new Collider[16];
         private bool isAttacking;
+        private bool hitmarkerTriggeredThisAttack;
         private IAudioManagerService audioService;
 
         #endregion
@@ -99,6 +100,10 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         private IEnumerator MeleeAttackRoutine() {
+            // CONCEITO: Resetar a flag de hitmarker no início de cada novo ataque.
+            // Isso garante que o hitmarker seja disparado no máximo uma vez por ataque.
+            hitmarkerTriggeredThisAttack = false;
+
             if (meleeVisual != null)
                 meleeVisual.SetActive(true);
 
@@ -157,6 +162,14 @@ namespace InfimaGames.LowPolyShooterPack {
                     continue;
 
                 enemy.TakeDamage(meleeDamage);
+
+                // CONCEITO: Disparar o hitmarker apenas uma vez por ataque.
+                // A flag 'hitmarkerTriggeredThisAttack' garante que mesmo com múltiplos inimigos atingidos,
+                // o feedback visual/audio do hitmarker ocorra apenas uma vez para melhor UX.
+                if (!hitmarkerTriggeredThisAttack) {
+                    HitmarkerManager.TriggerHitmarker();
+                    hitmarkerTriggeredThisAttack = true;
+                }
 
                 Debug.Log($"[MELEE] Acertou inimigo: {enemy.name}");
                 Debug.DrawLine(cameraWorld.transform.position, enemy.transform.position, Color.red, 0.25f);

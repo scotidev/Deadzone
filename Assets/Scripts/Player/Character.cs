@@ -702,6 +702,45 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
+        /// Attempts to restore the last used weapon smoothly.
+        /// Useful for when an item like a medkit or grenade is exhausted.
+        /// </summary>
+        public void TryRestoreWeaponSmoothly() {
+            if (!CanChangeWeapon())
+                return;
+
+            StartCoroutine(nameof(RestoreWeaponCoroutine));
+        }
+
+        /// <summary>
+        /// Coroutine that handles the smooth transition back to the last weapon.
+        /// 1. Plays holster animation for current item.
+        /// 2. Waits for the animation to finish.
+        /// 3. Swaps the item in inventory.
+        /// 4. Plays unholster animation for the new weapon.
+        /// </summary>
+        private IEnumerator RestoreWeaponCoroutine() {
+            // Se não estiver guardado, precisamos guardar primeiro (tocar animação de holster)
+            if (!holstered) {
+                SetHolstered(holstering = true);
+                // Espera até que o evento de animação 'AnimationEndedHolster' seja disparado
+                yield return new WaitUntil(() => holstering == false);
+            }
+
+            // Agora que a mão está "vazia" (embaixo), trocamos o item logicamente
+            if (inventory is Inventory inv) {
+                inv.RestoreLastWeapon();
+            }
+
+            // Atualiza as referências de animação e componentes para a nova arma (pistola)
+            RefreshWeaponSetup();
+
+            // Tira do holster para tocar a animação de sacar a arma
+            SetHolstered(false);
+            characterAnimator.Play("Unholster", layerHolster, 0);
+        }
+
+        /// <summary>
         /// Callback for unified item selection via numeric keys (1-9).
         /// Delegates to Inventory to handle both weapons and buildables.
         /// </summary>

@@ -104,6 +104,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Use the medkit: heal the player based on upgrade level.
         /// If health is at 100%, play deny sound and do not consume the item.
         /// If no medkit in hand, play deny sound.
+        /// If medkit is used successfully and quantity > 0, remains equipped.
+        /// If quantity reaches 0, automatically equips weapon with holster animation.
         /// </summary>
         public override void OnUse() {
             if (!CanBeUsed() || medkitData == null) {
@@ -148,8 +150,18 @@ namespace InfimaGames.LowPolyShooterPack {
             if (PlayerProgress.Instance != null) {
                 PlayerProgress.Instance.UseItem(GetItemID(), 1);
                 int remaining = PlayerProgress.Instance.GetItemTotal(GetItemID());
-                PlayerProgress.Instance.SetItemCurrent(GetItemID(), remaining > 0 ? 1 : 0);
-                Debug.Log($"[Medkit] OnUse: itemID={GetItemID()}, remainingAfterUse={remaining}");
+                
+                // NOVO: Verificar se chegou a zero
+                if (remaining > 0) {
+                    // Ainda há medkits: mantém equipado
+                    PlayerProgress.Instance.SetItemCurrent(GetItemID(), 1);
+                    Debug.Log($"[Medkit] OnUse: itemID={GetItemID()}, remaining={remaining}, keep equipped");
+                } else {
+                    // Última unidade usada: volta à pistola com animação
+                    PlayerProgress.Instance.SetItemCurrent(GetItemID(), 0);
+                    EquipWeaponAutomatically();
+                    Debug.Log($"[Medkit] OnUse: used last medkit, auto-equip weapon");
+                }
             }
 
             Debug.Log($"[Medkit] Healed for {healAmount} HP. Level: {currentLevel}");
@@ -206,6 +218,24 @@ namespace InfimaGames.LowPolyShooterPack {
             if (UIManager.Instance != null) {
                 UIManager.Instance.ShowHealFeedback(feedbackDuration);
             }
+        }
+
+        #endregion
+
+        #region HELPER METHODS
+
+        /// <summary>
+        /// Automatically equips the default weapon (pistol) when medkit quantity reaches zero.
+        /// Uses smooth animation transition via Character.TryRestoreWeaponSmoothly().
+        /// CONCEITO: Em vez de trocar instantaneamente, pedimos ao Character para
+        /// gerenciar a transição (Holster -> Swap -> Unholster).
+        /// </summary>
+        private void EquipWeaponAutomatically() {
+            Character character = GetComponentInParent<Character>();
+            if (character == null) return;
+
+            // Chama a nova lógica suave que espera a animação terminar
+            character.TryRestoreWeaponSmoothly();
         }
 
         #endregion

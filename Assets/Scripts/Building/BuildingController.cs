@@ -300,7 +300,27 @@ public class BuildingController : MonoBehaviour {
             }
         }
 
-        CancelPlacement();
+        // NEW: Check remaining quantity AFTER placement
+        // CONCEITO: Se ainda houver quantidade no inventário, o buildable permanece equipado
+        // e pronto para posicionar outro item. Apenas quando qty = 0, voltamos à pistola.
+        if (PlayerProgress.Instance != null && selectedItem != null) {
+            string buildableID = GetBuildableID(selectedItem);
+            if (!string.IsNullOrEmpty(buildableID)) {
+                int remainingQty = PlayerProgress.Instance.GetItemTotal(buildableID);
+                if (remainingQty > 0) {
+                    // Item ainda tem quantidade: reset ghost para novo placement, mantém item equipado
+                    Debug.Log($"[BuildingController] TryPlaceObject: remaining qty={remainingQty}, resetting ghost for next placement");
+                    ResetPlacementForNextItem();
+                } else {
+                    // Última unidade colocada: volta à pistola com animação
+                    Debug.Log($"[BuildingController] TryPlaceObject: qty=0, canceling placement to return to weapon");
+                    CancelPlacement();
+                }
+            }
+        } else {
+            // Fallback: Se PlayerProgress não disponível, cancela normalmente
+            CancelPlacement();
+        }
     }
 
     /// <summary>
@@ -345,6 +365,45 @@ public class BuildingController : MonoBehaviour {
         } else {
             Debug.LogWarning($"[BuildingController] CancelPlacement: Could not find Inventory component!");
         }
+    }
+
+    /// <summary>
+    /// Resets the placement for the next item without canceling placement mode or returning to weapon.
+    /// CONCEITO: Após posicionar um buildable com sucesso, se ainda há quantidade,
+    /// destruímos o ghost atual e criamos um novo para o próximo posicionamento.
+    /// Isso permite colocar múltiplos items do mesmo tipo sem apertar a tecla novamente.
+    /// </summary>
+    private void ResetPlacementForNextItem() {
+        if (selectedItem == null) {
+            CancelPlacement();
+            return;
+        }
+
+        // Destruir ghost atual para criar novo
+        DestroyCurrentGhost();
+
+        // Recriar novo ghost para o próximo placement
+        if (selectedItem.GhostPrefab == null) {
+            Debug.LogWarning($"[BuildingController] {selectedItem.name} não tem Ghost Prefab configurado!");
+            CancelPlacement();
+            return;
+        }
+
+        currentGhost = Instantiate(selectedItem.GhostPrefab, Vector3.zero, Quaternion.identity);
+
+        foreach (Collider col in currentGhost.GetComponentsInChildren<Collider>())
+            col.enabled = false;
+
+        currentGhost.SetActive(false);
+        currentGhostObject = currentGhost.GetComponent<GhostObject>();
+
+        // NOVO: Garantir que o item atual (em mão) seja contado como 1 no HUD
+        // Isso resolve o problema do contador 'Current' mostrar 0 mesmo tendo mais itens.
+        if (PlayerProgress.Instance != null && !string.IsNullOrEmpty(selectedItem.ItemID)) {
+            PlayerProgress.Instance.SetItemCurrent(selectedItem.ItemID, 1);
+        }
+
+        Debug.Log($"[BuildingController] ResetPlacementForNextItem: Ghost reset for next {selectedItem.ItemName}");
     }
 
     #endregion
