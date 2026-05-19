@@ -44,8 +44,6 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #region FIELDS
 
-
-
         private bool aiming;
         private bool running;
         private bool inspecting;
@@ -229,21 +227,94 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Equip Weapon Coroutine.
+        /// Public method to request a weapon equip by index.
+        /// This is called by external systems like ItemSelector.
+        /// Validates that the weapon change is allowed before starting the equip coroutine.
         /// </summary>
-        private IEnumerator Equip(int index = 0) {
+        /// <param name="weaponIndex">Index of the weapon to equip in the inventory array</param>
+        /// <returns>True if the equip was started, false if blocked</returns>
+        public bool TryEquipWeapon(int weaponIndex) {
+            // CONCEITO: Redireciona para o novo sistema unificado de troca suave.
+            // Isso garante que trocas via código (como a pistola inicial) também sejam suaves.
+            return TryEquipItem(weaponIndex);
+        }
+
+        /// <summary>
+        /// Tries to equip an item by its index in the inventory.
+        /// Handles the validation and starts the smooth transition coroutine.
+        /// </summary>
+        public bool TryEquipItem(int index) {
+            if (inventory == null) return false;
+
+            // FIX: Agora verificamos o currentSelectionIndex real através do GetSelectionIndex()
+            // Isso permite que o sistema saiba que se você está com um medkit (índice 3),
+            // você PODE selecionar a pistola (índice 0), pois 3 != 0.
+            if (inventory is Inventory inv && inv.GetSelectionIndex() == index)
+                return false;
+
+            if (!CanChangeWeapon())
+                return false;
+
+            StartCoroutine(nameof(EquipItemCoroutine), index);
+            return true;
+        }
+
+        /// <summary>
+        /// Coroutine that handles the smooth transition between ANY two items.
+        /// 1. Plays holster animation for current item and waits.
+        /// 2. Swaps the item in inventory (logic + visual).
+        /// 3. Plays unholster animation for the new item.
+        /// </summary>
+        private IEnumerator EquipItemCoroutine(int index) {
+            // Se não estiver guardado, precisamos guardar primeiro (tocar animação de holster)
+            if (!holstered) {
+                SetHolstered(holstering = true);
+                // Espera até que o evento de animação 'AnimationEndedHolster' seja disparado
+                yield return new WaitUntil(() => holstering == false);
+            }
+
+            // Troca o item no inventário enquanto a mão está em baixo
+            if (inventory is Inventory inv) {
+                inv.SelectItem(index);
+            }
+
+            // Atualiza referências de animação/componentes
+            RefreshWeaponSetup();
+
+            // Tira do holster para tocar a animação de sacar o novo item
+            SetHolstered(false);
+            characterAnimator.Play("Unholster", layerHolster, 0);
+        }
+
+        /// <summary>
+        /// Attempts to restore the last used weapon smoothly.
+        /// Useful for when an item like a medkit or grenade is exhausted.
+        /// </summary>
+        public void TryRestoreWeaponSmoothly() {
+            if (!CanChangeWeapon())
+                return;
+
+            StartCoroutine(nameof(RestoreWeaponCoroutine));
+        }
+
+        /// <summary>
+        /// Coroutine that handles the smooth transition back to the last weapon.
+        /// </summary>
+        private IEnumerator RestoreWeaponCoroutine() {
+            // Se não estiver guardado, precisamos guardar primeiro
             if (!holstered) {
                 SetHolstered(holstering = true);
                 yield return new WaitUntil(() => holstering == false);
             }
 
-            SetHolstered(false);
-
-            characterAnimator.Play("Unholster", layerHolster, 0);
-
-            inventory.Equip(index);
+            if (inventory is Inventory inv) {
+                inv.RestoreLastWeapon();
+            }
 
             RefreshWeaponSetup();
+
+            SetHolstered(false);
+            characterAnimator.Play("Unholster", layerHolster, 0);
         }
 
         #region MELEE
@@ -276,19 +347,9 @@ namespace InfimaGames.LowPolyShooterPack {
             isAttackingMelee = false;
 
             if (lastWeaponIndexBeforeMelee >= 0) {
-                SetHolstered(false);
-                StartCoroutine(RestoreWeaponAfterUnholster());
+                // Tenta restaurar a arma anterior de forma suave
+                TryEquipItem(lastWeaponIndexBeforeMelee);
             }
-        }
-
-        /// <summary>
-        /// Waits for unholster animation to finish, then restores the weapon.
-        /// </summary>
-        private IEnumerator RestoreWeaponAfterUnholster() {
-            yield return new WaitUntil(() => !holstering);
-
-            inventory.Equip(lastWeaponIndexBeforeMelee);
-            RefreshWeaponSetup();
         }
 
         /// <summary>
@@ -467,7 +528,7 @@ namespace InfimaGames.LowPolyShooterPack {
             if (aiming)
                 return false;
 
-            if (holdingButtonFire && equippedWeapon.HasAmmunition())
+            if (holdingButtonFire && (equippedWeapon != null && equippedWeapon.HasAmmunition()))
                 return false;
 
             if (axisMovement.y <= 0 || Math.Abs(Mathf.Abs(axisMovement.x) - 1) < 0.01f)
@@ -529,6 +590,7 @@ namespace InfimaGames.LowPolyShooterPack {
                     break;
             }
         }
+
         /// <summary>
         /// Reload.
         /// </summary>
@@ -682,65 +744,6 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Public method to request a weapon equip by index.
-        /// This is called by external systems like ItemSelector.
-        /// Validates that the weapon change is allowed before starting the equip coroutine.
-        /// </summary>
-        /// <param name="weaponIndex">Index of the weapon to equip in the inventory array</param>
-        /// <returns>True if the equip was started, false if blocked</returns>
-        public bool TryEquipWeapon(int weaponIndex) {
-            int currentIndex = inventory.GetEquippedIndex();
-
-            if (currentIndex == weaponIndex)
-                return false;
-
-            if (!CanChangeWeapon())
-                return false;
-
-            StartCoroutine(nameof(Equip), weaponIndex);
-            return true;
-        }
-
-        /// <summary>
-        /// Attempts to restore the last used weapon smoothly.
-        /// Useful for when an item like a medkit or grenade is exhausted.
-        /// </summary>
-        public void TryRestoreWeaponSmoothly() {
-            if (!CanChangeWeapon())
-                return;
-
-            StartCoroutine(nameof(RestoreWeaponCoroutine));
-        }
-
-        /// <summary>
-        /// Coroutine that handles the smooth transition back to the last weapon.
-        /// 1. Plays holster animation for current item.
-        /// 2. Waits for the animation to finish.
-        /// 3. Swaps the item in inventory.
-        /// 4. Plays unholster animation for the new weapon.
-        /// </summary>
-        private IEnumerator RestoreWeaponCoroutine() {
-            // Se não estiver guardado, precisamos guardar primeiro (tocar animação de holster)
-            if (!holstered) {
-                SetHolstered(holstering = true);
-                // Espera até que o evento de animação 'AnimationEndedHolster' seja disparado
-                yield return new WaitUntil(() => holstering == false);
-            }
-
-            // Agora que a mão está "vazia" (embaixo), trocamos o item logicamente
-            if (inventory is Inventory inv) {
-                inv.RestoreLastWeapon();
-            }
-
-            // Atualiza as referências de animação e componentes para a nova arma (pistola)
-            RefreshWeaponSetup();
-
-            // Tira do holster para tocar a animação de sacar a arma
-            SetHolstered(false);
-            characterAnimator.Play("Unholster", layerHolster, 0);
-        }
-
-        /// <summary>
         /// Callback for unified item selection via numeric keys (1-9).
         /// Delegates to Inventory to handle both weapons and buildables.
         /// </summary>
@@ -748,8 +751,17 @@ namespace InfimaGames.LowPolyShooterPack {
             if (context.phase != InputActionPhase.Performed)
                 return;
 
+            if (cursorLocked == false || interfaceMode)
+                return;
+
             if (inventory is Inventory inventoryScript) {
-                inventoryScript.OnSelectItem(context);
+                // Obtém o índice desejado a partir da tecla pressionada
+                int index = inventoryScript.GetIndexFromInput(context);
+                
+                // Tenta equipar o item de forma suave
+                if (index != -1) {
+                    TryEquipItem(index);
+                }
             }
         }
 

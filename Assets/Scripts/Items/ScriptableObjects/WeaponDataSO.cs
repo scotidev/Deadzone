@@ -13,7 +13,6 @@ public class WeaponDataSO : ItemDataSO {
     public bool isAutomatic = true;
     public float baseDamage = 10f;
     public float baseFireRate = 200f;
-    public int baseMagazineCapacity = 30;
 
     [Header("Upgrade Scaling")]
 
@@ -22,11 +21,6 @@ public class WeaponDataSO : ItemDataSO {
 
     [Range(0f, 0.5f)]
     public float fireRateScaling = 0.05f;
-
-    public float maxFireRate = 500f;
-
-    [Range(0f, 0.5f)]
-    public float magazineScaling = 0.1f;
 
     #endregion
 
@@ -63,31 +57,7 @@ public class WeaponDataSO : ItemDataSO {
         level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
 
         // FORMULA: baseFireRate * (1 + fireRateScaling * (level - 1))
-        float calculatedFireRate = baseFireRate * (1 + fireRateScaling * (level - 1));
-
-        return Mathf.Min(calculatedFireRate, maxFireRate);
-    }
-
-    /// <summary>
-    /// Calculates the magazine capacity for a given upgrade level.
-    /// Overrides ItemDataSO.GetMaxCurrentCapacityAtLevel to use weapon-specific fields.
-    /// </summary>
-    public override int GetMaxCurrentCapacityAtLevel(int level) {
-        return GetMagazineCapacityAtLevel(level);
-    }
-
-    /// <summary>
-    /// Calculates the magazine capacity for a given upgrade level.
-    /// Rounded to nearest integer since you can't have partial bullets.
-    /// </summary>
-    /// <param name="level">Current upgrade level.</param>
-    /// <returns>The calculated magazine capacity.</returns>
-    public int GetMagazineCapacityAtLevel(int level) {
-        level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
-
-        // FORMULA: baseMagazineCapacity * (1 + magazineScaling * (level - 1))
-        float scaledCapacity = baseMagazineCapacity * (1 + magazineScaling * (level - 1));
-        return Mathf.RoundToInt(scaledCapacity);
+        return baseFireRate * (1 + fireRateScaling * (level - 1));
     }
 
     public override string[] GetStatLabels() => new[] { "Damage", "Fire Rate", "Ammo" };

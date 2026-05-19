@@ -19,12 +19,9 @@ MonoBehaviour:
   baseAmmo: 10
   ammoScaling: 1
   baseCurrentCapacity: 10
-  currentCapacityScaling: 0.25
-  isAutomatic: 1
-  baseDamage: 1
-  baseFireRate: 100
-  baseMagazineCapacity: 10
-  damageScaling: 0.5
-  fireRateScaling: 0.5
-  maxFireRate: 300
-  magazineScaling: 0.15
+  currentCapacityScaling: 0.11
+  isAutomatic: 0
+  baseDamage: 25
+  baseFireRate: 200
+  damageScaling: 0.15
+  fireRateScaling: 0.15

@@ -15,10 +15,10 @@ public abstract class ItemDataSO : ScriptableObject {
     [SerializeField] private int baseAmmo = 10;
     [SerializeField] private float ammoScaling = 0.1f;
 
-    [Tooltip("Maximum quantity that can be carried in hand. For weapons: magazine capacity. For consumables/buildables: 1 (always)")]
+    [Tooltip("Maximum quantity that can be carried in hand. FOR WEAPONS: This is the Magazine Capacity.")]
     [SerializeField] private int baseCurrentCapacity = 1;
 
-    [Tooltip("Scaling for current capacity per upgrade level. Only applies to weapons (for magazine expansion). 0 for consumables.")]
+    [Tooltip("Scaling for current capacity per upgrade level. FOR WEAPONS: This scales the magazine size.")]
     [Range(0f, 0.5f)]
     [SerializeField] private float currentCapacityScaling = 0f;
 

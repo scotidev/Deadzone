@@ -13,8 +13,6 @@ namespace InfimaGames.LowPolyShooterPack {
         #region SERIALIZED FIELDS
 
         [Header("Settings")]
-
-        [SerializeField] private int ammunitionTotal = 10;
         [SerializeField] private Sprite sprite;
 
         #endregion
@@ -38,7 +36,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <summary>
         /// Returns the total ammunition capacity of this magazine.
         /// Now dynamically calculates capacity based on WeaponDataSO and upgrade level.
-        /// Falls back to inspector value if weaponData is missing.
+        /// Falls back to 1 if system not initialized to prevent errors.
         /// </summary>
         public override int GetAmmunitionTotal() {
             if (parentWeapon != null) {
@@ -48,12 +46,12 @@ namespace InfimaGames.LowPolyShooterPack {
                     string itemID = parentWeapon.GetItemID();
                     int level = PlayerProgress.Instance.GetItemLevel(itemID);
                     
-                    // We can use the formula directly from PlayerProgress which is already synced with SO
+                    // We use the formula from PlayerProgress which is now unified using ItemDataSO fields
                     return PlayerProgress.Instance.GetItemMaxCurrent(itemID, level);
                 }
             }
             
-            return ammunitionTotal;
+            return 1; // Minimal safe fallback
         }
 
         public override Sprite GetSprite() => sprite;

@@ -93,46 +93,26 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Called by Input System when any numeric key (1-8) is pressed.
-        /// Unified handling for all item types (weapons, consumables, buildables).
+        /// Maps the input context from numeric keys (1-8) to the corresponding item index.
+        /// Returns -1 if the input is invalid.
         /// </summary>
-        public void OnSelectItem(InputAction.CallbackContext context) {
-            if (context.phase != InputActionPhase.Performed)
-                return;
-
-            if (character != null && character.IsInterfaceMode())
-                return;
-
-            // CONCEITO: Extrai o número da tecla do caminho do Input System.
-            // Exemplo: "<Keyboard>/1" → pega último char '1' → converte para int 1
+        public int GetIndexFromInput(InputAction.CallbackContext context) {
             string path = context.control.path;
             char digitChar = path[path.Length - 1];
             int keyNumber = digitChar - '0';
-
-            SelectByKeyNumber(keyNumber);
-        }
-
-        /// <summary>
-        /// Select item by key number (1-8). Unified logic for all item types.
-        /// </summary>
-        private void SelectByKeyNumber(int keyNumber) {
-            // Valida se a tecla está no range 1-8
-            if (!keyToIndex.TryGetValue(keyNumber, out int itemIndex)) {
-                return;
+            
+            if (keyToIndex.TryGetValue(keyNumber, out int itemIndex)) {
+                return itemIndex;
             }
-
-            if (itemIndex < 0 || itemIndex >= selectableItems.Length) {
-                return;
-            }
-
-            SelectItem(itemIndex);
+            return -1;
         }
 
         /// <summary>
         /// Select item by index. Deselects previous item and selects new one.
-        /// REFATORAÇÃO: Método unificado que funciona para armas, consumíveis e buildables.
+        /// CONCEITO: Este método agora é PÚBLICO para que o Character possa chamá-lo
+        /// no meio da corrotina de troca suave (quando o braço está em baixo).
         /// </summary>
-        private void SelectItem(int index) {
+        public void SelectItem(int index) {
             if (selectableItems == null || index < 0 || index >= selectableItems.Length) {
                 return;
             }
@@ -284,6 +264,13 @@ namespace InfimaGames.LowPolyShooterPack {
 
         public override WeaponBehaviour GetEquipped() => equipped;
         public override int GetEquippedIndex() => equippedIndex;
+
+        /// <summary>
+        /// Returns the current selection index (0-7), representing any item in hand.
+        /// CONCEITO: Diferente de equippedIndex (que foca em armas), este índice 
+        /// reflete exatamente o que o jogador está segurando no momento.
+        /// </summary>
+        public int GetSelectionIndex() => currentSelectionIndex;
 
         public override ItemBehaviour GetEquippedItem() => currentlySelected;
 

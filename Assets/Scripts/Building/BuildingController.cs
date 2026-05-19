@@ -312,9 +312,14 @@ public class BuildingController : MonoBehaviour {
                     Debug.Log($"[BuildingController] TryPlaceObject: remaining qty={remainingQty}, resetting ghost for next placement");
                     ResetPlacementForNextItem();
                 } else {
-                    // Última unidade colocada: volta à pistola com animação
-                    Debug.Log($"[BuildingController] TryPlaceObject: qty=0, canceling placement to return to weapon");
+                    // Última unidade colocada: volta à pistola com animação suave através do Character
+                    Debug.Log($"[BuildingController] TryPlaceObject: qty=0, triggering smooth weapon restoration");
+                    
+                    // Primeiro limpamos o estado de construção
                     CancelPlacement();
+                    
+                    // Depois pedimos ao personagem para restaurar a arma com holster animation
+                    playerCharacter?.TryRestoreWeaponSmoothly();
                 }
             }
         } else {
@@ -349,22 +354,17 @@ public class BuildingController : MonoBehaviour {
 
     /// <summary>
     /// Cancels the current placement mode, cleaning up all related objects and UI elements.
+    /// CONCEITO: Este método agora foca apenas em limpar o estado de construção (Ghost e item selecionado).
+    /// A responsabilidade de voltar para a arma suavemente é delegada ao Character.
     /// </summary>
     public void CancelPlacement() {
         ResolvePlayerCharacter();
         DestroyCurrentGhost();
         selectedItem = null;
-        playerCharacter?.SetHolstered(false);
-
-        // CRITICAL: Restore the last equipped weapon after placement is canceled
-        // Otherwise the weapon stays invisible (holstered) but never actually re-selected
-        Debug.Log($"[BuildingController] CancelPlacement: Restoring last weapon");
-        Inventory inventory = playerCharacter?.GetComponentInChildren<Inventory>();
-        if (inventory != null) {
-            inventory.RestoreLastWeapon();
-        } else {
-            Debug.LogWarning($"[BuildingController] CancelPlacement: Could not find Inventory component!");
-        }
+        
+        // Removemos o RestoreLastWeapon e SetHolstered(false) daqui para evitar trocas bruscas.
+        // Se este método for chamado via OnDeselected, o Character já estará gerenciando a troca suave.
+        Debug.Log($"[BuildingController] CancelPlacement: Ghost and selection cleared.");
     }
 
     /// <summary>
