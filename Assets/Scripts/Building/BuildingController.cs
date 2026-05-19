@@ -218,6 +218,15 @@ public class BuildingController : MonoBehaviour {
     /// Processes user input to detect and confirm object placement when the left mouse button is clicked.
     /// </summary>
     private void HandlePlacementInput() {
+        // SEGURANÇA: Não permitir posicionamento se estiver em modo de interface (loja/menus)
+        // ou se o mouse estiver sobre um elemento da UI (botões do pause, etc).
+        if (playerCharacter != null && playerCharacter.IsInterfaceMode())
+            return;
+
+        if (UnityEngine.EventSystems.EventSystem.current != null && 
+            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            return;
+
         if (Mouse.current.leftButton.wasPressedThisFrame)
             TryPlaceObject();
     }

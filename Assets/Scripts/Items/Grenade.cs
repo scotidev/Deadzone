@@ -216,6 +216,16 @@ namespace InfimaGames.LowPolyShooterPack {
                 return;
             }
 
+            // SEGURANÇA: Não puxar o pino se estiver em modo de interface (loja/menus)
+            // ou se o mouse estiver sobre um elemento da UI.
+            Character character = GetComponentInParent<Character>();
+            if (character != null && character.IsInterfaceMode())
+                return;
+
+            if (UnityEngine.EventSystems.EventSystem.current != null && 
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                return;
+
             Debug.Log($"[Grenade] OnFireStarted: itemID={GetItemID()}, state={currentState}");
 
             // Ensure audioService is available.
@@ -233,6 +243,16 @@ namespace InfimaGames.LowPolyShooterPack {
             // CONCEITO: Só proceder se estamos no estado Pinned (segurando o botão).
             // Se não tiver puxado o pino, não fazer nada.
             if (currentState != GrenadeState.Pinned) {
+                return;
+            }
+
+            // SEGURANÇA: Não lançar a granada se o release aconteceu sobre um elemento da UI.
+            // Isso evita que cliques em botões de menu lancem a granada "pela culatra".
+            if (UnityEngine.EventSystems.EventSystem.current != null && 
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
+                
+                // Resetamos para Idle para que o player possa tentar novamente sem ficar preso no estado Pinned.
+                currentState = GrenadeState.Idle;
                 return;
             }
 

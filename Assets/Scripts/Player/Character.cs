@@ -545,8 +545,13 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Fire.
         /// </summary>
         public void OnTryFire(InputAction.CallbackContext context) {
-
+            // SEGURANÇA: Não atirar/usar se o cursor estiver solto, em modo de interface
+            // ou se o clique foi em cima de um elemento da UI (botão de menu, shop, etc).
             if (!cursorLocked || interfaceMode)
+                return;
+
+            if (UnityEngine.EventSystems.EventSystem.current != null && 
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
                 return;
 
             if (BuildingController.Instance != null && BuildingController.Instance.IsPlacing) {
@@ -661,7 +666,11 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         public void OnTryAiming(InputAction.CallbackContext context) {
 
-            if (!cursorLocked)
+            if (!cursorLocked || interfaceMode)
+                return;
+
+            if (UnityEngine.EventSystems.EventSystem.current != null && 
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
                 return;
 
             switch (context.phase) {
