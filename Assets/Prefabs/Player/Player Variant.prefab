@@ -67,10 +67,35 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 2795493999401270507, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: m_Name
+      value: Pistol
+      objectReference: {fileID: 0}
     - target: {fileID: 3327221650101542322, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4749104247355021179, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: meleeSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 7452047e7e6edae43a0d05b926f95b92, type: 3}
+    - target: {fileID: 4749104247355021179, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: meleeRange
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4749104247355021179, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: meleeDamage
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 4749104247355021179, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: meleeCooldown
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5128553377722973692, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
@@ -101,6 +126,21 @@ PrefabInstance:
         type: 3}
       propertyPath: feedbackDuration
       value: 2.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 6016615612185836426, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6016615612185836426, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6016615612185836426, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8432152278379913118, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
@@ -164,6 +204,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 65536
   enemyDetectionDistance: 50
+  uiLayerMask:
+    serializedVersion: 2
+    m_Bits: 32
   enemyHealthBarUI: {fileID: 0}
 --- !u!4 &8211855974502300214 stripped
 Transform:

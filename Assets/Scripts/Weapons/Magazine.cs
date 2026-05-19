@@ -9,7 +9,7 @@ namespace InfimaGames.LowPolyShooterPack {
     /// Magazine.
     /// </summary>
     public class Magazine : MagazineBehaviour {
-
+        
         #region SERIALIZED FIELDS
 
         [Header("Settings")]
@@ -19,9 +19,43 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
+        #region FIELDS
+
+        private Weapon parentWeapon;
+
+        #endregion
+
+        #region UNITY
+
+        private void Awake() {
+            parentWeapon = GetComponentInParent<Weapon>();
+        }
+
+        #endregion
+
         #region GETTERS
 
-        public override int GetAmmunitionTotal() => ammunitionTotal;
+        /// <summary>
+        /// Returns the total ammunition capacity of this magazine.
+        /// Now dynamically calculates capacity based on WeaponDataSO and upgrade level.
+        /// Falls back to inspector value if weaponData is missing.
+        /// </summary>
+        public override int GetAmmunitionTotal() {
+            if (parentWeapon != null) {
+                // If the weapon has a WeaponDataSO, use the formula to get capacity for current level
+                // This makes the SO the single source of truth.
+                if (PlayerProgress.Instance != null) {
+                    string itemID = parentWeapon.GetItemID();
+                    int level = PlayerProgress.Instance.GetItemLevel(itemID);
+                    
+                    // We can use the formula directly from PlayerProgress which is already synced with SO
+                    return PlayerProgress.Instance.GetItemMaxCurrent(itemID, level);
+                }
+            }
+            
+            return ammunitionTotal;
+        }
+
         public override Sprite GetSprite() => sprite;
 
         #endregion

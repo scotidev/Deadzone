@@ -10,6 +10,7 @@ public class WeaponDataSO : ItemDataSO {
     #region FIELDS
 
     [Header("Base Stats")]
+    public bool isAutomatic = true;
     public float baseDamage = 10f;
     public float baseFireRate = 200f;
     public int baseMagazineCapacity = 30;
@@ -45,9 +46,11 @@ public class WeaponDataSO : ItemDataSO {
     /// <param name="level">Current upgrade level.</param>
     /// <returns>The calculated damage value.</returns>
     public float GetDamageAtLevel(int level) {
-        level = Mathf.Clamp(level, 1, 10);
+        level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
 
-        return baseDamage * (1 + damageScaling * level);
+        // FORMULA: baseDamage * (1 + damageScaling * (level - 1))
+        // Level 1 = baseDamage * 1
+        return baseDamage * (1 + damageScaling * (level - 1));
     }
 
     /// <summary>
@@ -57,11 +60,20 @@ public class WeaponDataSO : ItemDataSO {
     /// <param name="level">Current upgrade level.</param>
     /// <returns>The calculated fire rate in rounds per minute (capped at maxFireRate).</returns>
     public float GetFireRateAtLevel(int level) {
-        level = Mathf.Clamp(level, 1, 10);
+        level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
 
-        float calculatedFireRate = baseFireRate * (1 + fireRateScaling * level);
+        // FORMULA: baseFireRate * (1 + fireRateScaling * (level - 1))
+        float calculatedFireRate = baseFireRate * (1 + fireRateScaling * (level - 1));
 
         return Mathf.Min(calculatedFireRate, maxFireRate);
+    }
+
+    /// <summary>
+    /// Calculates the magazine capacity for a given upgrade level.
+    /// Overrides ItemDataSO.GetMaxCurrentCapacityAtLevel to use weapon-specific fields.
+    /// </summary>
+    public override int GetMaxCurrentCapacityAtLevel(int level) {
+        return GetMagazineCapacityAtLevel(level);
     }
 
     /// <summary>
@@ -71,9 +83,10 @@ public class WeaponDataSO : ItemDataSO {
     /// <param name="level">Current upgrade level.</param>
     /// <returns>The calculated magazine capacity.</returns>
     public int GetMagazineCapacityAtLevel(int level) {
-        level = Mathf.Clamp(level, 1, 10);
+        level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
 
-        float scaledCapacity = baseMagazineCapacity * (1 + magazineScaling * level);
+        // FORMULA: baseMagazineCapacity * (1 + magazineScaling * (level - 1))
+        float scaledCapacity = baseMagazineCapacity * (1 + magazineScaling * (level - 1));
         return Mathf.RoundToInt(scaledCapacity);
     }
 

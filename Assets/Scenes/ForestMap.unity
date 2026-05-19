@@ -1445,26 +1445,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 683435421232674508, guid: a20c4961b0655574e9f91c372538fa9f,
+    - target: {fileID: 32415771930206775, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
-      propertyPath: throwClip
+      propertyPath: weaponData
       value: 
-      objectReference: {fileID: 8300000, guid: ffdacfaf80fbf824083135c0c95931c2, type: 3}
-    - target: {fileID: 683435421232674508, guid: a20c4961b0655574e9f91c372538fa9f,
+      objectReference: {fileID: 11400000, guid: 41adb49d70ee55a47916910a6a68c0d5,
+        type: 2}
+    - target: {fileID: 32415771930206775, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
-      propertyPath: pinPullClip
-      value: 
-      objectReference: {fileID: 8300000, guid: ce5781d74eef48245acdbcc6ffd0f6e2, type: 3}
+      propertyPath: roundsPerMinutes
+      value: 200
+      objectReference: {fileID: 0}
     - target: {fileID: 2511525708182192631, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: enemyHealthBarUI
       value: 
       objectReference: {fileID: 712135210}
-    - target: {fileID: 2511525708182192631, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: uiLayerMask.m_Bits
-      value: 32
-      objectReference: {fileID: 0}
     - target: {fileID: 2765326547094986479, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: m_Name
@@ -1519,61 +1515,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4730400195633309719, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: meleeSFX
-      value: 
-      objectReference: {fileID: 8300000, guid: 7452047e7e6edae43a0d05b926f95b92, type: 3}
-    - target: {fileID: 4730400195633309719, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: meleeRange
-      value: 1.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 4730400195633309719, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: meleeDamage
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 4730400195633309719, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: meleeCooldown
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5995035238800786662, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_LocalScale.x
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 5995035238800786662, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_LocalScale.y
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 5995035238800786662, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_LocalScale.z
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 5995035238800786662, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5995035238800786662, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5995035238800786662, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6375254728856297052, guid: a20c4961b0655574e9f91c372538fa9f,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

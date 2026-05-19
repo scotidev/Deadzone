@@ -16,9 +16,9 @@ namespace InfimaGames.LowPolyShooterPack {
 
         [Header("Firing")]
 
-        [SerializeField] private bool automatic;
+        [Tooltip("The ScriptableObject containing all base stats and scaling for this weapon. Mandatory for the weapon to fire correctly.")]
+        [SerializeField] private WeaponDataSO weaponData;
         [SerializeField] private float projectileImpulse = 400.0f;
-        [SerializeField] private int roundsPerMinutes = 200;
 
         [Tooltip("Mask of things recognized when firing.")]
         [SerializeField] private LayerMask mask;
@@ -59,6 +59,10 @@ namespace InfimaGames.LowPolyShooterPack {
         private MagazineBehaviour magazineBehaviour;
         private MuzzleBehaviour muzzleBehaviour;
 
+        private float currentDamage;
+        private float currentFireRate;
+        private bool isAutomatic;
+
         #endregion
 
         #region UNITY
@@ -70,10 +74,63 @@ namespace InfimaGames.LowPolyShooterPack {
             gameModeService = ServiceLocator.Current.Get<IGameModeService>();
             characterBehaviour = gameModeService.GetPlayerCharacter();
             playerCamera = characterBehaviour.GetCameraWorld().transform;
+
+            if (weaponData == null) {
+                Debug.LogError($"[Weapon] {gameObject.name} (ID: {itemID}) HAS NO WEAPONDATASO ASSIGNED! Assign a WeaponDataSO in the Inspector.", this);
+            }
+
+            // Subscribe to upgrade events to refresh stats when this weapon is upgraded
+            UpgradeManager.OnItemUpgraded += HandleItemUpgraded;
+        }
+
+        private void OnDestroy() {
+            // Unsubscribe to avoid memory leaks
+            UpgradeManager.OnItemUpgraded -= HandleItemUpgraded;
         }
         
         protected override void Start() {
+            RefreshStats();
             InitializeWeapon();
+        }
+
+        private void HandleItemUpgraded(string upgradedItemID, ItemDataSO itemData) {
+            if (upgradedItemID == itemID) {
+                Debug.Log($"[Weapon] Item {itemID} upgraded! Refreshing stats.");
+                RefreshStats();
+            }
+        }
+
+        /// <summary>
+        /// Refreshes the weapon's stats based on the WeaponDataSO and current upgrade level.
+        /// This centralizes the logic to ensure stats are always up to date.
+        /// </summary>
+        public void RefreshStats() {
+            if (weaponData == null) {
+                // Emergency fallbacks to prevent division by zero or crashes if SO is missing
+                currentDamage = 1f;
+                currentFireRate = 1f;
+                isAutomatic = false;
+                return;
+            }
+
+            // The weaponData's itemID should match the weapon's itemID
+            if (weaponData.ItemID != itemID) {
+                Debug.LogWarning($"[Weapon] {gameObject.name} itemID mismatch! Script itemID: {itemID}, SO itemID: {weaponData.ItemID}. Stats will scale based on weapon's itemID: {itemID}");
+            }
+
+            int level = PlayerProgress.Instance != null ? PlayerProgress.Instance.GetItemLevel(itemID) : 1;
+            
+            currentDamage = weaponData.GetDamageAtLevel(level);
+            currentFireRate = weaponData.GetFireRateAtLevel(level);
+            isAutomatic = weaponData.isAutomatic;
+
+            // SAFETY: Ensure fire rate is never 0 to avoid division by zero in Character shot timing logic
+            if (currentFireRate <= 0) {
+                currentFireRate = 1;
+                Debug.LogWarning($"[Weapon] {itemID} has 0 fire rate in SO! Using 1 to avoid crash.");
+            }
+
+            Debug.Log($"[Weapon] {itemID} Stats Refreshed (Level {level}): Damage={currentDamage}, FireRate={currentFireRate}, Auto={isAutomatic}");
         }
 
         /// <summary>
@@ -82,6 +139,9 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         public void ForceInitialize() {
             Debug.Log($"[Weapon] ForceInitialize: hasInitializedAmmo={hasInitializedAmmo}, magazine={magazineBehaviour != null}, muzzle={muzzleBehaviour != null}");
+
+            // Ensure stats are refreshed whenever we force initialize
+            RefreshStats();
 
             // FIXED: Use hasInitializedAmmo as additional guard to prevent re-initializing
             // ammo values (current and total) after the weapon was already set up.
@@ -189,8 +249,8 @@ namespace InfimaGames.LowPolyShooterPack {
             return magazineBehaviour.GetAmmunitionTotal();
         }
 
-        public override bool IsAutomatic() => automatic;
-        public override float GetRateOfFire() => roundsPerMinutes;
+        public override bool IsAutomatic() => isAutomatic;
+        public override float GetRateOfFire() => currentFireRate;
 
         /// <summary>
         /// Check if magazine is full. Safely handles null magazineBehaviour.
@@ -308,6 +368,12 @@ namespace InfimaGames.LowPolyShooterPack {
                 rotation = Quaternion.LookRotation(hit.point - muzzleSocket.position);
 
             GameObject projectile = Instantiate(prefabProjectile, muzzleSocket.position, rotation);
+
+            // Set projectile damage from weapon's current stats
+            Projectile projectileScript = projectile.GetComponent<Projectile>();
+            if (projectileScript != null) {
+                projectileScript.damage = currentDamage;
+            }
 
             Rigidbody projectileRb = projectile.GetComponent<Rigidbody>();
             projectileRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;

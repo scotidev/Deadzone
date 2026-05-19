@@ -87,7 +87,7 @@ public abstract class ItemDataSO : ScriptableObject {
     /// </summary>
     /// <param name="level">The upgrade level (1-based).</param>
     /// <returns>The current capacity (capped sensibly based on total ammo).</returns>
-    public int GetMaxCurrentCapacityAtLevel(int level) {
+    public virtual int GetMaxCurrentCapacityAtLevel(int level) {
         level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
 
         // Apply scaling formula: baseCurrentCapacity * (1 + currentCapacityScaling * (level - 1))

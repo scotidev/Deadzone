@@ -20,7 +20,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &189091626146063571
 Transform:
   m_ObjectHideFlags: 0
@@ -73,9 +73,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemID: 1
-  automatic: 0
+  weaponData: {fileID: 11400000, guid: 41adb49d70ee55a47916910a6a68c0d5, type: 2}
   projectileImpulse: 400
-  roundsPerMinutes: 500
   mask:
     serializedVersion: 2
     m_Bits: 1
