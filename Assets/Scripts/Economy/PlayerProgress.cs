@@ -138,8 +138,8 @@ public class PlayerProgress : MonoBehaviour {
             weaponReserveAmmo[weaponID] = 0;
         }
 
-        // NEW: Initialize unified ammo system (current = 0, total = 0)
-        InitializeItemAmmo(weaponID, 1);
+        // NEW: Initialize unified ammo system
+        FillItemToMax(weaponID);
 
         Debug.Log($"[PlayerProgress] Unlocked weapon (internal): {weaponID}");
     }
@@ -161,14 +161,13 @@ public class PlayerProgress : MonoBehaviour {
             itemLevels[buildableID] = 1;
         }
 
-        // The player receives 1 buildable item in inventory on unlock
-        InitializeItemAmmo(buildableID, 1);
-        itemTotalAmmo[buildableID] = initialQuantity;
+        // The player receives max buildable item in inventory on unlock
+        FillItemToMax(buildableID);
     }
 
     /// <summary>
     /// Unlocks a consumable item (Medkit, Grenade, Vest).
-    /// Marks it as unlocked and initializes quantity to 0 (player must buy first).
+    /// Marks it as unlocked and initializes quantity.
     /// </summary>
     private void UnlockConsumableInternal(string consumableID, int initialQuantity = 1) {
         if (!unlockedConsumables.ContainsKey(consumableID)) {
@@ -181,8 +180,7 @@ public class PlayerProgress : MonoBehaviour {
             itemLevels[consumableID] = 1;
         }
 
-        InitializeItemAmmo(consumableID, 1);
-        itemTotalAmmo[consumableID] = initialQuantity;
+        FillItemToMax(consumableID);
     }
 
     /// <summary>
@@ -286,13 +284,35 @@ public class PlayerProgress : MonoBehaviour {
             weaponLevels[itemID] = itemLevels[itemID];
         }
 
-        // Grant 1 quantity for buildables and consumables on each upgrade
-        if (unlockedBuildables.ContainsKey(itemID) || unlockedConsumables.ContainsKey(itemID)) {
-            AddItemAmmo(itemID, 1);
-        }
+        // Fill ammo to max on each upgrade
+        FillItemToMax(itemID);
 
         Debug.Log($"[PlayerProgress] {itemID} upgraded to level {itemLevels[itemID]}");
         return true;
+    }
+
+    /// <summary>
+    /// Fills the item's ammo/quantity to the maximum allowed at its current level.
+    /// Used after unlocking or upgrading an item.
+    /// </summary>
+    /// <param name="itemID">The unique identifier of the item.</param>
+    public void FillItemToMax(string itemID) {
+        int level = GetItemLevel(itemID);
+        
+        // Fill current (magazine/hand)
+        int maxCurrent = GetItemMaxCurrent(itemID, level);
+        itemCurrentAmmo[itemID] = maxCurrent;
+        
+        // Fill total (reserve)
+        int maxTotal = GetItemMaxTotal(itemID, level);
+        itemTotalAmmo[itemID] = maxTotal;
+
+        // Legacy sync
+        if (unlockedWeapons.ContainsKey(itemID)) {
+            weaponReserveAmmo[itemID] = maxTotal;
+        }
+
+        Debug.Log($"[PlayerProgress] FillItemToMax: {itemID} (Level {level}) -> Current: {maxCurrent}, Total: {maxTotal}");
     }
 
     //REFATORAÇÃO: GetItemLevel(string itemID) que retorna o nível de upgrade de um item, seja ele arma, buildable, medkit, granada... isso unificaria a lógica e tornaria o sistema mais flexível para diferentes tipos de itens. O nível de upgrade pode ser usado para determinar os benefícios do upgrade (dano aumentado para armas, cura aumentada para medkits, etc.) com base no tipo do item e seu nível de upgrade.

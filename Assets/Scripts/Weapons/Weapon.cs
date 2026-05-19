@@ -95,8 +95,13 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private void HandleItemUpgraded(string upgradedItemID, ItemDataSO itemData) {
             if (upgradedItemID == itemID) {
-                Debug.Log($"[Weapon] Item {itemID} upgraded! Refreshing stats.");
+                Debug.Log($"[Weapon] Item {itemID} upgraded! Refreshing stats and ammo.");
                 RefreshStats();
+                
+                // Sync ammo from PlayerProgress (which was just filled to max by FillItemToMax)
+                if (PlayerProgress.Instance != null) {
+                    ammunitionCurrent = PlayerProgress.Instance.GetItemCurrent(itemID);
+                }
             }
         }
 
