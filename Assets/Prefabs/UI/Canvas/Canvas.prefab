@@ -619,7 +619,7 @@ GameObject:
   - component: {fileID: 3159375982639704524}
   - component: {fileID: 7020511139059164274}
   - component: {fileID: 2316973432710916942}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: EnemyHealthBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1100,7 +1100,7 @@ GameObject:
   - component: {fileID: 3158792631285566726}
   - component: {fileID: 6750176749089725872}
   - component: {fileID: 6745982173116883011}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1862,7 +1862,7 @@ GameObject:
   - component: {fileID: 7653225984032174214}
   - component: {fileID: 8725929628729484381}
   - component: {fileID: 2903607529367595238}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: HealthFill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3400,15 +3400,15 @@ RectTransform:
   m_GameObject: {fileID: 7386258919220545573}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6174520404025727178}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -200}
-  m_SizeDelta: {x: 550, y: 111}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 1024, y: 370}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &2430342600177195269
 CanvasRenderer:
@@ -3438,7 +3438,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 63e3041c5fc18c84a889e4946da5b1aa, type: 3}
+  m_Sprite: {fileID: 21300000, guid: b8cf86a6448de8f40bdb2fd0493433a3, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4725,7 +4725,7 @@ PrefabInstance:
     - target: {fileID: 4901257872376429868, guid: 7e1af08ec41320c4e8ce2af17188ad96,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -25
       objectReference: {fileID: 0}
     - target: {fileID: 4901257872376429875, guid: 7e1af08ec41320c4e8ce2af17188ad96,
         type: 3}

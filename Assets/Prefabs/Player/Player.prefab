@@ -70,7 +70,7 @@ PrefabInstance:
     - target: {fileID: 2751027687307977091, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: m_Name
-      value: Player Variant
+      value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 2795493999401270507, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
@@ -167,7 +167,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Medkit
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 9154312589712082316, guid: 19eadcf8fbed56b4da77ca94c1b4145f, type: 3}
     m_RemovedGameObjects:
     - {fileID: 2141614169492703363, guid: 19eadcf8fbed56b4da77ca94c1b4145f, type: 3}
     - {fileID: -4918205337302125046, guid: 19eadcf8fbed56b4da77ca94c1b4145f, type: 3}
