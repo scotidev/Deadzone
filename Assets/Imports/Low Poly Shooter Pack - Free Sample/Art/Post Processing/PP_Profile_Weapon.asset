@@ -16,12 +16,9 @@ MonoBehaviour:
   - {fileID: 114095014996230636}
   - {fileID: 114287966297071526}
   - {fileID: 114596694642223368}
-  - {fileID: 114216734612951684}
   - {fileID: 114585160642827550}
   - {fileID: 114421201194990142}
   - {fileID: 114817739856914756}
-  - {fileID: 114727731288441162}
-  - {fileID: 114358518783740256}
 --- !u!114 &114095014996230636
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -43,7 +40,7 @@ MonoBehaviour:
     value: 1
   intensity:
     overrideState: 1
-    value: 3.86
+    value: 0.45
   color:
     overrideState: 1
     value: {r: 0.5188679, g: 0.5188679, b: 0.5188679, a: 1}
@@ -61,7 +58,10 @@ MonoBehaviour:
     value: -12
   thicknessModifier:
     overrideState: 1
-    value: 7.26
+    value: 3
+  zBias:
+    overrideState: 1
+    value: 0
   directLightingStrength:
     overrideState: 0
     value: 0
@@ -71,34 +71,6 @@ MonoBehaviour:
   quality:
     overrideState: 0
     value: 2
---- !u!114 &114216734612951684
-MonoBehaviour:
-  m_ObjectHideFlags: 3
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 556797029e73b2347956b6579e77e05b, type: 3}
-  m_Name: DepthOfField
-  m_EditorClassIdentifier: 
-  active: 0
-  enabled:
-    overrideState: 1
-    value: 1
-  focusDistance:
-    overrideState: 1
-    value: 0.1
-  aperture:
-    overrideState: 1
-    value: 15
-  focalLength:
-    overrideState: 1
-    value: 12
-  kernelSize:
-    overrideState: 1
-    value: 3
 --- !u!114 &114287966297071526
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -209,7 +181,7 @@ MonoBehaviour:
     value: {x: 1, y: 1, z: 1, w: 0.07840343}
   gain:
     overrideState: 1
-    value: {x: 0.8841179, y: 0.91308784, z: 1, w: 0.0356377}
+    value: {x: 0.43889576, y: 0.5747433, z: 1, w: 0.0356377}
   masterCurve:
     overrideState: 0
     value:
@@ -1410,43 +1382,6 @@ MonoBehaviour:
       - 0.5
       - 0.5
       - 0.5
---- !u!114 &114358518783740256
-MonoBehaviour:
-  m_ObjectHideFlags: 3
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3f6f3f7c722b4544b97e3c75840aa33, type: 3}
-  m_Name: AutoExposure
-  m_EditorClassIdentifier: 
-  active: 0
-  enabled:
-    overrideState: 1
-    value: 1
-  filtering:
-    overrideState: 1
-    value: {x: 1, y: 46.000008}
-  minLuminance:
-    overrideState: 1
-    value: -0.09
-  maxLuminance:
-    overrideState: 1
-    value: 4.6
-  keyValue:
-    overrideState: 1
-    value: 1
-  eyeAdaptation:
-    overrideState: 1
-    value: 0
-  speedUp:
-    overrideState: 1
-    value: 4
-  speedDown:
-    overrideState: 1
-    value: 2
 --- !u!114 &114421201194990142
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -1542,40 +1477,6 @@ MonoBehaviour:
   dirtIntensity:
     overrideState: 1
     value: 2.5
---- !u!114 &114727731288441162
-MonoBehaviour:
-  m_ObjectHideFlags: 3
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b77c5407dc277943b591ade9e6b18c5, type: 3}
-  m_Name: LensDistortion
-  m_EditorClassIdentifier: 
-  active: 0
-  enabled:
-    overrideState: 1
-    value: 1
-  intensity:
-    overrideState: 1
-    value: -50.3
-  intensityX:
-    overrideState: 1
-    value: 1
-  intensityY:
-    overrideState: 1
-    value: 1
-  centerX:
-    overrideState: 1
-    value: 0
-  centerY:
-    overrideState: 1
-    value: 0
-  scale:
-    overrideState: 1
-    value: 0.95
 --- !u!114 &114817739856914756
 MonoBehaviour:
   m_ObjectHideFlags: 3
