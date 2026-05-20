@@ -246,10 +246,10 @@ namespace InfimaGames.LowPolyShooterPack {
         public bool TryEquipItem(int index) {
             if (inventory == null) return false;
 
-            // FIX: Agora verificamos o currentSelectionIndex real através do GetSelectionIndex()
-            // Isso permite que o sistema saiba que se você está com um medkit (índice 3),
-            // você PODE selecionar a pistola (índice 0), pois 3 != 0.
-            if (inventory is Inventory inv && inv.GetSelectionIndex() == index)
+            // FIX: Allow equipping the same item if we are currently holstered (e.g. after a melee attack).
+            // This ensures that even if the inventory already has this item selected, we still trigger 
+            // the unholster animation to bring it back to the player's hands.
+            if (inventory is Inventory inv && inv.GetSelectionIndex() == index && !holstered)
                 return false;
 
             if (!CanChangeWeapon())
@@ -329,7 +329,9 @@ namespace InfimaGames.LowPolyShooterPack {
             if (!CanPlayAnimationHolster())
                 return;
 
-            int currentIndex = inventory.GetEquippedIndex();
+            // FIX: Use the selection index (which includes medkits, buildables, etc.) instead of 
+            // just the equipped weapon index. This ensures the correct item is restored after the attack.
+            int currentIndex = (inventory is Inventory inv) ? inv.GetSelectionIndex() : inventory.GetEquippedIndex();
             lastWeaponIndexBeforeMelee = currentIndex >= 0 ? currentIndex : 0;
             isAttackingMelee = true;
             SetHolstered(true);
@@ -345,6 +347,11 @@ namespace InfimaGames.LowPolyShooterPack {
                 return;
 
             isAttackingMelee = false;
+
+            // FIX: Reset holstering flag. If we were holstering specifically for the melee attack, 
+            // we are done now. This prevents the character from being stuck in a "holstering" state 
+            // if the animation event was missed or interrupted by a fire input.
+            holstering = false;
 
             if (lastWeaponIndexBeforeMelee >= 0) {
                 // Tenta restaurar a arma anterior de forma suave
@@ -467,8 +474,9 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Returns true if the Character can change their Weapon.
         /// </summary>
         private bool CanChangeWeapon() {
-
-            if (holstering)
+            // FIX: If we are already holstered, we can change the weapon logically in the inventory
+            // even if the "holstering" flag is true (which might be a leftover from an interrupted animation).
+            if (holstering && !holstered)
                 return false;
 
             if (reloading)
