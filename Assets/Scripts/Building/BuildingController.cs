@@ -25,6 +25,7 @@ public class BuildingController : MonoBehaviour {
     [SerializeField] private LayerMask obstacleLayer;
     [SerializeField] private Character playerCharacter;
     [SerializeField] private float maxPlacementDistance = 8f;
+    [SerializeField] private float maxSlopeAngle = 45f;
 
     #endregion
 
@@ -145,10 +146,6 @@ public class BuildingController : MonoBehaviour {
     /// and not obstructed by other objects. The method also ensures the ghost is not positioned too close to the player
     /// and visually indicates whether the placement area is valid.</remarks>
     private void UpdateGhostPosition() {
-        // LOG TEMPORÁRIO — debug overlap entre buildables
-        string buildableName = selectedItem != null ? $"{selectedItem.ItemID}/{selectedItem.ItemName}" : "NULL";
-        Debug.Log($"[OVERLAP] >>> Updating ghost for: {buildableName} <<<");
-
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
         LayerMask groundMask = groundLayer.value != 0 ? groundLayer : Physics.DefaultRaycastLayers;
@@ -157,42 +154,41 @@ public class BuildingController : MonoBehaviour {
         if (Physics.Raycast(ray, out RaycastHit hit, maxPlacementDistance, raycastMask)
             && hit.distance > 0.5f) {
 
-            if (hit.normal.y < 0.5f) {
-                currentGhost.SetActive(false);
-                return;
-            }
+            // Convertemos o ângulo máximo em um valor de Normal.y usando Cosseno.
+            float minNormalY = Mathf.Cos(maxSlopeAngle * Mathf.Deg2Rad);
+            
+            // Verificamos se a inclinação é válida.
+            bool isSlopeValid = hit.normal.y >= minNormalY;
 
-            Vector3 placementPos = hit.point + Vector3.up * (selectedItem.OverlapBoxSize.y * 0.5f);
+            // --- CÁLCULO DE ROTAÇÃO ALINHADA AO TERRENO ---
+            Quaternion surfaceRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+            Quaternion playerLookRotation = Quaternion.Euler(0, playerCamera.transform.eulerAngles.y, 0);
+            Quaternion itemCorrection = Quaternion.Euler(selectedItem.PlacementRotationEuler);
+            
+            Quaternion finalRotation = surfaceRotation * playerLookRotation * itemCorrection;
+            currentGhost.transform.rotation = finalRotation;
 
+            // --- POSICIONAMENTO ---
+            Vector3 placementPos = hit.point + hit.normal * (selectedItem.OverlapBoxSize.y * 0.5f);
             currentGhost.transform.position = placementPos;
 
-            currentGhost.transform.rotation = Quaternion.Euler(selectedItem.PlacementRotationEuler);
             LayerMask overlapMask = wallLayer.value != 0 ? obstacleLayer | wallLayer : obstacleLayer;
 
-            // LOG TEMPORÁRIO — valores das layers
-            Debug.Log($"[OVERLAP] overlapMask.value={overlapMask.value}, obstacleLayer.value={obstacleLayer.value}, wallLayer.value={wallLayer.value}");
-            Debug.Log($"[OVERLAP] placementPos={placementPos}, halfExtents={selectedItem.OverlapBoxSize * 0.5f}");
-
+            // Agora o OverlapBox usa a rotação real do ghost para detectar colisões corretamente em ladeiras.
+            // IMPORTANTE: QueryTriggerInteraction.Ignore garante que Triggers (como SafeZones) não bloqueiem a construção.
             Collider[] collisions = Physics.OverlapBox(
                 placementPos,
                 selectedItem.OverlapBoxSize * 0.5f,
-                Quaternion.identity,
-                overlapMask
+                finalRotation,
+                overlapMask,
+                QueryTriggerInteraction.Ignore
             );
 
-            // LOG TEMPORÁRIO — colliders detectados
-            Debug.Log($"[OVERLAP] collisions.Length={collisions.Length}");
-            for (int i = 0; i < collisions.Length; i++) {
-                Debug.Log($"[OVERLAP]   Hit[{i}]: name={collisions[i].gameObject.name}, layer={LayerMask.LayerToName(collisions[i].gameObject.layer)}, tag={collisions[i].gameObject.tag}");
-            }
-
             bool hasInventory = HasInventoryQuantity();
-            bool isPlaceable = hasInventory && collisions.Length == 0;
-            // LOG TEMPORÁRIO — resultado final
-            Debug.Log($"[OVERLAP] hasInventory={hasInventory}, isPlaceable={isPlaceable}");
+            // Agora o objeto só pode ser posicionado se: tiver inventário, não houver colisão E a inclinação for válida.
+            bool isPlaceable = hasInventory && collisions.Length == 0 && isSlopeValid;
 
             currentGhostObject?.SetPlaceable(isPlaceable);
-
             currentGhost.SetActive(true);
         } else {
             currentGhost.SetActive(false);
@@ -280,9 +276,10 @@ public class BuildingController : MonoBehaviour {
             }
         }
 
+        // Instanciamos o objeto real exatamente na mesma posição e rotação do ghost atual.
         GameObject placedObject = Instantiate(selectedItem.RealPrefab,
             currentGhost.transform.position,
-            Quaternion.Euler(selectedItem.PlacementRotationEuler));
+            currentGhost.transform.rotation);
 
         // Try to play placement sound and initialize if the placed object has the method
         if (placedObject != null) {

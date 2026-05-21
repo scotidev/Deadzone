@@ -15,6 +15,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
     [SerializeField] private float maxHealth = 100f;
 
     [Header("Armor Integration")]
+    [Tooltip("If left empty, will be automatically assigned in Awake.")]
     [SerializeField] private Vest vest;
 
     [Header("Poison Damage")]

@@ -64,7 +64,9 @@ namespace InfimaGames.LowPolyShooterPack {
         private AudioSource audioSource;
 
         private Vector3 groundNormal = Vector3.up;
+        private Vector3 steepNormal = Vector3.up;
         private bool grounded;
+        private bool touchingSteepSlope;
         private float lastJumpTime = -1f;
 
         private readonly RaycastHit[] groundHits = new RaycastHit[8];
@@ -151,7 +153,9 @@ namespace InfimaGames.LowPolyShooterPack {
         private void ProbeGround() {
             Bounds bounds = capsule.bounds;
             Vector3 extents = bounds.extents;
+            // O raio da esfera deve ser um pouco menor que o da cápsula para evitar colisões fantasmas nas quinas.
             float radius = Mathf.Max(0.01f, extents.x - 0.02f);
+            // A distância do cast cobre a altura da cápsula mais a margem de detecção do chão.
             float castDistance = extents.y - radius + groundProbeDistance;
 
             Physics.SphereCastNonAlloc(
@@ -165,7 +169,9 @@ namespace InfimaGames.LowPolyShooterPack {
             );
 
             grounded = false;
+            touchingSteepSlope = false;
             groundNormal = Vector3.up;
+            steepNormal = Vector3.up;
             float bestDistance = float.MaxValue;
 
             for (int i = 0; i < groundHits.Length; i++) {
@@ -174,14 +180,22 @@ namespace InfimaGames.LowPolyShooterPack {
                 if (hit.collider == null || hit.collider == capsule)
                     continue;
 
+                // Calculamos o ângulo entre a normal da superfície e o vetor 'Up' (Cima).
+                // O princípio aqui é que 0 graus é plano e 90 graus é uma parede vertical.
                 float angle = Vector3.Angle(hit.normal, Vector3.up);
-                if (angle > maxGroundAngle)
-                    continue;
-
-                if (hit.distance < bestDistance) {
-                    bestDistance = hit.distance;
-                    groundNormal = hit.normal;
-                    grounded = true;
+                
+                if (angle <= maxGroundAngle) {
+                    // Se o ângulo for menor que o máximo permitido, consideramos como chão firme.
+                    if (hit.distance < bestDistance) {
+                        bestDistance = hit.distance;
+                        groundNormal = hit.normal;
+                        grounded = true;
+                    }
+                } else {
+                    // Se o ângulo for maior, marcamos que estamos tocando uma inclinação íngreme.
+                    // Isso é essencial para bloquear o "climbing" (escalada) involuntário.
+                    touchingSteepSlope = true;
+                    steepNormal = hit.normal;
                 }
             }
 
@@ -209,6 +223,22 @@ namespace InfimaGames.LowPolyShooterPack {
             }
 
             movement = transform.TransformDirection(movement);
+
+            // Se estivermos tocando uma inclinação muito íngreme, precisamos filtrar o movimento.
+            // O princípio é tratar a inclinação como uma parede horizontal para impedir que o personagem "suba" nela.
+            if (touchingSteepSlope) {
+                // Criamos um vetor horizontal baseado na inclinação da montanha. 
+                // Isso transforma a montanha em uma "parede virtual" para o cálculo de movimento.
+                Vector3 wallNormal = new Vector3(steepNormal.x, 0, steepNormal.z).normalized;
+                
+                // O Produto Escalar (Dot Product) nos diz se estamos andando na direção da montanha.
+                // Se o valor for menor que zero, significa que o movimento aponta "para dentro" da superfície.
+                if (Vector3.Dot(movement, wallNormal) < 0) {
+                    // Projetamos o movimento no plano da parede. 
+                    // Isso remove a componente do movimento que faz o personagem subir a montanha à força.
+                    movement = Vector3.ProjectOnPlane(movement, wallNormal);
+                }
+            }
 
             Vector3 desiredMovement = grounded ? Vector3.ProjectOnPlane(movement, groundNormal) : movement;
 

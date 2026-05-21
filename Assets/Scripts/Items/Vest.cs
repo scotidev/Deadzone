@@ -8,25 +8,24 @@ using Deadzone.Interfaces;
     [BUG VEST] - CORREÇÃO DO BUG DE REGENERAÇÃO DO EXCLUSIVO DA VEST
     
     PROBLEMA ORIGINAL:
-    O PlayerArmor consegue re-equipar a vest automaticamente após 5 segundos
-    fora da zona de dano, MAS o HUD não voltava a aparecer e o som não
-    tocava porque não havia comunicação entre o sistema de regeneração e
-    o sistema de UI.
+    A vest deveria re-equipar automaticamente após 5 segundos fora da zona de dano, 
+    MAS o HUD não voltava a aparecer e o som não tocava porque não havia 
+    comunicação entre o sistema de regeneração e o sistema de UI.
     
     SOLUÇÃO IMPLEMENTADA:
     1. Criamos um NOVO evento estático: Vest.OnVestRegenerated
     2. Criamos um método público: TriggerRegeneratedEvent()
-    3. O PlayerArmor chama TriggerRegeneratedEvent() quando re-equipa a vest
+    3. O sistema de regeneração chama TriggerRegeneratedEvent() quando re-equipa a vest
     4. Este método dispara o evento estático OnVestRegenerated
-    5. O PlayerArmorUI se inscreve neste evento e responde mostrando o HUD + som
+    5. O VestUI se inscreve neste evento e responde mostrando o HUD + som
     
     FLUXO COMPLETO:
-    PlayerArmor.Update()
+    Sistema de Regeneração
         → detecta 5s fora da zona de dano com armor = 0
         → chama ReEquipVest()
         → chama vestComponent.TriggerRegeneratedEvent()
         → TriggerRegeneratedEvent() dispara Vest.OnVestRegenerated
-        → PlayerArmorUI.OnVestRegenerated() é chamado
+        → VestUI.OnVestRegenerated() é chamado
         → Mostramos HUD + tocamos som
     
 ============================================================================*/
@@ -99,7 +98,7 @@ namespace InfimaGames.LowPolyShooterPack {
     #region PROPERTIES
 
     /// <summary>
-    /// Public accessor to vest data for other scripts (like PlayerArmor).
+    /// Public accessor to vest data for other scripts.
     /// </summary>
     public VestDataSO VestData => vestData;
 
@@ -227,7 +226,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
         /// <summary>
         /// Get damage reduction percentage for this vest.
-        /// Used by PlayerHealth or PlayerArmor to reduce incoming damage.
+        /// Used by PlayerHealth to reduce incoming damage.
         /// </summary>
         public float GetDamageReductionPercentage() {
             return damageReductionPercentage;

@@ -36,10 +36,6 @@ Contains scripts related to player character logic, movement, inventory, health,
 
 /// Player Health. Manages player health, damage handling, and death logic.
 
-### /Player/PlayerArmor.cs
-
-/// Player Armor. Manages player armor points and damage absorption.
-
 ### /Player/Inventory.cs
 
 /// Inventory. Handles the player inventory system for storing and selecting items.
@@ -69,6 +65,10 @@ Contains scripts related to item definitions and data containers.
 ### /Items/ScriptableObjects/TutorialStepSO.cs
 
 /// Tutorial Step SO. ScriptableObject that defines a single tutorial step with text, image, completion type (OnMouseMove, OnWASDPress, OnItemSelected, OnAttack, OnTimeout, OnJumpPress, OnCrouchPress, OnRunPress, OnReloadPress, OnMeleePress), optional completion parameter, timeout, and runtime Setup() method for dynamic creation.
+
+### /Items/Vest.cs
+
+/// Vest. Handles the vest armor item logic, damage absorption, and sound effects.
 
 ## /Weapons
 
@@ -274,9 +274,9 @@ Contains scripts related to user interface, menus, and HUD elements.
 
 /// Player Health UI. Displays player health bar.
 
-### /UI/HUD/PlayerArmorUI.cs
+### /UI/HUD/VestUI.cs
 
-/// Player Armor UI. Displays player armor bar.
+/// Vest UI. Manages the vest armor bar UI. Subscribes to Vest events and updates the blue-gray bar fill amount in real-time.
 
 ### /UI/HUD/CurrencyUI.cs
 
@@ -397,6 +397,18 @@ Contains general gameplay scripts.
 ### /Gameplay/PauseManager.cs
 
 /// Pause Manager. Handles game pause state and input.
+
+## /VFX
+
+Contains scripts related to visual effects and lighting.
+
+### /VFX/LightFlicker.cs
+
+/// Light Flicker. Simulates a flickering light effect for faulty or unstable light sources.
+
+### /VFX/PoliceLight.cs
+
+/// Police Light. Simulates a police siren light effect by alternating between two light sources.
 
 ## /Utilities
 
