@@ -24,12 +24,23 @@ namespace Deadzone.UI {
 
         #region UNITY
 
+        /// <summary>
+        /// Chamado quando outro colisor entra no gatilho.
+        /// Verifica se é o jogador e coloca o tutorial na fila.
+        /// </summary>
         private void OnTriggerEnter(Collider other) {
+            // Verifica se o objeto que entrou no trigger é o jogador (CharacterBehaviour)
+            // O uso de GetComponentInParent garante que pegamos o script no objeto principal do jogador
             if (other.GetComponentInParent<CharacterBehaviour>() == null)
                 return;
 
-            TutorialManager.Instance?.QueueTutorial(tutorialStep);
+            // Se houver um tutorial configurado, envia ele para o Manager processar
+            // O TutorialManager é um Singleton, então usamos .Instance para acessá-lo
+            if (tutorialStep != null) {
+                TutorialManager.Instance?.QueueTutorial(tutorialStep);
+            }
 
+            // Desativa este objeto para garantir que o tutorial não dispare múltiplas vezes
             if (triggerOnce)
                 gameObject.SetActive(false);
         }

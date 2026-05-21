@@ -41,8 +41,6 @@ namespace Deadzone.UI {
         [Header("Tutorial Icons")]
         [Tooltip("Sprite exibido no tutorial de recarga (tecla R).")]
         [SerializeField] private Sprite reloadIcon;
-        [Tooltip("Sprite exibido no tutorial de ataque melee (tecla F).")]
-        [SerializeField] private Sprite meleeIcon;
 
         [Header("Behavior")]
         [Tooltip("Minimum seconds a tutorial stays visible even if the action is detected early.")]
@@ -339,7 +337,7 @@ namespace Deadzone.UI {
 
         /// <summary>
         /// Monitors the equipped weapon's ammo state.
-        /// Queues tutorials for empty magazine (reload) and empty total (melee).
+        /// Queues tutorials for empty magazine (reload).
         /// Each tutorial only fires once per weapon per session via shownSteps.
         /// </summary>
         private void CheckAmmoConditions() {
@@ -356,32 +354,17 @@ namespace Deadzone.UI {
             bool hasAmmo = equippedWeapon.HasAmmunition();
             int totalAmmo = PlayerProgress.Instance != null ? PlayerProgress.Instance.GetItemTotal(weaponID) : 0;
 
+            // Se a arma tinha munição e agora não tem, sugere o reload
             if (previousHadAmmo && !hasAmmo) {
                 string stepId = $"ammo_empty_{weaponID}";
                 if (!shownSteps.Contains(stepId)) {
+                    // Cria dinamicamente um tutorial step para reload
                     TutorialStepSO step = ScriptableObject.CreateInstance<TutorialStepSO>();
                     step.Setup(
                         stepId,
                         "Aperte R para recarregar",
                         reloadIcon,
                         CompletionType.OnReloadPress,
-                        "",
-                        0f
-                    );
-
-                    QueueTutorial(step);
-                }
-            }
-
-            if (previousTotalAmmo > 0 && totalAmmo <= 0 && !hasAmmo) {
-                string stepId = $"ammo_total_empty_{weaponID}";
-                if (!shownSteps.Contains(stepId)) {
-                    TutorialStepSO step = ScriptableObject.CreateInstance<TutorialStepSO>();
-                    step.Setup(
-                        stepId,
-                        "Aperte F para ataque melee",
-                        meleeIcon,
-                        CompletionType.OnMeleePress,
                         "",
                         0f
                     );
