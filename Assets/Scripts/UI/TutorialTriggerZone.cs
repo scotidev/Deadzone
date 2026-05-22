@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using InfimaGames.LowPolyShooterPack;
 using UnityEngine;
 
@@ -16,6 +17,9 @@ namespace Deadzone.UI {
         [Tooltip("Tutorial step to show when the player enters this trigger.")]
         [SerializeField] private TutorialStepSO tutorialStep;
 
+        [Tooltip("Objects (like zombies) to activate when the player enters this trigger.")]
+        [SerializeField] private List<GameObject> objectsToActivate;
+
         [Header("Settings")]
         [Tooltip("If true, the trigger deactivates after the first entry.")]
         [SerializeField] private bool triggerOnce = true;
@@ -33,6 +37,21 @@ namespace Deadzone.UI {
             // O uso de GetComponentInParent garante que pegamos o script no objeto principal do jogador
             if (other.GetComponentInParent<CharacterBehaviour>() == null)
                 return;
+
+            // Ativa os componentes de comportamento nos objetos da lista (zumbis parados)
+            if (objectsToActivate != null) {
+                foreach (GameObject obj in objectsToActivate) {
+                    if (obj == null) continue;
+
+                    // Ativa o movimento
+                    var follow = obj.GetComponent<EnemyFollow>();
+                    if (follow != null) follow.enabled = true;
+
+                    // Ativa o ataque
+                    var attack = obj.GetComponent<EnemyAttack>();
+                    if (attack != null) attack.enabled = true;
+                }
+            }
 
             // Se houver um tutorial configurado, envia ele para o Manager processar
             // O TutorialManager é um Singleton, então usamos .Instance para acessá-lo

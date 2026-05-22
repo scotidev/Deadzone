@@ -50,6 +50,7 @@ namespace InfimaGames.LowPolyShooterPack {
         private IAudioManagerService audioService;
         private GrenadeState currentState = GrenadeState.Idle;
         private GameObject thrownGrenadeInstance;
+        private InputAction fireAction; // CONCEITO: Cache da ação de input para garantir desinscrição segura
 
         #endregion
 
@@ -57,6 +58,17 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private void Awake() {
             audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+        }
+
+        private void OnDisable() {
+            // SEGURANÇA: Sempre desinscrever ao desativar ou destruir o objeto.
+            // Isso evita MissingReferenceException se o InputSystem tentar chamar o callback
+            // em um objeto que foi desativado ou destruído.
+            UnsubscribeFromFireInput();
+        }
+
+        private void OnDestroy() {
+            UnsubscribeFromFireInput();
         }
 
         #endregion
@@ -171,23 +183,21 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Isso permite que ela controle sua própria lógica de hold/release.
         /// </summary>
         private void SubscribeToFireInput() {
-            // CONCEITO: Obtemos o InputSystem atual via GetComponent.
-            // Cada cena tem um PlayerInput que gerencia os bindings.
+            // Se já temos a referência e estamos inscritos, evitar duplicidade
+            if (fireAction != null) return;
+
             PlayerInput playerInput = GetComponentInParent<PlayerInput>();
             if (playerInput == null) {
                 Debug.LogWarning("[Grenade] PlayerInput not found in parent hierarchy!");
                 return;
             }
 
-            // CONCEITO: Procuramos a ação "Fire" no ActionMap atual.
-            InputAction fireAction = playerInput.actions["Fire"];
+            fireAction = playerInput.actions["Fire"];
             if (fireAction == null) {
                 Debug.LogWarning("[Grenade] Fire action not found in InputActions!");
                 return;
             }
 
-            // CONCEITO: Inscrever em Started (começou a apertar) e Canceled (soltou).
-            // Performed seria a cada update enquanto segura, não é ideal aqui.
             fireAction.started += OnFireStarted;
             fireAction.canceled += OnFireCanceled;
         }
@@ -196,14 +206,11 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Unsubscribe from Fire input to prevent callbacks after deselection.
         /// </summary>
         private void UnsubscribeFromFireInput() {
-            PlayerInput playerInput = GetComponentInParent<PlayerInput>();
-            if (playerInput == null) return;
-
-            InputAction fireAction = playerInput.actions["Fire"];
             if (fireAction == null) return;
 
             fireAction.started -= OnFireStarted;
             fireAction.canceled -= OnFireCanceled;
+            fireAction = null;
         }
 
         /// <summary>
@@ -211,6 +218,9 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Pull pin and enter Pinned state.
         /// </summary>
         private void OnFireStarted(InputAction.CallbackContext context) {
+            // SEGURANÇA: Se o objeto foi destruído (reinicio de jogo), abortar imediatamente.
+            if (this == null) return;
+
             // Only proceed if in Idle state.
             if (currentState != GrenadeState.Idle) {
                 return;
@@ -240,6 +250,9 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Throw grenade and start detonation countdown.
         /// </summary>
         private void OnFireCanceled(InputAction.CallbackContext context) {
+            // SEGURANÇA: Se o objeto foi destruído, abortar.
+            if (this == null) return;
+
             // CONCEITO: Só proceder se estamos no estado Pinned (segurando o botão).
             // Se não tiver puxado o pino, não fazer nada.
             if (currentState != GrenadeState.Pinned) {

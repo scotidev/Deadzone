@@ -104,7 +104,7 @@ public class WaveManager : MonoBehaviour {
     }
 
     private void Start() {
-        audioService?.PlayBGM(ambientBGM, true, 1.5f, ambientBGMVolume);
+        // audioService?.PlayBGM(ambientBGM, true, 1.5f, ambientBGMVolume);
     }
 
     private void OnEnable() {

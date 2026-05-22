@@ -42,6 +42,11 @@ namespace Deadzone.UI {
         [Tooltip("Sprite exibido no tutorial de recarga (tecla R).")]
         [SerializeField] private Sprite reloadIcon;
 
+        [Header("Tutorial Audio")]
+        [Tooltip("Background music that plays during the tutorial.")]
+        [SerializeField] private AudioClip tutorialBGM;
+        [SerializeField] private float tutorialBGMVolume = 0.5f;
+
         [Header("Behavior")]
         [Tooltip("Minimum seconds a tutorial stays visible even if the action is detected early.")]
         [SerializeField] private float minimumDisplayTime = 2f;
@@ -456,6 +461,12 @@ namespace Deadzone.UI {
 
             playerCharacterInventory = playerCharacter.GetInventory();
             isResolved = true;
+
+            // Play tutorial background music
+            IAudioManagerService audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+            if (audioService != null && tutorialBGM != null) {
+                audioService.PlayBGM(tutorialBGM, true, 1.5f, tutorialBGMVolume);
+            }
 
             if (pendingQueue.Count > 0 && !isProcessing)
                 ProcessQueue();

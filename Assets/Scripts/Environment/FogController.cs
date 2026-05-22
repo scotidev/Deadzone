@@ -45,7 +45,9 @@ public class FogController : MonoBehaviour {
     }
 
     private void Start() {
-        SetEmissionRate(20f);
+        // Start with zero emission to respect the tutorial phase.
+        // It will be updated via HandlePoisonStateChanged when the tutorial ends.
+        SetEmissionRate(0f);
         fogParticles.Play();
     }
     #endregion

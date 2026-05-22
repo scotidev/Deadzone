@@ -65,6 +65,7 @@ namespace InfimaGames.LowPolyShooterPack {
         private int layerActions;
         private CharacterKinematics characterKinematics;
         private WeaponBehaviour equippedWeapon;
+        private RuntimeAnimatorController initialRuntimeController; // CONCEITO: Cache do controller original
         private WeaponAttachmentManagerBehaviour weaponAttachmentManager;
         private ScopeBehaviour equippedWeaponScope;
         private MagazineBehaviour equippedWeaponMagazine;
@@ -138,6 +139,11 @@ namespace InfimaGames.LowPolyShooterPack {
 
             characterKinematics = GetComponent<CharacterKinematics>();
 
+            // CONCEITO: Armazenar o controller inicial para usar como base para braços 
+            // quando não estivermos segurando uma arma de fogo específica.
+            if (characterAnimator != null)
+                initialRuntimeController = characterAnimator.runtimeAnimatorController;
+
             inventory.Init(startingWeaponIndex);
 
             RefreshWeaponSetup();
@@ -155,8 +161,9 @@ namespace InfimaGames.LowPolyShooterPack {
             if (holdingButtonFire) {
                 if (BuildingController.Instance != null && BuildingController.Instance.IsPlacing) {
                     holdingButtonFire = false;
-                } else if (equippedWeapon != null && CanPlayAnimationFire() && equippedWeapon.HasAmmunition() && equippedWeapon.IsAutomatic()) {
-                    // CONCEITO: equippedWeapon null check added. Prevents crash if weapon not selected yet.
+                } else if (equippedWeapon != null && equippedWeapon.gameObject.activeInHierarchy && CanPlayAnimationFire() && equippedWeapon.HasAmmunition() && equippedWeapon.IsAutomatic()) {
+                    // CONCEITO: Adicionado check de activeInHierarchy. Impede que o loop de tiro automático
+                    // tente disparar uma arma que acabou de ser desativada durante uma troca de item.
                     if (Time.time - lastShotTime > 60.0f / equippedWeapon.GetRateOfFire())
                         Fire();
                 }
@@ -166,15 +173,16 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         protected override void LateUpdate() {
-            if (equippedWeapon == null)
+            if (equippedWeapon == null || equippedWeaponScope == null || characterKinematics == null)
                 return;
 
-            if (equippedWeaponScope == null)
+            // FIX: Se a arma que fornece os alvos de IK (equippedWeapon) está desativada (ex: trocamos p/ granada),
+            // ignoramos o cálculo para evitar que os braços colapsem para o centro do personagem.
+            if (!equippedWeapon.gameObject.activeInHierarchy && inventory.GetEquippedItem() != (ItemBehaviour)equippedWeapon) {
                 return;
-
-            if (characterKinematics != null) {
-                characterKinematics.Compute();
             }
+
+            characterKinematics.Compute();
         }
 
         #endregion
@@ -283,7 +291,20 @@ namespace InfimaGames.LowPolyShooterPack {
 
             // Tira do holster para tocar a animação de sacar o novo item
             SetHolstered(false);
-            characterAnimator.Play("Unholster", layerHolster, 0);
+            
+            if (characterAnimator != null) {
+                // DIAGNÓSTICO DE ANIMAÇÃO:
+                float holsterWeight = characterAnimator.GetLayerWeight(layerHolster);
+                Debug.Log($"[Character] Playing Unholster: Layer={layerHolster}, Weight={holsterWeight}, Controller={characterAnimator.runtimeAnimatorController.name}");
+                
+                // Se o peso da camada de Holster estiver em 0, a animação nunca aparecerá!
+                if (holsterWeight < 0.01f) {
+                    Debug.LogWarning($"[Character] Holster layer weight is ZERO! Force setting to 1 to show item.");
+                    characterAnimator.SetLayerWeight(layerHolster, 1.0f);
+                }
+
+                characterAnimator.Play("Unholster", layerHolster, 0);
+            }
         }
 
         /// <summary>
@@ -371,17 +392,43 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         public void RefreshWeaponSetup() {
             equippedWeapon = inventory.GetEquipped();
-            if (equippedWeapon == null)
-                return;
 
-            characterAnimator.runtimeAnimatorController = equippedWeapon.GetAnimatorController();
+            if (equippedWeapon != null && characterAnimator != null) {
+                RuntimeAnimatorController newController = equippedWeapon.GetAnimatorController();
 
-            weaponAttachmentManager = equippedWeapon.GetAttachmentManager();
-            if (weaponAttachmentManager == null)
-                return;
+                if (characterAnimator.runtimeAnimatorController != newController) {
+                    characterAnimator.runtimeAnimatorController = newController;
+                }
 
-            equippedWeaponScope = weaponAttachmentManager.GetEquippedScope();
-            equippedWeaponMagazine = weaponAttachmentManager.GetEquippedMagazine();
+                weaponAttachmentManager = equippedWeapon.GetAttachmentManager();
+                if (weaponAttachmentManager != null) {
+                    equippedWeaponScope = weaponAttachmentManager.GetEquippedScope();
+                    equippedWeaponMagazine = weaponAttachmentManager.GetEquippedMagazine();
+                }
+            } else if (characterAnimator != null) {
+                // CONCEITO: Se não houver arma (segurando granada/medkit), voltamos para o
+                // controller inicial (neutro) e limpamos referências de acessórios.
+                if (initialRuntimeController != null && characterAnimator.runtimeAnimatorController != initialRuntimeController)
+                    characterAnimator.runtimeAnimatorController = initialRuntimeController;
+
+                weaponAttachmentManager = null;
+                equippedWeaponScope = null;
+                equippedWeaponMagazine = null;
+            }
+
+            if (characterAnimator != null) {
+                // CONCEITO: RE-CACHE de layers é OBRIGATÓRIO aqui. 
+                // Se não re-cacharmos, o Character tentará tocar animações em índices de layers 
+                // da arma anterior, o que causa o bug de "mão vazia" ou braços invisíveis.
+                layerHolster = characterAnimator.GetLayerIndex("Layer Holster");
+                layerActions = characterAnimator.GetLayerIndex("Layer Actions");
+                layerOverlay = characterAnimator.GetLayerIndex("Layer Overlay");
+
+                // SEGURANÇA: Fallback para os índices padrão do asset caso os nomes dos layers mudem.
+                if (layerHolster == -1) layerHolster = 4;
+                if (layerActions == -1) layerActions = 3;
+                if (layerOverlay == -1) layerOverlay = 2;
+            }
         }
 
         private void FireEmpty() {
@@ -406,12 +453,6 @@ namespace InfimaGames.LowPolyShooterPack {
 
             const string boolName = "Holstered";
             characterAnimator.SetBool(boolName, holstered);
-
-            // LOG: report holster events and currently equipped item
-            Inventory inv = inventory as Inventory;
-            int eqIndex = inv != null ? inv.GetEquippedIndex() : -1;
-            string eqID = inv != null && inv.GetEquippedItem() != null ? inv.GetEquippedItem().GetItemID() : "null";
-            Debug.Log($"[Character] SetHolstered({value}) called. equippedIndex={eqIndex}, equippedItemID={eqID}");
         }
 
         #region ACTION CHECKS
@@ -420,6 +461,10 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Can Fire.
         /// </summary>
         private bool CanPlayAnimationFire() {
+            // CONCEITO: Verificação de segurança - se não há arma ou se ela está inativa (ex: trocando p/ granada),
+            // não permitimos que a lógica de disparo ou animação de fogo prossiga.
+            if (equippedWeapon == null || !equippedWeapon.gameObject.activeInHierarchy)
+                return false;
 
             if (holstered || holstering)
                 return false;

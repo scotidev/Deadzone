@@ -19,6 +19,8 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
     [SerializeField] private Vest vest;
 
     [Header("Poison Damage")]
+    [Tooltip("If false, the player will not take poison damage even if outside the safe zone (useful for tutorials).")]
+    [SerializeField] private bool isPoisonEnabled = false;
     [SerializeField] private float poisonDamagePerTick = 5f;
     [SerializeField] private float poisonTickInterval = 1f;
 
@@ -91,10 +93,10 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
 
     /// <summary>
     /// Starts the poison damage tick. Called by SafeZone.OnTriggerExit.
-    /// Does nothing if the player is already being poisoned.
+    /// Does nothing if the player is already being poisoned or if poison is disabled.
     /// </summary>
     public void StartPoisonDamage() {
-        if (poisonCoroutine != null) return;
+        if (!isPoisonEnabled || poisonCoroutine != null) return;
         poisonCoroutine = StartCoroutine(PoisonTick());
         OnPoisonStateChanged?.Invoke(true);
     }
@@ -124,6 +126,14 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
             yield return new WaitForSeconds(poisonTickInterval);
             TakeDamage(poisonDamagePerTick);
         }
+    }
+
+    /// <summary>
+    /// Enables or disables the poison damage system.
+    /// Used by TutorialEndTrigger to activate the game mechanics after the tutorial.
+    /// </summary>
+    public void SetPoisonEnabled(bool enabled) {
+        isPoisonEnabled = enabled;
     }
 
     /// <summary>

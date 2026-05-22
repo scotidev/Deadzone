@@ -118,28 +118,18 @@ namespace InfimaGames.LowPolyShooterPack {
             }
 
             ItemBehaviour newItem = selectableItems[index];
-
             if (newItem == null) {
                 return;
             }
 
-            // LOG: Attempting selection - report item id, total and CanBeUsed result
-            string newItemID = newItem.GetItemID();
-            int newItemTotal = PlayerProgress.Instance != null ? PlayerProgress.Instance.GetItemTotal(newItemID) : -1;
-            bool canBeUsed = (index == 0) || newItem.CanBeUsed();
-            Debug.Log($"[Inventory] SelectItem attempt: index={index}, itemID={newItemID}, total={newItemTotal}, canBeUsed={canBeUsed}");
-
-            // SAFETY: Always allow first item (Pistol/index 0) to be selected, even during Init()
-            // This ensures player always has a weapon equipped at game start.
-            // For other items, validate via CanBeUsed() check.
-            if (index != 0 && !canBeUsed) {
-                Debug.Log($"[Inventory] SelectItem blocked: index={index}, itemID={newItemID} - CanBeUsed returned false");
+            // SEGURANÇA: Sempre permitir a primeira arma (Pistola, index 0).
+            // Para os demais itens, validamos se estão desbloqueados e se possuem munição via CanBeUsed().
+            if (index != 0 && !newItem.CanBeUsed()) {
                 return;
             }
 
             // Deseleciona item atual (se houver)
             if (currentlySelected != null) {
-                Debug.Log($"[Inventory] Deselecting current item: prevIndex={currentSelectionIndex}, prevItemID={currentlySelected.GetItemID()}");
                 currentlySelected.OnDeselected();
                 currentlySelected.gameObject.SetActive(false);
             }
@@ -147,14 +137,21 @@ namespace InfimaGames.LowPolyShooterPack {
             // Seleciona novo item
             currentlySelected = newItem;
             currentSelectionIndex = index;
+            
+            // Ativamos o GameObject e disparamos o evento de seleção
             currentlySelected.gameObject.SetActive(true);
             currentlySelected.OnSelected();
-
-            Debug.Log($"[Inventory] Selected: index={index}, itemID={newItemID}, totalAfterSelect={PlayerProgress.Instance?.GetItemTotal(newItemID)}");
 
             // Se for arma, também atualiza compatibilidade com Character
             if (newItem is WeaponBehaviour weapon) {
                 UpdateEquippedWeapon(weapon);
+            } else {
+                // CONCEITO: Se o item selecionado não for uma arma (ex: Granada), limpamos a 
+                // referência de arma equipada. Isso avisa ao Character que ele deve usar 
+                // sua pose padrão para os braços, tornando o item visível mesmo vindo da AK47.
+                equipped = null;
+                equippedIndex = -1;
+                if (character != null) character.RefreshWeaponSetup();
             }
         }
 

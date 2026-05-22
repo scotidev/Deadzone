@@ -12,6 +12,10 @@ public abstract class EnemyBase : MonoBehaviour {
 
     #region FIELDS
 
+    [Header("Base Settings")]
+    [Tooltip("If true, this enemy will not be counted by the WaveManager.")]
+    [SerializeField] protected bool isTutorialEnemy = false;
+
     protected float maxHealth = 100f;
     protected float moveSpeed = 3.5f;
     protected float attackDamage = 10f;
@@ -91,7 +95,10 @@ public abstract class EnemyBase : MonoBehaviour {
             EconomyManager.Instance.AddCurrency(100);
         }
 
-        OnAnyEnemyDied?.Invoke();
+        // If this is a tutorial enemy, we don't notify the WaveManager to avoid "Wave Clear" messages
+        if (!isTutorialEnemy) {
+            OnAnyEnemyDied?.Invoke();
+        }
 
         Destroy(gameObject, 1f);
     }
