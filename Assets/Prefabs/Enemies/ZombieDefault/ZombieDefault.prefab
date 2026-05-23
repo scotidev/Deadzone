@@ -70,6 +70,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 7b7da2f1692f2fa4791b9b570514df41,
         type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 7b7da2f1692f2fa4791b9b570514df41,
+        type: 3}
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 73157520dc20585499b7c91f010f0cc5, type: 2}
@@ -220,3 +225,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1ef47aee6256ec439bd9888fc63d4a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ZombieDefault
+  isTutorialEnemy: 0
