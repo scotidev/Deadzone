@@ -94,7 +94,15 @@ public class PlayerInteraction : MonoBehaviour
 
         if (currentInteractable != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
+            // FIRST PRINCIPLE: When we interact, the state of the object might change 
+            // (like Mute -> Unmute). We call Interact() first, then immediately 
+            // tell the UI to refresh the prompt text so the player sees the change.
             currentInteractable.Interact();
+
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.ToggleInteractionPrompt(true, currentInteractable.GetInteractionPrompt());
+            }
         }
     }
 

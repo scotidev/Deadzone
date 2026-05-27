@@ -7,9 +7,10 @@ namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
     /// Manages synchronized 3D audio playback with a video player on the TV.
     /// Ensures audio and video stay in sync during looping playback.
+    /// Includes interaction to mute/unmute the TV.
     /// </summary>
     [DisallowMultipleComponent]
-    public class TVAudioController : MonoBehaviour {
+    public class TVAudioController : Interactable {
         #region SERIALIZED FIELDS
 
         [Header("Audio Settings")]
@@ -20,6 +21,10 @@ namespace InfimaGames.LowPolyShooterPack {
         [SerializeField]
         [Tooltip("Volume multiplier for this audio source (1.0 = normal, >1.0 = louder)")]
         private float volumeScale = 1f;
+
+        [SerializeField]
+        [Tooltip("If true, the TV starts without sound. Can be toggled by player interaction.")]
+        private bool isMuted = true;
 
         [Header("3D Spatial Settings")]
         [SerializeField]
@@ -86,6 +91,9 @@ namespace InfimaGames.LowPolyShooterPack {
             if (audioClip == null) {
                 Debug.LogWarning($"[TVAudioController] No audio clip assigned. Audio will not play until one is set in the Inspector.");
             }
+
+            // Set initial interaction prompt based on starting state
+            SetInteractionPrompt(isMuted ? "[E] Unmute TV" : "[E] Mute TV");
 
             // Initialize the audio source once
             InitializeAudioSource();
@@ -196,7 +204,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// If an object is between the TV and Player, muffles the sound.
         /// </summary>
         private void UpdateOcclusion() {
-            if (audioSource == null || playerCameraTransform == null)
+            if (audioSource == null || playerCameraTransform == null || isMuted)
                 return;
 
             // FIRST PRINCIPLE: Raycasting simulates "Line of Sight" for sound.
@@ -238,14 +246,16 @@ namespace InfimaGames.LowPolyShooterPack {
             // by Time.timeScale = 0. We must manually check the GameState and pause/resume them.
             bool isGamePaused = GameManager.Instance != null && GameManager.Instance.State == GameState.Paused;
 
-            if (isGamePaused) {
-                // If the game just paused, we pause the TV components to keep them in sync
-                if (videoPlayer.isPlaying) videoPlayer.Pause();
+            // If muted or game is paused, ensure audio is not playing
+            if (isMuted || isGamePaused) {
                 if (audioSource.isPlaying) audioSource.Pause();
+                
+                // Still pause video on game pause, but NOT on mute (video keeps playing silently)
+                if (isGamePaused && videoPlayer.isPlaying) videoPlayer.Pause();
                 return;
             }
 
-            // If the game is resumed but the TV is still in a "Paused" state from the logic above, resume it.
+            // If the game is resumed and NOT muted, but the TV is still in a "Paused" state, resume it.
             if (videoPlayer.isPaused) {
                 videoPlayer.Play();
                 audioSource.UnPause();
@@ -263,19 +273,50 @@ namespace InfimaGames.LowPolyShooterPack {
             }
         }
 
+        #region INTERACTION
+
+        /// <summary>
+        /// Called when the player interacts with the TV.
+        /// Toggles the mute state and updates the HUD prompt.
+        /// </summary>
+        public override void Interact() {
+            isMuted = !isMuted;
+
+            // Update the HUD prompt for the next time the player looks at it
+            SetInteractionPrompt(isMuted ? "[E] Unmute TV" : "[E] Mute TV");
+
+            if (isMuted) {
+                StopAudio();
+            } else {
+                // Force an update to start audio immediately if video is already playing
+                UpdateAudioPlayback();
+            }
+
+            // Log the action for feedback
+            Debug.Log($"[TVAudioController] TV is now {(isMuted ? "MUTED" : "UNMUTED")}");
+        }
+
+        #endregion
+
         /// <summary>
         /// Starts playing the audio synchronized with the video.
         /// The audio is attached to the TV's transform and emitted as spatial 3D sound.
         /// </summary>
         private void PlayAudio() {
-            if (audioService == null || audioSource == null)
+            if (audioService == null || audioSource == null || videoPlayer == null || audioClip == null)
                 return;
 
             // Update volume in case SFX master volume changed
             float sfxMasterVolume = audioService.GetSFXVolume();
             audioSource.volume = sfxMasterVolume * volumeScale;
 
-            // Start playback from the beginning
+            // FIRST PRINCIPLE: To maintain synchronization after unmuting or starting,
+            // we set the audio playback time to match the current video time.
+            // We use the modulo (%) operator to ensure that if the video time is somehow
+            // longer than the audio clip, it still plays at the correct relative position.
+            audioSource.time = (float)(videoPlayer.time % audioClip.length);
+
+            // Start playback
             audioSource.Play();
             isAudioPlaying = true;
             lastVideoTime = videoPlayer.time;

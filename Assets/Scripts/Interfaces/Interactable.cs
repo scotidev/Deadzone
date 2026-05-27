@@ -14,6 +14,12 @@ public abstract class Interactable : MonoBehaviour {
     public string GetInteractionPrompt() => interactionPrompt;
 
     /// <summary>
+    /// Updates the interaction prompt string dynamically.
+    /// </summary>
+    /// <param name="newPrompt">The new message to display.</param>
+    public void SetInteractionPrompt(string newPrompt) => interactionPrompt = newPrompt;
+
+    /// <summary>
     /// Called when the player presses the interaction key while looking at this object.
     /// </summary>
     public abstract void Interact();
