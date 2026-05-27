@@ -16,11 +16,17 @@ public class WaveUI : BaseUI {
     [SerializeField] private TMP_Text waveNumberText;
     [SerializeField] private TMP_Text waveClearText;
     [SerializeField] private TMP_Text enemiesRemainingText;
+    [SerializeField] private TMP_Text timerText;
 
     [Header("Wave Announcement Animation")]
     [SerializeField] private float announcementFadeInSeconds = 0.2f;
     [SerializeField] private float announcementVisibleSeconds = 1.5f;
     [SerializeField] private float announcementFadeOutSeconds = 0.25f;
+
+    [Header("Timer Settings")]
+    [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private Color warningColor = Color.red;
+    [SerializeField] private float warningThreshold = 15f;
 
     #endregion
 
@@ -40,6 +46,52 @@ public class WaveUI : BaseUI {
         HideAnnouncementText(waveNumberText);
         HideAnnouncementText(waveClearText);
         UpdateEnemiesRemaining(0);
+        UpdateTimerDisplay(0, false);
+    }
+
+    protected override void Update() {
+        base.Update();
+        HandleTimerUpdate();
+    }
+
+    /// <summary>
+    /// Fetches the current timer state from WaveManager and updates the UI.
+    /// </summary>
+    private void HandleTimerUpdate() {
+        if (WaveManager.Instance == null || timerText == null) return;
+
+        float currentTime = WaveManager.Instance.WaveTimer;
+        bool isWaveActive = WaveManager.Instance.IsWaveActive;
+        bool isCountdown = WaveManager.Instance.IsCountdownActive;
+
+        if (isWaveActive || isCountdown) {
+            UpdateTimerDisplay(currentTime, isWaveActive);
+        } else {
+            timerText.text = "";
+        }
+    }
+
+    /// <summary>
+    /// Formats and displays the timer text based on the current game state.
+    /// Includes color interpolation during countdown warning phase.
+    /// </summary>
+    private void UpdateTimerDisplay(float time, bool activeWave) {
+        if (timerText == null) return;
+
+        // Formatação simples MM:SS sem prefixos
+        int minutes = Mathf.FloorToInt(time / 60f);
+        int seconds = Mathf.FloorToInt(time % 60f);
+        timerText.text = $"{minutes:00}:{seconds:00}";
+
+        // Lógica de Cor
+        if (!activeWave && WaveManager.Instance.IsCountdownActive && time <= warningThreshold) {
+            // Interpolação gradativa para o vermelho nos últimos segundos
+            float t = 1f - (time / warningThreshold);
+            timerText.color = Color.Lerp(normalColor, warningColor, t);
+        } else {
+            // Cor padrão durante a wave ou início do countdown
+            timerText.color = normalColor;
+        }
     }
 
     #endregion

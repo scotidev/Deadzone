@@ -38,6 +38,11 @@ public class WaveManager : MonoBehaviour {
     [Range(0f, 1f)]
     [SerializeField] private float waveClearSFXVolume = 1f;
 
+    [Header("Countdown SFX")]
+    [SerializeField] private AudioClip countdownTickClip;
+    [Range(0f, 1f)]
+    [SerializeField] private float countdownTickVolume = 0.8f;
+
     [Header("Wave")]
 
     [Tooltip("Growth rate from wave 1 to 2.")]
@@ -55,12 +60,19 @@ public class WaveManager : MonoBehaviour {
     [SerializeField] private int maxEnemiesPerWave = 500;
     [SerializeField] private int maxEnemiesAliveAtOnce = 15;
 
+    [Header("Wave Progression")]
+
+    [SerializeField] private float timeBetweenWaves = 30f;
+    [SerializeField] private int bonusBaseAmount = 1000;
+    [SerializeField] private float bonusTimeMultiplier = 5f;
+
     [Header("Spawners")]
 
     [SerializeField] private List<EnemySpawner> spawners;
 
     [Header("HUD")]
     [SerializeField] private WaveUI waveUI;
+    [SerializeField] private GameObject waveButtonObject;
 
     [Header("Music Settings")]
     [SerializeField] private AudioClip ambientBGM;
@@ -80,6 +92,12 @@ public class WaveManager : MonoBehaviour {
     private int enemiesKilled = 0;
     private int lastWaveEnemyCount = 5;
     private bool isWaveActive = false;
+    private float waveTimer = 0f;
+    private bool isCountdownActive = false;
+    private int lastTickSecond = -1;
+
+    public event System.Action OnWaveStarted;
+    public event System.Action OnWaveCompleted;
 
     private List<EnemySpawnConfig> currentWaveEnemyTypes;
     private IAudioManagerService audioService;
@@ -89,6 +107,8 @@ public class WaveManager : MonoBehaviour {
     #region PROPERTIES
     public bool IsWaveActive => isWaveActive;
     public int CurrentWave => currentWave;
+    public float WaveTimer => waveTimer;
+    public bool IsCountdownActive => isCountdownActive;
 
     #endregion
 
@@ -105,6 +125,58 @@ public class WaveManager : MonoBehaviour {
 
     private void Start() {
         // audioService?.PlayBGM(ambientBGM, true, 1.5f, ambientBGMVolume);
+        // StartInitialCountdown(); // Removido para que a primeira wave seja engatilhada pelo TutorialEndTrigger
+    }
+
+    private void Update() {
+        HandleTimers();
+    }
+
+    /// <summary>
+    /// Manages the logic for both the countdown between waves and the duration of an active wave.
+    /// </summary>
+    private void HandleTimers() {
+        if (isWaveActive) {
+            // Durante a wave, o timer conta de forma crescente (tempo de duração da wave)
+            waveTimer += Time.deltaTime;
+        } else if (isCountdownActive) {
+            // Entre waves, o timer conta de forma decrescente (tempo para a próxima wave)
+            waveTimer -= Time.deltaTime;
+
+            // Toca o som de tick nos últimos 10 segundos
+            HandleCountdownAudio();
+
+            if (waveTimer <= 0) {
+                waveTimer = 0;
+                isCountdownActive = false;
+                StartNextWave();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Plays a tick sound every second during the last 10 seconds of the countdown.
+    /// </summary>
+    private void HandleCountdownAudio() {
+        // Ajustado para 10.0f para evitar tocar 2x no início
+        if (waveTimer <= 10.0f && waveTimer > 0) {
+            int currentSecond = Mathf.CeilToInt(waveTimer);
+            
+            // Só toca se mudamos de segundo e o clip existe
+            if (currentSecond != lastTickSecond && countdownTickClip != null) {
+                lastTickSecond = currentSecond;
+                audioService?.PlaySFX2D(countdownTickClip, countdownTickVolume);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Starts the countdown for the very first wave of the game.
+    /// </summary>
+    private void StartInitialCountdown() {
+        waveTimer = timeBetweenWaves;
+        isCountdownActive = true;
+        lastTickSecond = -1; // Reseta o rastreador de áudio
     }
 
     private void OnEnable() {
@@ -133,6 +205,10 @@ public class WaveManager : MonoBehaviour {
             return;
         }
 
+        // Se o player apertar o botão antes do timer zerar, paramos o countdown
+        isCountdownActive = false;
+        waveTimer = 0f; // Reseta para começar a contar o tempo da wave de forma crescente
+
         currentWave++;
 
         totalEnemiesForWave = GetEnemyCountForWave(currentWave);
@@ -145,6 +221,8 @@ public class WaveManager : MonoBehaviour {
 
         currentWaveEnemyTypes = GetAvailableEnemyTypes(currentWave);
         PlayWaveStartSound();
+
+        OnWaveStarted?.Invoke();
 
         audioService?.PlayBGM(combatBGM, true, 1.0f, combatBGMVolume);
 
@@ -207,7 +285,7 @@ public class WaveManager : MonoBehaviour {
         TrySpawnNext();
 
         if (enemiesKilled >= totalEnemiesForWave)
-            OnWaveCompleted();
+            CompleteWave();
     }
 
     /// <summary>
@@ -215,8 +293,9 @@ public class WaveManager : MonoBehaviour {
     /// Awards currency to the player based on wave completion.
     /// Formula: 1000 for wave 1, +500 for each additional wave (1500 for wave 2, 2000 for wave 3, etc.)
     /// </summary>
-    private void OnWaveCompleted() {
+    private void CompleteWave() {
         isWaveActive = false;
+        OnWaveCompleted?.Invoke();
 
         GameManager.Instance?.SetState(GameState.Playing);
 
@@ -224,9 +303,27 @@ public class WaveManager : MonoBehaviour {
             waveUI.ShowWaveClearAnnouncement();
 
         if (EconomyManager.Instance != null) {
+            // Recompensa base pela wave
             int waveReward = 1000 + (500 * (currentWave - 1));
-            EconomyManager.Instance.AddCurrency(waveReward);
+            
+            // Recompensa bônus por velocidade (quanto mais rápido, mais ganha)
+            // A lógica é: bonusBase - (tempo gasto * multiplicador). Se demorar demais, o bônus zera.
+            int speedBonus = Mathf.Max(0, bonusBaseAmount - Mathf.FloorToInt(waveTimer * bonusTimeMultiplier));
+            
+            EconomyManager.Instance.AddCurrency(waveReward + speedBonus);
+            
+            Debug.Log($"[WaveManager] Wave {currentWave} completed! Base: {waveReward} | Bonus: {speedBonus} (Time: {waveTimer:F1}s)");
         }
+
+        // Ativa o botão de pular timer após a primeira wave
+        if (currentWave == 1 && waveButtonObject != null) {
+            waveButtonObject.SetActive(true);
+        }
+
+        // Prepara o countdown para a próxima wave
+        waveTimer = timeBetweenWaves;
+        isCountdownActive = true;
+        lastTickSecond = -1; // Reseta para a próxima wave
 
         audioService?.PlayBGM(ambientBGM, true, 2.0f, ambientBGMVolume);
         audioService?.PlaySFX2D(waveClearClip, waveClearSFXVolume);

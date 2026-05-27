@@ -158,6 +158,14 @@ Contains scripts related to world objects and traps.
 
 /// Fog Controller. Handles fog density and visibility changes.
 
+### /Environment/Teleport.cs
+
+/// Teleport. Manages bidirectional teleportation logic and physics reset.
+
+### /Environment/TeleportTrigger.cs
+
+/// Teleport Trigger. Proxy script placed on trigger objects to forward collision events to the Teleport manager.
+
 ## /Wave
 
 Contains scripts related to wave-based enemy spawning.
