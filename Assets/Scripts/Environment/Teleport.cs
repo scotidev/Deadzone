@@ -142,10 +142,24 @@ public class Teleport : MonoBehaviour {
 
         // Determine destination
         if (triggerHit == triggerA) {
+            PlayTriggerVFX(triggerA);
             ExecuteTeleport(playerCollider.transform, arrivalPointB);
         }
         else if (triggerHit == triggerB) {
+            PlayTriggerVFX(triggerB);
             ExecuteTeleport(playerCollider.transform, arrivalPointA);
+        }
+    }
+
+    /// <summary>
+    /// Attempts to find the TeleportTrigger component and play its VFX.
+    /// </summary>
+    private void PlayTriggerVFX(GameObject triggerObj) {
+        if (triggerObj == null) return;
+        
+        TeleportTrigger triggerScript = triggerObj.GetComponent<TeleportTrigger>();
+        if (triggerScript != null) {
+            triggerScript.PlayVFX();
         }
     }
 
