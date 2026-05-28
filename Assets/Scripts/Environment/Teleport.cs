@@ -112,7 +112,12 @@ public class Teleport : MonoBehaviour {
     }
 
     private void HandleWaveCompleted() {
-        ToggleTeleports(true);
+        // Só ativa os teleportes se o jogador já tiver completado pelo menos a Wave 1
+        if (WaveManager.Instance != null && WaveManager.Instance.CurrentWave >= 1) {
+            ToggleTeleports(true);
+        } else {
+            ToggleTeleports(false);
+        }
     }
 
     /// <summary>
