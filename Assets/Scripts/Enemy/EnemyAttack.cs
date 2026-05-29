@@ -141,12 +141,20 @@ public class EnemyAttack : MonoBehaviour {
 
     /// <summary>
     /// Attack the player by triggering the attack animation and applying damage through the IDamageable interface.
+    /// Attempts to use TakeDamageFromZombie() if PlayerHealth is available (for correct damage sound).
+    /// Falls back to TakeDamage() for other IDamageable implementations.
     /// </summary>
     private void AttackPlayer() {
         if (animator != null)
             animator.SetTrigger(HashAttack);
 
-        playerDamageable?.TakeDamage(attackDamage);
+        // Try to cast to PlayerHealth for specialized zombie damage with correct audio
+        if (playerDamageable is PlayerHealth playerHealth) {
+            playerHealth.TakeDamageFromZombie(attackDamage);
+        } else {
+            // Fallback for other IDamageable implementations
+            playerDamageable?.TakeDamage(attackDamage);
+        }
     }
 
     /// <summary>

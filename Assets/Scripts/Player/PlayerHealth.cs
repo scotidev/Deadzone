@@ -25,8 +25,8 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
     [SerializeField] private float poisonTickInterval = 1f;
 
     [Header("Audio Clips")]
-    [SerializeField] private AudioClip damageSound;
-    [SerializeField] private AudioClip healSound;
+    [SerializeField] private AudioClip zombieDamageSound;
+    [SerializeField] private AudioClip poisonDamageSound;
 
     #endregion
 
@@ -66,11 +66,11 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
     #region METHODS
 
     /// <summary>
-    /// Applies damage to the player. Called by EnemyAttack when attacking.
-    /// Implements the IDamageable interface contract.
+    /// Applies damage to the player (internal use).
     /// First attempts to absorb damage with armor (if available), then applies remaining damage to health.
+    /// Does NOT play any sound — use TakeDamageFromZombie() or TakeDamageFromPoison() for audio.
     /// </summary>
-    public void TakeDamage(float amount) {
+    private void ApplyDamage(float amount) {
         if (currentHealth <= 0f) return;
 
         float damageToHealth = amount;
@@ -89,6 +89,62 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
 
         if (currentHealth <= 0f)
             Die();
+    }
+
+    /// <summary>
+    /// Called when the player takes damage from a zombie/enemy attack.
+    /// Applies the damage and plays the zombie damage sound.
+    /// First attempts to absorb damage with armor (if available), then applies remaining damage to health.
+    /// </summary>
+    public void TakeDamageFromZombie(float amount) {
+        ApplyDamage(amount);
+        PlayZombieDamageSound();
+    }
+
+    /// <summary>
+    /// Called when the player takes damage from poison (fog).
+    /// Applies the damage and plays the poison damage sound.
+    /// First attempts to absorb damage with armor (if available), then applies remaining damage to health.
+    /// </summary>
+    public void TakeDamageFromPoison(float amount) {
+        ApplyDamage(amount);
+        PlayPoisonDamageSound();
+    }
+
+    /// <summary>
+    /// Plays the zombie damage sound via AudioManagerService.
+    /// Called when the player is hit by an enemy.
+    /// </summary>
+    private void PlayZombieDamageSound() {
+        if (zombieDamageSound == null) return;
+
+        // Get the audio service and play the damage sound at player position.
+        IAudioManagerService audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+        if (audioService != null) {
+            audioService.PlaySFX3D(zombieDamageSound, transform.position, 1f);
+        }
+    }
+
+    /// <summary>
+    /// Plays the poison damage sound via AudioManagerService.
+    /// Called when the player takes poison damage from the fog.
+    /// </summary>
+    private void PlayPoisonDamageSound() {
+        if (poisonDamageSound == null) return;
+
+        // Get the audio service and play the poison damage sound at player position.
+        IAudioManagerService audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+        if (audioService != null) {
+            audioService.PlaySFX3D(poisonDamageSound, transform.position, 1f);
+        }
+    }
+
+    /// <summary>
+    /// IDamageable interface implementation. Called by external damage sources.
+    /// Routes to TakeDamageFromZombie by default (backward compatibility).
+    /// </summary>
+    public void TakeDamage(float amount) {
+        TakeDamageFromZombie(amount);
     }
 
     /// <summary>
@@ -120,11 +176,12 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
     /// <summary>
     /// Coroutine that applies damage every poisonTickInterval seconds.
     /// Respects Time.timeScale — automatically pauses during Pause Menu.
+    /// Uses TakeDamageFromPoison to play poison damage sounds.
     /// </summary>
     private IEnumerator PoisonTick() {
         while (true) {
             yield return new WaitForSeconds(poisonTickInterval);
-            TakeDamage(poisonDamagePerTick);
+            TakeDamageFromPoison(poisonDamagePerTick);
         }
     }
 

@@ -35,19 +35,46 @@ using InfimaGames.LowPolyShooterPack;
                 if (health != null) {
                     health.SetPoisonEnabled(true);
                     
-                    // If the player is currently outside a safe zone when this trigger is hit, 
-                    // we force the poison to start immediately.
-                    // This handles the case where the player is already in a "poison area" but it was disabled.
-                    // Note: SafeZone script will handle future enters/exits.
-                    health.StartPoisonDamage();
+                    // 2. Enable poison logic in ALL SafeZones to begin tracking player position.
+                    SafeZone[] allSafeZones = FindObjectsOfType<SafeZone>();
+                    foreach (SafeZone safeZone in allSafeZones) {
+                        safeZone.EnablePoisonSystem();
+                    }
+                    
+                    // 3. Auto-detect if player is inside a SafeZone at tutorial end.
+                    // Check if the player's collider bounds overlap with ANY SafeZone.
+                    Collider playerCollider = character.GetComponent<Collider>();
+                    if (playerCollider != null) {
+                        bool isInsideSafeZone = false;
+                        foreach (SafeZone safeZone in allSafeZones) {
+                            BoxCollider safeZoneBox = safeZone.GetComponent<BoxCollider>();
+                            if (safeZoneBox != null && safeZoneBox.isTrigger) {
+                                // Use Intersects instead of Contains for better overlap detection.
+                                if (safeZoneBox.bounds.Intersects(playerCollider.bounds)) {
+                                    isInsideSafeZone = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Apply appropriate poison state based on detected position.
+                        if (isInsideSafeZone) {
+                            health.StopPoisonDamage();
+                        } else {
+                            health.StartPoisonDamage();
+                        }
+                    } else {
+                        // Fallback: if no collider found, start poison damage (assume outside).
+                        health.StartPoisonDamage();
+                    }
                 }
 
-                // 2. Start Wave 1 immediately
+                // 4. Start Wave 1 immediately
                 if (WaveManager.Instance != null && !WaveManager.Instance.IsWaveActive) {
                     WaveManager.Instance.StartNextWave();
                 }
 
-                // 3. Deactivate trigger
+                // 5. Deactivate trigger
                 if (triggerOnce) {
                     gameObject.SetActive(false);
                 }

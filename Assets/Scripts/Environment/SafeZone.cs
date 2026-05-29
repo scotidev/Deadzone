@@ -2,19 +2,16 @@ using UnityEngine;
 
 /// <summary>
 /// Trigger that defines the safe area of the house.
+/// Poison damage logic is only active after the tutorial ends (when isPoisonEnabled = true).
 /// </summary>
 public class SafeZone : MonoBehaviour {
-
-    #region SERIALIZED FIELDS
-
-    [Header("Settings")]
-    [SerializeField] private bool playerStartsOutside = false;
-
-    #endregion
 
     #region FIELDS
 
     private PlayerHealth health;
+    // Flag that controls whether this SafeZone should react to poison damage.
+    // During tutorial, this is false. After TutorialEndTrigger, this becomes true.
+    private bool isPoisonEnabled = false;
 
     #endregion
 
@@ -25,18 +22,17 @@ public class SafeZone : MonoBehaviour {
         if (player != null) {
             health = player.GetComponentInParent<PlayerHealth>();
         }
-
-        if (playerStartsOutside && health != null) {
-            health.StartPoisonDamage();
-        }
     }
 
     /// <summary>
     /// Called when a Collider enters this area.
-    /// If it's the Player, stops the poison damage.
+    /// If it's the Player and poison is enabled, stops the poison damage.
     /// </summary>
     private void OnTriggerEnter(Collider other) {
         if (!other.CompareTag("Player")) return;
+        
+        // Only activate poison logic if poison system has been enabled.
+        if (!isPoisonEnabled) return;
 
         if (health != null) {
             health.StopPoisonDamage();
@@ -45,14 +41,50 @@ public class SafeZone : MonoBehaviour {
 
     /// <summary>
     /// Called when a Collider exits this area.
-    /// If it's the Player, starts the poison damage.
+    /// If it's the Player and poison is enabled, checks if player is still inside another SafeZone.
+    /// Only starts poison damage if player is truly outside ALL SafeZones.
     /// </summary>
     private void OnTriggerExit(Collider other) {
         if (!other.CompareTag("Player")) return;
+        
+        // Only activate poison logic if poison system has been enabled.
+        if (!isPoisonEnabled) return;
 
         if (health != null) {
-            health.StartPoisonDamage();
+            // Before starting poison damage, check if player is inside another SafeZone.
+            // This handles overlapping SafeZones correctly.
+            if (!IsPlayerInsideAnySafeZone(other)) {
+                health.StartPoisonDamage();
+            }
         }
+    }
+
+    /// <summary>
+    /// Checks if the player (via collider) is currently inside ANY SafeZone (except this one).
+    /// Used to handle overlapping SafeZones correctly.
+    /// </summary>
+    private bool IsPlayerInsideAnySafeZone(Collider playerCollider) {
+        SafeZone[] allSafeZones = FindObjectsOfType<SafeZone>();
+        foreach (SafeZone safeZone in allSafeZones) {
+            if (safeZone == this) continue; // Skip self
+            
+            BoxCollider safeZoneBox = safeZone.GetComponent<BoxCollider>();
+            if (safeZoneBox != null && safeZoneBox.isTrigger) {
+                // Check if player bounds overlap with this SafeZone's bounds.
+                if (safeZoneBox.bounds.Intersects(playerCollider.bounds)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Enables the poison system for this SafeZone.
+    /// Called by TutorialEndTrigger when the tutorial ends.
+    /// </summary>
+    public void EnablePoisonSystem() {
+        isPoisonEnabled = true;
     }
 
     private void OnDrawGizmos() {
