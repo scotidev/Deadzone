@@ -113,14 +113,8 @@ namespace InfimaGames.LowPolyShooterPack {
 
             string weaponID = GetItemID();
             
-            // SAFETY: Primeira arma (Pistola, ID="1") sempre é selecionável por padrão
-            // Isso garante que o jogador sempre possa equipar ALGUMA arma no início do jogo.
-            if (weaponID == "1" || weaponID == "Pistol") {
-                Debug.Log($"[{gameObject.name}] CanBeUsed: Pistol always allowed (ID: {weaponID})");
-                return true;
-            }
-            
-            // APENAS verificamos se está desbloqueada. Ammo é verificado no Fire.
+            // Verificamos APENAS se a arma está desbloqueada no PlayerProgress.
+            // Removido o bypass ID == "1" para suportar o fluxo de tutorial onde a Pistola começa bloqueada.
             bool isUnlocked = PlayerProgress.Instance.IsWeaponUnlocked(weaponID);
             Debug.Log($"[{gameObject.name}] CanBeUsed check: ID={weaponID}, Unlocked={isUnlocked}");
             

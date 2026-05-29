@@ -30,6 +30,10 @@ namespace InfimaGames.LowPolyShooterPack {
         [SerializeField] private AudioClip meleeSFX;
         [SerializeField] private float meleeSFXVolume = 1f;
 
+        [Header("Tutorial Settings")]
+        [Tooltip("Referência ao Mesh dos braços do jogador para ativar durante o soco no tutorial.")]
+        [SerializeField] private GameObject playerArmsMesh;
+
         #endregion
 
         #region FIELDS
@@ -100,6 +104,11 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         private IEnumerator MeleeAttackRoutine() {
+            // Ativa o mesh dos braços para que o soco seja visível, mesmo que o player comece "sem braços"
+            if (playerArmsMesh != null) {
+                playerArmsMesh.SetActive(true);
+            }
+
             // CONCEITO: Resetar a flag de hitmarker no início de cada novo ataque.
             // Isso garante que o hitmarker seja disparado no máximo uma vez por ataque.
             hitmarkerTriggeredThisAttack = false;
@@ -121,6 +130,14 @@ namespace InfimaGames.LowPolyShooterPack {
 
             if (playerCharacter != null) {
                 playerCharacter.EndMeleeAttack();
+            }
+
+            // SEGURANÇA TUTORIAL: Se o jogador ainda não desbloqueou a pistola (ID 1),
+            // escondemos os braços novamente após o soco para manter o visual de "mãos vazias".
+            if (PlayerProgress.Instance != null && !PlayerProgress.Instance.IsWeaponUnlocked("1")) {
+                if (playerArmsMesh != null) {
+                    playerArmsMesh.SetActive(false);
+                }
             }
 
             isAttacking = false;

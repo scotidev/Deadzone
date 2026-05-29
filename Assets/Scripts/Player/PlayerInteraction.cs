@@ -94,14 +94,23 @@ public class PlayerInteraction : MonoBehaviour
 
         if (currentInteractable != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
-            // FIRST PRINCIPLE: When we interact, the state of the object might change 
-            // (like Mute -> Unmute). We call Interact() first, then immediately 
-            // tell the UI to refresh the prompt text so the player sees the change.
-            currentInteractable.Interact();
+            // Salva a referência antes de interagir
+            Interactable interactableBefore = currentInteractable;
+            
+            // Realiza a interação
+            interactableBefore.Interact();
 
-            if (UIManager.Instance != null)
+            // Se o objeto foi destruído ou desativado pela interação (como no pickup), limpa o HUD
+            if (interactableBefore == null || !interactableBefore.gameObject.activeInHierarchy)
             {
-                UIManager.Instance.ToggleInteractionPrompt(true, currentInteractable.GetInteractionPrompt());
+                currentInteractable = null;
+                if (UIManager.Instance != null)
+                    UIManager.Instance.ToggleInteractionPrompt(false);
+            }
+            else if (UIManager.Instance != null)
+            {
+                // Se o objeto ainda existe, atualiza o prompt (ex: mudou de "Abrir" para "Fechar")
+                UIManager.Instance.ToggleInteractionPrompt(true, interactableBefore.GetInteractionPrompt());
             }
         }
     }
@@ -134,7 +143,10 @@ public class PlayerInteraction : MonoBehaviour
             }
         }
 
-        if (currentInteractable != null)
+        // Se chegamos aqui, o raycast não atingiu um Interactable válido.
+        // Se tínhamos um interactable anteriormente (mesmo que tenha sido destruído e esteja nulo agora),
+        // ou se o HUD ainda está ativo por algum motivo, precisamos garantir que ele seja desativado.
+        if (currentInteractable != null || (UIManager.Instance != null && UIManager.Instance.IsInteractionPromptActive()))
         {
             currentInteractable = null;
 

@@ -13,8 +13,8 @@ public class TutorialDummyZombie : EnemyBase {
     [Tooltip("Health value for this dummy, set in the inspector.")]
     [SerializeField] private float tutorialHealth = 50f;
 
-    [Tooltip("List of invisible walls or objects to deactivate when this zombie dies.")]
-    [SerializeField] private List<GameObject> barriersToDeactivate;
+    [Tooltip("The Pistol pickup GameObject to activate when this zombie dies.")]
+    [SerializeField] private GameObject pistolPickupObject;
 
     #endregion
 
@@ -44,16 +44,13 @@ public class TutorialDummyZombie : EnemyBase {
     }
 
     /// <summary>
-    /// Handles dummy death: performs base logic and opens the path.
+    /// Handles dummy death: activates the pistol pickup for the player.
     /// </summary>
     protected override void Die() {
-        // Unlock the path by deactivating all barriers in the list
-        if (barriersToDeactivate != null) {
-            foreach (GameObject barrier in barriersToDeactivate) {
-                if (barrier != null) {
-                    barrier.SetActive(false);
-                }
-            }
+        // Ativa o pickup da pistola para o jogador coletar após a morte do zumbi
+        if (pistolPickupObject != null) {
+            pistolPickupObject.SetActive(true);
+            Debug.Log("[TutorialDummyZombie] Pistol pickup activated!");
         }
 
         // Call base Die to handle currency, events, and destruction

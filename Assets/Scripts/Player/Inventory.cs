@@ -122,9 +122,9 @@ namespace InfimaGames.LowPolyShooterPack {
                 return;
             }
 
-            // SEGURANÇA: Sempre permitir a primeira arma (Pistola, index 0).
-            // Para os demais itens, validamos se estão desbloqueados e se possuem munição via CanBeUsed().
-            if (index != 0 && !newItem.CanBeUsed()) {
+            // SEGURANÇA: Validamos se os itens estão desbloqueados e se possuem munição via CanBeUsed().
+            // Removido o bypass 'index != 0' para que a Pistola (index 0) também respeite o desbloqueio.
+            if (!newItem.CanBeUsed()) {
                 return;
             }
 
@@ -192,16 +192,15 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         public void RestoreLastWeapon() {
             // Find the first weapon that is unlocked and select it
-            // Priority: Try Pistol (index 0) first, then other weapons
+            // Prioridade: Tenta encontrar qualquer arma desbloqueada e utilizável.
             for (int i = 0; i < selectableItems.Length; i++) {
                 ItemBehaviour item = selectableItems[i];
-                if (item is WeaponBehaviour weapon && (i == 0 || weapon.CanBeUsed())) {
+                if (item is WeaponBehaviour weapon && weapon.CanBeUsed()) {
                     Debug.Log($"[Inventory] RestoreLastWeapon: selecting index={i}, itemID={item.GetItemID()}");
                     SelectItem(i);
                     return;
                 }
             }
-
         }
 
         /// <summary>

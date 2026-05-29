@@ -69,7 +69,8 @@ public class PlayerProgress : MonoBehaviour {
     /// Pistol (weaponID "Pistol") is unlocked by default.
     /// </summary>
     private void InitializeDefaults() {
-        UnlockWeaponInternal("1");
+        // O jogador agora começa sem nenhum item desbloqueado para o fluxo do tutorial.
+        // A pistola (ID "1") será desbloqueada via PistolPickup no mundo.
     }
 
     #region UNLOCKS

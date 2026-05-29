@@ -183,6 +183,13 @@ public class UIManager : MonoBehaviour {
     }
 
     /// <summary>
+    /// Checks if the interaction prompt is currently visible on screen.
+    /// </summary>
+    public bool IsInteractionPromptActive() {
+        return interactionPromptUI != null && interactionPromptUI.IsVisible();
+    }
+
+    /// <summary>
     /// Shows the heal visual feedback effect on screen edges.
     /// Called by Medkit when successfully healing the player.
     /// </summary>
