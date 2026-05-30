@@ -6,19 +6,57 @@ using UnityEngine;
 /// </summary>
 public class ZombieBoss : EnemyBase {
 
-    #region METHODS
+    [Header("Boss Zombie Stats")]
+    [SerializeField] private float defaultMaxHealth = 300f;
+    [SerializeField] private float defaultMoveSpeed = 3.0f;
+    [SerializeField] private float defaultAttackDamage = 25f;
+    [SerializeField] private float defaultAttackRange = 2.0f;
+    [SerializeField] private float defaultAttackCooldown = 1.2f;
+
+    [Header("Boss Zombie Audio")]
+    [SerializeField] private AudioClip idleSound;
+    [Range(0f, 1f)]
+    [SerializeField] private float idleSoundVolume = 1f;
+
+    [SerializeField] private AudioClip attackSound;
+    [Range(0f, 1f)]
+    [SerializeField] private float attackSoundVolume = 1f;
+
+    [SerializeField] private AudioClip deathSound;
+    [Range(0f, 1f)]
+    [SerializeField] private float deathSoundVolume = 1f;
 
     /// <summary>
     /// Initialize boss stats. Called during Awake() by EnemyBase.
     /// Boss has significantly higher health, damage, and attack speed than other zombie types.
+    /// Uses serialized fields if set, otherwise uses fallback values.
     /// </summary>
     protected override void InitializeStats() {
-        maxHealth = 300f;      // Much higher health than regular zombies
-        moveSpeed = 3.0f;      // Slightly slower than fast zombies
-        attackDamage = 25f;    // Deals more damage than regular zombies
-        attackRange = 2.0f;    // Larger attack range
-        attackCooldown = 1.2f; // Faster attack cooldown
+        maxHealth = defaultMaxHealth > 0 ? defaultMaxHealth : 300f;
+        moveSpeed = defaultMoveSpeed > 0 ? defaultMoveSpeed : 3.0f;
+        attackDamage = defaultAttackDamage > 0 ? defaultAttackDamage : 25f;
+        attackRange = defaultAttackRange > 0 ? defaultAttackRange : 2.0f;
+        attackCooldown = defaultAttackCooldown > 0 ? defaultAttackCooldown : 1.2f;
     }
 
-    #endregion
+    /// <summary>
+    /// Plays the idle/grunt sound for this zombie type.
+    /// </summary>
+    public override void PlayIdleSound() {
+        Play3DSound(idleSound, idleSoundVolume);
+    }
+
+    /// <summary>
+    /// Plays the attack sound for this zombie type.
+    /// </summary>
+    public override void PlayAttackSound() {
+        Play3DSound(attackSound, attackSoundVolume);
+    }
+
+    /// <summary>
+    /// Plays the death sound for this zombie type.
+    /// </summary>
+    public override void PlayDeathSound() {
+        Play3DSound(deathSound, deathSoundVolume);
+    }
 }

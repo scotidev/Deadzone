@@ -95,6 +95,9 @@ public class WaveManager : MonoBehaviour {
     private float waveTimer = 0f;
     private bool isCountdownActive = false;
     private int lastTickSecond = -1;
+    
+    // Round-robin spawning (sempre ativo - padrão)
+    private int currentSpawnerIndex = 0;
 
     public event System.Action OnWaveStarted;
     public event System.Action OnWaveCompleted;
@@ -215,6 +218,7 @@ public class WaveManager : MonoBehaviour {
         lastWaveEnemyCount = totalEnemiesForWave;
         enemiesSpawned = 0;
         enemiesKilled = 0;
+        currentSpawnerIndex = 0;  // Reset for round-robin spawning
         isWaveActive = true;
 
         GameManager.Instance?.SetState(GameState.InWave);
@@ -249,14 +253,17 @@ public class WaveManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Spawns exactly one enemy at a random spawner in the scene.
-    /// Increments <c>enemiesSpawned</c> and selects the type based on the configured weight.
+    /// Spawns exactly one enemy at a spawner using round-robin distribution.
+    /// Each enemy is spawned at a different spawner sequentially to spread combat across the map.
     /// </summary>
     private void SpawnOneEnemy() {
         if (enemiesSpawned >= totalEnemiesForWave) return;
         if (currentWaveEnemyTypes == null || currentWaveEnemyTypes.Count == 0) return;
 
-        EnemySpawner spawner = spawners[Random.Range(0, spawners.Count)];
+        // Round-robin: cycle through spawners using modulo
+        EnemySpawner spawner = spawners[currentSpawnerIndex % spawners.Count];
+        currentSpawnerIndex++;
+        
         spawner.SpawnEnemies(currentWaveEnemyTypes);
         enemiesSpawned++;
     }

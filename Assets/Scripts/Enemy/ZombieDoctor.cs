@@ -1,18 +1,18 @@
 using UnityEngine;
 
 /// <summary>
-/// Default Zombie with balanced stats.
+/// Zombie Doctor - A more durable zombie variant with high health pool.
 /// </summary>
-public class ZombieDefault : EnemyBase {
+public class ZombieDoctor : EnemyBase {
 
-    [Header("Default Zombie Stats")]
-    [SerializeField] private float defaultMaxHealth = 100f;
-    [SerializeField] private float defaultMoveSpeed = 3.0f;
+    [Header("Doctor Zombie Stats")]
+    [SerializeField] private float defaultMaxHealth = 280f;
+    [SerializeField] private float defaultMoveSpeed = 2.8f;
     [SerializeField] private float defaultAttackDamage = 10f;
     [SerializeField] private float defaultAttackRange = 1.8f;
-    [SerializeField] private float defaultAttackCooldown = 1.5f;
+    [SerializeField] private float defaultAttackCooldown = 1.6f;
 
-    [Header("Default Zombie Audio")]
+    [Header("Doctor Zombie Audio")]
     [SerializeField] private AudioClip idleSound;
     [Range(0f, 1f)]
     [SerializeField] private float idleSoundVolume = 1f;
@@ -26,15 +26,16 @@ public class ZombieDefault : EnemyBase {
     [SerializeField] private float deathSoundVolume = 1f;
 
     /// <summary>
-    /// Initialize default zombie stats. Called during Awake() by EnemyBase.
+    /// Initialize doctor zombie stats. Called during Awake() by EnemyBase.
+    /// Doctor has very high health but lower damage and slightly slower movement.
     /// Uses serialized fields if set, otherwise uses fallback values.
     /// </summary>
     protected override void InitializeStats() {
-        maxHealth = defaultMaxHealth > 0 ? defaultMaxHealth : 100f;
-        moveSpeed = defaultMoveSpeed > 0 ? defaultMoveSpeed : 3.0f;
+        maxHealth = defaultMaxHealth > 0 ? defaultMaxHealth : 280f;
+        moveSpeed = defaultMoveSpeed > 0 ? defaultMoveSpeed : 2.8f;
         attackDamage = defaultAttackDamage > 0 ? defaultAttackDamage : 10f;
         attackRange = defaultAttackRange > 0 ? defaultAttackRange : 1.8f;
-        attackCooldown = defaultAttackCooldown > 0 ? defaultAttackCooldown : 1.5f;
+        attackCooldown = defaultAttackCooldown > 0 ? defaultAttackCooldown : 1.6f;
     }
 
     /// <summary>

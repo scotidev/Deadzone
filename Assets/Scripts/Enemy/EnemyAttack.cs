@@ -23,6 +23,7 @@ public class EnemyAttack : MonoBehaviour {
     private float lastAttackTime;
 
     private EnemyFollow enemyFollow;
+    private EnemyBase enemyBase;
     private Transform playerTransform;
     private IDamageable playerDamageable;
     private Barricade currentBarricade;
@@ -85,6 +86,13 @@ public class EnemyAttack : MonoBehaviour {
     #region METHODS
 
     /// <summary>
+    /// Receives reference to EnemyBase for calling audio methods.
+    /// </summary>
+    public void SetEnemyBase(EnemyBase enemyBase) {
+        this.enemyBase = enemyBase;
+    }
+
+    /// <summary>
     /// Checks whether a barricade is actually blocking the path to the player.
     /// First uses the NavMesh to see if the player is reachable — if yes, no barricade is blocking.
     /// Only falls back to a raycast when the NavMesh path is blocked, to identify which barricade.
@@ -143,10 +151,15 @@ public class EnemyAttack : MonoBehaviour {
     /// Attack the player by triggering the attack animation and applying damage through the IDamageable interface.
     /// Attempts to use TakeDamageFromZombie() if PlayerHealth is available (for correct damage sound).
     /// Falls back to TakeDamage() for other IDamageable implementations.
+    /// Also plays the attack sound for this zombie.
     /// </summary>
     private void AttackPlayer() {
         if (animator != null)
             animator.SetTrigger(HashAttack);
+
+        // Play attack sound
+        if (enemyBase != null)
+            enemyBase.PlayAttackSound();
 
         // Try to cast to PlayerHealth for specialized zombie damage with correct audio
         if (playerDamageable is PlayerHealth playerHealth) {
@@ -159,10 +172,15 @@ public class EnemyAttack : MonoBehaviour {
 
     /// <summary>
     /// Performs an attack action on the current barricade, applying damage if a barricade is present.
+    /// Also plays the attack sound for this zombie.
     /// </summary>
     private void AttackBarricade() {
         if (animator != null)
             animator.SetTrigger(HashAttack);
+
+        // Play attack sound
+        if (enemyBase != null)
+            enemyBase.PlayAttackSound();
 
         currentBarricade?.TakeDamage(attackDamage);
     }

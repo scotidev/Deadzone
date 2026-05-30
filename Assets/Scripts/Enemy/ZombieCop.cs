@@ -1,18 +1,18 @@
 using UnityEngine;
 
 /// <summary>
-/// Default Zombie with balanced stats.
+/// Zombie Cop - A more aggressive zombie variant with high damage output.
 /// </summary>
-public class ZombieDefault : EnemyBase {
+public class ZombieCop : EnemyBase {
 
-    [Header("Default Zombie Stats")]
-    [SerializeField] private float defaultMaxHealth = 100f;
-    [SerializeField] private float defaultMoveSpeed = 3.0f;
-    [SerializeField] private float defaultAttackDamage = 10f;
-    [SerializeField] private float defaultAttackRange = 1.8f;
-    [SerializeField] private float defaultAttackCooldown = 1.5f;
+    [Header("Cop Zombie Stats")]
+    [SerializeField] private float defaultMaxHealth = 140f;
+    [SerializeField] private float defaultMoveSpeed = 3.2f;
+    [SerializeField] private float defaultAttackDamage = 22f;
+    [SerializeField] private float defaultAttackRange = 1.9f;
+    [SerializeField] private float defaultAttackCooldown = 1.3f;
 
-    [Header("Default Zombie Audio")]
+    [Header("Cop Zombie Audio")]
     [SerializeField] private AudioClip idleSound;
     [Range(0f, 1f)]
     [SerializeField] private float idleSoundVolume = 1f;
@@ -26,15 +26,16 @@ public class ZombieDefault : EnemyBase {
     [SerializeField] private float deathSoundVolume = 1f;
 
     /// <summary>
-    /// Initialize default zombie stats. Called during Awake() by EnemyBase.
+    /// Initialize cop zombie stats. Called during Awake() by EnemyBase.
+    /// Cop has high damage output but moderate health compared to other variants.
     /// Uses serialized fields if set, otherwise uses fallback values.
     /// </summary>
     protected override void InitializeStats() {
-        maxHealth = defaultMaxHealth > 0 ? defaultMaxHealth : 100f;
-        moveSpeed = defaultMoveSpeed > 0 ? defaultMoveSpeed : 3.0f;
-        attackDamage = defaultAttackDamage > 0 ? defaultAttackDamage : 10f;
-        attackRange = defaultAttackRange > 0 ? defaultAttackRange : 1.8f;
-        attackCooldown = defaultAttackCooldown > 0 ? defaultAttackCooldown : 1.5f;
+        maxHealth = defaultMaxHealth > 0 ? defaultMaxHealth : 140f;
+        moveSpeed = defaultMoveSpeed > 0 ? defaultMoveSpeed : 3.2f;
+        attackDamage = defaultAttackDamage > 0 ? defaultAttackDamage : 22f;
+        attackRange = defaultAttackRange > 0 ? defaultAttackRange : 1.9f;
+        attackCooldown = defaultAttackCooldown > 0 ? defaultAttackCooldown : 1.3f;
     }
 
     /// <summary>

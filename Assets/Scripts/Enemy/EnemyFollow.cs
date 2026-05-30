@@ -4,6 +4,7 @@ using UnityEngine.AI;
 /// <summary>
 /// Responsible for making the enemy follow the player using Unity's NavMeshAgent.
 /// The scene must have a baked NavMesh for this to work.
+/// Handles walk animation and idle sound playback.
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyFollow : MonoBehaviour {
@@ -13,6 +14,14 @@ public class EnemyFollow : MonoBehaviour {
     private NavMeshAgent agent;
     private Transform playerTransform;
     private bool isStunned = false;
+    private Animator animator;
+    private EnemyBase enemyBase;
+
+    private static readonly int HashIsWalking = Animator.StringToHash("IsWalking");
+
+    // Idle sound timing
+    private float idleSoundTimer = 0f;
+    private float idleSoundNextTime = 0f;
 
     private NavMeshAgent Agent {
         get {
@@ -27,7 +36,9 @@ public class EnemyFollow : MonoBehaviour {
 
     private void Awake() {
         agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
         FindPlayer();
+        ResetIdleSoundTimer();
     }
 
     private void Update() {
@@ -35,6 +46,8 @@ public class EnemyFollow : MonoBehaviour {
             return;
 
         Agent.SetDestination(playerTransform.position);
+        UpdateWalkAnimation();
+        UpdateIdleSound();
     }
 
     #endregion
@@ -47,6 +60,50 @@ public class EnemyFollow : MonoBehaviour {
     /// </summary>
     public void SetSpeed(float speed) {
         Agent.speed = speed;
+    }
+
+    /// <summary>
+    /// Receives reference to EnemyBase for calling audio methods.
+    /// </summary>
+    public void SetEnemyBase(EnemyBase enemyBase) {
+        this.enemyBase = enemyBase;
+    }
+
+    /// <summary>
+    /// Updates the IsWalking animator parameter based on NavMeshAgent movement.
+    /// Checks if agent has velocity to determine if it's walking or idle.
+    /// </summary>
+    private void UpdateWalkAnimation() {
+        if (animator == null)
+            return;
+
+        // Check if the agent is actually moving (velocity > 0)
+        bool isMoving = Agent.velocity.sqrMagnitude > 0.1f;
+        animator.SetBool(HashIsWalking, isMoving);
+    }
+
+    /// <summary>
+    /// Updates idle sound playback at random intervals (3-8 seconds).
+    /// Only plays when agent is moving (walking).
+    /// </summary>
+    private void UpdateIdleSound() {
+        if (enemyBase == null || Agent.isStopped)
+            return;
+
+        idleSoundTimer += Time.deltaTime;
+
+        if (idleSoundTimer >= idleSoundNextTime) {
+            enemyBase.PlayIdleSound();
+            ResetIdleSoundTimer();
+        }
+    }
+
+    /// <summary>
+    /// Resets the idle sound timer to a new random interval (3-8 seconds).
+    /// </summary>
+    private void ResetIdleSoundTimer() {
+        idleSoundTimer = 0f;
+        idleSoundNextTime = Random.Range(3f, 8f);
     }
 
     /// <summary>
