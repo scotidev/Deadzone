@@ -110168,9 +110168,19 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 5eb01e8c6e7105f4388078526072f4aa, type: 3}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
+      propertyPath: lastLightWave
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
       propertyPath: waveClearClip
       value: 
       objectReference: {fileID: 8300000, guid: db8eb663b74ae4545b50e1c4dbf0999b, type: 3}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: lastMediumWave
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
       propertyPath: bonusBaseAmount
@@ -110204,7 +110214,7 @@ PrefabInstance:
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
       propertyPath: maxEnemiesPerWave
-      value: 5
+      value: 99
       objectReference: {fileID: 0}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}

@@ -95,6 +95,7 @@ public abstract class EnemyBase : MonoBehaviour {
     /// Handles enemy death logic.
     /// Awards currency to the player when enemy is killed.
     /// Plays death animation and removes enemy after 2 seconds.
+    /// Disables all physics interactions (colliders, rigidbody) to prevent body blocking and bullet interception.
     /// </summary>
     protected virtual void Die() {
         if (isDead) return;
@@ -103,6 +104,18 @@ public abstract class EnemyBase : MonoBehaviour {
         if (enemyFollow != null) enemyFollow.SetMovementEnabled(false);
 
         if (enemyAttack != null) enemyAttack.enabled = false;
+
+        // Disable all colliders to prevent body blocking and bullet interception
+        Collider[] colliders = GetComponentsInChildren<Collider>();
+        foreach (Collider col in colliders) {
+            col.enabled = false;
+        }
+
+        // Make rigidbody kinematic to prevent physics interactions
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null) {
+            rb.isKinematic = true;
+        }
 
         // Trigger death animation
         if (animator != null)

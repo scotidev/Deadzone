@@ -273,7 +273,7 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Spawns exactly one enemy at a spawner using round-robin distribution.
-    /// In boss waves, guarantees the first spawn is the boss enemy.
+    /// In boss waves, guarantees the first spawn is the boss enemy, then spawns non-boss types.
     /// </summary>
     private void SpawnOneEnemy() {
         if (enemiesSpawned >= totalEnemiesForWave) return;
@@ -283,24 +283,34 @@ public class WaveManager : MonoBehaviour {
         EnemySpawner spawner = spawners[currentSpawnerIndex % spawners.Count];
         currentSpawnerIndex++;
 
-        // If this is a boss wave and we haven't forced the boss spawn yet, force it now
+        List<EnemySpawnConfig> spawnConfig = new List<EnemySpawnConfig>();
+
+        // If this is a boss wave and we haven't forced the boss spawn yet, spawn ONLY the boss
         if (IsBossWave(currentWave) && !bossForcedThisWave) {
-            // Find the boss enemy config
             EnemySpawnConfig bossConfig = currentWaveEnemyTypes.Find(config => config.isBoss);
-            
             if (bossConfig != null) {
-                // Create a temporary list with only the boss
-                var bossOnlyList = new List<EnemySpawnConfig> { bossConfig };
-                spawner.SpawnEnemies(bossOnlyList);
+                spawnConfig.Add(bossConfig);
                 bossForcedThisWave = true;
-                enemiesSpawned++;
-                return;
             }
         }
+        // If is boss wave but boss already spawned, spawn ONLY non-boss enemies
+        else if (IsBossWave(currentWave) && bossForcedThisWave) {
+            foreach (var config in currentWaveEnemyTypes) {
+                if (!config.isBoss) {
+                    spawnConfig.Add(config);
+                }
+            }
+        }
+        // If NOT a boss wave, spawn all non-boss enemies normally
+        else {
+            spawnConfig = new List<EnemySpawnConfig>(currentWaveEnemyTypes);
+        }
 
-        // Normal spawn with all available enemy types
-        spawner.SpawnEnemies(currentWaveEnemyTypes);
-        enemiesSpawned++;
+        // Spawn with the filtered config
+        if (spawnConfig.Count > 0) {
+            spawner.SpawnEnemies(spawnConfig);
+            enemiesSpawned++;
+        }
     }
 
     /// <summary>
