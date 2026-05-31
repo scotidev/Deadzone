@@ -26,6 +26,9 @@ public class ZombieBoss : EnemyBase {
     [Range(0f, 1f)]
     [SerializeField] private float deathSoundVolume = 1f;
 
+    [Header("Boss Zombie Reward")]
+    [SerializeField] private int defaultRewardCurrency = 250;
+
     /// <summary>
     /// Initialize boss stats. Called during Awake() by EnemyBase.
     /// Boss has significantly higher health, damage, and attack speed than other zombie types.
@@ -37,6 +40,7 @@ public class ZombieBoss : EnemyBase {
         attackDamage = defaultAttackDamage > 0 ? defaultAttackDamage : 25f;
         attackRange = defaultAttackRange > 0 ? defaultAttackRange : 2.0f;
         attackCooldown = defaultAttackCooldown > 0 ? defaultAttackCooldown : 1.2f;
+        rewardCurrency = defaultRewardCurrency > 0 ? defaultRewardCurrency : 250;
     }
 
     /// <summary>

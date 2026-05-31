@@ -25,6 +25,9 @@ public class ZombieDoctor : EnemyBase {
     [Range(0f, 1f)]
     [SerializeField] private float deathSoundVolume = 1f;
 
+    [Header("Doctor Zombie Reward")]
+    [SerializeField] private int defaultRewardCurrency = 175;
+
     /// <summary>
     /// Initialize doctor zombie stats. Called during Awake() by EnemyBase.
     /// Doctor has very high health but lower damage and slightly slower movement.
@@ -36,6 +39,7 @@ public class ZombieDoctor : EnemyBase {
         attackDamage = defaultAttackDamage > 0 ? defaultAttackDamage : 10f;
         attackRange = defaultAttackRange > 0 ? defaultAttackRange : 1.8f;
         attackCooldown = defaultAttackCooldown > 0 ? defaultAttackCooldown : 1.6f;
+        rewardCurrency = defaultRewardCurrency > 0 ? defaultRewardCurrency : 175;
     }
 
     /// <summary>

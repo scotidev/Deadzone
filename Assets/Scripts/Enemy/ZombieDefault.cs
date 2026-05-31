@@ -25,6 +25,9 @@ public class ZombieDefault : EnemyBase {
     [Range(0f, 1f)]
     [SerializeField] private float deathSoundVolume = 1f;
 
+    [Header("Default Zombie Reward")]
+    [SerializeField] private int defaultRewardCurrency = 100;
+
     /// <summary>
     /// Initialize default zombie stats. Called during Awake() by EnemyBase.
     /// Uses serialized fields if set, otherwise uses fallback values.
@@ -35,6 +38,7 @@ public class ZombieDefault : EnemyBase {
         attackDamage = defaultAttackDamage > 0 ? defaultAttackDamage : 10f;
         attackRange = defaultAttackRange > 0 ? defaultAttackRange : 1.8f;
         attackCooldown = defaultAttackCooldown > 0 ? defaultAttackCooldown : 1.5f;
+        rewardCurrency = defaultRewardCurrency > 0 ? defaultRewardCurrency : 100;
     }
 
     /// <summary>

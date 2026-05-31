@@ -82,6 +82,14 @@ public class WaveManager : MonoBehaviour {
     [Range(0f, 1f)]
     [SerializeField] private float combatBGMVolume = 1f;
 
+    [Header("Boss Wave Settings")]
+    [SerializeField] private AudioClip bossWaveExtraScream;
+    [Range(0f, 1f)]
+    [SerializeField] private float bossWaveScreamVolume = 1f;
+    [SerializeField] private Color bossWaveFogColor = Color.red;
+    [Tooltip("Delay in seconds before playing the boss wave extra scream sound.")]
+    [SerializeField] private float bossWaveScreamDelaySeconds = 2f;
+
     #endregion
 
     #region FIELDS
@@ -98,12 +106,16 @@ public class WaveManager : MonoBehaviour {
     
     // Round-robin spawning (sempre ativo - padrão)
     private int currentSpawnerIndex = 0;
+    
+    // Boss wave tracking
+    private bool bossForcedThisWave = false;
 
     public event System.Action OnWaveStarted;
     public event System.Action OnWaveCompleted;
 
     private List<EnemySpawnConfig> currentWaveEnemyTypes;
     private IAudioManagerService audioService;
+    private FogController fogController;
 
     #endregion
 
@@ -124,6 +136,7 @@ public class WaveManager : MonoBehaviour {
             Destroy(gameObject);
 
         audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+        fogController = FindObjectOfType<FogController>();
     }
 
     private void Start() {
@@ -219,12 +232,18 @@ public class WaveManager : MonoBehaviour {
         enemiesSpawned = 0;
         enemiesKilled = 0;
         currentSpawnerIndex = 0;  // Reset for round-robin spawning
+        bossForcedThisWave = false;  // Reset boss spawn flag
         isWaveActive = true;
 
         GameManager.Instance?.SetState(GameState.InWave);
 
         currentWaveEnemyTypes = GetAvailableEnemyTypes(currentWave);
         PlayWaveStartSound();
+
+        // Handle boss wave special effects
+        if (IsBossWave(currentWave)) {
+            StartCoroutine(PlayBossWaveEffects());
+        }
 
         OnWaveStarted?.Invoke();
 
@@ -254,7 +273,7 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Spawns exactly one enemy at a spawner using round-robin distribution.
-    /// Each enemy is spawned at a different spawner sequentially to spread combat across the map.
+    /// In boss waves, guarantees the first spawn is the boss enemy.
     /// </summary>
     private void SpawnOneEnemy() {
         if (enemiesSpawned >= totalEnemiesForWave) return;
@@ -263,7 +282,23 @@ public class WaveManager : MonoBehaviour {
         // Round-robin: cycle through spawners using modulo
         EnemySpawner spawner = spawners[currentSpawnerIndex % spawners.Count];
         currentSpawnerIndex++;
-        
+
+        // If this is a boss wave and we haven't forced the boss spawn yet, force it now
+        if (IsBossWave(currentWave) && !bossForcedThisWave) {
+            // Find the boss enemy config
+            EnemySpawnConfig bossConfig = currentWaveEnemyTypes.Find(config => config.isBoss);
+            
+            if (bossConfig != null) {
+                // Create a temporary list with only the boss
+                var bossOnlyList = new List<EnemySpawnConfig> { bossConfig };
+                spawner.SpawnEnemies(bossOnlyList);
+                bossForcedThisWave = true;
+                enemiesSpawned++;
+                return;
+            }
+        }
+
+        // Normal spawn with all available enemy types
         spawner.SpawnEnemies(currentWaveEnemyTypes);
         enemiesSpawned++;
     }
@@ -302,6 +337,12 @@ public class WaveManager : MonoBehaviour {
     /// </summary>
     private void CompleteWave() {
         isWaveActive = false;
+        
+        // Reset boss wave effects if this was a boss wave
+        if (IsBossWave(currentWave) && fogController != null) {
+            fogController.ResetFogColor();
+        }
+
         OnWaveCompleted?.Invoke();
 
         GameManager.Instance?.SetState(GameState.Playing);
@@ -352,13 +393,28 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Returns the list of enemy types allowed for the current wave.
+    /// - If NOT a boss wave: excludes enemies marked as boss
+    /// - If IS a boss wave: includes all enemies, with boss guaranteed to appear at least once
     /// </summary>
     private List<EnemySpawnConfig> GetAvailableEnemyTypes(int wave) {
         var available = new List<EnemySpawnConfig>();
+        bool isBossWave = IsBossWave(wave);
 
         foreach (var config in enemyTypes) {
-            if (config.prefab != null && config.minimumWave <= wave)
-                available.Add(config);
+            if (config.prefab == null || config.minimumWave > wave)
+                continue;
+
+            // If NOT a boss wave, skip enemies marked as boss
+            if (!isBossWave && config.isBoss)
+                continue;
+
+            available.Add(config);
+        }
+
+        // Debug log to verify filtering
+        Debug.Log($"[WaveManager] Wave {wave} - Boss Wave: {isBossWave} - Available types: {available.Count}");
+        foreach (var config in available) {
+            Debug.Log($"  - {config.prefab.name} (isBoss: {config.isBoss})");
         }
 
         return available;
@@ -389,16 +445,18 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Returns true when the wave-start SFX should be delayed by 0.5 seconds.
+    /// Boss waves (every 5 waves) should not be delayed.
     /// </summary>
     private bool ShouldDelayWaveStartSound() {
-        return currentWave > lastLightWave && !HasBossEnemyAvailable();
+        return currentWave > lastLightWave && !IsBossWave(currentWave);
     }
 
     /// <summary>
     /// Returns the correct SFX for the current wave based on progression and boss presence.
+    /// Uses IsBossWave() (every 5 waves) instead of checking available enemy types.
     /// </summary>
     private AudioClip GetWaveStartClip() {
-        if (HasBossEnemyAvailable())
+        if (IsBossWave(currentWave))
             return bossWaveClip != null ? bossWaveClip : hardWaveClip ?? mediumWaveClip ?? lightWaveClip;
 
         if (currentWave <= lastLightWave)
@@ -423,6 +481,31 @@ public class WaveManager : MonoBehaviour {
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Checks if the given wave number is a boss wave (every 5 waves).
+    /// </summary>
+    private bool IsBossWave(int wave) {
+        return wave > 0 && wave % 5 == 0;
+    }
+
+    /// <summary>
+    /// Plays boss wave effects: extra scream SFX after a delay and changes fog color to red.
+    /// </summary>
+    private IEnumerator PlayBossWaveEffects() {
+        // Wait for the specified delay before playing the scream
+        yield return new WaitForSeconds(bossWaveScreamDelaySeconds);
+
+        // Play the extra scream sound using IAudioManagerService
+        if (bossWaveExtraScream != null && audioService != null) {
+            audioService.PlaySFX2D(bossWaveExtraScream, bossWaveScreamVolume);
+        }
+
+        // Change fog color to red
+        if (fogController != null) {
+            fogController.SetFogColor(bossWaveFogColor);
+        }
     }
 
     #endregion

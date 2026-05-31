@@ -25,6 +25,9 @@ public class ZombieCop : EnemyBase {
     [Range(0f, 1f)]
     [SerializeField] private float deathSoundVolume = 1f;
 
+    [Header("Cop Zombie Reward")]
+    [SerializeField] private int defaultRewardCurrency = 150;
+
     /// <summary>
     /// Initialize cop zombie stats. Called during Awake() by EnemyBase.
     /// Cop has high damage output but moderate health compared to other variants.
@@ -36,6 +39,7 @@ public class ZombieCop : EnemyBase {
         attackDamage = defaultAttackDamage > 0 ? defaultAttackDamage : 22f;
         attackRange = defaultAttackRange > 0 ? defaultAttackRange : 1.9f;
         attackCooldown = defaultAttackCooldown > 0 ? defaultAttackCooldown : 1.3f;
+        rewardCurrency = defaultRewardCurrency > 0 ? defaultRewardCurrency : 150;
     }
 
     /// <summary>

@@ -23,6 +23,7 @@ public abstract class EnemyBase : MonoBehaviour {
     protected float attackDamage = 10f;
     protected float attackRange = 1.8f;
     protected float attackCooldown = 1.5f;
+    protected int rewardCurrency = 100;
 
     private float currentHealth;
     private bool isDead;
@@ -111,7 +112,7 @@ public abstract class EnemyBase : MonoBehaviour {
         PlayDeathSound();
 
         if (EconomyManager.Instance != null) {
-            EconomyManager.Instance.AddCurrency(100);
+            EconomyManager.Instance.AddCurrency(rewardCurrency);
         }
 
         // If this is a tutorial enemy, we don't notify the WaveManager to avoid "Wave Clear" messages

@@ -110199,12 +110199,27 @@ PrefabInstance:
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
       propertyPath: initialGrowthRate
-      value: 1
+      value: 0.654
       objectReference: {fileID: 0}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
       propertyPath: maxEnemiesPerWave
-      value: 999
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: bossWaveFogColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: bossWaveFogColor.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: bossWaveFogColor.r
+      value: 0.72955966
       objectReference: {fileID: 0}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
@@ -110223,6 +110238,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
+      propertyPath: bossWaveExtraScream
+      value: 
+      objectReference: {fileID: 8300000, guid: 4677329a8b1cc4c47be3b22920709656, type: 3}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
       propertyPath: countdownTickVolume
       value: 1
       objectReference: {fileID: 0}
@@ -110233,8 +110253,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
+      propertyPath: bossWaveClipDuration
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
       propertyPath: enemyTypes.Array.size
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
@@ -110268,9 +110293,31 @@ PrefabInstance:
       objectReference: {fileID: 1692216425}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
+      propertyPath: bossWaveScreamDelaySeconds
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: enemyTypes.Array.data[0].isBoss
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
       propertyPath: enemyTypes.Array.data[0].prefab
       value: 
       objectReference: {fileID: 2067305258438630169, guid: a2929b0fac8486541b6fa908d393ab34,
+        type: 3}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: enemyTypes.Array.data[1].prefab
+      value: 
+      objectReference: {fileID: 8048835777395975322, guid: 6dcf3aeb4a7495045a869afd8d1cc0df,
+        type: 3}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: enemyTypes.Array.data[2].prefab
+      value: 
+      objectReference: {fileID: 8048835777395975322, guid: 6dcf3aeb4a7495045a869afd8d1cc0df,
         type: 3}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
@@ -110281,6 +110328,31 @@ PrefabInstance:
         type: 3}
       propertyPath: enemyTypes.Array.data[0].spawnWeight
       value: 6.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: enemyTypes.Array.data[1].minimumWave
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: enemyTypes.Array.data[1].spawnWeight
+      value: 6.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: enemyTypes.Array.data[2].minimumWave
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: enemyTypes.Array.data[2].spawnWeight
+      value: 6.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: enemyTypes.Array.data[0].rewardCurrency
+      value: 500
       objectReference: {fileID: 0}
     - target: {fileID: 8039438068870310506, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}

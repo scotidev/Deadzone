@@ -20,6 +20,7 @@ public class FogController : MonoBehaviour {
 
     private PlayerHealth playerHealth;
     private ParticleSystem fogParticles;
+    private Color originalFogColor;
 
     private ParticleSystem.EmissionModule emission;
 
@@ -30,6 +31,10 @@ public class FogController : MonoBehaviour {
     private void Awake() {
         fogParticles = GetComponent<ParticleSystem>();
         emission = fogParticles.emission;
+
+        // Store the original fog color for later restoration
+        var main = fogParticles.main;
+        originalFogColor = main.startColor.color;
 
         playerHealth = GetComponentInParent<PlayerHealth>();
     }
@@ -67,6 +72,26 @@ public class FogController : MonoBehaviour {
     /// <param name="rate"></param>
     private void SetEmissionRate(float rate) {
         emission.rateOverTime = rate;
+    }
+
+    /// <summary>
+    /// Changes the color of the fog particles to the specified color.
+    /// Used by WaveManager during boss waves to change fog to red.
+    /// </summary>
+    public void SetFogColor(Color newColor) {
+        if (fogParticles == null)
+            return;
+
+        var main = fogParticles.main;
+        main.startColor = newColor;
+    }
+
+    /// <summary>
+    /// Resets the fog color back to its original color.
+    /// Used by WaveManager when a boss wave ends.
+    /// </summary>
+    public void ResetFogColor() {
+        SetFogColor(originalFogColor);
     }
 
     #endregion
