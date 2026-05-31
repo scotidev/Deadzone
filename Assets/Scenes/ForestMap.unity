@@ -110173,6 +110173,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
+      propertyPath: minGrowthRate
+      value: 0.054
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
       propertyPath: waveClearClip
       value: 
       objectReference: {fileID: 8300000, guid: db8eb663b74ae4545b50e1c4dbf0999b, type: 3}
@@ -110193,6 +110198,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
+      propertyPath: growthDecrement
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
       propertyPath: timeBetweenWaves
       value: 90
       objectReference: {fileID: 0}
@@ -110209,12 +110219,12 @@ PrefabInstance:
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
       propertyPath: initialGrowthRate
-      value: 0.654
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
       propertyPath: maxEnemiesPerWave
-      value: 99
+      value: 999
       objectReference: {fileID: 0}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}

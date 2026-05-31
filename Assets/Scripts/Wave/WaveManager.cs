@@ -107,8 +107,8 @@ public class WaveManager : MonoBehaviour {
     // Round-robin spawning (sempre ativo - padrão)
     private int currentSpawnerIndex = 0;
     
-    // Boss wave tracking
-    private bool bossForcedThisWave = false;
+    // Boss wave tracking - counts how many bosses have been spawned in this wave
+    private int bossForcedCount = 0;
 
     public event System.Action OnWaveStarted;
     public event System.Action OnWaveCompleted;
@@ -228,11 +228,13 @@ public class WaveManager : MonoBehaviour {
         currentWave++;
 
         totalEnemiesForWave = GetEnemyCountForWave(currentWave);
+        
+        // Reset boss counter for new wave
+        bossForcedCount = 0;
         lastWaveEnemyCount = totalEnemiesForWave;
         enemiesSpawned = 0;
         enemiesKilled = 0;
         currentSpawnerIndex = 0;  // Reset for round-robin spawning
-        bossForcedThisWave = false;  // Reset boss spawn flag
         isWaveActive = true;
 
         GameManager.Instance?.SetState(GameState.InWave);
@@ -273,7 +275,8 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Spawns exactly one enemy at a spawner using round-robin distribution.
-    /// In boss waves, guarantees the first spawn is the boss enemy, then spawns non-boss types.
+    /// In boss waves, spawns multiple bosses based on wave progression (1 at wave 5, 2 at wave 10, etc).
+    /// After all bosses are spawned, spawns remaining regular enemies.
     /// </summary>
     private void SpawnOneEnemy() {
         if (enemiesSpawned >= totalEnemiesForWave) return;
@@ -285,25 +288,24 @@ public class WaveManager : MonoBehaviour {
 
         List<EnemySpawnConfig> spawnConfig = new List<EnemySpawnConfig>();
 
-        // If this is a boss wave and we haven't forced the boss spawn yet, spawn ONLY the boss
-        if (IsBossWave(currentWave) && !bossForcedThisWave) {
+        // If this is a boss wave, check if we need to spawn more bosses
+        int bossMissionsNeeded = IsBossWave(currentWave) ? GetBossCountForWave(currentWave) : 0;
+        
+        if (bossMissionsNeeded > 0 && bossForcedCount < bossMissionsNeeded) {
+            // Still need to spawn more bosses
             EnemySpawnConfig bossConfig = currentWaveEnemyTypes.Find(config => config.isBoss);
             if (bossConfig != null) {
                 spawnConfig.Add(bossConfig);
-                bossForcedThisWave = true;
+                bossForcedCount++;
             }
         }
-        // If is boss wave but boss already spawned, spawn ONLY non-boss enemies
-        else if (IsBossWave(currentWave) && bossForcedThisWave) {
+        // All bosses spawned or not a boss wave - spawn regular enemies
+        else {
             foreach (var config in currentWaveEnemyTypes) {
                 if (!config.isBoss) {
                     spawnConfig.Add(config);
                 }
             }
-        }
-        // If NOT a boss wave, spawn all non-boss enemies normally
-        else {
-            spawnConfig = new List<EnemySpawnConfig>(currentWaveEnemyTypes);
         }
 
         // Spawn with the filtered config
@@ -459,6 +461,14 @@ public class WaveManager : MonoBehaviour {
     /// </summary>
     private bool ShouldDelayWaveStartSound() {
         return currentWave > lastLightWave && !IsBossWave(currentWave);
+    }
+
+    /// <summary>
+    /// Returns the number of bosses that should spawn in a boss wave.
+    /// Formula: (wave / 5), so wave 5 = 1 boss, wave 10 = 2 bosses, wave 15 = 3 bosses, etc.
+    /// </summary>
+    private int GetBossCountForWave(int wave) {
+        return wave / 5;
     }
 
     /// <summary>
