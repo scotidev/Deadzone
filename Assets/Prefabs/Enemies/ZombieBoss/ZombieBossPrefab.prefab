@@ -221,7 +221,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ZombieBoss
   isTutorialEnemy: 0
-  defaultMaxHealth: 50
+  defaultMaxHealth: 1000
   defaultMoveSpeed: 3
   defaultAttackDamage: 25
   defaultAttackRange: 2
@@ -232,4 +232,4 @@ MonoBehaviour:
   attackSoundVolume: 0.5
   deathSound: {fileID: 8300000, guid: f95b0cd5d598335488190f0baa7de6ad, type: 3}
   deathSoundVolume: 1
-  defaultRewardCurrency: 1000
+  defaultRewardCurrency: 5000

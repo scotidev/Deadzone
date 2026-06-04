@@ -1,0 +1,109 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &4800934654417252407
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 63842754105059028, guid: 7c09f1433c59fb94393a0bd259d50210,
+        type: 3}
+      propertyPath: m_Name
+      value: MenuDummy Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 840202844628483182, guid: 7c09f1433c59fb94393a0bd259d50210,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -3.6004589
+      objectReference: {fileID: 0}
+    - target: {fileID: 840202844628483182, guid: 7c09f1433c59fb94393a0bd259d50210,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.37000284
+      objectReference: {fileID: 0}
+    - target: {fileID: 840202844628483182, guid: 7c09f1433c59fb94393a0bd259d50210,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -18.3628
+      objectReference: {fileID: 0}
+    - target: {fileID: 840202844628483182, guid: 7c09f1433c59fb94393a0bd259d50210,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9413947
+      objectReference: {fileID: 0}
+    - target: {fileID: 840202844628483182, guid: 7c09f1433c59fb94393a0bd259d50210,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.000000054338756
+      objectReference: {fileID: 0}
+    - target: {fileID: 840202844628483182, guid: 7c09f1433c59fb94393a0bd259d50210,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.33730713
+      objectReference: {fileID: 0}
+    - target: {fileID: 840202844628483182, guid: 7c09f1433c59fb94393a0bd259d50210,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.0000000019870627
+      objectReference: {fileID: 0}
+    - target: {fileID: 840202844628483182, guid: 7c09f1433c59fb94393a0bd259d50210,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 840202844628483182, guid: 7c09f1433c59fb94393a0bd259d50210,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 840202844628483182, guid: 7c09f1433c59fb94393a0bd259d50210,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 2309612912399775550, guid: 7c09f1433c59fb94393a0bd259d50210, type: 3}
+    - {fileID: 541055660785223205, guid: 7c09f1433c59fb94393a0bd259d50210, type: 3}
+    - {fileID: 2375400219482508460, guid: 7c09f1433c59fb94393a0bd259d50210, type: 3}
+    - {fileID: 5044271147734488065, guid: 7c09f1433c59fb94393a0bd259d50210, type: 3}
+    - {fileID: 1338893422500395104, guid: 7c09f1433c59fb94393a0bd259d50210, type: 3}
+    - {fileID: 842932134862300032, guid: 7c09f1433c59fb94393a0bd259d50210, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 63842754105059028, guid: 7c09f1433c59fb94393a0bd259d50210,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6385833074193272554}
+  m_SourcePrefab: {fileID: 100100000, guid: 7c09f1433c59fb94393a0bd259d50210, type: 3}
+--- !u!1 &4774528106760050403 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 63842754105059028, guid: 7c09f1433c59fb94393a0bd259d50210,
+    type: 3}
+  m_PrefabInstance: {fileID: 4800934654417252407}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6385833074193272554
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4774528106760050403}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29a074d529cf945029ef7cf40540c9df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Splines::UnityEngine.Splines.SplineAnimate
+  m_Target: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_LoopMode: 1
+  m_Method: 0
+  m_Duration: 300
+  m_MaxSpeed: 0.5598467
+  m_EasingMode: 0
+  m_AlignmentMode: 1
+  m_ObjectForwardAxis: 2
+  m_ObjectUpAxis: 1
+  m_StartOffset: 0
