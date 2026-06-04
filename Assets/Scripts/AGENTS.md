@@ -153,6 +153,8 @@ Contains scripts related to world objects and traps.
 ### /Environment/SafeZone.cs
 
 /// Safe Zone. Handles safe area logic where enemies cannot enter.
+/// Also registers its BoxCollider with the Fog ParticleSystem Trigger Module at runtime
+/// to automatically kill fog particles that enter the safe zone.
 
 ### /Environment/FogController.cs
 

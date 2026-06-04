@@ -25,13 +25,10 @@ public class ZombieCop : EnemyBase {
     [Range(0f, 1f)]
     [SerializeField] private float deathSoundVolume = 1f;
 
-    [Header("Cop Zombie Reward")]
-    [SerializeField] private int defaultRewardCurrency = 150;
-
     /// <summary>
     /// Initialize cop zombie stats. Called during Awake() by EnemyBase.
-    /// Cop has high damage output but moderate health compared to other variants.
-    /// Uses serialized fields if set, otherwise uses fallback values.
+    /// Note: maxHealth, attackDamage, and rewardCurrency are now overridden by
+    /// ApplyWaveScaling() in EnemyBase — only moveSpeed, attackRange, and attackCooldown are relevant here.
     /// </summary>
     protected override void InitializeStats() {
         maxHealth = defaultMaxHealth > 0 ? defaultMaxHealth : 140f;
@@ -39,7 +36,6 @@ public class ZombieCop : EnemyBase {
         attackDamage = defaultAttackDamage > 0 ? defaultAttackDamage : 22f;
         attackRange = defaultAttackRange > 0 ? defaultAttackRange : 1.9f;
         attackCooldown = defaultAttackCooldown > 0 ? defaultAttackCooldown : 1.3f;
-        rewardCurrency = defaultRewardCurrency > 0 ? defaultRewardCurrency : 150;
     }
 
     /// <summary>

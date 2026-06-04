@@ -25,13 +25,10 @@ public class ZombieDoctor : EnemyBase {
     [Range(0f, 1f)]
     [SerializeField] private float deathSoundVolume = 1f;
 
-    [Header("Doctor Zombie Reward")]
-    [SerializeField] private int defaultRewardCurrency = 175;
-
     /// <summary>
     /// Initialize doctor zombie stats. Called during Awake() by EnemyBase.
-    /// Doctor has very high health but lower damage and slightly slower movement.
-    /// Uses serialized fields if set, otherwise uses fallback values.
+    /// Note: maxHealth, attackDamage, and rewardCurrency are now overridden by
+    /// ApplyWaveScaling() in EnemyBase — only moveSpeed, attackRange, and attackCooldown are relevant here.
     /// </summary>
     protected override void InitializeStats() {
         maxHealth = defaultMaxHealth > 0 ? defaultMaxHealth : 280f;
@@ -39,7 +36,6 @@ public class ZombieDoctor : EnemyBase {
         attackDamage = defaultAttackDamage > 0 ? defaultAttackDamage : 10f;
         attackRange = defaultAttackRange > 0 ? defaultAttackRange : 1.8f;
         attackCooldown = defaultAttackCooldown > 0 ? defaultAttackCooldown : 1.6f;
-        rewardCurrency = defaultRewardCurrency > 0 ? defaultRewardCurrency : 175;
     }
 
     /// <summary>

@@ -69,12 +69,16 @@ using InfimaGames.LowPolyShooterPack;
                     }
                 }
 
-                // 4. Start Wave 1 immediately
+                // 4. Enable fog visual
+                FogController fog = FindObjectOfType<FogController>();
+                if (fog != null) fog.EnableFog();
+
+                // 5. Start Wave 1 immediately
                 if (WaveManager.Instance != null && !WaveManager.Instance.IsWaveActive) {
                     WaveManager.Instance.StartNextWave();
                 }
 
-                // 5. Deactivate trigger
+                // 6. Deactivate trigger
                 if (triggerOnce) {
                     gameObject.SetActive(false);
                 }

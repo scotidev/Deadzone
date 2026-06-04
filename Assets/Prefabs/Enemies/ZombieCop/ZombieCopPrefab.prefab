@@ -204,10 +204,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fcc8d6ef9b7fbbe438314233f1e4c5a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAttack
-  barricadeCheckDistance: 2
+  barricadeCheckDistance: 200
   barricadeLayer:
     serializedVersion: 2
     m_Bits: 64
+  barricadeAttackRange: 2.5
+  barricadeSearchRadius: 200
 --- !u!114 &5809719546385397932
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -221,8 +223,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ZombieCop
   isTutorialEnemy: 0
-  defaultMaxHealth: 200
-  defaultMoveSpeed: 3.2
+  initialHealth: 100
+  maxHealthCap: 500
+  initialAttackDamage: 10
+  maxAttackDamageCap: 30
+  initialRewardCurrency: 100
+  maxRewardCurrencyCap: 300
+  defaultMaxHealth: 250
+  defaultMoveSpeed: 2
   defaultAttackDamage: 22
   defaultAttackRange: 1.9
   defaultAttackCooldown: 1.3
@@ -232,4 +240,3 @@ MonoBehaviour:
   attackSoundVolume: 0.5
   deathSound: {fileID: 8300000, guid: a94374238ad27ec4c899150e72388a47, type: 3}
   deathSoundVolume: 0.5
-  defaultRewardCurrency: 150

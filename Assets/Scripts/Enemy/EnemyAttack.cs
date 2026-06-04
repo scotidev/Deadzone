@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 using InfimaGames.LowPolyShooterPack;
 
 /// <summary>
@@ -11,6 +12,10 @@ public class EnemyAttack : MonoBehaviour {
     [Header("Barricade Settings")]
     [SerializeField] private float barricadeCheckDistance = 10f;
     [SerializeField] private LayerMask barricadeLayer;
+    [Tooltip("Distance at which the enemy starts attacking an obstacle.")]
+    [SerializeField] private float barricadeAttackRange = 2.5f;
+    [Tooltip("Radius to search for obstacles near the blocked NavMesh corner.")]
+    [SerializeField] private float barricadeSearchRadius = 3f;
 
     #endregion
 
@@ -26,9 +31,10 @@ public class EnemyAttack : MonoBehaviour {
     private EnemyBase enemyBase;
     private Transform playerTransform;
     private IDamageable playerDamageable;
-    private Barricade currentBarricade;
+    private IDamageable currentTarget;
 
     private Animator animator;
+    private NavMeshAgent navMeshAgent;
 
     private static readonly int HashAttack = Animator.StringToHash("Attack");
 
@@ -39,6 +45,7 @@ public class EnemyAttack : MonoBehaviour {
     private void Awake() {
         enemyFollow = GetComponent<EnemyFollow>();
         animator = GetComponent<Animator>();
+        navMeshAgent = GetComponent<NavMeshAgent>();
     }
 
     private void Start() {
@@ -61,15 +68,14 @@ public class EnemyAttack : MonoBehaviour {
     private void Update() {
         if (playerTransform == null) return;
 
-        float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+        CheckForObstacleOnPath();
 
-        CheckForBarricadeOnPath();
-
-        if (currentBarricade != null && !currentBarricade.IsDestroyed) {
-            HandleBarricadeAttack(distanceToPlayer);
+        if (currentTarget != null) {
+            HandleObstacleAttack();
             return;
         }
 
+        float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
         bool inAttackRange = distanceToPlayer <= attackRange;
 
         if (enemyFollow != null)
@@ -93,57 +99,113 @@ public class EnemyAttack : MonoBehaviour {
     }
 
     /// <summary>
-    /// Checks whether a barricade is actually blocking the path to the player.
-    /// First uses the NavMesh to see if the player is reachable — if yes, no barricade is blocking.
-    /// Only falls back to a raycast when the NavMesh path is blocked, to identify which barricade.
+    /// Checks whether an obstacle (barricade or explosive barrel) is blocking the path to the player.
+    /// Uses the NavMesh to detect blockage, then searches near the blocked corner for obstacles.
     /// </summary>
-    private void CheckForBarricadeOnPath() {
-        // If the player is reachable via NavMesh, no barricade is blocking the path
-        if (enemyFollow != null && enemyFollow.CanReachPlayer()) {
-            currentBarricade = null;
+    private void CheckForObstacleOnPath() {
+        if (enemyFollow == null) return;
+
+        // If the player is reachable via NavMesh, no obstacle is blocking the path
+        if (enemyFollow.CanReachPlayer()) {
+            ClearCurrentTarget();
             return;
         }
 
-        // NavMesh path is blocked — find the barricade in the way
-        Vector3 directionToPlayer = (playerTransform.position - transform.position).normalized;
-        float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
-        float checkDist = Mathf.Min(distanceToPlayer, barricadeCheckDistance);
+        // NavMesh path is blocked — find the blocked corner
+        if (navMeshAgent == null || !navMeshAgent.isOnNavMesh) return;
 
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, directionToPlayer, out hit, checkDist, barricadeLayer)) {
-            Barricade barricade = hit.collider.GetComponent<Barricade>();
-            if (barricade != null && !barricade.IsDestroyed) {
-                currentBarricade = barricade;
+        NavMeshPath path = new NavMeshPath();
+        navMeshAgent.CalculatePath(playerTransform.position, path);
+
+        if (path.status == NavMeshPathStatus.PathComplete) {
+            ClearCurrentTarget();
+            return;
+        }
+
+        // Search near the last corner of the blocked path for obstacles
+        Vector3 searchCenter = path.corners.Length > 0
+            ? path.corners[path.corners.Length - 1]
+            : transform.position;
+
+        Collider[] hits = Physics.OverlapSphere(searchCenter, barricadeSearchRadius, barricadeLayer);
+        IDamageable closestTarget = null;
+        float closestDist = float.MaxValue;
+
+        foreach (Collider hit in hits) {
+            Barricade b = hit.GetComponent<Barricade>();
+            if (b != null && !b.IsDestroyed) {
+                float d = Vector3.Distance(transform.position, b.transform.position);
+                if (d < closestDist && d <= barricadeCheckDistance) {
+                    closestDist = d;
+                    closestTarget = b;
+                }
+                continue;
             }
+
+            ExplosiveBarrel barrel = hit.GetComponent<ExplosiveBarrel>();
+            if (barrel != null && !barrel.IsExploding) {
+                float d = Vector3.Distance(transform.position, barrel.transform.position);
+                if (d < closestDist && d <= barricadeCheckDistance) {
+                    closestDist = d;
+                    closestTarget = barrel;
+                }
+            }
+        }
+
+        if (closestTarget != null) {
+            currentTarget = closestTarget;
+            enemyFollow.SetOverrideDestination(((MonoBehaviour)closestTarget).transform);
+        } else {
+            ClearCurrentTarget();
         }
     }
 
     /// <summary>
-    /// Handles the logic for attacking the current barricade when the enemy is within range and the attack cooldown has
-    /// elapsed. Re-checks each frame whether the path to the player has cleared — if so, abandons the barricade and chases.
+    /// Handles attacking the current obstacle target.
+    /// Navigates toward it and attacks when within barricadeAttackRange.
     /// </summary>
-    /// <param name="distanceToPlayer">The distance, in world units, between the enemy and the player. Used to determine if the enemy is close enough
-    /// to attack the barricade.</param>
-    private void HandleBarricadeAttack(float distanceToPlayer) {
-        if (currentBarricade.IsDestroyed) {
-            currentBarricade = null;
+    private void HandleObstacleAttack() {
+        if (currentTarget == null) {
+            ClearCurrentTarget();
             return;
         }
 
-        // Re-check if the player is now reachable (barricade was destroyed by another enemy,
-        // or the player moved to a position where the path is clear)
+        // Check if target game object was destroyed
+        MonoBehaviour targetBehaviour = currentTarget as MonoBehaviour;
+        if (targetBehaviour == null || targetBehaviour.gameObject == null) {
+            ClearCurrentTarget();
+            return;
+        }
+
+        // Check if barricade was destroyed
+        if (currentTarget is Barricade barricade && barricade.IsDestroyed) {
+            ClearCurrentTarget();
+            return;
+        }
+
+        // Check if barrel has already started exploding
+        if (currentTarget is ExplosiveBarrel barrel && barrel.IsExploding) {
+            ClearCurrentTarget();
+            return;
+        }
+
+        // Re-check if the player is now reachable
         if (enemyFollow != null && enemyFollow.CanReachPlayer()) {
-            currentBarricade = null;
+            ClearCurrentTarget();
             enemyFollow.SetMovementEnabled(true);
             return;
         }
 
-        if (enemyFollow != null)
-            enemyFollow.SetMovementEnabled(false);
+        float distanceToTarget = Vector3.Distance(transform.position, targetBehaviour.transform.position);
 
-        if (Time.time - lastAttackTime >= attackCooldown) {
-            AttackBarricade();
-            lastAttackTime = Time.time;
+        if (distanceToTarget <= barricadeAttackRange) {
+            if (enemyFollow != null)
+                enemyFollow.SetMovementEnabled(false);
+
+            if (Time.time - lastAttackTime >= attackCooldown) {
+                AttackObstacle();
+                lastAttackTime = Time.time;
+            }
         }
     }
 
@@ -171,10 +233,10 @@ public class EnemyAttack : MonoBehaviour {
     }
 
     /// <summary>
-    /// Performs an attack action on the current barricade, applying damage if a barricade is present.
+    /// Performs an attack action on the current obstacle (barricade or explosive barrel).
     /// Also plays the attack sound for this zombie.
     /// </summary>
-    private void AttackBarricade() {
+    private void AttackObstacle() {
         if (animator != null)
             animator.SetTrigger(HashAttack);
 
@@ -182,7 +244,16 @@ public class EnemyAttack : MonoBehaviour {
         if (enemyBase != null)
             enemyBase.PlayAttackSound();
 
-        currentBarricade?.TakeDamage(attackDamage);
+        currentTarget?.TakeDamage(attackDamage);
+    }
+
+    /// <summary>
+    /// Clears the current target and resets enemy navigation to the player.
+    /// </summary>
+    private void ClearCurrentTarget() {
+        currentTarget = null;
+        if (enemyFollow != null)
+            enemyFollow.ClearOverrideDestination();
     }
 
     /// <summary>

@@ -82,6 +82,10 @@ public class WaveManager : MonoBehaviour {
     [Tooltip("Delay in seconds before playing the boss wave extra scream sound.")]
     [SerializeField] private float bossWaveScreamDelaySeconds = 2f;
 
+    [Header("Enemy Stat Scaling")]
+    [Tooltip("The wave at which enemy stat scaling reaches its maximum.")]
+    [SerializeField] private int maxWaveScalingStats = 20;
+
     #endregion
 
     #region FIELDS
@@ -116,6 +120,7 @@ public class WaveManager : MonoBehaviour {
     public int CurrentWave => currentWave;
     public float WaveTimer => waveTimer;
     public bool IsCountdownActive => isCountdownActive;
+    public int MaxWaveScalingStats => maxWaveScalingStats;
 
     #endregion
 

@@ -14,6 +14,7 @@ public class EnemyFollow : MonoBehaviour {
     private NavMeshAgent agent;
     private Transform playerTransform;
     private bool isStunned = false;
+    private Transform overrideDestination;
     private Animator animator;
     private EnemyBase enemyBase;
 
@@ -45,7 +46,11 @@ public class EnemyFollow : MonoBehaviour {
         if (playerTransform == null || Agent == null || !Agent.enabled || Agent.isStopped)
             return;
 
-        Agent.SetDestination(playerTransform.position);
+        if (overrideDestination != null && overrideDestination.gameObject.activeInHierarchy)
+            Agent.SetDestination(overrideDestination.position);
+        else
+            Agent.SetDestination(playerTransform.position);
+
         UpdateWalkAnimation();
         UpdateIdleSound();
     }
@@ -135,6 +140,21 @@ public class EnemyFollow : MonoBehaviour {
     public void SetStunned(bool stunned) {
         Debug.Log($"[EnemyFollow] SetStunned({stunned})");
         isStunned = stunned;
+    }
+
+    /// <summary>
+    /// Overrides the enemy's destination to a specific target instead of the player.
+    /// Used by EnemyAttack to make enemies navigate toward obstacles (barricades/barrels).
+    /// </summary>
+    public void SetOverrideDestination(Transform target) {
+        overrideDestination = target;
+    }
+
+    /// <summary>
+    /// Clears the override destination, returning the enemy to chasing the player.
+    /// </summary>
+    public void ClearOverrideDestination() {
+        overrideDestination = null;
     }
 
     /// <summary>

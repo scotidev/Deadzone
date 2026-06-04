@@ -22,6 +22,10 @@ public class SafeZone : MonoBehaviour {
         if (player != null) {
             health = player.GetComponentInParent<PlayerHealth>();
         }
+
+        // Register this SafeZone's collider with the Fog ParticleSystem Trigger Module.
+        // This automatically kills any fog particle that enters or is inside the safe zone.
+        RegisterWithFogTrigger();
     }
 
     /// <summary>
@@ -30,7 +34,7 @@ public class SafeZone : MonoBehaviour {
     /// </summary>
     private void OnTriggerEnter(Collider other) {
         if (!other.CompareTag("Player")) return;
-        
+
         // Only activate poison logic if poison system has been enabled.
         if (!isPoisonEnabled) return;
 
@@ -46,7 +50,7 @@ public class SafeZone : MonoBehaviour {
     /// </summary>
     private void OnTriggerExit(Collider other) {
         if (!other.CompareTag("Player")) return;
-        
+
         // Only activate poison logic if poison system has been enabled.
         if (!isPoisonEnabled) return;
 
@@ -67,7 +71,7 @@ public class SafeZone : MonoBehaviour {
         SafeZone[] allSafeZones = FindObjectsOfType<SafeZone>();
         foreach (SafeZone safeZone in allSafeZones) {
             if (safeZone == this) continue; // Skip self
-            
+
             BoxCollider safeZoneBox = safeZone.GetComponent<BoxCollider>();
             if (safeZoneBox != null && safeZoneBox.isTrigger) {
                 // Check if player bounds overlap with this SafeZone's bounds.
@@ -85,6 +89,32 @@ public class SafeZone : MonoBehaviour {
     /// </summary>
     public void EnablePoisonSystem() {
         isPoisonEnabled = true;
+    }
+
+    /// <summary>
+    /// Registers this SafeZone's BoxCollider with the Fog ParticleSystem Trigger Module.
+    /// Particles that enter or are inside this collider are automatically killed by the ParticleSystem.
+    /// This prevents fog from appearing inside safe zones without affecting emission rates.
+    /// </summary>
+    private void RegisterWithFogTrigger() {
+        GameObject fogObj = GameObject.Find("Fog");
+        if (fogObj == null) return;
+
+        ParticleSystem fogParticles = fogObj.GetComponent<ParticleSystem>();
+        if (fogParticles == null) return;
+
+        var trigger = fogParticles.trigger;
+        trigger.enabled = true;
+        trigger.radiusScale = 0.3f;
+
+        // Set global overlap actions: kill particles entering or inside ANY assigned collider
+        trigger.inside = ParticleSystemOverlapAction.Kill;
+        trigger.enter = ParticleSystemOverlapAction.Kill;
+
+        BoxCollider myCollider = GetComponent<BoxCollider>();
+        if (myCollider == null) return;
+
+        trigger.AddCollider(myCollider);
     }
 
     private void OnDrawGizmos() {

@@ -37,6 +37,11 @@ public class BuildingController : MonoBehaviour {
     private BuildableDataSO selectedItem;
     private IAudioManagerService audioService;
 
+    // Smoothing para o ghost (elimina tremor)
+    private Vector3 targetGhostPosition;
+    private Quaternion targetGhostRotation;
+    private Vector3 ghostVelocity;
+
     #endregion
 
     #region PROPERTIES
@@ -74,6 +79,7 @@ public class BuildingController : MonoBehaviour {
 
         if (IsPlacing) {
             UpdateGhostPosition();
+            SmoothGhostTransform();
             HandlePlacementInput();
         }
     }
@@ -118,6 +124,12 @@ public class BuildingController : MonoBehaviour {
         currentGhost.SetActive(false);
 
         currentGhostObject = currentGhost.GetComponent<GhostObject>();
+
+        // Inicializa os targets de smoothing na posição atual do ghost
+        // pra evitar que ele faça um "voo" desde Vector3.zero ao ser criado.
+        targetGhostPosition = currentGhost.transform.position;
+        targetGhostRotation = currentGhost.transform.rotation;
+        ghostVelocity = Vector3.zero;
     }
 
     /// <summary>
@@ -160,19 +172,24 @@ public class BuildingController : MonoBehaviour {
             // Verificamos se a inclinação é válida.
             bool isSlopeValid = hit.normal.y >= minNormalY;
 
+            // Verificamos se a superfície acertada está na layer Ground.
+            bool isOnGroundLayer = ((1 << hit.collider.gameObject.layer) & groundMask) != 0;
+
             // --- CÁLCULO DE ROTAÇÃO ALINHADA AO TERRENO ---
             Quaternion surfaceRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
             Quaternion playerLookRotation = Quaternion.Euler(0, playerCamera.transform.eulerAngles.y, 0);
             Quaternion itemCorrection = Quaternion.Euler(selectedItem.PlacementRotationEuler);
             
             Quaternion finalRotation = surfaceRotation * playerLookRotation * itemCorrection;
-            currentGhost.transform.rotation = finalRotation;
+            targetGhostRotation = finalRotation;
 
             // --- POSICIONAMENTO ---
             Vector3 placementPos = hit.point + hit.normal * (selectedItem.OverlapBoxSize.y * 0.5f);
-            currentGhost.transform.position = placementPos;
+            // Só atualiza o target se o deslocamento for significativo (> 1cm) pra cortar micro-oscilações do raycast
+            if (Vector3.Distance(targetGhostPosition, placementPos) > 0.01f)
+                targetGhostPosition = placementPos;
 
-            LayerMask overlapMask = wallLayer.value != 0 ? obstacleLayer | wallLayer : obstacleLayer;
+            LayerMask overlapMask = ~groundMask;
 
             // Agora o OverlapBox usa a rotação real do ghost para detectar colisões corretamente em ladeiras.
             // IMPORTANTE: QueryTriggerInteraction.Ignore garante que Triggers (como SafeZones) não bloqueiem a construção.
@@ -186,13 +203,26 @@ public class BuildingController : MonoBehaviour {
 
             bool hasInventory = HasInventoryQuantity();
             // Agora o objeto só pode ser posicionado se: tiver inventário, não houver colisão E a inclinação for válida.
-            bool isPlaceable = hasInventory && collisions.Length == 0 && isSlopeValid;
+            bool isPlaceable = hasInventory && collisions.Length == 0 && isSlopeValid && isOnGroundLayer;
 
             currentGhostObject?.SetPlaceable(isPlaceable);
             currentGhost.SetActive(true);
         } else {
             currentGhost.SetActive(false);
         }
+    }
+
+    /// <summary>
+    /// Aplica SmoothDamp na posição e Slerp na rotação do ghost pra eliminar tremor.
+    /// </summary>
+    private void SmoothGhostTransform() {
+        if (currentGhost == null) return;
+
+        currentGhost.transform.position = Vector3.SmoothDamp(
+            currentGhost.transform.position, targetGhostPosition, ref ghostVelocity, 0.04f);
+
+        currentGhost.transform.rotation = Quaternion.Slerp(
+            currentGhost.transform.rotation, targetGhostRotation, Time.deltaTime * 30f);
     }
 
     /// <summary>
@@ -402,6 +432,10 @@ public class BuildingController : MonoBehaviour {
 
         currentGhost.SetActive(false);
         currentGhostObject = currentGhost.GetComponent<GhostObject>();
+
+        targetGhostPosition = currentGhost.transform.position;
+        targetGhostRotation = currentGhost.transform.rotation;
+        ghostVelocity = Vector3.zero;
 
         // NOVO: Garantir que o item atual (em mão) seja contado como 1 no HUD
         // Isso resolve o problema do contador 'Current' mostrar 0 mesmo tendo mais itens.

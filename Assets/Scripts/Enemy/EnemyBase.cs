@@ -18,6 +18,20 @@ public abstract class EnemyBase : MonoBehaviour {
     [Tooltip("If true, this enemy will not be counted by the WaveManager.")]
     [SerializeField] protected bool isTutorialEnemy = false;
 
+    [Header("Wave Scaling Stats")]
+    [Tooltip("Base health at wave 1.")]
+    [SerializeField] private float initialHealth = 100f;
+    [Tooltip("Maximum health when wave scaling reaches its max wave.")]
+    [SerializeField] private float maxHealthCap = 500f;
+    [Tooltip("Base attack damage at wave 1.")]
+    [SerializeField] private float initialAttackDamage = 10f;
+    [Tooltip("Maximum attack damage when wave scaling reaches its max wave.")]
+    [SerializeField] private float maxAttackDamageCap = 30f;
+    [Tooltip("Base currency reward at wave 1.")]
+    [SerializeField] private int initialRewardCurrency = 100;
+    [Tooltip("Maximum currency reward when wave scaling reaches its max wave.")]
+    [SerializeField] private int maxRewardCurrencyCap = 300;
+
     protected float maxHealth = 100f;
     protected float moveSpeed = 3.5f;
     protected float attackDamage = 10f;
@@ -55,6 +69,9 @@ public abstract class EnemyBase : MonoBehaviour {
             rb.isKinematic = true;
 
         InitializeStats();
+
+        if (!isTutorialEnemy)
+            ApplyWaveScaling();
 
         currentHealth = maxHealth;
 
@@ -134,6 +151,32 @@ public abstract class EnemyBase : MonoBehaviour {
         }
 
         Destroy(gameObject, 2f);
+    }
+
+    /// <summary>
+    /// Applies wave-based stat scaling using an exponential curve.
+    /// Scales health, attack damage, and currency reward based on the current wave.
+    /// Only applies to non-tutorial enemies (isTutorialEnemy = false).
+    /// </summary>
+    private void ApplyWaveScaling() {
+        if (WaveManager.Instance == null)
+            return;
+
+        int currentWave = WaveManager.Instance.CurrentWave;
+        int maxScalingWave = WaveManager.Instance.MaxWaveScalingStats;
+
+        if (maxScalingWave <= 1)
+            return;
+
+        float t = (currentWave - 1f) / (maxScalingWave - 1f);
+        t = Mathf.Clamp01(t);
+
+        // Exponential curve: starts slow, accelerates in later waves
+        float factor = t * t;
+
+        maxHealth = Mathf.Lerp(initialHealth, maxHealthCap, factor);
+        attackDamage = Mathf.Lerp(initialAttackDamage, maxAttackDamageCap, factor);
+        rewardCurrency = Mathf.RoundToInt(Mathf.Lerp(initialRewardCurrency, maxRewardCurrencyCap, factor));
     }
 
     /// <summary>
