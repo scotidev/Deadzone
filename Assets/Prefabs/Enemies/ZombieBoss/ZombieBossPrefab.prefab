@@ -224,14 +224,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ZombieBoss
   isTutorialEnemy: 0
   initialHealth: 500
-  maxHealthCap: 2000
-  initialAttackDamage: 10
-  maxAttackDamageCap: 30
-  initialRewardCurrency: 100
-  maxRewardCurrencyCap: 300
-  defaultMaxHealth: 1000
+  maxHealthCap: 5000
+  initialAttackDamage: 15
+  maxAttackDamageCap: 50
+  initialRewardCurrency: 1000
+  maxRewardCurrencyCap: 5000
   defaultMoveSpeed: 3
-  defaultAttackDamage: 25
   defaultAttackRange: 2
   defaultAttackCooldown: 1.2
   idleSound: {fileID: 8300000, guid: c90bb9393dc89ff4fa1cbbbf0c3a7c44, type: 3}

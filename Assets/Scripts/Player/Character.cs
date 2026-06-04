@@ -618,16 +618,18 @@ namespace InfimaGames.LowPolyShooterPack {
                     holdingButtonFire = true;
                     break;
                 case { phase: InputActionPhase.Performed }:
-                    if (!CanPlayAnimationFire())
-                        break;
-
                     // CHECK: If currently equipped item is NOT a weapon (medkit, grenade, etc),
                     // delegate to inventory to handle OnUse() instead of trying to fire.
+                    // Must check BEFORE CanPlayAnimationFire(), since that method requires
+                    // equippedWeapon != null which is false when a non-weapon item is selected.
                     ItemBehaviour currentItem = inventory?.GetEquippedItem();
                     if (currentItem != null && !(currentItem is WeaponBehaviour)) {
                         inventory.TryUseEquippedItem();
                         break;
                     }
+
+                    if (!CanPlayAnimationFire())
+                        break;
 
                     // CONCEITO: Early safety check. If no weapon equipped, don't try to fire.
                     // This prevents NullReferenceException if equippedWeapon is null.

@@ -6,9 +6,7 @@ using UnityEngine;
 public class ZombieCop : EnemyBase {
 
     [Header("Cop Zombie Stats")]
-    [SerializeField] private float defaultMaxHealth = 140f;
     [SerializeField] private float defaultMoveSpeed = 3.2f;
-    [SerializeField] private float defaultAttackDamage = 22f;
     [SerializeField] private float defaultAttackRange = 1.9f;
     [SerializeField] private float defaultAttackCooldown = 1.3f;
 
@@ -27,13 +25,10 @@ public class ZombieCop : EnemyBase {
 
     /// <summary>
     /// Initialize cop zombie stats. Called during Awake() by EnemyBase.
-    /// Note: maxHealth, attackDamage, and rewardCurrency are now overridden by
-    /// ApplyWaveScaling() in EnemyBase — only moveSpeed, attackRange, and attackCooldown are relevant here.
+    /// Note: health, damage, and reward are set by ApplyWaveScaling() in EnemyBase.
     /// </summary>
     protected override void InitializeStats() {
-        maxHealth = defaultMaxHealth > 0 ? defaultMaxHealth : 140f;
         moveSpeed = defaultMoveSpeed > 0 ? defaultMoveSpeed : 3.2f;
-        attackDamage = defaultAttackDamage > 0 ? defaultAttackDamage : 22f;
         attackRange = defaultAttackRange > 0 ? defaultAttackRange : 1.9f;
         attackCooldown = defaultAttackCooldown > 0 ? defaultAttackCooldown : 1.3f;
     }

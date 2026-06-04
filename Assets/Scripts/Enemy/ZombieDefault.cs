@@ -6,9 +6,7 @@ using UnityEngine;
 public class ZombieDefault : EnemyBase {
 
     [Header("Default Zombie Stats")]
-    [SerializeField] private float defaultMaxHealth = 100f;
     [SerializeField] private float defaultMoveSpeed = 3.0f;
-    [SerializeField] private float defaultAttackDamage = 10f;
     [SerializeField] private float defaultAttackRange = 1.8f;
     [SerializeField] private float defaultAttackCooldown = 1.5f;
 
@@ -27,13 +25,10 @@ public class ZombieDefault : EnemyBase {
 
     /// <summary>
     /// Initialize default zombie stats. Called during Awake() by EnemyBase.
-    /// Note: maxHealth, attackDamage, and rewardCurrency are now overridden by
-    /// ApplyWaveScaling() in EnemyBase — only moveSpeed, attackRange, and attackCooldown are relevant here.
+    /// Note: health, damage, and reward are set by ApplyWaveScaling() in EnemyBase.
     /// </summary>
     protected override void InitializeStats() {
-        maxHealth = defaultMaxHealth > 0 ? defaultMaxHealth : 100f;
         moveSpeed = defaultMoveSpeed > 0 ? defaultMoveSpeed : 3.0f;
-        attackDamage = defaultAttackDamage > 0 ? defaultAttackDamage : 10f;
         attackRange = defaultAttackRange > 0 ? defaultAttackRange : 1.8f;
         attackCooldown = defaultAttackCooldown > 0 ? defaultAttackCooldown : 1.5f;
     }

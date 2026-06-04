@@ -225,13 +225,11 @@ MonoBehaviour:
   isTutorialEnemy: 0
   initialHealth: 100
   maxHealthCap: 200
-  initialAttackDamage: 10
+  initialAttackDamage: 5
   maxAttackDamageCap: 15
   initialRewardCurrency: 100
-  maxRewardCurrencyCap: 300
-  defaultMaxHealth: 100
-  defaultMoveSpeed: 3
-  defaultAttackDamage: 10
+  maxRewardCurrencyCap: 200
+  defaultMoveSpeed: 2.5
   defaultAttackRange: 1.8
   defaultAttackCooldown: 1.5
   idleSound: {fileID: 8300000, guid: 2b816241b8047fc4cbf61293ce8c4359, type: 3}

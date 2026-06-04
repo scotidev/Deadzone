@@ -7,9 +7,7 @@ using UnityEngine;
 public class ZombieBoss : EnemyBase {
 
     [Header("Boss Zombie Stats")]
-    [SerializeField] private float defaultMaxHealth = 300f;
     [SerializeField] private float defaultMoveSpeed = 3.0f;
-    [SerializeField] private float defaultAttackDamage = 25f;
     [SerializeField] private float defaultAttackRange = 2.0f;
     [SerializeField] private float defaultAttackCooldown = 1.2f;
 
@@ -29,13 +27,10 @@ public class ZombieBoss : EnemyBase {
     /// <summary>
     /// Initialize boss stats. Called during Awake() by EnemyBase.
     /// Boss has significantly higher health, damage, and attack speed than other zombie types.
-    /// Note: maxHealth, attackDamage, and rewardCurrency are now overridden by
-    /// ApplyWaveScaling() in EnemyBase — only moveSpeed, attackRange, and attackCooldown are relevant here.
+    /// Note: health, damage, and reward are set by ApplyWaveScaling() in EnemyBase.
     /// </summary>
     protected override void InitializeStats() {
-        maxHealth = defaultMaxHealth > 0 ? defaultMaxHealth : 300f;
         moveSpeed = defaultMoveSpeed > 0 ? defaultMoveSpeed : 3.0f;
-        attackDamage = defaultAttackDamage > 0 ? defaultAttackDamage : 25f;
         attackRange = defaultAttackRange > 0 ? defaultAttackRange : 2.0f;
         attackCooldown = defaultAttackCooldown > 0 ? defaultAttackCooldown : 1.2f;
     }

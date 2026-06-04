@@ -223,15 +223,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ZombieCop
   isTutorialEnemy: 0
-  initialHealth: 100
-  maxHealthCap: 500
-  initialAttackDamage: 10
+  initialHealth: 250
+  maxHealthCap: 1000
+  initialAttackDamage: 15
   maxAttackDamageCap: 30
-  initialRewardCurrency: 100
-  maxRewardCurrencyCap: 300
-  defaultMaxHealth: 250
-  defaultMoveSpeed: 2
-  defaultAttackDamage: 22
+  initialRewardCurrency: 250
+  maxRewardCurrencyCap: 1000
+  defaultMoveSpeed: 3
   defaultAttackRange: 1.9
   defaultAttackCooldown: 1.3
   idleSound: {fileID: 8300000, guid: 1f2cc9268dfdd91468b2d19ec0d6c2af, type: 3}
