@@ -45,17 +45,9 @@ public class WaveManager : MonoBehaviour {
 
     [Header("Wave")]
 
-    [Tooltip("Growth rate from wave 1 to 2.")]
-    [Range(0.05f, 1f)]
-    [SerializeField] private float initialGrowthRate = 0.25f;
-
-    [Tooltip("How much the rate decreases each wave.")]
-    [Range(0f, 0.1f)]
-    [SerializeField] private float growthDecrement = 0.02f;
-
-    [Tooltip("Minimum growth rate.")]
-    [Range(0.01f, 0.2f)]
-    [SerializeField] private float minGrowthRate = 0.05f;
+    [Tooltip("Growth rate applied every wave (0 = no growth, 1 = doubles each wave).")]
+    [Range(0f, 1f)]
+    [SerializeField] private float growthRate = 0.25f;
 
     [SerializeField] private int maxEnemiesPerWave = 500;
     [SerializeField] private int maxEnemiesAliveAtOnce = 15;
@@ -395,10 +387,7 @@ public class WaveManager : MonoBehaviour {
     private int GetEnemyCountForWave(int wave) {
         if (wave == 1) return 5;
 
-        float rawGrowth = initialGrowthRate - (wave - 2) * growthDecrement;
-        float growth = Mathf.Max(minGrowthRate, rawGrowth);
-
-        int count = Mathf.CeilToInt(lastWaveEnemyCount * (1f + growth));
+        int count = Mathf.CeilToInt(lastWaveEnemyCount * (1f + growthRate));
 
         return Mathf.Min(count, maxEnemiesPerWave);
     }

@@ -82188,14 +82188,44 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 487433602189868992, guid: 802122cbe7be7134ba26ca1718612434,
         type: 3}
+      propertyPath: deathSound
+      value: 
+      objectReference: {fileID: 8300000, guid: a94374238ad27ec4c899150e72388a47, type: 3}
+    - target: {fileID: 487433602189868992, guid: 802122cbe7be7134ba26ca1718612434,
+        type: 3}
       propertyPath: isTutorialEnemy
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 487433602189868992, guid: 802122cbe7be7134ba26ca1718612434,
+        type: 3}
+      propertyPath: deathSoundVolume
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 487433602189868992, guid: 802122cbe7be7134ba26ca1718612434,
         type: 3}
       propertyPath: pistolPickupObject
       value: 
       objectReference: {fileID: 2088557878}
+    - target: {fileID: 487433602189868992, guid: 802122cbe7be7134ba26ca1718612434,
+        type: 3}
+      propertyPath: idleIntervalRange.y
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 487433602189868992, guid: 802122cbe7be7134ba26ca1718612434,
+        type: 3}
+      propertyPath: idleSounds.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 487433602189868992, guid: 802122cbe7be7134ba26ca1718612434,
+        type: 3}
+      propertyPath: 'idleSounds.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 1f2cc9268dfdd91468b2d19ec0d6c2af, type: 3}
+    - target: {fileID: 487433602189868992, guid: 802122cbe7be7134ba26ca1718612434,
+        type: 3}
+      propertyPath: 'idleSounds.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 2b816241b8047fc4cbf61293ce8c4359, type: 3}
     - target: {fileID: 4274831266739158946, guid: 802122cbe7be7134ba26ca1718612434,
         type: 3}
       propertyPath: m_Controller
@@ -109650,6 +109680,11 @@ PrefabInstance:
       propertyPath: combatBGM
       value: 
       objectReference: {fileID: 8300000, guid: 5eb01e8c6e7105f4388078526072f4aa, type: 3}
+    - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
+        type: 3}
+      propertyPath: growthRate
+      value: 0.15
+      objectReference: {fileID: 0}
     - target: {fileID: 7743605349707640007, guid: b1abc948c6bc0914c98f118352fd83e5,
         type: 3}
       propertyPath: lastLightWave
