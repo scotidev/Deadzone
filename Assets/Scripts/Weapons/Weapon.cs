@@ -318,6 +318,12 @@ namespace InfimaGames.LowPolyShooterPack {
             }
         }
         
+        /// <summary>
+        /// Fired every time any weapon fires. Includes a reference to the Weapon that fired.
+        /// Used by EasterEggTarget to track which weapon the player is using.
+        /// </summary>
+        public static event System.Action<Weapon> OnWeaponFired;
+
         public override void Fire(float spreadMultiplier = 1.0f) {
             // SEGURANÇA: Verificações defensivas para evitar NullReferenceException
             // quando Weapon é ativado mas ainda não foi inicializado completamente.
@@ -384,6 +390,9 @@ namespace InfimaGames.LowPolyShooterPack {
             projectileRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
             projectileRb.linearVelocity = projectile.transform.forward * projectileImpulse;
+
+            // Notify systems that care about weapon fire (e.g. Easter egg)
+            OnWeaponFired?.Invoke(this);
         }
 
         public override void FillAmmunition(int amount) {

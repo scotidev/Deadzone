@@ -142,6 +142,46 @@ Contains scripts related to non-player characters (enemies).
 
 /// NPC Audio. Handles enemy death sounds and alert sounds.
 
+## /Enemy
+
+Contains scripts related to enemy types and behaviors.
+
+### /Enemy/EnemyBase.cs
+
+/// Enemy Base. Abstract base class for all enemy types with health, damage, death, and wave-scaling logic.
+
+### /Enemy/EnemyFollow.cs
+
+/// Enemy Follow. NavMeshAgent movement, walk animation, and idle sound playback.
+
+### /Enemy/EnemyAttack.cs
+
+/// Enemy Attack. Melee attack logic against the player and obstacles (barricades/barrels).
+
+### /Enemy/ZombieDefault.cs
+
+/// Zombie Default. Standard walker zombie with balanced stats.
+
+### /Enemy/ZombieBoss.cs
+
+/// Zombie Boss. Durable boss zombie with high damage.
+
+### /Enemy/ZombieCop.cs
+
+/// Zombie Cop. Aggressive variant with higher damage.
+
+### /Enemy/ZombieDoctor.cs
+
+/// Zombie Doctor. Durable variant with higher health.
+
+### /Enemy/TutorialDummyZombie.cs
+
+/// Tutorial Dummy Zombie. Stationary tutorial dummy that drops a pistol pickup on death.
+
+### /Enemy/PenguinEnemy.cs
+
+/// Penguin Enemy. EnemyBase subclass for the Easter egg penguin transformation. Has 1 HP, deals no damage, walks toward the player and stops. Keeps wave-scaled reward from the original zombie.
+
 ## /Environment
 
 Contains scripts related to world objects and traps.
@@ -457,3 +497,15 @@ Contains interface definitions used throughout the project.
 ### /Interfaces/IAudioManagerService.cs
 
 /// IAudio Manager Service. Interface for audio service.
+
+## /EasterEgg
+
+Contains scripts related to the Penguin Easter egg hidden feature.
+
+### /EasterEgg/PenguinMode.cs
+
+/// Penguin Mode. Static manager that tracks whether the Penguin Easter egg has been activated. Only one activation per game session.
+
+### /EasterEgg/EasterEggTarget.cs
+
+/// Easter Egg Target. Attach to the photo frame GameObject. Detects consecutive pistol shots, and after 7 hits without missing, activates the Penguin Easter egg: transforms all alive enemies into penguins, changes fog to blue, plays sound, and shows "PENGUIN WAVE" announcement.

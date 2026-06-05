@@ -82,6 +82,10 @@ public class WaveManager : MonoBehaviour {
     [Tooltip("Delay in seconds before playing the boss wave extra scream sound.")]
     [SerializeField] private float bossWaveScreamDelaySeconds = 2f;
 
+    [Header("Penguin Easter Egg Settings")]
+    [Tooltip("Fog color when the Penguin Easter egg is activated. Default is blue.")]
+    [SerializeField] private Color penguinWaveFogColor = Color.blue;
+
     [Header("Enemy Stat Scaling")]
     [Tooltip("The wave at which enemy stat scaling reaches its maximum.")]
     [SerializeField] private int maxWaveScalingStats = 20;
@@ -99,10 +103,10 @@ public class WaveManager : MonoBehaviour {
     private float waveTimer = 0f;
     private bool isCountdownActive = false;
     private int lastTickSecond = -1;
-    
+
     // Round-robin spawning (sempre ativo - padrão)
     private int currentSpawnerIndex = 0;
-    
+
     // Boss wave tracking - counts how many bosses have been spawned in this wave
     private int bossForcedCount = 0;
 
@@ -122,6 +126,8 @@ public class WaveManager : MonoBehaviour {
     public bool IsCountdownActive => isCountdownActive;
     public int MaxWaveScalingStats => maxWaveScalingStats;
 
+    public Color PenguinWaveFogColor => penguinWaveFogColor;
+
     #endregion
 
     #region UNITY
@@ -133,7 +139,7 @@ public class WaveManager : MonoBehaviour {
             Destroy(gameObject);
 
         audioService = ServiceLocator.Current.Get<IAudioManagerService>();
-        fogController = FindObjectOfType<FogController>();
+        fogController = FindFirstObjectByType<FogController>();
     }
 
     private void Start() {
@@ -174,7 +180,7 @@ public class WaveManager : MonoBehaviour {
         // Ajustado para 10.0f para evitar tocar 2x no início
         if (waveTimer <= 10.0f && waveTimer > 0) {
             int currentSecond = Mathf.CeilToInt(waveTimer);
-            
+
             // Só toca se mudamos de segundo e o clip existe
             if (currentSecond != lastTickSecond && countdownTickClip != null) {
                 lastTickSecond = currentSecond;
@@ -225,7 +231,7 @@ public class WaveManager : MonoBehaviour {
         currentWave++;
 
         totalEnemiesForWave = GetEnemyCountForWave(currentWave);
-        
+
         // Reset boss counter for new wave
         bossForcedCount = 0;
         lastWaveEnemyCount = totalEnemiesForWave;
@@ -251,7 +257,12 @@ public class WaveManager : MonoBehaviour {
         StartCoroutine(SpawnInitialBatch());
 
         if (waveUI != null) {
-            waveUI.UpdateWaveNumber(currentWave);
+            // If the Penguin Easter egg was activated, show the special announcement
+            if (PenguinMode.IsCurrentWavePenguinWave) {
+                waveUI.ShowPenguinWaveAnnouncement();
+            } else {
+                waveUI.UpdateWaveNumber(currentWave);
+            }
             waveUI.UpdateEnemiesRemaining(totalEnemiesForWave);
         }
     }
@@ -287,7 +298,7 @@ public class WaveManager : MonoBehaviour {
 
         // If this is a boss wave, check if we need to spawn more bosses
         int bossMissionsNeeded = IsBossWave(currentWave) ? GetBossCountForWave(currentWave) : 0;
-        
+
         if (bossMissionsNeeded > 0 && bossForcedCount < bossMissionsNeeded) {
             // Still need to spawn more bosses
             EnemySpawnConfig bossConfig = currentWaveEnemyTypes.Find(config => config.isBoss);
@@ -346,9 +357,14 @@ public class WaveManager : MonoBehaviour {
     /// </summary>
     private void CompleteWave() {
         isWaveActive = false;
-        
+
         // Reset boss wave effects if this was a boss wave
         if (IsBossWave(currentWave) && fogController != null) {
+            fogController.ResetFogColor();
+        }
+
+        // Reset fog color if the Penguin Easter egg was active this wave
+        if (PenguinMode.IsCurrentWavePenguinWave && fogController != null) {
             fogController.ResetFogColor();
         }
 
@@ -362,13 +378,13 @@ public class WaveManager : MonoBehaviour {
         if (EconomyManager.Instance != null) {
             // Recompensa base pela wave
             int waveReward = 1000 + (500 * (currentWave - 1));
-            
+
             // Recompensa bônus por velocidade (quanto mais rápido, mais ganha)
             // A lógica é: bonusBase - (tempo gasto * multiplicador). Se demorar demais, o bônus zera.
             int speedBonus = Mathf.Max(0, bonusBaseAmount - Mathf.FloorToInt(waveTimer * bonusTimeMultiplier));
-            
+
             EconomyManager.Instance.AddCurrency(waveReward + speedBonus);
-            
+
             Debug.Log($"[WaveManager] Wave {currentWave} completed! Base: {waveReward} | Bonus: {speedBonus} (Time: {waveTimer:F1}s)");
         }
 

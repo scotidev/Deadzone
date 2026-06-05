@@ -39,6 +39,12 @@ public abstract class EnemyBase : MonoBehaviour {
     protected float attackCooldown = 1.5f;
     protected int rewardCurrency = 100;
 
+    /// <summary>Public read-only access for the Easter egg system to read the reward before transforming enemies.</summary>
+    public int RewardCurrency => rewardCurrency;
+
+    /// <summary>Public read-only access so external systems (Easter egg) can distinguish tutorial enemies.</summary>
+    public bool IsTutorialEnemy => isTutorialEnemy;
+
     private float currentHealth;
     private bool isDead;
 
@@ -62,7 +68,7 @@ public abstract class EnemyBase : MonoBehaviour {
         enemyFollow = GetComponent<EnemyFollow>();
         enemyAttack = GetComponent<EnemyAttack>();
         animator = GetComponent<Animator>();
-        audioManagerService = FindObjectOfType<AudioManagerService>();
+        audioManagerService = FindFirstObjectByType<AudioManagerService>();
 
         var rb = GetComponent<Rigidbody>();
         if (rb != null)
@@ -82,7 +88,7 @@ public abstract class EnemyBase : MonoBehaviour {
 
         if (enemyAttack != null)
             enemyAttack.Configure(attackDamage, attackRange, attackCooldown);
-            enemyAttack.SetEnemyBase(this);
+        enemyAttack.SetEnemyBase(this);
     }
 
     #endregion
@@ -109,9 +115,15 @@ public abstract class EnemyBase : MonoBehaviour {
     }
 
     /// <summary>
+    /// Allows subclasses to override the death destroy delay.
+    /// Default is 2 seconds. PenguinEnemy overrides to 1 second.
+    /// </summary>
+    protected virtual float GetDeathDestroyDelay() => 2f;
+
+    /// <summary>
     /// Handles enemy death logic.
     /// Awards currency to the player when enemy is killed.
-    /// Plays death animation and removes enemy after 2 seconds.
+    /// Plays death animation and removes enemy after GetDeathDestroyDelay() seconds.
     /// Disables all physics interactions (colliders, rigidbody) to prevent body blocking and bullet interception.
     /// </summary>
     protected virtual void Die() {
@@ -150,7 +162,7 @@ public abstract class EnemyBase : MonoBehaviour {
             OnAnyEnemyDied?.Invoke();
         }
 
-        Destroy(gameObject, 2f);
+        Destroy(gameObject, GetDeathDestroyDelay());
     }
 
     /// <summary>

@@ -68,7 +68,7 @@ public class SafeZone : MonoBehaviour {
     /// Used to handle overlapping SafeZones correctly.
     /// </summary>
     private bool IsPlayerInsideAnySafeZone(Collider playerCollider) {
-        SafeZone[] allSafeZones = FindObjectsOfType<SafeZone>();
+        SafeZone[] allSafeZones = FindObjectsByType<SafeZone>(FindObjectsSortMode.None);
         foreach (SafeZone safeZone in allSafeZones) {
             if (safeZone == this) continue; // Skip self
 

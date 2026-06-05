@@ -23,6 +23,10 @@ public class WaveUI : BaseUI {
     [SerializeField] private float announcementVisibleSeconds = 1.5f;
     [SerializeField] private float announcementFadeOutSeconds = 0.25f;
 
+    [Header("Penguin Wave")]
+    [Tooltip("Texto TMPro para o anúncio 'PENGUIN WAVE'. Crie um TextMeshPro no HUD e arraste aqui.")]
+    [SerializeField] private TMP_Text penguinWaveText;
+
     [Header("Timer Settings")]
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color warningColor = Color.red;
@@ -34,6 +38,7 @@ public class WaveUI : BaseUI {
 
     private Coroutine waveStartAnnouncementRoutine;
     private Coroutine waveClearAnnouncementRoutine;
+    private Coroutine penguinAnnouncementRoutine;
 
     #endregion
 
@@ -45,6 +50,7 @@ public class WaveUI : BaseUI {
 
         HideAnnouncementText(waveNumberText);
         HideAnnouncementText(waveClearText);
+        HideAnnouncementText(penguinWaveText);
         UpdateEnemiesRemaining(0);
         UpdateTimerDisplay(0, false);
     }
@@ -132,6 +138,40 @@ public class WaveUI : BaseUI {
 
         waveClearAnnouncementRoutine = StartCoroutine(
             PlayAnnouncementSequence(waveClearText, "Wave Clear", OnWaveClearAnnouncementFinished));
+    }
+
+    /// <summary>
+    /// Shows the "PENGUIN WAVE" announcement using the dedicated penguinWaveText.
+    /// Called by EasterEggTarget when the easter egg activates, and by WaveManager
+    /// when a new wave starts while PenguinMode is active.
+    /// </summary>
+    public void ShowPenguinWaveAnnouncement() {
+        if (penguinWaveText == null)
+            return;
+
+        StopPenguinWaveAnnouncement();
+
+        penguinAnnouncementRoutine = StartCoroutine(
+            PlayAnnouncementSequence(penguinWaveText, "PENGUIN WAVE", OnPenguinAnnouncementFinished));
+    }
+
+    /// <summary>
+    /// Stops any running penguin announcement coroutine and hides the text.
+    /// </summary>
+    private void StopPenguinWaveAnnouncement() {
+        if (penguinAnnouncementRoutine != null) {
+            StopCoroutine(penguinAnnouncementRoutine);
+            penguinAnnouncementRoutine = null;
+        }
+
+        HideAnnouncementText(penguinWaveText);
+    }
+
+    /// <summary>
+    /// Marks the penguin announcement routine as finished.
+    /// </summary>
+    private void OnPenguinAnnouncementFinished() {
+        penguinAnnouncementRoutine = null;
     }
 
     /// <summary>

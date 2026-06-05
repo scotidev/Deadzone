@@ -17,6 +17,10 @@ public class EnemySpawner : MonoBehaviour {
     [SerializeField] private float spawnRadius = 3f;
     [SerializeField] private float spawnDelay = 0.3f;
 
+    [Header("Easter Egg")]
+    [Tooltip("When PenguinMode is active, this prefab is spawned instead of normal enemies.")]
+    [SerializeField] private GameObject penguinPrefab;
+
     #endregion
 
     #region METHODS
@@ -30,7 +34,18 @@ public class EnemySpawner : MonoBehaviour {
     public void SpawnEnemies(List<EnemySpawnConfig> availableTypes) {
         if (availableTypes == null || availableTypes.Count == 0) return;
 
-        GameObject prefab = PickWeightedRandom(availableTypes);
+        // If the Penguin easter egg is active, spawn penguins instead of normal enemies
+        GameObject prefab;
+        if (PenguinMode.IsCurrentWavePenguinWave) {
+            prefab = penguinPrefab;
+            if (prefab == null) {
+                Debug.LogWarning("[EnemySpawner] PenguinMode is active but penguinPrefab is not assigned! Falling back to normal spawn.");
+                prefab = PickWeightedRandom(availableTypes);
+            }
+        } else {
+            prefab = PickWeightedRandom(availableTypes);
+        }
+
         Vector3 spawnPos = GetValidSpawnPosition();
         Instantiate(prefab, spawnPos, Quaternion.identity);
     }

@@ -57,7 +57,7 @@ public class Teleport : MonoBehaviour {
 
     private void OnEnable() {
         SubscribeToWaveEvents();
-        
+
         // Sincronização imediata ao ativar o script
         SyncWithWaveState();
     }
@@ -149,8 +149,7 @@ public class Teleport : MonoBehaviour {
         if (triggerHit == triggerA) {
             PlayTriggerVFX(triggerA);
             ExecuteTeleport(playerCollider.transform, arrivalPointB);
-        }
-        else if (triggerHit == triggerB) {
+        } else if (triggerHit == triggerB) {
             PlayTriggerVFX(triggerB);
             ExecuteTeleport(playerCollider.transform, arrivalPointA);
         }
@@ -161,7 +160,7 @@ public class Teleport : MonoBehaviour {
     /// </summary>
     private void PlayTriggerVFX(GameObject triggerObj) {
         if (triggerObj == null) return;
-        
+
         TeleportTrigger triggerScript = triggerObj.GetComponent<TeleportTrigger>();
         if (triggerScript != null) {
             triggerScript.PlayVFX();
@@ -174,7 +173,7 @@ public class Teleport : MonoBehaviour {
         // Reset physics
         Rigidbody rb = player.GetComponent<Rigidbody>();
         if (rb != null) {
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
 
