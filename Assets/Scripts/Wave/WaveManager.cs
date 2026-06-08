@@ -143,6 +143,7 @@ public class WaveManager : MonoBehaviour {
     }
 
     private void Start() {
+        PenguinMode.Reset();
         // audioService?.PlayBGM(ambientBGM, true, 1.5f, ambientBGMVolume);
         // StartInitialCountdown(); // Removido para que a primeira wave seja engatilhada pelo TutorialEndTrigger
     }

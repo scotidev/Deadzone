@@ -45,38 +45,56 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaveManager
   enemyTypes:
-  - prefab: {fileID: 270316871960866942, guid: d1d09725d5529fe44abda6963954f7a8, type: 3}
+  - prefab: {fileID: 2067305258438630169, guid: a2929b0fac8486541b6fa908d393ab34,
+      type: 3}
+    minimumWave: 5
+    spawnWeight: 1
+    isBoss: 1
+  - prefab: {fileID: 4829191720685863279, guid: 3893f1d3133742943b80b434a03210bc,
+      type: 3}
+    minimumWave: 6
+    spawnWeight: 1.5
+    isBoss: 0
+  - prefab: {fileID: 927322210055035405, guid: f04270a73637d3e49960eae14836fd8c, type: 3}
+    minimumWave: 2
+    spawnWeight: 1.5
+    isBoss: 0
+  - prefab: {fileID: 63842754105059028, guid: 7c09f1433c59fb94393a0bd259d50210, type: 3}
     minimumWave: 1
     spawnWeight: 10
-    isBoss: 0
-  - prefab: {fileID: 4449994615583783604, guid: accf882275ba880409157b70de5f2086,
-      type: 3}
-    minimumWave: 0
-    spawnWeight: 5
-    isBoss: 0
-  - prefab: {fileID: 8945000935841565596, guid: 703d07df9fd097242bc7a67f2dc6b0f3,
-      type: 3}
-    minimumWave: 0
-    spawnWeight: 0.5
     isBoss: 0
   lightWaveClip: {fileID: 8300000, guid: 4d1a460e72cda124f8326871633b0f55, type: 3}
   mediumWaveClip: {fileID: 8300000, guid: e9f874b77ea42684895afa87ebb91c79, type: 3}
   hardWaveClip: {fileID: 8300000, guid: c1c57a6d2bea6be4faa7ef7346e05a1c, type: 3}
   bossWaveClip: {fileID: 8300000, guid: e4619c3f7711ee24081265a48fc8c76a, type: 3}
-  lastLightWave: 3
-  lastMediumWave: 7
-  initialGrowthRate: 0.25
-  growthDecrement: 0.02
-  minGrowthRate: 0.05
-  maxEnemiesPerWave: 500
-  maxEnemiesAliveAtOnce: 10
+  waveStartSFXVolume: 0.7
+  lastLightWave: 4
+  lastMediumWave: 9
+  waveClearClip: {fileID: 8300000, guid: db8eb663b74ae4545b50e1c4dbf0999b, type: 3}
+  waveClearSFXVolume: 0.5
+  countdownTickClip: {fileID: 8300000, guid: 9c4d79acfc8d98f48b6ee739131347e6, type: 3}
+  countdownTickVolume: 1
+  growthRate: 0.25
+  maxEnemiesPerWave: 99
+  maxEnemiesAliveAtOnce: 15
+  timeBetweenWaves: 90
+  bonusBaseAmount: 10000
+  bonusTimeMultiplier: 500
   spawners:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  - {fileID: 0}
   waveUI: {fileID: 0}
+  waveButtonObject: {fileID: 0}
   ambientBGM: {fileID: 8300000, guid: 83a71ae40bd916a4ca79dbfdbe9b45ab, type: 3}
   ambientBGMVolume: 1
-  combatBGM: {fileID: 8300000, guid: 8256864b0ef1d1749aaf1adef81995c0, type: 3}
-  combatBGMVolume: 0.323
+  combatBGM: {fileID: 8300000, guid: 5eb01e8c6e7105f4388078526072f4aa, type: 3}
+  combatBGMVolume: 0.7
+  bossWaveExtraScream: {fileID: 8300000, guid: 4677329a8b1cc4c47be3b22920709656, type: 3}
+  bossWaveScreamVolume: 1
+  bossWaveFogColor: {r: 0.7529412, g: 0, b: 0, a: 0.39215687}
+  bossWaveScreamDelaySeconds: 4
+  penguinWaveFogColor: {r: 0.16197924, g: 0.52227336, b: 0.81761, a: 0.46666667}
+  maxWaveScalingStats: 20
