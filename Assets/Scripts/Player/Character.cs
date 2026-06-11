@@ -289,6 +289,16 @@ namespace InfimaGames.LowPolyShooterPack {
             // Atualiza referências de animação/componentes
             RefreshWeaponSetup();
 
+            // CONCEITO: Itens como Medkit e Grenade não precisam de pose de arma.
+            // KeepHolsteredOnEquip() retorna true para esses itens, então pulamos
+            // a animação de Unholster e mantemos as mãos abaixadas.
+            ItemBehaviour currentItem = inventory?.GetEquippedItem();
+            if (currentItem != null && currentItem.KeepHolsteredOnEquip())
+            {
+                SetHolstered(true);
+                yield break;
+            }
+
             // Tira do holster para tocar a animação de sacar o novo item
             SetHolstered(false);
             

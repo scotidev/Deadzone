@@ -51,6 +51,16 @@ namespace InfimaGames.LowPolyShooterPack {
         public abstract void OnUse();
         
         #endregion
+
+        #region ANIMATION
+        
+        /// <summary>
+        /// Se true, o personagem mantém as mãos abaixadas (holstered) ao equipar este item.
+        /// Itens que não precisam de pose de tiro (medkit, grenade, buildables) devem retornar true.
+        /// </summary>
+        public virtual bool KeepHolsteredOnEquip() => false;
+        
+        #endregion
         
         #region VALIDATION
         

@@ -174,6 +174,15 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
+        #region ANIMATION
+
+        /// <summary>
+        /// Grenade nao precisa de pose de arma. Mantem maos abaixadas ao equipar.
+        /// </summary>
+        public override bool KeepHolsteredOnEquip() => true;
+
+        #endregion
+
         #region INPUT HANDLING
 
         /// <summary>

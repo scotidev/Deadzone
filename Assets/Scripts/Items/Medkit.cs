@@ -184,6 +184,15 @@ namespace InfimaGames.LowPolyShooterPack {
         
         #endregion
 
+        #region ANIMATION
+
+        /// <summary>
+        /// Medkit nao precisa de pose de arma. Mantem maos abaixadas ao equipar.
+        /// </summary>
+        public override bool KeepHolsteredOnEquip() => true;
+
+        #endregion
+
         #region AUDIO
 
         private void PlayEquipSound() {
