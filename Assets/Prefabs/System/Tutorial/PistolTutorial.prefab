@@ -11,7 +11,7 @@ PrefabInstance:
     - target: {fileID: 1170300566326218310, guid: 2277840a1e3e46c479191887b5623ab6,
         type: 3}
       propertyPath: m_Name
-      value: PistolPreview Variant
+      value: PistolTutorial
       objectReference: {fileID: 0}
     - target: {fileID: 1170300566326218310, guid: 2277840a1e3e46c479191887b5623ab6,
         type: 3}
@@ -196,8 +196,8 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Radius: 0.32377908
+  m_Center: {x: 0, y: 0.025249273, z: 0}
 --- !u!114 &3191244397940004982
 MonoBehaviour:
   m_ObjectHideFlags: 0
