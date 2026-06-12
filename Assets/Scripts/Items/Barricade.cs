@@ -133,6 +133,15 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
+        #region ANIMATION
+
+        /// <summary>
+        /// Barricade nao precisa de pose de arma. Mantem maos abaixadas ao equipar.
+        /// </summary>
+        public override bool KeepHolsteredOnEquip() => true;
+
+        #endregion
+
         #region PROPERTIES
 
         public float HealthFraction => maxHealth > 0f ? currentHealth / maxHealth : 0f;

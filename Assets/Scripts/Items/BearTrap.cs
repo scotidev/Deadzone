@@ -340,6 +340,15 @@ namespace InfimaGames.LowPolyShooterPack
 
         #endregion
 
+        #region ANIMATION
+
+        /// <summary>
+        /// BearTrap nao precisa de pose de arma. Mantem maos abaixadas ao equipar.
+        /// </summary>
+        public override bool KeepHolsteredOnEquip() => true;
+
+        #endregion
+
         #region AUDIO
 
         public void PlayEquipSound()
