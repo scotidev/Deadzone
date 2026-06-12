@@ -143,10 +143,13 @@ public class SelectManager : MonoBehaviour {
     private void SelectAndLoadMap(MapOption option) {
         MapEntry entry = GetEntry(option);
         if (entry == null || string.IsNullOrWhiteSpace(entry.sceneName)) {
+            Debug.LogWarning($"[SelectManager] SelectAndLoadMap FAILED: entry null ou sceneName vazio | option={option}");
             return;
         }
 
-        // We persist the selected background object so hover exit returns to this selection.
+        Debug.Log($"[SelectManager] SelectAndLoadMap | option={option} | sceneName='{entry.sceneName}'");
+
+        // We persist the selected background so hover exit returns to this selection.
         selectedBackgroundObject = entry.previewBackgroundObject;
         ShowSelectedOrDefaultBackground();
         SceneLoader.Instance?.LoadScene(entry.sceneName);

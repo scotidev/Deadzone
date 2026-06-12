@@ -788,7 +788,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5021013280713106677}
-  - component: {fileID: 533407624984994013}
   m_Layer: 5
   m_Name: Images
   m_TagString: Untagged
@@ -819,21 +818,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &533407624984994013
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6761108551342033037}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c723532d4684f3a8081200f76b2e80a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  imageWeaponBody: {fileID: 4901257872376429875}
-  imageWeaponMagazine: {fileID: 4901257872687792525}
-  imageWeaponScopeDefault: {fileID: 4901257873180297775}
 --- !u!1 &8731122319015993204
 GameObject:
   m_ObjectHideFlags: 0

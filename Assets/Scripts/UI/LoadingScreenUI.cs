@@ -45,6 +45,17 @@ public class LoadingScreenUI : MonoBehaviour {
     public void Show() {
         // Ativa o GameObject (que contém o Canvas e tudo da loading screen).
         gameObject.SetActive(true);
+
+        // Garante que o Canvas da loading screen renderize SEMPRE por cima
+        // de todos os outros Canvases durante a transição de cenas.
+        // O overrideSorting=true + sortingOrder alto impede que o Canvas da
+        // cena antiga ou da nova cena apareça por cima da loading screen.
+        Canvas canvas = GetComponent<Canvas>();
+        if (canvas != null) {
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = 32767;
+        }
+
         // Começa com a barra vazia.
         SetProgress(0f);
         // Sorteia um sprite de fundo diferente do último.

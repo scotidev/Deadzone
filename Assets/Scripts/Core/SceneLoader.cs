@@ -38,6 +38,9 @@ public class SceneLoader : MonoBehaviour {
     private GameObject _loadingInstance;
     private LoadingScreenUI _loadingUI;
 
+    // Flag que impede que um segundo LoadScene seja chamado enquanto já estamos carregando.
+    private bool _isLoading = false;
+
     #endregion
 
     #region UNITY
@@ -74,6 +77,11 @@ public class SceneLoader : MonoBehaviour {
     /// </summary>
     /// <param name="sceneName">Name of the scene to load.</param>
     public void LoadScene(string sceneName) {
+        // Se já estiver carregando uma cena, ignora chamadas duplicadas.
+        if (_isLoading) {
+            return;
+        }
+
         // Estamos vindo da cena de Intro (logos)?
         // Se sim, carrega sem loading screen (transição rápida).
         if (GameManager.Instance != null && GameManager.Instance.State == GameState.Intro) {
@@ -81,7 +89,8 @@ public class SceneLoader : MonoBehaviour {
             return;
         }
 
-        // Para todas as outras transições, mostra a loading screen.
+        // Marca como carregando e inicia a coroutine.
+        _isLoading = true;
         StartCoroutine(LoadSceneAsync(sceneName));
     }
 
@@ -120,6 +129,12 @@ public class SceneLoader : MonoBehaviour {
         // (5) Inicia o carregamento assíncrono da cena.
         AsyncOperation asyncOp = SceneManager.LoadSceneAsync(sceneName);
 
+        // Segurança: se o nome da cena não existir nas Build Settings, aborta.
+        if (asyncOp == null) {
+            _isLoading = false;
+            yield break;
+        }
+
         // Impede que a cena seja ativada automaticamente,
         // assim controlamos quando fazer a transição.
         asyncOp.allowSceneActivation = false;
@@ -150,10 +165,8 @@ public class SceneLoader : MonoBehaviour {
         _loadingUI?.SetProgress(1f);
         yield return null;
 
-        // (9) Esconde a loading screen ANTES de ativar a nova cena.
-        _loadingUI?.Hide();
-
-        // (10) Agora ativa a nova cena.
+        // (8) Ativa a nova cena ENQUANTO a loading screen ainda está visível,
+        //     evitando que o jogador veja um flash da cena antiga.
         //     Os Awake() e Start() da nova cena vão rodar aqui.
         asyncOp.allowSceneActivation = true;
 
@@ -161,9 +174,14 @@ public class SceneLoader : MonoBehaviour {
         while (!asyncOp.isDone)
             yield return null;
 
-        // (11) Desativa a loading (fica guardada pra próxima transição).
+        // (9) Só esconde a loading DEPOIS que a nova cena já está ativa.
+        _loadingUI?.Hide();
+
+        // (10) Desativa a loading (fica guardada pra próxima transição).
         if (_loadingInstance != null)
             _loadingInstance.SetActive(false);
+
+        _isLoading = false;
     }
 
     #endregion
