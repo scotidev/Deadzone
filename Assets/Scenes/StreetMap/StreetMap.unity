@@ -93,7 +93,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 112000000, guid: d33affdf863f77d42b682d720e3a63ca,
+  m_LightingDataAsset: {fileID: 112000000, guid: f3d2f815bfea4774c88609923fd355dd,
     type: 2}
   m_LightingSettings: {fileID: 4890085278179872738, guid: 4839d494b3ee72b44a0bbd0e78c83562,
     type: 2}
@@ -999,7 +999,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 2
+    m_Type: 1
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -1032,7 +1032,7 @@ Light:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingLayerMask: 1
-  m_Lightmapping: 4
+  m_Lightmapping: 2
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
