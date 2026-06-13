@@ -11,7 +11,7 @@ PrefabInstance:
     - target: {fileID: 5113390133393765995, guid: db8b73fd60cb7704c9ae6dd4393d1f5b,
         type: 3}
       propertyPath: m_Name
-      value: PostProcessVolume Variant
+      value: ForestPostProcessVolume
       objectReference: {fileID: 0}
     - target: {fileID: 5852838835367510118, guid: db8b73fd60cb7704c9ae6dd4393d1f5b,
         type: 3}
@@ -63,8 +63,36 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5258851302628596095, guid: db8b73fd60cb7704c9ae6dd4393d1f5b, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5113390133393765995, guid: db8b73fd60cb7704c9ae6dd4393d1f5b,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2013195511218074194}
   m_SourcePrefab: {fileID: 100100000, guid: db8b73fd60cb7704c9ae6dd4393d1f5b, type: 3}
+--- !u!1 &7275570188189197036 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5113390133393765995, guid: db8b73fd60cb7704c9ae6dd4393d1f5b,
+    type: 3}
+  m_PrefabInstance: {fileID: 2454019474871571591}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2013195511218074194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7275570188189197036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 11400000, guid: ab09877e2e707104187f6f83e2f62510, type: 2}
