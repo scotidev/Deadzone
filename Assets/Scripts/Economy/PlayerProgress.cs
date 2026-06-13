@@ -66,11 +66,34 @@ public class PlayerProgress : MonoBehaviour {
 
     /// <summary>
     /// Sets up default progression values.
-    /// Pistol (weaponID "Pistol") is unlocked by default.
+    /// The player starts with no items unlocked — the pistol (ID "1")
+    /// is obtained via PistolPickup in the tutorial.
     /// </summary>
     private void InitializeDefaults() {
-        // O jogador agora começa sem nenhum item desbloqueado para o fluxo do tutorial.
+        // O jogador começa sem nenhum item desbloqueado para o fluxo do tutorial.
         // A pistola (ID "1") será desbloqueada via PistolPickup no mundo.
+    }
+
+    /// <summary>
+    /// Resets all progression data to default values.
+    /// Called when starting a new game session to ensure no data
+    /// carries over from a previous playthrough.
+    /// </summary>
+    public void ResetProgress() {
+        unlockedWeapons.Clear();
+        unlockedBuildables.Clear();
+        unlockedConsumables.Clear();
+        weaponLevels.Clear();
+        itemLevels.Clear();
+        weaponReserveAmmo.Clear();
+        ammoInitialized.Clear();
+        buildableQuantities.Clear();
+        itemCurrentAmmo.Clear();
+        itemTotalAmmo.Clear();
+
+        InitializeDefaults();
+
+        Debug.Log("[PlayerProgress] All progression data has been reset to defaults.");
     }
 
     #region UNLOCKS

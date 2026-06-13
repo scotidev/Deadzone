@@ -62,6 +62,7 @@ public class GameOverUI : BaseUI {
     private void OnTryAgainClick() {
         Debug.Log("[GameOverUI] Botão Try Again clicado");
 
+        GameManager.ResetGameSession();
         GameManager.Instance?.SetTimeScale(1f);
 
         SceneLoader.Instance.LoadSceneImmediate("SelectMap");
@@ -74,6 +75,7 @@ public class GameOverUI : BaseUI {
     private void OnQuitClick() {
         Debug.Log("[GameOverUI] Botão Quit clicado");
 
+        GameManager.ResetGameSession();
         GameManager.Instance?.SetTimeScale(1f);
         GameManager.Instance?.SetState(GameState.MainMenu);
 

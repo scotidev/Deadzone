@@ -145,6 +145,23 @@ public class GameManager : MonoBehaviour {
     }
 
     /// <summary>
+    /// Resets all session data so a new game starts fresh.
+    /// Called before transitioning to Menu / SelectMap when the player
+    /// returns to the menu or starts a new game.
+    /// </summary>
+    public static void ResetGameSession() {
+        Debug.Log("[GameManager] Resetting game session data...");
+
+        PlayerProgress.Instance?.ResetProgress();
+
+        EconomyManager.Instance?.ResetCurrency();
+
+        PenguinMode.Reset();
+
+        Debug.Log("[GameManager] Game session has been reset.");
+    }
+
+    /// <summary>
     /// Coroutine that runs the full slow motion lifecycle:
     /// applies the slow time scale, waits in real time, then restores
     /// the base time scale.

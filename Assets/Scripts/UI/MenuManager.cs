@@ -39,8 +39,11 @@ public class MenuManager : MonoBehaviour {
 
     /// <summary>
     /// Loads the map selection scene.
+    /// Resets session data to ensure a clean state for the new game.
     /// </summary>
     public void OnNewGameClick() {
+        GameManager.ResetGameSession();
+
         // Carrega a SelectMap sem loading screen (transição rápida entre menus).
         SceneLoader.Instance?.LoadSceneImmediate(selectMapSceneName);
     }
@@ -67,10 +70,13 @@ public class MenuManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Exits the application.
+    /// Exits the application or exits fullscreen in WebGL builds.
+    /// Application.Quit() is a no-op in WebGL, so we also exit fullscreen
+    /// which, on itch.io, returns the player to the embed page.
     /// </summary>
     public void OnExitClick() {
         Application.Quit();
+        Screen.fullScreen = false;
     }
 
     #endregion

@@ -138,6 +138,7 @@ public class PauseManager : MonoBehaviour {
     /// Restores time before loading so the menu runs at normal speed.
     /// </summary>
     public void BackToMainMenu() {
+        GameManager.ResetGameSession();
         GameManager.Instance?.ResumeTime();
         GameManager.Instance?.SetState(GameState.MainMenu);
         SceneLoader.Instance.LoadScene("Menu");

@@ -108294,6 +108294,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2035910356015834724, guid: 4a06de3311b20f6468eed9a93caa2de3,
         type: 3}
+      propertyPath: canGameOver
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2035910356015834724, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
       propertyPath: playerCharacter
       value: 
       objectReference: {fileID: 1413941464}
@@ -108421,6 +108426,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Canvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 9036732885671563424, guid: 4a06de3311b20f6468eed9a93caa2de3,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
