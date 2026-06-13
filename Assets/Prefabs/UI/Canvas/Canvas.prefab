@@ -174,7 +174,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameOverManager
   deathClip: {fileID: 8300000, guid: 837483113a6cfef47939deac51e11a95, type: 3}
   deathClipVolume: 1
-  canGameOver: 0
+  canGameOver: 1
   playerCharacter: {fileID: 0}
 --- !u!1 &219593872644501529
 GameObject:
@@ -2497,7 +2497,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: da046a347b950fc47aba532ca22a85a3, type: 3}
   reloadIcon: {fileID: 21300000, guid: 5323aee9afedf8b46bb07ba35507c194, type: 3}
   tutorialBGM: {fileID: 8300000, guid: d661a0ea42cd5a6498f2abb17354e885, type: 3}
-  tutorialBGMVolume: 0.5
+  tutorialBGMVolume: 0.3
   minimumDisplayTime: 2
 --- !u!114 &8444277255788352330
 MonoBehaviour:
@@ -4203,7 +4203,7 @@ MonoBehaviour:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 1920, y: 1080}
+  m_ReferenceResolution: {x: 1280, y: 720}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
