@@ -124,28 +124,24 @@ public class PlayerInteraction : MonoBehaviour
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, interactionDistance, interactableLayer, QueryTriggerInteraction.Ignore))
+        // CONCEITO: TryGetComponentInParent é mais eficiente que GetComponentInParent
+        // porque usa TryGetComponent (nativo) em vez de GetComponentInParent (gerenciado).
+        if (Physics.Raycast(ray, out hit, interactionDistance, interactableLayer, QueryTriggerInteraction.Ignore)
+            && TryGetComponentInParent(hit.collider, out Interactable interactable))
         {
-            Interactable interactable = hit.collider.GetComponentInParent<Interactable>();
-
-            if (interactable != null)
+            if (currentInteractable != interactable)
             {
-                if (currentInteractable != interactable)
-                {
-                    currentInteractable = interactable;
+                currentInteractable = interactable;
 
-                    if (UIManager.Instance != null)
-                    {
-                        UIManager.Instance.ToggleInteractionPrompt(true, interactable.GetInteractionPrompt());
-                    }
+                if (UIManager.Instance != null)
+                {
+                    UIManager.Instance.ToggleInteractionPrompt(true, interactable.GetInteractionPrompt());
                 }
-                return;
             }
+            return;
         }
 
         // Se chegamos aqui, o raycast não atingiu um Interactable válido.
-        // Se tínhamos um interactable anteriormente (mesmo que tenha sido destruído e esteja nulo agora),
-        // ou se o HUD ainda está ativo por algum motivo, precisamos garantir que ele seja desativado.
         if (currentInteractable != null || (UIManager.Instance != null && UIManager.Instance.IsInteractionPromptActive()))
         {
             currentInteractable = null;
@@ -161,6 +157,34 @@ public class PlayerInteraction : MonoBehaviour
     /// Performs a raycast to detect enemies for health bar display.
     /// Uses a longer range than interaction raycast.
     /// </summary>
+    /// <summary>
+    /// Helper que busca um componente no collider ou em seus pais usando TryGetComponent.
+    /// CONCEITO: TryGetComponent é um método NATIVO da Unity, MAIS RÁPIDO que GetComponentInParent
+    /// porque não aloca memória gerenciada. A diferença é crucial num método chamado todo frame.
+    /// </summary>
+    private bool TryGetComponentInParent<T>(Collider collider, out T component) where T : class {
+        component = null;
+        if (collider == null) return false;
+
+        // CONCEITO: Primeiro tenta no próprio collider (mais rápido, sem subir hierarquia).
+        if (collider.TryGetComponent(out T direct)) {
+            component = direct;
+            return true;
+        }
+
+        // CONCEITO: Se não achou, sobe na hierarquia procurando nos pais.
+        Transform parent = collider.transform.parent;
+        while (parent != null) {
+            if (parent.TryGetComponent(out T found)) {
+                component = found;
+                return true;
+            }
+            parent = parent.parent;
+        }
+
+        return false;
+    }
+
     private void CheckForEnemy()
     {
         if (enemyHealthBarUI == null) return;
@@ -168,40 +192,29 @@ public class PlayerInteraction : MonoBehaviour
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, enemyDetectionDistance, ~uiLayerMask))
-        { // Ignore UI layer
-            if (Physics.Raycast(ray, out hit, enemyDetectionDistance, ~uiLayerMask))
-            { // Ignore UI layer
-                EnemyBase enemy = hit.collider.GetComponentInParent<EnemyBase>();
-
-                if (enemy != null)
-                {
-                    if (currentTargetedEnemy != enemy)
-                    {
-                        Debug.Log($"[PlayerInteraction] Detected new enemy: {enemy.name}. Setting as target.");
-                        currentTargetedEnemy = enemy;
-                        enemyHealthBarUI.SetTargetEnemy(enemy);
-                    }
-                    return;
-                }
-            }
-            else
+        // CONCEITO: ÚNICO raycast. O código original tinha DOIS raycasts idênticos
+        // (linhas 171 E 173), que é um bug que dobrava o custo de física toda vez.
+        if (Physics.Raycast(ray, out hit, enemyDetectionDistance, ~uiLayerMask)
+            && TryGetComponentInParent(hit.collider, out EnemyBase enemy))
+        {
+            // CONCEITO: Encontramos um inimigo. Só atualizamos se for diferente do atual.
+            if (currentTargetedEnemy != enemy)
             {
-                // Check if the raycast hit something on the UI layer, which should be ignored
-                RaycastHit uiHit;
-                if (Physics.Raycast(ray, out uiHit, enemyDetectionDistance, uiLayerMask))
-                {
-                    Debug.Log($"[PlayerInteraction] Raycast hit UI element: {uiHit.collider.gameObject.name}. Ignoring.");
-                }
+                // CONCEITO: Logger.Log só compila em Editor/Development Build.
+                // Em release builds, esta linha é REMOVIDA pelo compilador.
+                Logger.Log($"[PlayerInteraction] Detected new enemy: {enemy.name}. Setting as target.");
+                currentTargetedEnemy = enemy;
+                enemyHealthBarUI.SetTargetEnemy(enemy);
             }
+            return;
+        }
 
-            // If no enemy is targeted or the raycast missed enemies (but might have hit UI first)
-            if (currentTargetedEnemy != null)
-            {
-                Debug.Log($"[PlayerInteraction] No enemy targeted or lost target. Current target was: {currentTargetedEnemy.name}. Setting target to null.");
-                currentTargetedEnemy = null;
-                enemyHealthBarUI.SetTargetEnemy(null);
-            }
+        // Se chegou aqui: raycast falhou ou o alvo não tem EnemyBase
+        if (currentTargetedEnemy != null)
+        {
+            Logger.Log($"[PlayerInteraction] No enemy targeted or lost target. Current target was: {currentTargetedEnemy.name}. Setting target to null.");
+            currentTargetedEnemy = null;
+            enemyHealthBarUI.SetTargetEnemy(null);
         }
 
     #endregion

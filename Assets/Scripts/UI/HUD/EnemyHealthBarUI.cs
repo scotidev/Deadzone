@@ -30,6 +30,13 @@ public class EnemyHealthBarUI : MonoBehaviour {
     private RectTransform rectTransform;
     private EnemyBase currentTargetEnemy;
 
+    // Cache do renderer e collider do inimigo para evitar GetComponentInChildren toda vez
+    // CONCEITO: Guardamos o Renderer e Collider do inimigo quando ele é definido como alvo.
+    // Assim, não precisamos chamar GetComponentInChildren (que sobe/desce a hierarquia)
+    // a cada frame durante o UpdatePosition().
+    private Renderer cachedEnemyRenderer;
+    private Collider cachedEnemyCollider;
+
     #endregion
 
     #region UNITY
@@ -66,10 +73,18 @@ public class EnemyHealthBarUI : MonoBehaviour {
         currentTargetEnemy = enemy;
 
         if (currentTargetEnemy != null) {
+            // CONCEITO: Cache do Renderer e Collider quando o alvo é definido.
+            // Isso elimina a necessidade de GetComponentInChildren / GetComponent
+            // no Update() a cada frame — uma busca que percorre toda a hierarquia.
+            cachedEnemyRenderer = currentTargetEnemy.GetComponentInChildren<Renderer>();
+            cachedEnemyCollider = currentTargetEnemy.GetComponent<Collider>();
+
             canvasGroup.alpha = 1f;
             gameObject.SetActive(true);
             healthFillImage.fillAmount = currentTargetEnemy.GetHealthFraction();
         } else {
+            cachedEnemyRenderer = null;
+            cachedEnemyCollider = null;
             canvasGroup.alpha = 0f;
             gameObject.SetActive(false);
         }
@@ -95,24 +110,27 @@ public class EnemyHealthBarUI : MonoBehaviour {
 
     /// <summary>
     /// Gets the world position of the enemy's head (top of collider bounds).
+    /// Uses cached Renderer/Collider references instead of GetComponentInChildren every frame.
+    /// CONCEITO: Como já cacheamos Renderer e Collider no SetTargetEnemy(),
+    /// este método só acessa as referências guardadas — sem percorrer hierarquia.
     /// </summary>
     private Vector3 GetEnemyHeadPosition() {
-        Renderer renderer = currentTargetEnemy.GetComponentInChildren<Renderer>();
-
-        if (renderer != null) {
+        // CONCEITO: Usa o Renderer cacheado em vez de GetComponentInChildren.
+        if (cachedEnemyRenderer != null)
+        {
             return new Vector3(
                 currentTargetEnemy.transform.position.x,
-                renderer.bounds.max.y,
+                cachedEnemyRenderer.bounds.max.y,
                 currentTargetEnemy.transform.position.z
             );
         }
 
-        Collider collider = currentTargetEnemy.GetComponent<Collider>();
-
-        if (collider != null) {
+        // CONCEITO: Fallback usando Collider cacheado.
+        if (cachedEnemyCollider != null)
+        {
             return new Vector3(
                 currentTargetEnemy.transform.position.x,
-                collider.bounds.max.y,
+                cachedEnemyCollider.bounds.max.y,
                 currentTargetEnemy.transform.position.z
             );
         }

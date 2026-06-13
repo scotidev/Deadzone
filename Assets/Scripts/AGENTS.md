@@ -436,6 +436,34 @@ Contains scripts related to economy, upgrades, and player progression.
 
 /// Upgrade Manager. Handles weapon and player upgrades.
 
+## /Core
+
+Contains core game systems and foundational scripts.
+
+### /Core/GameManager.cs
+
+/// Game Manager. Central game state machine that manages game states (Playing, Shopping, GameOver), time scale, and scene reset.
+
+### /Core/SceneLoader.cs
+
+/// Scene Loader. Manages async scene transitions with loading screen support and progress tracking.
+
+### /Core/SlowMotionManager.cs
+
+/// Slow Motion Manager. Triggers temporary slow-motion effects on events like explosive barrel chain reactions.
+
+### /Core/PlayerCache.cs
+
+/// Player Cache. Static cache for the Player GameObject reference. Eliminates repeated GameObject.FindWithTag("Player") calls across the codebase by finding the player once and storing the reference globally.
+
+### /Core/Pooling/GameObjectPool.cs
+
+/// GameObject Pool. Static pool manager that reuses GameObjects to avoid costly Instantiate/Destroy calls. Uses a dictionary of prefab-to-queue mappings. Supports Prewarm() for pre-creating objects at startup.
+
+### /Core/Pooling/PooledObject.cs
+
+/// Pooled Object. Component attached to pooled GameObjects. Provides ReturnToPool() to send the object back to the pool instead of destroying it. Automatically stops coroutines on OnDisable().
+
 ## /Gameplay
 
 Contains general gameplay scripts.
@@ -467,6 +495,10 @@ Contains utility scripts for common operations.
 ### /Utilities/Log.cs
 
 /// Log. Custom logging utility with controlled output.
+
+### /Utilities/Logger.cs
+
+/// Logger. Conditional logging utility. Methods marked with [Conditional("UNITY_EDITOR")] and [Conditional("DEVELOPMENT_BUILD")] so calls are completely stripped from release builds — zero performance cost in production. Use Logger.Log() in Update paths instead of Debug.Log().
 
 ### /Utilities/TimeHandler.cs
 

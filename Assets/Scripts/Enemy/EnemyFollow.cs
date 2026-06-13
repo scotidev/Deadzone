@@ -119,17 +119,17 @@ public class EnemyFollow : MonoBehaviour {
     public void SetMovementEnabled(bool enabled) {
         // If we're trying to enable movement but the enemy is stunned, don't allow it
         if (enabled && isStunned) {
-            Debug.Log($"[EnemyFollow] SetMovementEnabled(true) called but stunned, rejecting");
+            Logger.Log($"[EnemyFollow] SetMovementEnabled(true) called but stunned, rejecting");
             return;
         }
 
-        Debug.Log($"[EnemyFollow] SetMovementEnabled({enabled}) - isStopped will be: {!enabled}, Agent valid: {Agent != null && Agent.isOnNavMesh}");
+        Logger.Log($"[EnemyFollow] SetMovementEnabled({enabled}) - isStopped will be: {!enabled}, Agent valid: {Agent != null && Agent.isOnNavMesh}");
         
         if (Agent != null && Agent.isOnNavMesh) {
             Agent.isStopped = !enabled;
-            Debug.Log($"[EnemyFollow] NavMeshAgent.isStopped set to: {Agent.isStopped}");
+            Logger.Log($"[EnemyFollow] NavMeshAgent.isStopped set to: {Agent.isStopped}");
         } else {
-            Debug.LogWarning($"[EnemyFollow] Agent is null or not on NavMesh!");
+            Logger.LogWarning($"[EnemyFollow] Agent is null or not on NavMesh!");
         }
     }
 
@@ -138,7 +138,7 @@ public class EnemyFollow : MonoBehaviour {
     /// Called by BearTrap when applying stun, and cleared when stun duration expires.
     /// </summary>
     public void SetStunned(bool stunned) {
-        Debug.Log($"[EnemyFollow] SetStunned({stunned})");
+        Logger.Log($"[EnemyFollow] SetStunned({stunned})");
         isStunned = stunned;
     }
 
@@ -183,15 +183,14 @@ public class EnemyFollow : MonoBehaviour {
     }
 
     /// <summary>
-    /// Searches the entire scene for the first GameObject with the tag "Player" and stores its Transform.
+    /// Gets the player's Transform via PlayerCache, which only searches the scene once.
+    /// CONCEITO: PlayerCache usa um cache estático que evita varrer
+    /// a hierarquia da cena toda vez que um inimigo nasce.
+    /// O primeiro inimigo a chamar paga o custo do FindWithTag,
+    /// todos os outros ganham a referência de graça.
     /// </summary>
     private void FindPlayer() {
-        GameObject playerObj = GameObject.FindWithTag("Player");
-
-        if (playerObj != null)
-            playerTransform = playerObj.transform;
-        else
-            return;
+        playerTransform = PlayerCache.Transform;
     }
 
     #endregion

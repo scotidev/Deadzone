@@ -81,6 +81,14 @@ namespace InfimaGames.LowPolyShooterPack {
 
             // Subscribe to upgrade events to refresh stats when this weapon is upgraded
             UpgradeManager.OnItemUpgraded += HandleItemUpgraded;
+
+            // CONCEITO: Pré-cria 10 projéteis no pool para evitar Instantiate
+            // nos primeiros tiros. O GameObjectPool gerencia tudo internamente:
+            // cria os objetos, adiciona PooledObject e os mantém inativos até serem usados.
+            if (prefabProjectile != null) {
+                GameObjectPool.Prewarm(prefabProjectile, 10);
+                useProjectilePool = true;
+            }
         }
 
         private void OnDestroy() {
@@ -318,6 +326,10 @@ namespace InfimaGames.LowPolyShooterPack {
             }
         }
         
+        // CONCEITO: Cache da PooledObject do prefabProjectile pra saber
+        // se devemos usar o pool ou Instantiate. Preenchido no Awake.
+        private bool useProjectilePool = false;
+
         /// <summary>
         /// Fired every time any weapon fires. Includes a reference to the Weapon that fired.
         /// Used by EasterEggTarget to track which weapon the player is using.
@@ -378,7 +390,16 @@ namespace InfimaGames.LowPolyShooterPack {
                 out RaycastHit hit, maximumDistance, mask))
                 rotation = Quaternion.LookRotation(hit.point - muzzleSocket.position);
 
-            GameObject projectile = Instantiate(prefabProjectile, muzzleSocket.position, rotation);
+            // CONCEITO: Usa o pool de objetos em vez de Instantiate.
+            // O pool reutiliza projéteis que já foram "destruídos" (desativados).
+            // Isso reduz drasticamente o garbage collection (GC).
+            // Se o pool estiver vazio, ele cria um novo automaticamente.
+            GameObject projectile;
+            if (useProjectilePool) {
+                projectile = GameObjectPool.Get(prefabProjectile, muzzleSocket.position, rotation);
+            } else {
+                projectile = Instantiate(prefabProjectile, muzzleSocket.position, rotation);
+            }
 
             // Set projectile damage from weapon's current stats
             Projectile projectileScript = projectile.GetComponent<Projectile>();

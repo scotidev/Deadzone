@@ -18,9 +18,11 @@ public class SafeZone : MonoBehaviour {
     #region UNITY
 
     private void Start() {
-        GameObject player = GameObject.FindWithTag("Player");
-        if (player != null) {
-            health = player.GetComponentInParent<PlayerHealth>();
+        // CONCEITO: PlayerCache guarda a referência ao player UMA VEZ.
+        // Isso é muito mais eficiente que FindWithTag("Player") toda vez,
+        // que varre a hierarquia inteira da cena a cada chamada.
+        if (PlayerCache.Transform != null) {
+            health = PlayerCache.GameObject.GetComponentInParent<PlayerHealth>();
         }
 
         // Register this SafeZone's collider with the Fog ParticleSystem Trigger Module.

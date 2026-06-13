@@ -52,11 +52,10 @@ public class EnemyAttack : MonoBehaviour {
         if (enemyFollow != null)
             playerTransform = enemyFollow.GetPlayerTransform();
 
-        if (playerTransform == null) {
-            var playerObj = GameObject.FindWithTag("Player");
-            if (playerObj != null)
-                playerTransform = playerObj.transform;
-        }
+        // CONCEITO: Fallback usando PlayerCache em vez de FindWithTag.
+        // PlayerCache só procura na cena UMA VEZ e guarda a referência.
+        if (playerTransform == null)
+            playerTransform = PlayerCache.Transform;
 
         if (playerTransform != null)
             playerDamageable = playerTransform.GetComponent<IDamageable>();
@@ -132,8 +131,11 @@ public class EnemyAttack : MonoBehaviour {
         float closestDist = float.MaxValue;
 
         foreach (Collider hit in hits) {
-            Barricade b = hit.GetComponent<Barricade>();
-            if (b != null && !b.IsDestroyed) {
+            // CONCEITO: TryGetComponent é MAIS EFICIENTE que GetComponent<T>().
+            // GetComponent<T>() aloca memória indiretamente via boxing em certos casos,
+            // enquanto TryGetComponent é um método nativo da Unity que não aloca nada.
+            // A diferença é pequena por chamada, mas num loop a cada frame, acumula.
+            if (hit.TryGetComponent(out Barricade b) && !b.IsDestroyed) {
                 float d = Vector3.Distance(transform.position, b.transform.position);
                 if (d < closestDist && d <= barricadeCheckDistance) {
                     closestDist = d;
@@ -142,8 +144,7 @@ public class EnemyAttack : MonoBehaviour {
                 continue;
             }
 
-            ExplosiveBarrel barrel = hit.GetComponent<ExplosiveBarrel>();
-            if (barrel != null && !barrel.IsExploding) {
+            if (hit.TryGetComponent(out ExplosiveBarrel barrel) && !barrel.IsExploding) {
                 float d = Vector3.Distance(transform.position, barrel.transform.position);
                 if (d < closestDist && d <= barricadeCheckDistance) {
                     closestDist = d;
