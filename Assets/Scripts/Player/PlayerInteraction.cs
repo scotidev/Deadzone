@@ -29,6 +29,12 @@ public class PlayerInteraction : MonoBehaviour
     private Interactable currentInteractable;
     private EnemyBase currentTargetedEnemy;
 
+    // Timer pra reduzir frequência do raycast de detecção de inimigos
+    // CONCEITO: O raycast de 50m é caro porque varre a cena inteira.
+    // Rodar a cada 5 frames em vez de todo frame reduz o custo em 80%.
+    private int enemyCheckInterval = 5;
+    private int enemyCheckCounter = 0;
+
     #endregion
 
     #region UNITY
@@ -46,7 +52,18 @@ public class PlayerInteraction : MonoBehaviour
             return;
 
         CheckForInteractable();
-        CheckForEnemy();
+        
+        // CONCEITO: Raycast de inimigo (50m) roda a cada N frames em vez de todo frame.
+        // O raycast de interação (3m) continua todo frame porque é muito mais barato
+        // (atinge menos colliders). O de 50m varre a cena inteira — reduzir frequência
+        // é a otimização de maior impacto aqui.
+        enemyCheckCounter++;
+        if (enemyCheckCounter >= enemyCheckInterval)
+        {
+            enemyCheckCounter = 0;
+            CheckForEnemy();
+        }
+
         HandleInteractionInput();
     }
 

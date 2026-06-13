@@ -24,6 +24,17 @@ public class EnemyFollow : MonoBehaviour {
     private float idleSoundTimer = 0f;
     private float idleSoundNextTime = 0f;
 
+    // SetDestination threshold
+    // CONCEITO: Só recalcula pathfinding quando o player se moveu mais que isso.
+    // Evita recálculo desnecessário quando o player está parado ou se movendo pouco.
+    private Vector3 lastSetDestinationPosition;
+    private const float DESTINATION_THRESHOLD = 1.0f;
+
+    // NavMeshPath cacheado pra CanReachPlayer
+    // CONCEITO: Reusa o mesmo objeto em vez de new NavMeshPath() a cada chamada.
+    // Criado no Awake porque NavMeshPath usa código nativo da Unity.
+    private NavMeshPath cachedPath;
+
     private NavMeshAgent Agent {
         get {
             if (agent == null) agent = GetComponent<NavMeshAgent>();
@@ -38,6 +49,8 @@ public class EnemyFollow : MonoBehaviour {
     private void Awake() {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+        // CONCEITO: NavMeshPath precisa ser criado em Awake, não no field initializer.
+        cachedPath = new NavMeshPath();
         FindPlayer();
         ResetIdleSoundTimer();
     }
@@ -47,9 +60,21 @@ public class EnemyFollow : MonoBehaviour {
             return;
 
         if (overrideDestination != null && overrideDestination.gameObject.activeInHierarchy)
+        {
             Agent.SetDestination(overrideDestination.position);
+        }
         else
-            Agent.SetDestination(playerTransform.position);
+        {
+            // CONCEITO: Só recalcula pathfinding se o player moveu mais que o threshold.
+            // SetDestination dispara um recálculo interno do NavMesh, que é caro.
+            // Com 15 inimigos, pular 90% dos recálculos quando o player está parado
+            // é uma economia gigante de CPU.
+            if (Vector3.Distance(playerTransform.position, lastSetDestinationPosition) > DESTINATION_THRESHOLD)
+            {
+                Agent.SetDestination(playerTransform.position);
+                lastSetDestinationPosition = playerTransform.position;
+            }
+        }
 
         UpdateWalkAnimation();
         UpdateIdleSound();
@@ -166,9 +191,10 @@ public class EnemyFollow : MonoBehaviour {
         if (playerTransform == null || agent == null || !agent.isOnNavMesh)
             return false;
 
-        NavMeshPath path = new NavMeshPath();
-        agent.CalculatePath(playerTransform.position, path);
-        return path.status == NavMeshPathStatus.PathComplete;
+        // CONCEITO: Reusa cachedPath em vez de alocar um novo NavMeshPath a cada chamada.
+        // EnemyAttack chama este método todo frame, então a alocação acumula rápido.
+        agent.CalculatePath(playerTransform.position, cachedPath);
+        return cachedPath.status == NavMeshPathStatus.PathComplete;
     }
 
     /// <summary>

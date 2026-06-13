@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using InfimaGames.LowPolyShooterPack;
 using UnityEngine;
 
@@ -53,6 +54,15 @@ public abstract class EnemyBase : MonoBehaviour {
     protected Animator animator;
     private AudioManagerService audioManagerService;
 
+    // Pooling support
+    // CONCEITO: Se o inimigo veio do pool, _pooledObject não é null.
+    // Usamos pra devolver ao pool em vez de Destroy na morte.
+    private PooledObject _pooledObject;
+    // CONCEITO: Flag que controla se é a primeira vez que o OnEnable roda.
+    // Na primeira vez (Instantiate), o Awake já configurou tudo.
+    // Nas vezes seguintes (pool), precisamos resetar o estado.
+    private bool _isFirstEnable = true;
+
     private static readonly int HashDeath = Animator.StringToHash("Death");
 
     /// <summary>
@@ -69,6 +79,9 @@ public abstract class EnemyBase : MonoBehaviour {
         enemyAttack = GetComponent<EnemyAttack>();
         animator = GetComponent<Animator>();
         audioManagerService = FindFirstObjectByType<AudioManagerService>();
+
+        // Cache do PooledObject — se existir, esse inimigo pode ser reutilizado pelo pool
+        _pooledObject = GetComponent<PooledObject>();
 
         var rb = GetComponent<Rigidbody>();
         if (rb != null)
@@ -89,6 +102,61 @@ public abstract class EnemyBase : MonoBehaviour {
         if (enemyAttack != null)
             enemyAttack.Configure(attackDamage, attackRange, attackCooldown);
         enemyAttack.SetEnemyBase(this);
+    }
+
+    /// <summary>
+    /// Called automaticamente quando o GameObject é ativado (primeira vez ou pool).
+    /// CONCEITO: Na primeira execução, o Awake já fez tudo, então ignoramos.
+    /// Nas reativações do pool, resetamos o estado pro inimigo nascer "novo".
+    /// </summary>
+    protected virtual void OnEnable() {
+        if (!_isFirstEnable) {
+            // CONCEITO: Reutilização do pool — resetar estado pro inimigo parecer novo
+            ResetForPoolReuse();
+        }
+        _isFirstEnable = false;
+    }
+
+    /// <summary>
+    /// Reseta o estado do inimigo quando reutilizado do pool.
+    /// Reaplica stats, saúde, colliders e componentes desativados na morte anterior.
+    /// </summary>
+    private void ResetForPoolReuse() {
+        isDead = false;
+
+        // Reaplica stats e scaling (a onda pode ser diferente de quando foi criado)
+        InitializeStats();
+        if (!isTutorialEnemy)
+            ApplyWaveScaling();
+        currentHealth = maxHealth;
+
+        if (enemyFollow != null) {
+            enemyFollow.SetSpeed(moveSpeed);
+            enemyFollow.SetMovementEnabled(true);
+        }
+
+        if (enemyAttack != null) {
+            enemyAttack.Configure(attackDamage, attackRange, attackCooldown);
+            enemyAttack.enabled = true;
+        }
+
+        // Reativa colliders (desativados no Die())
+        Collider[] colliders = GetComponentsInChildren<Collider>();
+        foreach (Collider col in colliders) {
+            col.enabled = true;
+        }
+
+        // Reseta rigidbody
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null) {
+            rb.isKinematic = true;
+        }
+
+        // CONCEITO: Animator.Rebind reseta todos os parâmetros do animator
+        // pro estado padrão, como se o objeto tivesse acabado de ser instanciado.
+        if (animator != null) {
+            animator.Rebind();
+        }
     }
 
     #endregion
@@ -162,7 +230,26 @@ public abstract class EnemyBase : MonoBehaviour {
             OnAnyEnemyDied?.Invoke();
         }
 
-        Destroy(gameObject, GetDeathDestroyDelay());
+        // CONCEITO: Se tem PooledObject, devolve ao pool após a animação de morte.
+        // Senão, usa Destroy normal (fallback pra inimigos não-pooled como tutoriais).
+        if (_pooledObject != null) {
+            StartCoroutine(PooledDeathRoutine());
+        } else {
+            Destroy(gameObject, GetDeathDestroyDelay());
+        }
+    }
+
+    /// <summary>
+    /// Aguarda a animação de morte e devolve o inimigo ao pool.
+    /// CONCEITO: Em vez de Destroy, que libera memória e causa GC,
+    /// devolvemos ao pool pra reutilização. O OnDisable do PooledObject
+    /// vai parar automaticamente as corrotinas quando o objeto for desativado.
+    /// </summary>
+    private IEnumerator PooledDeathRoutine() {
+        yield return new WaitForSeconds(GetDeathDestroyDelay());
+        if (_pooledObject != null) {
+            _pooledObject.ReturnToPool();
+        }
     }
 
     /// <summary>

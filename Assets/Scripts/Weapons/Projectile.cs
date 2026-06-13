@@ -105,37 +105,37 @@ public class Projectile : MonoBehaviour {
             Release();
         }
 
-        if (collision.transform.tag == "Blood") {
+        if (collision.transform.CompareTag("Blood")) {
             SpawnImpactVFX(bloodImpactPrefabs, transform.position,
                 Quaternion.LookRotation(collision.contacts[0].normal));
             Release();
         }
 
-        if (collision.transform.tag == "Metal") {
+        if (collision.transform.CompareTag("Metal")) {
             SpawnImpactVFX(metalImpactPrefabs, transform.position,
                 Quaternion.LookRotation(collision.contacts[0].normal));
             Release();
         }
 
-        if (collision.transform.tag == "Dirt") {
+        if (collision.transform.CompareTag("Dirt")) {
             SpawnImpactVFX(dirtImpactPrefabs, transform.position,
                 Quaternion.LookRotation(collision.contacts[0].normal));
             Release();
         }
 
-        if (collision.transform.tag == "Concrete") {
+        if (collision.transform.CompareTag("Concrete")) {
             SpawnImpactVFX(concreteImpactPrefabs, transform.position,
                 Quaternion.LookRotation(collision.contacts[0].normal));
             Release();
         }
 
-        if (collision.transform.tag == "Target") {
+        if (collision.transform.CompareTag("Target")) {
             collision.transform.gameObject.GetComponent
                 <TargetScript>().isHit = true;
             Release();
         }
 
-        if (collision.transform.tag == "ExplosiveBarrel") {
+        if (collision.transform.CompareTag("ExplosiveBarrel")) {
             IDamageable damageable = collision.transform.gameObject.GetComponent<IDamageable>();
             if (damageable != null) {
                 damageable.TakeDamage(damage);
@@ -143,7 +143,7 @@ public class Projectile : MonoBehaviour {
             Release();
         }
 
-        if (collision.transform.tag == "GasTank") {
+        if (collision.transform.CompareTag("GasTank")) {
             collision.transform.gameObject.GetComponent
                 <GasTankScript>().isHit = true;
             Release();

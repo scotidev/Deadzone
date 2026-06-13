@@ -38,6 +38,17 @@ public class EnemyAttack : MonoBehaviour {
 
     private static readonly int HashAttack = Animator.StringToHash("Attack");
 
+    // CONCEITO: NavMeshPath cacheado — reusa o MESMO objeto em vez de alocar um novo
+    // a cada frame. new NavMeshPath() toda vez = pressão no GC.
+    // Criado no Awake porque NavMeshPath usa código nativo da Unity e não pode
+    // ser inicializado na declaração do campo (dá UnityException).
+    private NavMeshPath cachedPath;
+
+    // CONCEITO: Buffer pré-alocado pra OverlapSphereNonAlloc.
+    // OverlapSphere comum aloca um Collider[] novo a cada chamada.
+    // NonAlloc reusa o mesmo array, sem alocação.
+    private Collider[] hitBuffer = new Collider[16];
+
     #endregion
 
     #region UNITY
@@ -46,6 +57,9 @@ public class EnemyAttack : MonoBehaviour {
         enemyFollow = GetComponent<EnemyFollow>();
         animator = GetComponent<Animator>();
         navMeshAgent = GetComponent<NavMeshAgent>();
+        // CONCEITO: NavMeshPath precisa ser criado em Awake, não no field initializer,
+        // porque chama código nativo (InitializeNavMeshPath) que exige o engine pronto.
+        cachedPath = new NavMeshPath();
     }
 
     private void Start() {
@@ -113,24 +127,30 @@ public class EnemyAttack : MonoBehaviour {
         // NavMesh path is blocked — find the blocked corner
         if (navMeshAgent == null || !navMeshAgent.isOnNavMesh) return;
 
-        NavMeshPath path = new NavMeshPath();
-        navMeshAgent.CalculatePath(playerTransform.position, path);
+        // CONCEITO: Reusa cachedPath em vez de criar new NavMeshPath() a cada frame.
+        // NavMesh.CalculatePath preenche o objeto existente em vez de alocar um novo.
+        navMeshAgent.CalculatePath(playerTransform.position, cachedPath);
 
-        if (path.status == NavMeshPathStatus.PathComplete) {
+        if (cachedPath.status == NavMeshPathStatus.PathComplete) {
             ClearCurrentTarget();
             return;
         }
 
         // Search near the last corner of the blocked path for obstacles
-        Vector3 searchCenter = path.corners.Length > 0
-            ? path.corners[path.corners.Length - 1]
+        Vector3 searchCenter = cachedPath.corners.Length > 0
+            ? cachedPath.corners[cachedPath.corners.Length - 1]
             : transform.position;
 
-        Collider[] hits = Physics.OverlapSphere(searchCenter, barricadeSearchRadius, barricadeLayer);
+        // CONCEITO: OverlapSphereNonAlloc reusa hitBuffer em vez de alocar um array novo.
+        // Retorna a quantidade de colliders encontrados (útil pra iterar só até o count).
+        int hitCount = Physics.OverlapSphereNonAlloc(searchCenter, barricadeSearchRadius, hitBuffer, barricadeLayer);
         IDamageable closestTarget = null;
         float closestDist = float.MaxValue;
 
-        foreach (Collider hit in hits) {
+        // CONCEITO: for loop em vez de foreach — evita alocação do enumerator.
+        // Só itera até hitCount (quantidade real de hits) em vez do buffer inteiro.
+        for (int i = 0; i < hitCount; i++) {
+            Collider hit = hitBuffer[i];
             // CONCEITO: TryGetComponent é MAIS EFICIENTE que GetComponent<T>().
             // GetComponent<T>() aloca memória indiretamente via boxing em certos casos,
             // enquanto TryGetComponent é um método nativo da Unity que não aloca nada.

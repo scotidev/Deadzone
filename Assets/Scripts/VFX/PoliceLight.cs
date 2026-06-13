@@ -47,14 +47,30 @@ public class PoliceLight : MonoBehaviour {
 
     #region UNITY
 
+    // Cache das cores emissivas pra evitar SetColor toda vez que o estado não muda
+    private Color cachedRedEmission;
+    private Color cachedBlueEmission;
+
     /// <summary>
     /// Starts the siren logic and initializes the base colors of the materials.
+    /// Uses sharedMaterial para não criar instâncias únicas de material.
+    /// CONCEITO: .material cria um clone na memória, quebrando o batching de instância.
+    /// .sharedMaterial reusa o asset original, mantendo o batching.
     /// </summary>
     void Start() {
         if (redLight != null && blueLight != null && redSirenRenderer != null && blueSirenRenderer != null) {
-            // Principle: Unique Materials. Accessing .material creates a clone for this specific object.
-            redSirenRenderer.material.SetColor("_BaseColor", redBaseColor);
-            blueSirenRenderer.material.SetColor("_BaseColor", blueBaseColor);
+            // CONCEITO: sharedMaterial em vez de material — não cria clones, preserva batching
+            redSirenRenderer.sharedMaterial.SetColor("_BaseColor", redBaseColor);
+            blueSirenRenderer.sharedMaterial.SetColor("_BaseColor", blueBaseColor);
+
+            // CONCEITO: EnableKeyword só precisa ser chamado UMA VEZ no Start,
+            // não a cada ciclo. O material já suporta _EMISSION, só precisa ser ativado.
+            redSirenRenderer.sharedMaterial.EnableKeyword("_EMISSION");
+            blueSirenRenderer.sharedMaterial.EnableKeyword("_EMISSION");
+
+            // Inicializa o cache com cores inválidas pra forçar o primeiro SetColor
+            cachedRedEmission = Color.black;
+            cachedBlueEmission = Color.black;
 
             StartCoroutine(SirenLoop());
         }
@@ -83,6 +99,9 @@ public class PoliceLight : MonoBehaviour {
 
     /// <summary>
     /// Updates the state of lights and material emission colors using intensity multiplication.
+    /// Só chama SetColor quando a cor muda — evita trabalho de GPU desnecessário.
+    /// CONCEITO: SetColor força a GPU a atualizar o material property block.
+    /// Se a cor é a mesma do frame anterior, chamar SetColor de novo é desperdício.
     /// </summary>
     /// <param name="redActive">Should the red side be active?</param>
     /// <param name="blueActive">Should the blue side be active?</param>
@@ -95,12 +114,17 @@ public class PoliceLight : MonoBehaviour {
         Color finalRedColor = redActive ? redEmissionColor * redIntensity : Color.black;
         Color finalBlueColor = blueActive ? blueEmissionColor * blueIntensity : Color.black;
 
-        redSirenRenderer.material.SetColor("_EmissionColor", finalRedColor);
-        blueSirenRenderer.material.SetColor("_EmissionColor", finalBlueColor);
-        
-        // Ensures the shader is in "Emission Mode".
-        if (redActive) redSirenRenderer.material.EnableKeyword("_EMISSION");
-        if (blueActive) blueSirenRenderer.material.EnableKeyword("_EMISSION");
+        // CONCEITO: Só atualiza a GPU se a cor realmente mudou
+        if (cachedRedEmission != finalRedColor)
+        {
+            redSirenRenderer.sharedMaterial.SetColor("_EmissionColor", finalRedColor);
+            cachedRedEmission = finalRedColor;
+        }
+        if (cachedBlueEmission != finalBlueColor)
+        {
+            blueSirenRenderer.sharedMaterial.SetColor("_EmissionColor", finalBlueColor);
+            cachedBlueEmission = finalBlueColor;
+        }
     }
 
     #endregion

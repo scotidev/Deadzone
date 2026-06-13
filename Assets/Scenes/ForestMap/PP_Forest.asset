@@ -1407,7 +1407,7 @@ MonoBehaviour:
     value: 0.05
   fastMode:
     overrideState: 1
-    value: 0
+    value: 1
 --- !u!114 &114585160642827550
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -1426,10 +1426,10 @@ MonoBehaviour:
     value: 1
   shutterAngle:
     overrideState: 1
-    value: 270
+    value: 12
   sampleCount:
     overrideState: 1
-    value: 7
+    value: 4
 --- !u!114 &114596694642223368
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -1448,7 +1448,7 @@ MonoBehaviour:
     value: 1
   intensity:
     overrideState: 1
-    value: 3
+    value: 0.8
   threshold:
     overrideState: 1
     value: 1.5
@@ -1460,7 +1460,7 @@ MonoBehaviour:
     value: 3
   diffusion:
     overrideState: 1
-    value: 9.5
+    value: 3
   anamorphicRatio:
     overrideState: 1
     value: -0.414
@@ -1476,7 +1476,7 @@ MonoBehaviour:
     defaultState: 1
   dirtIntensity:
     overrideState: 1
-    value: 2.5
+    value: 0.5
 --- !u!114 &114817739856914756
 MonoBehaviour:
   m_ObjectHideFlags: 3

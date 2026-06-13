@@ -47,7 +47,11 @@ public class EnemySpawner : MonoBehaviour {
         }
 
         Vector3 spawnPos = GetValidSpawnPosition();
-        Instantiate(prefab, spawnPos, Quaternion.identity);
+        // CONCEITO: Usa o pool em vez de Instantiate. O pool reutiliza inimigos
+        // que morreram em vez de criar novos. Reduz drasticamente o GC.
+        // A primeira vez que um tipo de inimigo é spawnado, o pool cria um novo
+        // e adiciona PooledObject automaticamente.
+        GameObjectPool.Get(prefab, spawnPos, Quaternion.identity);
     }
 
     /// <summary>
@@ -60,7 +64,8 @@ public class EnemySpawner : MonoBehaviour {
             GameObject prefab = PickWeightedRandom(availableTypes);
             Vector3 spawnPos = GetValidSpawnPosition();
 
-            Instantiate(prefab, spawnPos, Quaternion.identity);
+            // CONCEITO: Mesma lógica de pool do SpawnEnemies acima
+            GameObjectPool.Get(prefab, spawnPos, Quaternion.identity);
 
             yield return new WaitForSeconds(spawnDelay);
         }

@@ -1,5 +1,6 @@
 // Copyright 2021, Infima Games. All Rights Reserved.
 
+using System.Collections;
 using UnityEngine;
 
 // refatoração: o sistema de fire rate respeita o roundsperminute desse script? precisamos centralizar essa logica, nao podemos ter ela duplicada no projeto, verifique os SO de weapon e em outro lugar pra descobrir se temos uma lógica de manter o fire rate em algum outro lugar. Os stats das armas poderão ser atualizados conforme upgrades, e sei que temos pelo menos um script (UpgradeManager) que está envolvido nisso, precisamos dar upgrade nas coisas mas de forma eficiente e consistente.
@@ -441,9 +442,31 @@ namespace InfimaGames.LowPolyShooterPack {
             }
         }
 
+        /// <summary>
+        /// Ejects a casing from the weapon's ejection port.
+        /// CONCEITO: Em builds WebGL, casings são desativados completamente
+        /// porque cada Instantiate causa GC pressure.
+        /// Em outras plataformas, usa pool pra reutilizar casings.
+        /// </summary>
         public override void EjectCasing() {
+#if UNITY_WEBGL
+            // CONCEITO: WebGL não precisa de casings — economia de GPU e GC
+            return;
+#else
             if (prefabCasing != null && socketEjection != null)
-                Instantiate(prefabCasing, socketEjection.position, socketEjection.rotation);
+            {
+                // CONCEITO: Pool de casings — reusa em vez de Instantiate/Destroy
+                GameObject casing = GameObjectPool.Get(prefabCasing, socketEjection.position, socketEjection.rotation);
+                // CONCEITO: Devolve a casing ao pool após 5 segundos
+                StartCoroutine(ReturnCasingAfterDelay(casing));
+            }
+#endif
+        }
+
+        private static IEnumerator ReturnCasingAfterDelay(GameObject casing) {
+            yield return new WaitForSeconds(5f);
+            if (casing != null && casing.TryGetComponent(out PooledObject pooled))
+                pooled.ReturnToPool();
         }
 
         #endregion

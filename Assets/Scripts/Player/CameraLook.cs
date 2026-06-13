@@ -47,6 +47,13 @@ namespace InfimaGames.LowPolyShooterPack {
         }
         private void LateUpdate() {
             Vector2 frameInput = playerCharacter.IsCursorLocked() ? playerCharacter.GetInputLook() : default;
+
+            // CONCEITO: Early-out — se o mouse não moveu, não processa nada.
+            // Quaternion.Euler, Slerp e Clamp são operações matemáticas caras.
+            // Pular tudo quando o input é zero economiza CPU em cada frame parado.
+            if (frameInput == Vector2.zero && !smooth)
+                return;
+
             frameInput *= sensitivity;
 
             Quaternion rotationYaw = Quaternion.Euler(0.0f, frameInput.x, 0.0f);
