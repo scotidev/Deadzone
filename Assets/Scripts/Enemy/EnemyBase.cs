@@ -99,9 +99,10 @@ public abstract class EnemyBase : MonoBehaviour {
             enemyFollow.SetEnemyBase(this);
         }
 
-        if (enemyAttack != null)
+        if (enemyAttack != null) {
             enemyAttack.Configure(attackDamage, attackRange, attackCooldown);
-        enemyAttack.SetEnemyBase(this);
+            enemyAttack.SetEnemyBase(this);
+        }
     }
 
     /// <summary>

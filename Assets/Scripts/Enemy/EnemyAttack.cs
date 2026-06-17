@@ -76,6 +76,7 @@ public class EnemyAttack : MonoBehaviour {
 
         if (barricadeLayer.value == 0)
             barricadeLayer = LayerMask.GetMask("Obstacle");
+
     }
 
     private void Update() {
