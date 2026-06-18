@@ -33,6 +33,11 @@ PrefabInstance:
       propertyPath: far clip plane
       value: 100
       objectReference: {fileID: 0}
+    - target: {fileID: 916095938892669238, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: near clip plane
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 1214870013813928854, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: vest
@@ -106,7 +111,7 @@ PrefabInstance:
     - target: {fileID: 2748913124992463393, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 865.65
+      value: 865.314
       objectReference: {fileID: 0}
     - target: {fileID: 2748913124992463393, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
@@ -116,7 +121,7 @@ PrefabInstance:
     - target: {fileID: 2748913124992463393, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 839.623
+      value: 839.774
       objectReference: {fileID: 0}
     - target: {fileID: 2748913124992463393, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
@@ -258,6 +263,11 @@ PrefabInstance:
       propertyPath: meleeCooldown
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4749104247355021179, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: playerArmsMesh
+      value: 
+      objectReference: {fileID: 3070247848473607533}
     - target: {fileID: 4820431184435327466, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -549,8 +559,8 @@ MonoBehaviour:
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
-  m_Antialiasing: 0
-  m_AntialiasingQuality: 2
+  m_Antialiasing: 1
+  m_AntialiasingQuality: 1
   m_StopNaN: 0
   m_Dithering: 0
   m_ClearDepth: 1
@@ -596,6 +606,12 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 32
   enemyHealthBarUI: {fileID: 0}
+--- !u!1 &3070247848473607533 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3086728168579613185, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+    type: 3}
+  m_PrefabInstance: {fileID: 21942734424932204}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &4659583842786214264 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4676950957347601940, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
