@@ -19,10 +19,12 @@ public static class PlayerCache {
     /// <summary>
     /// Gets the Player's Transform. Only searches the scene once.
     /// Subsequent calls return the cached reference immediately (zero allocation).
+    /// Auto-recupera-se se a referência cacheada foi destruída (ex: sessão anterior
+    /// com "Reload Scene Only").
     /// </summary>
     public static Transform Transform {
         get {
-            if (!hasSearched) {
+            if (!hasSearched || cachedTransform == null) {
                 FindPlayer();
                 hasSearched = true;
             }
@@ -35,7 +37,7 @@ public static class PlayerCache {
     /// </summary>
     public static GameObject GameObject {
         get {
-            if (!hasSearched) {
+            if (!hasSearched || cachedGameObject == null) {
                 FindPlayer();
                 hasSearched = true;
             }

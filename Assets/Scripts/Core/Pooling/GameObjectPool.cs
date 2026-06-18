@@ -25,6 +25,7 @@ public static class GameObjectPool {
     /// Retrieves an object from the pool matching the given prefab.
     /// If the pool is empty, a new object is instantiated and the PooledObject
     /// component is added automatically so it can be returned later.
+    /// Auto-recupera-se se o objeto desenfileirado foi destruído (ex: sessão anterior).
     /// CONCEITO: Se o pool estiver vazio, precisamos criar um novo objeto
     /// (Instantiate). Isso é mais barato que sempre criar porque,
     /// depois de criado, ele será reutilizado várias vezes.
@@ -37,15 +38,22 @@ public static class GameObjectPool {
             pools[id] = new Queue<GameObject>();
 
         Queue<GameObject> pool = pools[id];
-        GameObject obj;
+        GameObject obj = null;
 
-        if (pool.Count > 0) {
-            // CONCEITO: Tem um objeto na fila! Só reposicionamos e reativamos.
+        // CONCEITO: Desenfileira objetos um por um até encontrar um válido.
+        // Se a sessão anterior deixou objetos destruídos no pool (Reload Scene Only),
+        // pulamos eles e usamos um objeto íntegro.
+        while (pool.Count > 0) {
             obj = pool.Dequeue();
+            if (obj != null) break;
+        }
+
+        if (obj != null) {
+            // CONCEITO: Tem um objeto válido! Só reposicionamos e reativamos.
             obj.transform.SetPositionAndRotation(position, rotation);
             obj.SetActive(true);
         } else {
-            // CONCEITO: Fila vazia, precisamos criar um novo.
+            // CONCEITO: Fila vazia ou só tinha objetos destruídos, criar um novo.
             obj = Object.Instantiate(prefab, position, rotation);
             // Adiciona o componente que permite devolver ao pool depois
             obj.AddComponent<PooledObject>();
