@@ -17,14 +17,11 @@ namespace InfimaGames.LowPolyShooterPack {
         [SerializeField] private float meleeRange = 1.4f;
         [SerializeField] private Vector3 meleeHalfExtents = new Vector3(0.22f, 0.22f, 0.7f);
         [SerializeField] private float meleeCooldown = 0.5f;
-        [SerializeField] private float meleeVisualDuration = 0.3f;
         [SerializeField] private float meleeAttackDuration = 0.5f;
 
-        [SerializeField] private Vector3 visualLocalPosition = new Vector3(0.18f, -0.2f, 0.7f);
-
-        [SerializeField] private Vector3 visualLocalEuler = new Vector3(0.0f, 0.0f, -20.0f);
-
-        [SerializeField] private Vector3 visualLocalScale = new Vector3(0.08f, 0.16f, 0.8f);
+        [Header("Melee Visual")]
+        [Tooltip("GameObject da faca (filha de Inventory) que será ativada/desativada no ataque melee.")]
+        [SerializeField] private GameObject meleeKnifeVisual;
 
         [Header("Audio")]
         [SerializeField] private AudioClip meleeSFX;
@@ -41,7 +38,6 @@ namespace InfimaGames.LowPolyShooterPack {
         private Character playerCharacter;
         private CapsuleCollider playerCapsule;
         private float lastMeleeTime = -10.0f;
-        private GameObject meleeVisual;
         private readonly Collider[] meleeHits = new Collider[16];
         private bool isAttacking;
         private bool hitmarkerTriggeredThisAttack;
@@ -61,7 +57,8 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         private void Start() {
-            SetupMeleeVisual();
+            if (meleeKnifeVisual != null)
+                meleeKnifeVisual.SetActive(false);
         }
 
         private void Update() {
@@ -82,7 +79,6 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         #endregion
-
         #region METHODS
 
         private void TryMeleeAttack() {
@@ -113,8 +109,8 @@ namespace InfimaGames.LowPolyShooterPack {
             // Isso garante que o hitmarker seja disparado no máximo uma vez por ataque.
             hitmarkerTriggeredThisAttack = false;
 
-            if (meleeVisual != null)
-                meleeVisual.SetActive(true);
+            if (meleeKnifeVisual != null)
+                meleeKnifeVisual.SetActive(true);
 
             // Play melee SFX when attack starts.
             if (meleeSFX != null && audioService != null) {
@@ -125,8 +121,8 @@ namespace InfimaGames.LowPolyShooterPack {
 
             yield return new WaitForSeconds(meleeAttackDuration);
 
-            if (meleeVisual != null)
-                meleeVisual.SetActive(false);
+            if (meleeKnifeVisual != null)
+                meleeKnifeVisual.SetActive(false);
 
             if (playerCharacter != null) {
                 playerCharacter.EndMeleeAttack();
@@ -196,37 +192,7 @@ namespace InfimaGames.LowPolyShooterPack {
                 meleeHits[i] = null;
         }
 
-        private IEnumerator ShowMeleeVisualRoutine() {
-            if (meleeVisual != null)
-                meleeVisual.SetActive(true);
 
-            yield return new WaitForSeconds(meleeVisualDuration);
-
-            if (meleeVisual != null)
-                meleeVisual.SetActive(false);
-        }
-
-        private void SetupMeleeVisual() {
-            if (playerCharacter == null)
-                return;
-
-            Camera cameraWorld = playerCharacter.GetCameraWorld();
-            if (cameraWorld == null)
-                return;
-
-            meleeVisual = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            meleeVisual.name = "MeleeRect";
-            meleeVisual.transform.SetParent(cameraWorld.transform, false);
-            meleeVisual.transform.localPosition = visualLocalPosition;
-            meleeVisual.transform.localRotation = Quaternion.Euler(visualLocalEuler);
-            meleeVisual.transform.localScale = visualLocalScale;
-
-            Collider visualCollider = meleeVisual.GetComponent<Collider>();
-            if (visualCollider != null)
-                visualCollider.enabled = false;
-
-            meleeVisual.SetActive(false);
-        }
 
         #endregion
     }
