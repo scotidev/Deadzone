@@ -81,11 +81,22 @@ namespace InfimaGames.LowPolyShooterPack {
 
             // Auto-discover VideoPlayer if not assigned in Inspector
             if (videoPlayer == null) {
-                videoPlayer = GetComponent<VideoPlayer>();
+                videoPlayer = GetComponentInChildren<VideoPlayer>();
             }
 
             if (videoPlayer == null) {
                 Debug.LogError($"[TVAudioController] VideoPlayer not found on {gameObject.name}. Please assign it in the Inspector or ensure it exists as a component.");
+            }
+            else
+            {
+                // FIRST PRINCIPLE: In WebGL builds, Unity cannot load VideoClip assets directly
+                // from the Assets folder. We must use VideoSource.Url pointing to a file in
+                // StreamingAssets — this is the same approach used by LogoIntro.cs.
+                videoPlayer.source = VideoSource.Url;
+                videoPlayer.url = System.IO.Path.Combine(Application.streamingAssetsPath, "TeenTitans.mp4");
+                videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
+                videoPlayer.isLooping = true;
+                videoPlayer.playOnAwake = true;
             }
 
             if (audioClip == null) {
