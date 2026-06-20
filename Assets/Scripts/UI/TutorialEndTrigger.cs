@@ -6,6 +6,7 @@ using InfimaGames.LowPolyShooterPack;
         /// <summary>
         /// Trigger that ends the tutorial and starts the first official wave.
         /// Activates the poison system and triggers the WaveManager.
+        /// Also transitions the camera far clip plane from tutorial to end-game distance.
         /// </summary>
         public class TutorialEndTrigger : MonoBehaviour {
 
@@ -15,13 +16,41 @@ using InfimaGames.LowPolyShooterPack;
             [Tooltip("If true, the trigger deactivates after the first entry.")]
             [SerializeField] private bool triggerOnce = true;
 
+            [Header("Camera Far Clip Plane")]
+            [Tooltip("Far clip plane distance used during the tutorial (before crossing this trigger).")]
+            [SerializeField] private float tutorialFarDistance = 15f;
+
+            [Tooltip("Far clip plane distance used after the tutorial ends (after crossing this trigger).")]
+            [SerializeField] private float endFarDistance = 200f;
+
+            #endregion
+
+            #region PRIVATE FIELDS
+
+            private Camera playerCamera;
+
             #endregion
 
             #region UNITY
 
             /// <summary>
+            /// Caches the player camera reference and sets the initial tutorial far clip distance.
+            /// </summary>
+            private void Start() {
+                Character character = FindFirstObjectByType<Character>();
+                if (character != null)
+                {
+                    playerCamera = character.GetCameraWorld();
+                    if (playerCamera != null)
+                    {
+                        playerCamera.farClipPlane = tutorialFarDistance;
+                    }
+                }
+            }
+
+            /// <summary>
             /// Called when the player enters the trigger.
-            /// Starts Wave 1 and enables game mechanics.
+            /// Starts Wave 1, enables game mechanics, and transitions the camera far clip.
             /// </summary>
             private void OnTriggerEnter(Collider other) {
                 // Verify if it is the player
@@ -73,12 +102,18 @@ using InfimaGames.LowPolyShooterPack;
                 FogController fog = FindObjectOfType<FogController>();
                 if (fog != null) fog.EnableFog();
 
-                // 5. Start Wave 1 immediately
+                // 5. Transition camera far clip to end distance
+                if (playerCamera != null)
+                {
+                    playerCamera.farClipPlane = endFarDistance;
+                }
+
+                // 6. Start Wave 1 immediately
                 if (WaveManager.Instance != null && !WaveManager.Instance.IsWaveActive) {
                     WaveManager.Instance.StartNextWave();
                 }
 
-                // 6. Deactivate trigger
+                // 7. Deactivate trigger
                 if (triggerOnce) {
                     gameObject.SetActive(false);
                 }

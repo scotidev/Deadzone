@@ -31,7 +31,7 @@ PrefabInstance:
     - target: {fileID: 916095938892669238, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: far clip plane
-      value: 100
+      value: 75
       objectReference: {fileID: 0}
     - target: {fileID: 916095938892669238, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
@@ -111,7 +111,7 @@ PrefabInstance:
     - target: {fileID: 2748913124992463393, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 865.314
+      value: 737.2
       objectReference: {fileID: 0}
     - target: {fileID: 2748913124992463393, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
@@ -121,7 +121,7 @@ PrefabInstance:
     - target: {fileID: 2748913124992463393, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 839.774
+      value: 699.2
       objectReference: {fileID: 0}
     - target: {fileID: 2748913124992463393, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
@@ -191,7 +191,7 @@ PrefabInstance:
     - target: {fileID: 3532817713994603750, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: ShapeModule.m_Scale.z
-      value: 20
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 3532817713994603750, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
@@ -201,7 +201,7 @@ PrefabInstance:
     - target: {fileID: 3532817713994603750, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: InitialModule.maxNumParticles
-      value: 1000
+      value: 400
       objectReference: {fileID: 0}
     - target: {fileID: 3532817713994603750, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
@@ -211,12 +211,12 @@ PrefabInstance:
     - target: {fileID: 3532817713994603750, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: EmissionModule.rateOverTime.scalar
-      value: 150
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 3532817713994603750, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: InitialModule.startLifetime.scalar
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3532817713994603750, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}

@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8979916483236111069}
   - component: {fileID: 8806578908907949876}
-  - component: {fileID: 4318800433272703990}
   - component: {fileID: 8211316207944174576}
   - component: {fileID: 3491517211518008292}
   m_Layer: 0
@@ -48,18 +47,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EconomyManager
   startingCurrency: 500
---- !u!114 &4318800433272703990
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2363467353418396988}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40449822bc0041344a668331ba8d2f03, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerProgress
 --- !u!114 &8211316207944174576
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -13300,6 +13300,16 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2007147812}
     m_Modifications:
+    - target: {fileID: 1303819568931458439, guid: 64f4b8de1e088e44b934dae741ab7d9b,
+        type: 3}
+      propertyPath: endFarDistance
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 1303819568931458439, guid: 64f4b8de1e088e44b934dae741ab7d9b,
+        type: 3}
+      propertyPath: tutorialFarDistance
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 3659084869857818825, guid: 64f4b8de1e088e44b934dae741ab7d9b,
         type: 3}
       propertyPath: m_LocalPosition.x
