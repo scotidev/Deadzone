@@ -11,7 +11,7 @@ PrefabInstance:
     - target: {fileID: 63842754105059028, guid: 7c09f1433c59fb94393a0bd259d50210,
         type: 3}
       propertyPath: m_Name
-      value: DummyDefault Variant
+      value: DummyDefault
       objectReference: {fileID: 0}
     - target: {fileID: 840202844628483182, guid: 7c09f1433c59fb94393a0bd259d50210,
         type: 3}
@@ -72,6 +72,11 @@ PrefabInstance:
         type: 3}
       propertyPath: isTutorialEnemy
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2375400219482508460, guid: 7c09f1433c59fb94393a0bd259d50210,
+        type: 3}
+      propertyPath: deathSoundVolume
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 2375400219482508460, guid: 7c09f1433c59fb94393a0bd259d50210,
         type: 3}

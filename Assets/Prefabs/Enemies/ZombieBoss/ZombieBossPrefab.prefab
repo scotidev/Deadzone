@@ -223,7 +223,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ZombieBoss
   isTutorialEnemy: 0
-  initialHealth: 500
+  initialHealth: 1000
   maxHealthCap: 5000
   initialAttackDamage: 15
   maxAttackDamageCap: 50
@@ -235,6 +235,6 @@ MonoBehaviour:
   idleSound: {fileID: 8300000, guid: c90bb9393dc89ff4fa1cbbbf0c3a7c44, type: 3}
   idleSoundVolume: 0.8
   attackSound: {fileID: 8300000, guid: 5a38de12833091549875b886b9568100, type: 3}
-  attackSoundVolume: 0.3
+  attackSoundVolume: 0.2
   deathSound: {fileID: 8300000, guid: f95b0cd5d598335488190f0baa7de6ad, type: 3}
-  deathSoundVolume: 1
+  deathSoundVolume: 0.5
