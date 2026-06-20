@@ -353,12 +353,12 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <summary>
         /// Starts a melee attack. Stores current weapon index and holsters the weapon.
         /// </summary>
-        public void StartMeleeAttack() {
+        public bool StartMeleeAttack() {
             if (isAttackingMelee)
-                return;
+                return false;
 
             if (!CanPlayAnimationHolster())
-                return;
+                return false;
 
             // FIX: Use the selection index (which includes medkits, buildables, etc.) instead of 
             // just the equipped weapon index. This ensures the correct item is restored after the attack.
@@ -367,6 +367,7 @@ namespace InfimaGames.LowPolyShooterPack {
             isAttackingMelee = true;
             SetHolstered(true);
             holstering = true;
+            return true;
         }
 
         /// <summary>
@@ -520,6 +521,18 @@ namespace InfimaGames.LowPolyShooterPack {
                 return false;
 
             if (isAttackingMelee)
+                return false;
+
+            if (holstered)
+                return false;
+
+            if (holstering)
+                return false;
+
+            if (aiming)
+                return false;
+
+            if (holdingButtonFire)
                 return false;
 
             return true;

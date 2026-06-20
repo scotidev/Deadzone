@@ -88,13 +88,11 @@ namespace InfimaGames.LowPolyShooterPack {
             if (playerCharacter == null)
                 return;
 
-            if (playerCharacter.IsAttackingMelee())
+            if (!playerCharacter.StartMeleeAttack())
                 return;
 
             lastMeleeTime = Time.time;
             isAttacking = true;
-
-            playerCharacter.StartMeleeAttack();
 
             StartCoroutine(MeleeAttackRoutine());
         }
