@@ -104045,6 +104045,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 935434444836986458, guid: a20c4961b0655574e9f91c372538fa9f,
+        type: 3}
+      propertyPath: far clip plane
+      value: 75
+      objectReference: {fileID: 0}
     - target: {fileID: 2511525708182192631, guid: a20c4961b0655574e9f91c372538fa9f,
         type: 3}
       propertyPath: enemyHealthBarUI
