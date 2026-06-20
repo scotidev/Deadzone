@@ -59,6 +59,20 @@ namespace InfimaGames.LowPolyShooterPack
 
             #endregion
 
+            #region Player Progress
+
+            // Cria o PlayerProgress antes de qualquer cena carregar,
+            // garantindo que esteja disponível quando Character.Awake()
+            // chamar inventory.Init() para verificar desbloqueio de armas.
+            // Isso previne race condition em WebGL onde a ordem do Awake
+            // entre PlayerProgress e Character pode variar por cena.
+            var playerProgressObject = new GameObject("Player Progress");
+            playerProgressObject.AddComponent<PlayerProgress>();
+
+            Object.DontDestroyOnLoad(playerProgressObject);
+
+            #endregion
+
             // NOTA: SceneLoader não é mais criado aqui.
             // Ele deve ser colocado manualmente na cena Intro (ex-Loader)
             // com o prefab da Loading Screen já atribuído no Inspector.

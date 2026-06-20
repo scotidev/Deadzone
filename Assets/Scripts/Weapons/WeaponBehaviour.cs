@@ -107,8 +107,9 @@ namespace InfimaGames.LowPolyShooterPack {
             // Ammo é checado durante o fire, não durante seleção.
             // Isso permite que o player selecione qualquer arma desbloqueada, mesmo sem munição.
             if (PlayerProgress.Instance == null) {
-                Debug.LogWarning($"[{gameObject.name}] CanBeUsed: PlayerProgress.Instance is NULL!");
-                return true; // Allow if no progress tracker
+                Debug.LogWarning($"[{gameObject.name}] CanBeUsed: PlayerProgress.Instance is NULL! Returning false (locked).");
+                return false; // SEGURANÇA: retorna false ao invés de true para evitar arma liberada
+                              // antes do PlayerProgress ser inicializado (bug WebGL em StreetMap/DesertMap)
             }
 
             string weaponID = GetItemID();
