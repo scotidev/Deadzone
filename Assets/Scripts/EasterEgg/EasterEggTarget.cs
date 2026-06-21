@@ -3,12 +3,10 @@ using InfimaGames.LowPolyShooterPack;
 using UnityEngine;
 
 /// <summary>
-/// Attach to the photo frame GameObject in the scene.
-/// Detects when the player shoots it with a pistol and counts consecutive hits.
-/// After 7 consecutive hits (without missing), activates the Penguin easter egg:
+/// Attach to the photo frame GameObject. Detects consecutive pistol shots and
+/// after the required number of hits without missing, activates the Penguin easter egg:
 /// transforms all alive enemies into penguins, changes fog to blue,
-/// plays a sound, and shows the "PENGUIN WAVE" announcement.
-/// Only activates once per game.
+/// plays a sound, and shows the "PENGUIN WAVE" announcement. Only activates once per game.
 /// </summary>
 [RequireComponent(typeof(Collider))]
 [RequireComponent(typeof(Rigidbody))]
@@ -62,14 +60,12 @@ public class EasterEggTarget : MonoBehaviour {
     }
 
     /// <summary>
-    /// Detects projectile collisions. When hit by a bullet,
-    /// registers the hit and checks if we've reached the required count.
-    /// The projectile must have a Projectile component.
+    /// Detects projectile collisions. When hit by a bullet, registers the hit and
+    /// checks if the required count has been reached. The projectile must have a Projectile component.
     /// </summary>
     private void OnCollisionEnter(Collision collision) {
         if (isActivated) return;
 
-        // Only count hits from projectiles (bullets)
         if (collision.gameObject.GetComponent<Projectile>() == null) return;
 
         RegisterHit();
@@ -80,31 +76,27 @@ public class EasterEggTarget : MonoBehaviour {
     #region METHODS
 
     /// <summary>
-    /// Called whenever the player fires a weapon.
-    /// If it's the pistol, starts a miss timeout.
-    /// If it's any other weapon, resets the counter.
+    /// Called whenever the player fires a weapon. Resets the counter if a non-pistol is fired,
+    /// or starts a miss timeout if the pistol is fired.
     /// </summary>
     private void HandleWeaponFired(Weapon weapon) {
         if (isActivated) return;
 
         string weaponID = weapon.GetItemID();
 
-        // Only the pistol (ID "1") counts
         if (weaponID != "1") {
             consecutiveHits = 0;
             CancelMissCheck();
             return;
         }
 
-        // Cancel any previous miss check and start a new one
         CancelMissCheck();
         missCheckCoroutine = StartCoroutine(MissCheckRoutine());
     }
 
     /// <summary>
-    /// Registers a hit on the painting.
-    /// Increments the counter and cancels the miss timeout.
-    /// If the required hits are reached, activates the easter egg.
+    /// Increments the hit counter and cancels the miss timeout. Activates the easter egg
+    /// when the required hits are reached.
     /// </summary>
     private void RegisterHit() {
         consecutiveHits++;
@@ -116,18 +108,12 @@ public class EasterEggTarget : MonoBehaviour {
     }
 
     /// <summary>
-    /// Waits for a short window after a pistol shot.
-    /// If the painting is not hit within this window, the shot is counted as a miss
-    /// and the consecutive hit counter resets.
-    /// The delay (0.3s) is long enough for the projectile to travel any distance
-    /// in the scene at its speed of 400 units/s.
+    /// Waits a short window after a pistol shot. If the painting is not hit within that time,
+    /// the shot counts as a miss and the consecutive hit counter resets.
     /// </summary>
     private IEnumerator MissCheckRoutine() {
-        // Wait for the projectile to travel and potentially collide
         yield return new WaitForSeconds(0.3f);
 
-        // If we reach here without being interrupted by RegisterHit(),
-        // the shot missed the painting
         consecutiveHits = 0;
         missCheckCoroutine = null;
     }
@@ -143,13 +129,9 @@ public class EasterEggTarget : MonoBehaviour {
     }
 
     /// <summary>
-    /// Activates the Penguin Easter egg:
-    /// 1. Marks PenguinMode as active
-    /// 2. Changes fog to blue
-    /// 3. Plays activation sound
-    /// 4. Transforms all alive enemies into penguins
-    /// 5. Shows the "PENGUIN WAVE" announcement
-    /// 6. Disables the painting's collider to prevent re-activation
+    /// Activates the Penguin Easter egg: marks PenguinMode, changes fog to blue,
+    /// plays the activation sound, transforms all alive enemies into penguins,
+    /// shows the announcement, and disables this collider.
     /// </summary>
     private void ActivateEasterEgg() {
         if (isActivated) return;
@@ -158,8 +140,7 @@ public class EasterEggTarget : MonoBehaviour {
         int currentWave = WaveManager.Instance != null ? WaveManager.Instance.CurrentWave : 1;
         PenguinMode.Activate(currentWave);
 
-        // Change fog color (configured in WaveManager Inspector)
-        FogController fog = FindObjectOfType<FogController>();
+        FogController fog = FindFirstObjectByType<FogController>();
         if (fog != null) {
             Color fogColor = WaveManager.Instance != null
                 ? WaveManager.Instance.PenguinWaveFogColor
@@ -167,29 +148,25 @@ public class EasterEggTarget : MonoBehaviour {
             fog.SetFogColor(fogColor);
         }
 
-        // Play activation sound
         if (activationSound != null) {
             audioService?.PlaySFX3D(activationSound, transform.position, 1f);
         }
 
-        // Transform all alive enemies into penguins
         TransformAllEnemiesToPenguins();
 
-        // Show the announcement
-        WaveUI waveUI = FindObjectOfType<WaveUI>();
+        WaveUI waveUI = FindFirstObjectByType<WaveUI>();
         if (waveUI != null) {
             waveUI.ShowPenguinWaveAnnouncement();
         }
 
-        // Disable the collider so this can't be triggered again
         if (targetCollider != null) {
             targetCollider.enabled = false;
         }
     }
 
     /// <summary>
-    /// Finds all active enemies in the scene, reads their reward value,
-    /// destroys them, and spawns a penguin in their place with the same reward.
+    /// Finds all active enemies, reads their reward values, destroys them,
+    /// and spawns a penguin in their place with the same reward.
     /// </summary>
     private void TransformAllEnemiesToPenguins() {
         if (penguinPrefab == null) {
@@ -203,7 +180,6 @@ public class EasterEggTarget : MonoBehaviour {
             EnemyBase enemyBase = enemy.GetComponent<EnemyBase>();
             if (enemyBase == null) continue;
 
-            // Skip tutorial enemies
             if (enemyBase.IsTutorialEnemy) continue;
 
             int reward = enemyBase.RewardCurrency;
@@ -219,8 +195,6 @@ public class EasterEggTarget : MonoBehaviour {
                 penguinScript.SetReward(reward);
             }
         }
-
-        Debug.Log($"[EasterEggTarget] Transformed all alive enemies into penguins!");
     }
 
     #endregion

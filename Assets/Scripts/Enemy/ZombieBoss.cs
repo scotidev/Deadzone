@@ -6,6 +6,8 @@ using UnityEngine;
 /// </summary>
 public class ZombieBoss : EnemyBase {
 
+    #region SERIALIZED FIELDS
+
     [Header("Boss Zombie Stats")]
     [SerializeField] private float defaultMoveSpeed = 3.0f;
     [SerializeField] private float defaultAttackRange = 2.0f;
@@ -23,6 +25,10 @@ public class ZombieBoss : EnemyBase {
     [SerializeField] private AudioClip deathSound;
     [Range(0f, 1f)]
     [SerializeField] private float deathSoundVolume = 1f;
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Initialize boss stats. Called during Awake() by EnemyBase.
@@ -55,4 +61,6 @@ public class ZombieBoss : EnemyBase {
     public override void PlayDeathSound() {
         Play3DSound(deathSound, deathSoundVolume);
     }
+
+    #endregion
 }

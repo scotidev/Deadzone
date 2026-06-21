@@ -52,7 +52,6 @@ public class BuildableDataSO : ItemDataSO {
     public float Damage => damage;
     public int ExplosionRadius => explosionRadius;
     public float Resistance => health;
-    // MaxAmmo is inherited from ItemDataSO, allowing it to be configured per item in the Inspector
     public GameObject RealPrefab => realPrefab;
     public GameObject GhostPrefab => ghostPrefab;
     public Vector3 PlacementRotationEuler => placementRotationEuler;

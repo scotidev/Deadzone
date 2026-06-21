@@ -26,7 +26,6 @@ public class MenuManager : MonoBehaviour {
     #region UNITY
 
     private void Start() {
-        // Avisa o GameManager que estamos no Menu Principal.
         GameManager.Instance?.SetState(GameState.MainMenu);
 
         var audioService = ServiceLocator.Current.Get<IAudioManagerService>();
@@ -44,7 +43,6 @@ public class MenuManager : MonoBehaviour {
     public void OnNewGameClick() {
         GameManager.ResetGameSession();
 
-        // Carrega a SelectMap sem loading screen (transição rápida entre menus).
         SceneLoader.Instance?.LoadSceneImmediate(selectMapSceneName);
     }
 
@@ -71,8 +69,6 @@ public class MenuManager : MonoBehaviour {
 
     /// <summary>
     /// Exits the application or exits fullscreen in WebGL builds.
-    /// Application.Quit() is a no-op in WebGL, so we also exit fullscreen
-    /// which, on itch.io, returns the player to the embed page.
     /// </summary>
     public void OnExitClick() {
         Application.Quit();

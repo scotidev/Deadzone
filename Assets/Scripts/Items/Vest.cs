@@ -4,51 +4,6 @@ using UnityEngine.UI;
 using InfimaGames.LowPolyShooterPack;
 using Deadzone.Interfaces;
 
-/*============================================================================
-    [BUG VEST] - CORREÇÃO DO BUG DE REGENERAÇÃO DO EXCLUSIVO DA VEST
-    
-    PROBLEMA ORIGINAL:
-    A vest deveria re-equipar automaticamente após 5 segundos fora da zona de dano, 
-    MAS o HUD não voltava a aparecer e o som não tocava porque não havia 
-    comunicação entre o sistema de regeneração e o sistema de UI.
-    
-    SOLUÇÃO IMPLEMENTADA:
-    1. Criamos um NOVO evento estático: Vest.OnVestRegenerated
-    2. Criamos um método público: TriggerRegeneratedEvent()
-    3. O sistema de regeneração chama TriggerRegeneratedEvent() quando re-equipa a vest
-    4. Este método dispara o evento estático OnVestRegenerated
-    5. O VestUI se inscreve neste evento e responde mostrando o HUD + som
-    
-    FLUXO COMPLETO:
-    Sistema de Regeneração
-        → detecta 5s fora da zona de dano com armor = 0
-        → chama ReEquipVest()
-        → chama vestComponent.TriggerRegeneratedEvent()
-        → TriggerRegeneratedEvent() dispara Vest.OnVestRegenerated
-        → VestUI.OnVestRegenerated() é chamado
-        → Mostramos HUD + tocamos som
-    
-============================================================================*/
-
-/*============================================================================
-    Vest.cs - Script do Item Colete (Armor)
-    
-    Este script controla o item "Colete" do jogo (Item 9).
-    
-    CARACTERÍSTICAS DO VEST:
-    - Não é selecionável pelo jogador (não aparece nas teclas 1-8)
-    - É "equipado automaticamente" quando desbloqueado na loja
-    - Fornece redução de dano ao jogador
-    - Tiene uma barra de armor no HUD que é destruída ao receber dano suficiente
-    
-    POR QUE USAMOS "ScriptableObject" (VestDataSO)?
-    - Permite criar o dado do item no editor Unity sem escrever código
-    - Facilita balancing (preços, níveis, descrições) sem compilar
-    
-    O sistema usa "ServiceLocator" para tocarsons de forma centralizada,
-    isso garante que o som toque em qualquer cena do jogo.
-============================================================================*/
-
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
     /// Vest armor item. Auto-equipped when unlocked/upgraded.
@@ -56,83 +11,53 @@ namespace InfimaGames.LowPolyShooterPack {
     /// Provides armor damage reduction.
     /// </summary>
     public class Vest : ItemBehaviour, IShopItemCallback {
-        
-#region SERIALIZED FIELDS
-    /*-----------------------------------------------------------------------------
-        SERIALIZED FIELDS são variáveis que aparecem no Inspector do Unity.
-        Usamos [SerializeField] para forçar Unity a mostrar variáveis private.
-    -----------------------------------------------------------------------------*/
-    
-    [SerializeField] private VestDataSO vestData;
-    [SerializeField] private float damageReductionPercentage = 0.1f;  // 10% reduction
-    
-    [Header("Audio Clips")]
-    [SerializeField] private AudioClip vestEquippedClip;    // Som quando equipar/equipar
-    [SerializeField] private AudioClip vestDestroyedClip; // Som quando o colete quebra
-    
-    #endregion
-    
-    #region FIELDS
-    /*-----------------------------------------------------------------------------
-        FIELDS são variáveis privadas que não aparecem no Inspector.
-        Usamos para guardar referências necessárias no código.
-    -----------------------------------------------------------------------------*/
 
-    // IAudioManagerService é a interface do sistema de áudio do jogo.
-    // Permite tocar sons de forma centralizada usando ServiceLocator.
-    private IAudioManagerService audioService;
+        #region SERIALIZED FIELDS
 
-    // Referência ao PlayerHealth para verificar se o player está vivo
-    private PlayerHealth playerHealth;
+        [SerializeField] private VestDataSO vestData;
+        [SerializeField] private float damageReductionPercentage = 0.1f;
 
-    // Armadura atual e máxima do jogador
-    private float currentArmor;
-    private float maxArmor;
+        [Header("Audio Clips")]
+        [SerializeField] private AudioClip vestEquippedClip;
+        [SerializeField] private AudioClip vestDestroyedClip;
 
-    // EVENTOS: permitem que outros scripts saibam quando algo mudar
-    public event Action<float> OnArmorChanged;
-    public event Action OnArmorDepleted;
+        #endregion
 
-    #endregion
+        #region FIELDS
 
-    #region PROPERTIES
+        private IAudioManagerService audioService;
+        private PlayerHealth playerHealth;
+        private float currentArmor;
+        private float maxArmor;
 
-    /// <summary>
-    /// Public accessor to vest data for other scripts.
-    /// </summary>
-    public VestDataSO VestData => vestData;
+        #endregion
 
-    #endregion
-        
+        #region PROPERTIES
+
+        /// <summary>
+        /// Public accessor to vest data for other scripts.
+        /// </summary>
+        public VestDataSO VestData => vestData;
+
+        #endregion
+
         #region EVENTS
-        /*-----------------------------------------------------------------------------
-            EVENTOS servem para notificar outros scripts sobre algo que aconteceu.
-            Outros scripts podem "assinar" esses eventos para executar código quando ocorrer.
-        -----------------------------------------------------------------------------*/
-        
-        // Evento estático - usado quando o colete é destruído
-        // Outros scripts podem ouvir isso para atualizar a UI, por exemplo
+
+        public event Action<float> OnArmorChanged;
+        public event Action OnArmorDepleted;
         public static event System.Action OnVestDestroyed;
 
         #endregion
 
-        #region UNITY
-        
-        /*-----------------------------------------------------------------------------
-            Awake() é chamado uma vez quando o objeto é criado na memória.
-            É usado para inicializar referências e configurações iniciais.
-        -----------------------------------------------------------------------------*/
-        private void Awake() {
-            // ServiceLocator.Current.Get<IAudioManagerService>() pega o serviço de áudio
-            // que foi registrado no Bootstraper do jogo.
-            // Isso garante que sempre teremos acesso ao sistema de áudio.
-            audioService = ServiceLocator.Current.Get<IAudioManagerService>();
-            
-            // O jogador COMEÇA sem armadura (0)
-            // Só vai ter armadura quando desbloquear na loja
-            currentArmor = 0f;
+        #region CONSTANTS
 
-            // Procurar o PlayerHealth
+        #endregion
+
+        #region UNITY
+
+        private void Awake() {
+            audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+            currentArmor = 0f;
             playerHealth = GetComponent<PlayerHealth>();
             if (playerHealth == null) {
                 playerHealth = GetComponentInParent<Character>()?.GetComponentInChildren<PlayerHealth>();
@@ -146,7 +71,7 @@ namespace InfimaGames.LowPolyShooterPack {
         private void OnDestroy() {
         }
 
-/// <summary>
+        /// <summary>
         /// Initializes armor based on current vest level. Called at Start for games where vest is already unlocked.
         /// </summary>
         private void InitializeArmorFromVestLevel() {
@@ -160,14 +85,10 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
+        #region METHODS
+
         #region ITEM BEHAVIOUR IMPLEMENTATION
-        /*-----------------------------------------------------------------------------
-            ITEM BEHAVIOUR IMPLEMENTATION - Métodos da classe base ItemBehaviour
-            Estes métodos implementam a interface que todo item do jogo precisa ter.
-        -----------------------------------------------------------------------------*/
-        
-        // GetItemID() retorna o ID único do item
-        // O sistema de progresso usa isso para salvar/carregar o estado do item
+
         public override string GetItemID() {
             if (vestData == null) {
                 Debug.LogWarning("[Vest] vestData é null! Configure no Inspector.", gameObject);
@@ -175,57 +96,49 @@ namespace InfimaGames.LowPolyShooterPack {
             }
             return vestData.ItemID;
         }
-        
-        // GetDisplayName() retorna o nome shown na UI
+
         public override string GetDisplayName() {
             if (vestData == null) return "Unknown";
             return vestData.ItemName;
         }
 
         /// <summary>
-        /// Vest não tem ícone HUD (não é selecionável).
+        /// Vest does not have a HUD icon (not selectable).
         /// </summary>
         public override Sprite GetIcon() {
             return null;
         }
 
         /// <summary>
-        /// Vest não responde a seleção (nunca chamado).
-        /// É equipadode forma automática, não manualmente.
+        /// Vest does not respond to selection.
         /// </summary>
         public override void OnSelected() {
-            // Vest é equipadode forma automática, não selecionável pelas teclas
         }
 
         /// <summary>
-        /// Vest não responde a deseleção.
+        /// Vest does not respond to deselection.
         /// </summary>
         public override void OnDeselected() {
-            // Vest sempre está equipado
         }
 
         /// <summary>
-        /// Vest não tem ação de "usar".
-        /// Ele fornece redução de daman passiva.
+        /// Vest has no use action. It provides passive damage reduction.
         /// </summary>
         public override void OnUse() {
-            // Vest é passivo, sem ação de uso
         }
 
         /// <summary>
-        /// Vest pode sempre ser "usado" (sempre está equipado).
+        /// Vest can always be used (always equipped).
         /// </summary>
         public override bool CanBeUsed() {
             if (PlayerProgress.Instance == null) {
                 return false;
             }
-            
-            // Verifica se Vest está desbloqueado
             return PlayerProgress.Instance.IsItemUnlocked(GetItemID());
         }
 
         /// <summary>
-        /// Get damage reduction percentage for this vest.
+        /// Gets the damage reduction percentage for this vest.
         /// Used by PlayerHealth to reduce incoming damage.
         /// </summary>
         public float GetDamageReductionPercentage() {
@@ -244,15 +157,15 @@ namespace InfimaGames.LowPolyShooterPack {
                 Debug.LogWarning("[Vest] GetMaxArmorFromCurrentLevel: PlayerProgress or vestData is null");
                 return 100f;
             }
-            
+
             string vestID = GetItemID();
             int level = PlayerProgress.Instance.GetItemLevel(vestID);
             return vestData.GetResistanceAtLevel(level);
         }
 
         /// <summary>
-        /// Equipa o colete quando o jogador desbloqueia na loja.
-        /// Define armadura para o máximo baseado no nível do Vest e notifica a UI.
+        /// Equips the vest when the player unlocks it in the shop.
+        /// Sets armor to maximum based on vest level and notifies UI.
         /// </summary>
         public void Equip() {
             float maxArmorValue = GetMaxArmorFromCurrentLevel();
@@ -274,7 +187,7 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Absorbs damage from the armor. Returns the remaining damage that wasn't absorbed.
+        /// Absorbs damage from the armor. Returns remaining damage that was not absorbed.
         /// </summary>
         public float AbsorbDamage(float incomingDamage) {
             if (currentArmor <= 0f) {
@@ -290,7 +203,7 @@ namespace InfimaGames.LowPolyShooterPack {
             if (currentArmor <= 0f) {
                 currentArmor = 0f;
                 OnArmorDepleted?.Invoke();
-                
+
                 if (PlayerProgress.Instance != null && PlayerProgress.Instance.IsItemUnlocked(GetItemID())) {
                     PlayDestroyedSound();
                 }
@@ -323,29 +236,20 @@ namespace InfimaGames.LowPolyShooterPack {
         public float GetMaxArmor() => maxArmor;
 
         /// <summary>
-        /// Checks if the player currently has any armor.
+        /// Returns whether the player currently has any armor.
         /// </summary>
         public bool HasArmor() => currentArmor > 0f;
 
         #endregion
-        
+
         #region AUDIO
-        /*-----------------------------------------------------------------------------
-            AUDIO - Métodos para tocarsons
-            Estes métodos são chamados pelo ShopUI quando o jogador
-            compra/equipa/repara o colete.
-        -----------------------------------------------------------------------------*/
-        
+
         /// <summary>
         /// Plays the vest equipped sound effect.
-        /// Called when player unlocks/buys the vest from shop.
+        /// Called when player unlocks or buys the vest from the shop.
         /// </summary>
         public void PlayEquippedSound() {
-            // Verificamos se o clip e o serviço existem antes de tocar
-            // Isso evita erros se você esqueceu de arrastar o áudio no Inspector
             if (vestEquippedClip != null && audioService != null) {
-                // PlaySFX2D toca som 2D (não espacial, same volume em qualquer lugar)
-                // Isso é usado para sons de UI e feedback do jogador
                 audioService.PlaySFX2D(vestEquippedClip);
             }
         }
@@ -355,16 +259,12 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Called when the vest is destroyed (armor reaches 0).
         /// </summary>
         public void PlayDestroyedSound() {
-            // Toca som de destruir
             if (vestDestroyedClip != null && audioService != null) {
                 audioService.PlaySFX2D(vestDestroyedClip);
             }
-            
-            // Dispara o evento para notificar outros scripts (ex: PlayerArmorUI)
-            // Isso permite que a UI seja atualizada quando colete quebra
             OnVestDestroyed?.Invoke();
         }
-        
+
         #endregion
 
         #region SHOP
@@ -375,7 +275,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// </summary>
         public static Vest GetFromPlayer(Character player) {
             if (player == null) return null;
-            
+
             Vest vest = player.GetComponent<Vest>();
             if (vest == null) {
                 vest = player.GetComponentInChildren<Vest>();
@@ -432,6 +332,12 @@ namespace InfimaGames.LowPolyShooterPack {
                 vestUI.ShowArmorUI();
             }
         }
+
+        #endregion
+
+        #region DEBUG
+
+        #endregion
 
         #endregion
     }

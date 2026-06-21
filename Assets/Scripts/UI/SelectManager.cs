@@ -61,13 +61,10 @@ public class SelectManager : MonoBehaviour {
     /// Initializes visual defaults for backgrounds and map cards.
     /// </summary>
     private void Start() {
-        // We are in a menu context, so the GameState should be MainMenu.
         GameManager.Instance?.SetState(GameState.MainMenu);
 
-        // We resolve the shared audio service from the locator so this screen uses the same audio pipeline as the whole game.
         audioService = ServiceLocator.Current.Get<IAudioManagerService>();
 
-        // We start the selection screen BGM once, keeping music management centralized in the audio service.
         audioService?.PlayBGM(selectScreenBGM, true, selectScreenBGMFadeDuration, selectScreenBGMVolume);
 
         InitializeBackgroundImages();
@@ -143,13 +140,10 @@ public class SelectManager : MonoBehaviour {
     private void SelectAndLoadMap(MapOption option) {
         MapEntry entry = GetEntry(option);
         if (entry == null || string.IsNullOrWhiteSpace(entry.sceneName)) {
-            Debug.LogWarning($"[SelectManager] SelectAndLoadMap FAILED: entry null ou sceneName vazio | option={option}");
+            Debug.LogWarning($"[SelectManager] SelectAndLoadMap FAILED: entry null or sceneName empty | option={option}");
             return;
         }
 
-        Debug.Log($"[SelectManager] SelectAndLoadMap | option={option} | sceneName='{entry.sceneName}'");
-
-        // We persist the selected background so hover exit returns to this selection.
         selectedBackgroundObject = entry.previewBackgroundObject;
         ShowSelectedOrDefaultBackground();
         SceneLoader.Instance?.LoadScene(entry.sceneName);
@@ -175,7 +169,6 @@ public class SelectManager : MonoBehaviour {
     /// </summary>
     /// <param name="targetObject">Background object that should remain active.</param>
     private void ShowBackgroundObject(GameObject targetObject) {
-        // We first disable every known background object to enforce a single visual source.
         if (defaultBackgroundObject != null) {
             defaultBackgroundObject.SetActive(false);
         }
@@ -188,9 +181,7 @@ public class SelectManager : MonoBehaviour {
             }
         }
 
-        // Then we enable only the target object (if assigned).
         if (targetObject != null) {
-            // We keep preview backgrounds visually behind cards so they never overlap interactive UI.
             targetObject.transform.SetAsFirstSibling();
             targetObject.SetActive(true);
         }
@@ -224,7 +215,6 @@ public class SelectManager : MonoBehaviour {
             return;
         }
 
-        // We disable raycast on all graphics to prevent invisible/fullscreen layers from stealing mouse hover.
         Graphic[] graphics = backgroundObject.GetComponentsInChildren<Graphic>(true);
         for (int i = 0; i < graphics.Length; i++) {
             graphics[i].raycastTarget = false;
@@ -254,7 +244,6 @@ public class SelectManager : MonoBehaviour {
     /// Prepares background images to support smooth overlay fades.
     /// </summary>
     private void InitializeBackgroundImages() {
-        // We initialize object mode so only the default background stays active at startup.
         ShowBackgroundObject(defaultBackgroundObject);
         selectedBackgroundObject = defaultBackgroundObject;
     }

@@ -36,13 +36,6 @@ public class GhostObject : MonoBehaviour {
 
     #region METHODS
 
-    /// <summary>
-    /// Updates the visual appearance of the ghost object to indicate whether the associated place is available or occupied.
-    /// </summary>
-    /// <remarks>This method is typically called by the BuildingController each frame to reflect the current state of the place. It changes the material of all associated renderers to visually indicate availability.</remarks>
-    /// <param name="placeable">A value indicating whether the place is available. 
-    /// Specify <see langword="true"/> to show the place as available (green); 
-    /// Specify <see langword="false"/> to show it as occupied (red).</param>
     public void SetPlaceable(bool placeable) {
         isPlaceable = placeable;
 

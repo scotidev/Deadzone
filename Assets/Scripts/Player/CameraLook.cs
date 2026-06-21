@@ -1,8 +1,4 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-
 using UnityEngine;
-
-//REFATORAÇÃO: mudar por aqui a sensibilidade quando ela for atualizada no mehu la em OptionsUI
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
@@ -48,9 +44,6 @@ namespace InfimaGames.LowPolyShooterPack {
         private void LateUpdate() {
             Vector2 frameInput = playerCharacter.IsCursorLocked() ? playerCharacter.GetInputLook() : default;
 
-            // CONCEITO: Early-out — se o mouse não moveu, não processa nada.
-            // Quaternion.Euler, Slerp e Clamp são operações matemáticas caras.
-            // Pular tudo quando o input é zero economiza CPU em cada frame parado.
             if (frameInput == Vector2.zero && !smooth)
                 return;
 
@@ -99,6 +92,9 @@ namespace InfimaGames.LowPolyShooterPack {
             return rotation;
         }
 
+        /// <summary>
+        /// Sets the mouse sensitivity for camera look.
+        /// </summary>
         public void SetSensitivity(float value) {
             sensitivity = new Vector2(value, value);
         }

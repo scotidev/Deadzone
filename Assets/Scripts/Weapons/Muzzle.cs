@@ -1,11 +1,10 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-
 using UnityEngine;
 using System.Collections;
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
-    /// Muzzle.
+    /// Muzzle. Handles muzzle flash particles, flash light, and fire audio
+    /// when the weapon is fired through this muzzle attachment.
     /// </summary>
     public class Muzzle : MuzzleBehaviour {
 
@@ -73,17 +72,30 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
-        #region GETTERS
+        #region METHODS
 
+        /// <summary>
+        /// Plays muzzle effects: emits particles and enables the flash light.
+        /// </summary>
         public override void Effect() {
             if (particles != null)
                 particles.Emit(flashParticlesCount);
 
             if (flashLight != null) {
                 flashLight.enabled = true;
-                StartCoroutine(nameof(DisableLight));
+                StartCoroutine(DisableLight());
             }
         }
+
+        /// <summary>
+        /// Disables the flash light after its configured duration.
+        /// </summary>
+        private IEnumerator DisableLight() {
+            yield return new WaitForSeconds(flashLightDuration);
+            flashLight.enabled = false;
+        }
+
+        #region GETTERS
 
         public override Transform GetSocket() => socket;
 
@@ -97,13 +109,6 @@ namespace InfimaGames.LowPolyShooterPack {
         public override float GetFlashLightDuration() => flashLightDuration;
 
         #endregion
-
-        #region METHODS
-
-        private IEnumerator DisableLight() {
-            yield return new WaitForSeconds(flashLightDuration);
-            flashLight.enabled = false;
-        }
 
         #endregion
     }

@@ -1,10 +1,9 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-
 using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
-    /// Weapon Attachment Manager Behaviour.
+    /// Weapon Attachment Manager Behaviour. Abstract base class providing access to
+    /// equipped weapon attachments (scope, magazine, muzzle).
     /// </summary>
     public abstract class WeaponAttachmentManagerBehaviour : MonoBehaviour {
         #region UNITY
@@ -18,6 +17,8 @@ namespace InfimaGames.LowPolyShooterPack {
         protected virtual void LateUpdate() { }
 
         #endregion
+
+        #region METHODS
 
         #region GETTERS
 
@@ -38,6 +39,8 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Returns the equipped muzzle.
         /// </summary>
         public abstract MuzzleBehaviour GetEquippedMuzzle();
+
+        #endregion
 
         #endregion
     }

@@ -1,8 +1,4 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-
 using UnityEngine;
-
-// Refatoração: Usar um prefab ou manter o canvas na scene? Como isos interfere nos Panels que herdam de BaseUI além do HUD do player? talvez usar o HUD de player aqui
 
 namespace InfimaGames.LowPolyShooterPack.Interface {
     /// <summary>

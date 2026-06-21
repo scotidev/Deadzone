@@ -35,18 +35,10 @@ public class FogController : MonoBehaviour {
 
     #region METHODS
 
-    /// <summary>
-    /// Enables fog emission. Called by TutorialEndTrigger when the tutorial ends.
-    /// After this, the fog emits at the rate configured in the ParticleSystem Inspector.
-    /// </summary>
     public void EnableFog() {
         fogParticles.Play();
     }
 
-    /// <summary>
-    /// Changes the color of the fog particles to the specified color.
-    /// Used by WaveManager during boss waves to change fog to red.
-    /// </summary>
     public void SetFogColor(Color newColor) {
         if (fogParticles == null)
             return;
@@ -55,10 +47,6 @@ public class FogController : MonoBehaviour {
         main.startColor = newColor;
     }
 
-    /// <summary>
-    /// Resets the fog color back to its original color.
-    /// Used by WaveManager when a boss wave ends.
-    /// </summary>
     public void ResetFogColor() {
         SetFogColor(originalFogColor);
     }

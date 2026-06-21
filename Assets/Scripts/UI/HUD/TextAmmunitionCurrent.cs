@@ -1,5 +1,3 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-
 using UnityEngine;
 using System.Globalization;
 
@@ -24,28 +22,26 @@ namespace InfimaGames.LowPolyShooterPack.Interface {
 
         #region METHODS
 
-    protected override void Tick() {
-        // CONCEITO: Early return pattern prevents null reference errors.
-        // If no item is equipped, skip this frame update.
-        if (equippedItem == null)
-            return;
+        /// <summary>
+        /// Updates the current ammunition display text and color based on magazine fill ratio.
+        /// </summary>
+        protected override void Tick() {
+            if (equippedItem == null)
+                return;
 
-        // NEW: Get item ID and fetch ammo from PlayerProgress (single source of truth)
-        string itemID = equippedItem.GetItemID();
-        int current = PlayerProgress.Instance.GetItemCurrent(itemID);
-        int maxCurrent = PlayerProgress.Instance.GetItemMaxCurrent(itemID);
-        int total = PlayerProgress.Instance.GetItemTotal(itemID);
+            string itemID = equippedItem.GetItemID();
+            int current = PlayerProgress.Instance.GetItemCurrent(itemID);
+            int maxCurrent = PlayerProgress.Instance.GetItemMaxCurrent(itemID);
+            int total = PlayerProgress.Instance.GetItemTotal(itemID);
 
-        // Display current ammo in magazine/hand
-        textMesh.text = current.ToString(CultureInfo.InvariantCulture);
+            textMesh.text = current.ToString(CultureInfo.InvariantCulture);
 
-        if (updateColor) {
-            // Color based on how full the magazine/hand is
-            float fillRatio = maxCurrent > 0 ? (current / (float)maxCurrent) : 0f;
-            float colorAlpha = fillRatio * emptySpeed;
-            textMesh.color = Color.Lerp(emptyColor, Color.white, colorAlpha);
+            if (updateColor) {
+                float fillRatio = maxCurrent > 0 ? (current / (float)maxCurrent) : 0f;
+                float colorAlpha = fillRatio * emptySpeed;
+                textMesh.color = Color.Lerp(emptyColor, Color.white, colorAlpha);
+            }
         }
-    }
 
         #endregion
     }

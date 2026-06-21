@@ -8,9 +8,9 @@ namespace InfimaGames.LowPolyShooterPack {
     /// Medkit consumable item. Heals the player when used.
     /// </summary>
     public class Medkit : ItemBehaviour {
-        
+
         #region SERIALIZED FIELDS
-        
+
         [SerializeField] private MedkitDataSO medkitData;
         [SerializeField] private Sprite hudIcon;
 
@@ -26,12 +26,24 @@ namespace InfimaGames.LowPolyShooterPack {
 
         [Header("Visual Feedback")]
         [SerializeField] private float feedbackDuration = 1f;
-        
+
         #endregion
 
         #region FIELDS
 
         private IAudioManagerService audioService;
+
+        #endregion
+
+        #region PROPERTIES
+
+        #endregion
+
+        #region EVENTS
+
+        #endregion
+
+        #region CONSTANTS
 
         #endregion
 
@@ -42,12 +54,13 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         #endregion
-        
+
+        #region METHODS
+
         #region ITEM BEHAVIOUR IMPLEMENTATION
-        
+
         /// <summary>
-        /// Get the item ID from ScriptableObject (e.g., "4" for Medkit).
-        /// CONCEITO: Não duplicamos dados. Tudo vem do SO (source of truth).
+        /// Gets the item ID from ScriptableObject (e.g., "4" for Medkit).
         /// </summary>
         public override string GetItemID() {
             if (medkitData == null) {
@@ -56,17 +69,17 @@ namespace InfimaGames.LowPolyShooterPack {
             }
             return medkitData.ItemID;
         }
-        
+
         /// <summary>
-        /// Get display name from ScriptableObject (e.g., "First Aid Kit").
+        /// Gets display name from ScriptableObject (e.g., "First Aid Kit").
         /// </summary>
         public override string GetDisplayName() {
             if (medkitData == null) return "Unknown";
             return medkitData.ItemName;
         }
-        
+
         /// <summary>
-        /// Get HUD icon. Null check prevents exceptions.
+        /// Gets HUD icon. Null check prevents exceptions.
         /// </summary>
         public override Sprite GetIcon() {
             if (hudIcon == null) {
@@ -75,15 +88,14 @@ namespace InfimaGames.LowPolyShooterPack {
             }
             return hudIcon;
         }
-        
+
         /// <summary>
         /// Called when player selects this item (key 4).
-        /// Activate visual representation (medkit model in hand).
+        /// Activates visual representation (medkit model in hand).
         /// </summary>
         public override void OnSelected() {
             string id = GetItemID();
             int total = PlayerProgress.Instance != null ? PlayerProgress.Instance.GetItemTotal(id) : -1;
-            Debug.Log($"[Medkit] OnSelected: itemID={id}, total={total}");
 
             PlayEquipSound();
             if (PlayerProgress.Instance != null) {
@@ -91,20 +103,17 @@ namespace InfimaGames.LowPolyShooterPack {
             }
             gameObject.SetActive(true);
         }
-        
+
         /// <summary>
-        /// Called when player selects another item.
-        /// Deactivate visual.
+        /// Called when player selects another item. Deactivates visual.
         /// </summary>
         public override void OnDeselected() {
             gameObject.SetActive(false);
         }
-        
+
         /// <summary>
-        /// Use the medkit: heal the player based on upgrade level.
-        /// If health is at 100%, play deny sound and do not consume the item.
-        /// If no medkit in hand, play deny sound.
-        /// If medkit is used successfully and quantity > 0, remains equipped.
+        /// Uses the medkit: heals the player based on upgrade level.
+        /// If health is at 100%, plays deny sound and does not consume the item.
         /// If quantity reaches 0, automatically equips weapon with holster animation.
         /// </summary>
         public override void OnUse() {
@@ -117,11 +126,10 @@ namespace InfimaGames.LowPolyShooterPack {
                 int currentInHand = PlayerProgress.Instance.GetItemCurrent(GetItemID());
                 if (currentInHand <= 0) {
                     PlayDenySound();
-                    Debug.Log("[Medkit] No medkit in hand, cannot use.");
                     return;
                 }
             }
-            
+
             PlayerHealth playerHealth = GetComponentInParent<PlayerHealth>();
             if (playerHealth == null) {
                 Debug.LogWarning("[Medkit] PlayerHealth not found!", gameObject);
@@ -130,7 +138,6 @@ namespace InfimaGames.LowPolyShooterPack {
 
             if (playerHealth.GetHealthFraction() >= 1f) {
                 PlayDenySound();
-                Debug.Log("[Medkit] Health already at 100%, cannot use medkit.");
                 return;
             }
 
@@ -150,44 +157,37 @@ namespace InfimaGames.LowPolyShooterPack {
             if (PlayerProgress.Instance != null) {
                 PlayerProgress.Instance.UseItem(GetItemID(), 1);
                 int remaining = PlayerProgress.Instance.GetItemTotal(GetItemID());
-                
-                // NOVO: Verificar se chegou a zero
+
                 if (remaining > 0) {
-                    // Ainda há medkits: mantém equipado
                     PlayerProgress.Instance.SetItemCurrent(GetItemID(), 1);
-                    Debug.Log($"[Medkit] OnUse: itemID={GetItemID()}, remaining={remaining}, keep equipped");
                 } else {
-                    // Última unidade usada: volta à pistola com animação
                     PlayerProgress.Instance.SetItemCurrent(GetItemID(), 0);
                     EquipWeaponAutomatically();
-                    Debug.Log($"[Medkit] OnUse: used last medkit, auto-equip weapon");
                 }
             }
-
-            Debug.Log($"[Medkit] Healed for {healAmount} HP. Level: {currentLevel}");
         }
-        
+
         /// <summary>
-        /// Check if medkit is unlocked (for selection). Quantity check happens in OnUse().
+        /// Checks if medkit is unlocked (for selection). Quantity check happens in OnUse().
         /// </summary>
         public override bool CanBeUsed() {
             if (PlayerProgress.Instance == null) {
                 return false;
             }
-            
+
             bool isUnlocked = PlayerProgress.Instance.IsItemUnlocked(GetItemID());
             int total = PlayerProgress.Instance.GetItemTotal(GetItemID());
             if (isUnlocked && total <= 0)
                 FeedbackMessageUI.Instance?.Show();
             return isUnlocked && total > 0;
         }
-        
+
         #endregion
 
         #region ANIMATION
 
         /// <summary>
-        /// Medkit nao precisa de pose de arma. Mantem maos abaixadas ao equipar.
+        /// Medkit does not need a weapon pose. Keeps hands lowered when equipped.
         /// </summary>
         public override bool KeepHolsteredOnEquip() => true;
 
@@ -236,16 +236,19 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <summary>
         /// Automatically equips the default weapon (pistol) when medkit quantity reaches zero.
         /// Uses smooth animation transition via Character.TryRestoreWeaponSmoothly().
-        /// CONCEITO: Em vez de trocar instantaneamente, pedimos ao Character para
-        /// gerenciar a transição (Holster -> Swap -> Unholster).
         /// </summary>
         private void EquipWeaponAutomatically() {
             Character character = GetComponentInParent<Character>();
             if (character == null) return;
 
-            // Chama a nova lógica suave que espera a animação terminar
             character.TryRestoreWeaponSmoothly();
         }
+
+        #endregion
+
+        #region DEBUG
+
+        #endregion
 
         #endregion
     }

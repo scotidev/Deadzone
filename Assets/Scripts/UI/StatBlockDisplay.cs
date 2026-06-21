@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// bug: CIANO NAO ESTÁ APARECENDO.
-
 /// <summary>
 /// Visual stat display using 5 fillable blocks (bars).
 /// Each block can be partially filled. Shows current value in cyan and upgrade preview in green.
@@ -21,7 +19,6 @@ public class StatBlockDisplay : MonoBehaviour {
 
     [Header("Settings")]
     [SerializeField] private float maxStatValue = 100f;
-    [SerializeField] private bool useImageFillAmount = true;
 
     #endregion
 
@@ -87,18 +84,12 @@ public class StatBlockDisplay : MonoBehaviour {
     private void SetBlockFill(Image blockImage, float fillAmount, Color color) {
         fillAmount = Mathf.Clamp01(fillAmount);
 
-        if (useImageFillAmount) {
-            blockImage.fillAmount = fillAmount;
-            blockImage.color = color;
-        } else {
-            blockImage.fillAmount = fillAmount;
-            blockImage.color = color;
-        }
+        blockImage.fillAmount = fillAmount;
+        blockImage.color = color;
     }
 
     /// <summary>
     /// Sets the maximum stat value used for scaling calculations.
-    /// Useful when you want to normalize different stats to the same scale.
     /// </summary>
     public void SetMaxStatValue(float maxValue) {
         maxStatValue = Mathf.Max(1f, maxValue);

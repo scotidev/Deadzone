@@ -2,9 +2,6 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
-// Legacy entry point kept for existing callers.
-// O QUE A LIINHA  quer dizer? esse método está obsoleto? analise necessaria
-
 /// <summary>
 /// Persistent HUD panel that displays wave information during gameplay.
 /// </summary>
@@ -84,18 +81,14 @@ public class WaveUI : BaseUI {
     private void UpdateTimerDisplay(float time, bool activeWave) {
         if (timerText == null) return;
 
-        // Formatação simples MM:SS sem prefixos
         int minutes = Mathf.FloorToInt(time / 60f);
         int seconds = Mathf.FloorToInt(time % 60f);
         timerText.text = $"{minutes:00}:{seconds:00}";
 
-        // Lógica de Cor
         if (!activeWave && WaveManager.Instance.IsCountdownActive && time <= warningThreshold) {
-            // Interpolação gradativa para o vermelho nos últimos segundos
             float t = 1f - (time / warningThreshold);
             timerText.color = Color.Lerp(normalColor, warningColor, t);
         } else {
-            // Cor padrão durante a wave ou início do countdown
             timerText.color = normalColor;
         }
     }

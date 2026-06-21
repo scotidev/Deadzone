@@ -4,9 +4,11 @@ using UnityEngine;
 /// <summary>
 /// Static manager that tracks whether the Penguin Easter egg has been activated.
 /// Only one activation per game session. The effect only lasts for the wave
-/// in which it was activated — subsequent waves return to normal enemies.
+/// in which it was activated; subsequent waves return to normal enemies.
 /// </summary>
 public static class PenguinMode {
+
+    #region PROPERTIES
 
     /// <summary>Whether the easter egg has been activated this game (prevents re-activation).</summary>
     public static bool Active { get; private set; }
@@ -21,8 +23,16 @@ public static class PenguinMode {
     public static bool IsCurrentWavePenguinWave =>
         Active && WaveManager.Instance != null && WaveManager.Instance.CurrentWave == ActivatedAtWave;
 
+    #endregion
+
+    #region EVENTS
+
     /// <summary>Fired when the easter egg is first activated.</summary>
     public static event Action OnActivated;
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Tries to activate penguin mode. Only succeeds once per game.
@@ -32,7 +42,6 @@ public static class PenguinMode {
 
         Active = true;
         ActivatedAtWave = currentWave;
-        Debug.Log($"[PenguinMode] ACTIVATED at wave {currentWave}!");
 
         OnActivated?.Invoke();
     }
@@ -44,4 +53,6 @@ public static class PenguinMode {
         Active = false;
         ActivatedAtWave = 0;
     }
+
+    #endregion
 }

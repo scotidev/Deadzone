@@ -7,6 +7,8 @@ using UnityEngine;
 [System.Serializable]
 public class EnemySpawnConfig {
 
+    #region SERIALIZED FIELDS
+
     public GameObject prefab;
 
     [Tooltip("The minimum wave this enemy can appear.")]
@@ -16,9 +18,8 @@ public class EnemySpawnConfig {
     [Range(0.01f, 20f)]
     public float spawnWeight = 1f;
 
-    /// <summary>
-    /// Marks this enemy as a boss. If the current wave includes at least one boss, the boss SFX takes priority.
-    /// </summary>
     [Tooltip("Mark this enemy as a boss. If it is available in the wave, the boss SFX will play.")]
     public bool isBoss;
+
+    #endregion
 }

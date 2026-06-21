@@ -67,6 +67,9 @@ public class LogoIntro : MonoBehaviour {
 
     #region METHODS
 
+    /// <summary>
+    /// Plays the logo audio sequence with configured delays.
+    /// </summary>
     private IEnumerator PlayAudioSequence() {
         if (videoPlayer != null) {
             while (!videoPlayer.isPrepared) yield return null;
@@ -79,12 +82,18 @@ public class LogoIntro : MonoBehaviour {
         PlayGlobalSound(audioLogoLary);
     }
 
+    /// <summary>
+    /// Plays a global one-shot sound if not skipped.
+    /// </summary>
     private void PlayGlobalSound(AudioClip clip) {
         if (clip == null || skipped || audioManagerService == null) return;
 
         audioManagerService.PlayOneShot(clip, audioSettings);
     }
 
+    /// <summary>
+    /// Waits for the intro duration, then transitions to the menu.
+    /// </summary>
     private IEnumerator WaitAndLoad() {
 
         if (videoPlayer != null) {
@@ -96,15 +105,21 @@ public class LogoIntro : MonoBehaviour {
         if (!skipped) GoToMenu();
     }
 
+    /// <summary>
+    /// Skips the intro and goes directly to the menu.
+    /// </summary>
     private void SkipIntro() {
 
         if (skipped) return;
         skipped = true;
-        
+
         StopAllCoroutines();
         GoToMenu();
     }
 
+    /// <summary>
+    /// Loads the Menu scene.
+    /// </summary>
     private void GoToMenu() {
         SceneLoader.Instance?.LoadScene("Menu");
     }

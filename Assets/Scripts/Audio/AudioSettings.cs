@@ -1,4 +1,4 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
+// Copyright 2021, Infima Games. All Rights Reserved.
 
 using UnityEngine;
 
@@ -36,7 +36,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
-        #region CONSTRUCTORS
+        #region METHODS
 
         public AudioSettings(float volume = 1.0f, float spatialBlend = 0.0f, bool automaticCleanup = true) {
             this.volume = volume;

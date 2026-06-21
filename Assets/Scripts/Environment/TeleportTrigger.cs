@@ -17,11 +17,18 @@ public class TeleportTrigger : MonoBehaviour {
 
     #endregion
 
+    #region UNITY
+
+    private void OnTriggerEnter(Collider other) {
+        if (Teleport.Instance != null) {
+            Teleport.Instance.NotifyTriggerEnter(gameObject, other);
+        }
+    }
+
+    #endregion
+
     #region METHODS
 
-    /// <summary>
-    /// Activates the teleport VFX and schedules its deactivation.
-    /// </summary>
     public void PlayVFX() {
         if (teleportVFX == null) return;
 
@@ -33,17 +40,6 @@ public class TeleportTrigger : MonoBehaviour {
         teleportVFX.SetActive(true);
         yield return new WaitForSeconds(vfxDuration);
         teleportVFX.SetActive(false);
-    }
-
-    #endregion
-
-    #region UNITY
-
-    private void OnTriggerEnter(Collider other) {
-        if (Teleport.Instance != null) {
-            // Envia o próprio GameObject para o manager comparar
-            Teleport.Instance.NotifyTriggerEnter(gameObject, other);
-        }
     }
 
     #endregion

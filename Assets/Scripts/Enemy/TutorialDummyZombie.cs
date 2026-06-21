@@ -34,15 +34,7 @@ public class TutorialDummyZombie : EnemyBase {
 
     #region FIELDS
 
-    /// <summary>
-    /// Acumulador de tempo desde a última execução do som de idle.
-    /// </summary>
     private float idleSoundTimer = 0f;
-
-    /// <summary>
-    /// Próximo tempo (em segundos) em que um som de idle deve tocar.
-    /// Sorteado aleatoriamente entre idleIntervalRange.x e idleIntervalRange.y.
-    /// </summary>
     private float idleSoundNextTime = 0f;
 
     #endregion
@@ -50,27 +42,23 @@ public class TutorialDummyZombie : EnemyBase {
     #region UNITY
 
     protected override void Awake() {
-        // Força que este seja um inimigo tutorial para não contar nas waves do WaveManager
         isTutorialEnemy = true;
 
         base.Awake();
 
-        // Desabilita movimento e ataque para que ele fique parado
         if (enemyFollow != null) enemyFollow.enabled = false;
         if (enemyAttack != null) enemyAttack.enabled = false;
 
-        // Inicia o timer do som de idle com um intervalo aleatório
         ResetIdleSoundTimer();
     }
 
     private void Update() {
-        // Update só chama funções — a lógica fica dentro de cada método
         HandleIdleSound();
     }
 
     #endregion
 
-    #region PROTECTED METHODS
+    #region METHODS
 
     /// <summary>
     /// Initializes stats using the value defined in the inspector.
@@ -82,18 +70,14 @@ public class TutorialDummyZombie : EnemyBase {
 
     /// <summary>
     /// Plays a random idle sound from the idleSounds array at random intervals.
-    /// Sorteia um dos áudio clips do array e toca via Play3DSound (que usa IAudioManagerService).
     /// </summary>
     private void HandleIdleSound() {
         if (idleSounds == null || idleSounds.Length == 0)
             return;
 
-        // Acumula o tempo passado desde o último som de idle
         idleSoundTimer += Time.deltaTime;
 
-        // Quando o timer atinge o intervalo sorteado, toca um som e reinicia o timer
         if (idleSoundTimer >= idleSoundNextTime) {
-            // Sorteia um dos 2 sons de idle aleatoriamente
             AudioClip clip = idleSounds[Random.Range(0, idleSounds.Length)];
             Play3DSound(clip, idleSoundVolume);
             ResetIdleSoundTimer();
@@ -102,7 +86,6 @@ public class TutorialDummyZombie : EnemyBase {
 
     /// <summary>
     /// Resets the idle sound timer to a new random interval within the configured range.
-    /// Zera o timer e sorteia um novo intervalo (ex: entre 5 e 7 segundos).
     /// </summary>
     private void ResetIdleSoundTimer() {
         idleSoundTimer = 0f;
@@ -111,8 +94,7 @@ public class TutorialDummyZombie : EnemyBase {
 
     /// <summary>
     /// Plays the death sound when this dummy zombie dies.
-    /// Sobrescreve o método virtual de EnemyBase, que é chamado por Die().
-    /// Usa Play3DSound, que internamente chama IAudioManagerService.PlaySFX3DAttached().
+    /// Overrides the virtual method from EnemyBase, which is called by Die().
     /// </summary>
     public override void PlayDeathSound() {
         Play3DSound(deathSound, deathSoundVolume);
@@ -122,13 +104,10 @@ public class TutorialDummyZombie : EnemyBase {
     /// Handles dummy death: activates the pistol pickup for the player.
     /// </summary>
     protected override void Die() {
-        // Ativa o pickup da pistola para o jogador coletar após a morte do zumbi
         if (pistolPickupObject != null) {
             pistolPickupObject.SetActive(true);
-            Debug.Log("[TutorialDummyZombie] Pistol pickup activated!");
         }
 
-        // Call base Die to handle currency, events, and destruction
         base.Die();
     }
 

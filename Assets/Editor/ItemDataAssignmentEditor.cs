@@ -13,7 +13,7 @@ public class ItemDataAssignmentEditor : EditorWindow {
         Debug.Log("[ItemDataAssignmentEditor] Starting automatic item data assignment...");
 
         // Find Inventory in scene
-        Inventory inventory = FindObjectOfType<Inventory>();
+        Inventory inventory = FindFirstObjectByType<Inventory>();
         if (inventory == null) {
             EditorUtility.DisplayDialog("Error", "Inventory not found in scene!", "OK");
             return;

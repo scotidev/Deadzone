@@ -18,7 +18,7 @@ public class PlayerInteraction : MonoBehaviour
 
     [Header("Enemy Detection")]
     [SerializeField] private float enemyDetectionDistance = 50f;
-    [SerializeField] private LayerMask uiLayerMask; // Layer mask to ignore UI elements
+    [SerializeField] private LayerMask uiLayerMask;
     [SerializeField] private EnemyHealthBarUI enemyHealthBarUI;
 
     #endregion
@@ -29,9 +29,6 @@ public class PlayerInteraction : MonoBehaviour
     private Interactable currentInteractable;
     private EnemyBase currentTargetedEnemy;
 
-    // Timer pra reduzir frequência do raycast de detecção de inimigos
-    // CONCEITO: O raycast de 50m é caro porque varre a cena inteira.
-    // Rodar a cada 5 frames em vez de todo frame reduz o custo em 80%.
     private int enemyCheckInterval = 5;
     private int enemyCheckCounter = 0;
 
@@ -52,11 +49,7 @@ public class PlayerInteraction : MonoBehaviour
             return;
 
         CheckForInteractable();
-        
-        // CONCEITO: Raycast de inimigo (50m) roda a cada N frames em vez de todo frame.
-        // O raycast de interação (3m) continua todo frame porque é muito mais barato
-        // (atinge menos colliders). O de 50m varre a cena inteira — reduzir frequência
-        // é a otimização de maior impacto aqui.
+
         enemyCheckCounter++;
         if (enemyCheckCounter >= enemyCheckInterval)
         {
@@ -111,13 +104,10 @@ public class PlayerInteraction : MonoBehaviour
 
         if (currentInteractable != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
-            // Salva a referência antes de interagir
             Interactable interactableBefore = currentInteractable;
-            
-            // Realiza a interação
+
             interactableBefore.Interact();
 
-            // Se o objeto foi destruído ou desativado pela interação (como no pickup), limpa o HUD
             if (interactableBefore == null || !interactableBefore.gameObject.activeInHierarchy)
             {
                 currentInteractable = null;
@@ -126,7 +116,6 @@ public class PlayerInteraction : MonoBehaviour
             }
             else if (UIManager.Instance != null)
             {
-                // Se o objeto ainda existe, atualiza o prompt (ex: mudou de "Abrir" para "Fechar")
                 UIManager.Instance.ToggleInteractionPrompt(true, interactableBefore.GetInteractionPrompt());
             }
         }
@@ -141,8 +130,6 @@ public class PlayerInteraction : MonoBehaviour
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
-        // CONCEITO: TryGetComponentInParent é mais eficiente que GetComponentInParent
-        // porque usa TryGetComponent (nativo) em vez de GetComponentInParent (gerenciado).
         if (Physics.Raycast(ray, out hit, interactionDistance, interactableLayer, QueryTriggerInteraction.Ignore)
             && TryGetComponentInParent(hit.collider, out Interactable interactable))
         {
@@ -158,7 +145,6 @@ public class PlayerInteraction : MonoBehaviour
             return;
         }
 
-        // Se chegamos aqui, o raycast não atingiu um Interactable válido.
         if (currentInteractable != null || (UIManager.Instance != null && UIManager.Instance.IsInteractionPromptActive()))
         {
             currentInteractable = null;
@@ -174,22 +160,45 @@ public class PlayerInteraction : MonoBehaviour
     /// Performs a raycast to detect enemies for health bar display.
     /// Uses a longer range than interaction raycast.
     /// </summary>
+    private void CheckForEnemy()
+    {
+        if (enemyHealthBarUI == null) return;
+
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, enemyDetectionDistance, ~uiLayerMask)
+            && TryGetComponentInParent(hit.collider, out EnemyBase enemy))
+        {
+            if (currentTargetedEnemy != enemy)
+            {
+                currentTargetedEnemy = enemy;
+                enemyHealthBarUI.SetTargetEnemy(enemy);
+            }
+            return;
+        }
+
+        if (currentTargetedEnemy != null)
+        {
+            currentTargetedEnemy = null;
+            enemyHealthBarUI.SetTargetEnemy(null);
+        }
+    }
+
     /// <summary>
-    /// Helper que busca um componente no collider ou em seus pais usando TryGetComponent.
-    /// CONCEITO: TryGetComponent é um método NATIVO da Unity, MAIS RÁPIDO que GetComponentInParent
-    /// porque não aloca memória gerenciada. A diferença é crucial num método chamado todo frame.
+    /// Searches for a component on the collider or its parent hierarchy using TryGetComponent.
+    /// TryGetComponent is a native Unity method that is faster than GetComponentInParent
+    /// because it does not allocate managed memory.
     /// </summary>
     private bool TryGetComponentInParent<T>(Collider collider, out T component) where T : class {
         component = null;
         if (collider == null) return false;
 
-        // CONCEITO: Primeiro tenta no próprio collider (mais rápido, sem subir hierarquia).
         if (collider.TryGetComponent(out T direct)) {
             component = direct;
             return true;
         }
 
-        // CONCEITO: Se não achou, sobe na hierarquia procurando nos pais.
         Transform parent = collider.transform.parent;
         while (parent != null) {
             if (parent.TryGetComponent(out T found)) {
@@ -202,39 +211,5 @@ public class PlayerInteraction : MonoBehaviour
         return false;
     }
 
-    private void CheckForEnemy()
-    {
-        if (enemyHealthBarUI == null) return;
-
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        RaycastHit hit;
-
-        // CONCEITO: ÚNICO raycast. O código original tinha DOIS raycasts idênticos
-        // (linhas 171 E 173), que é um bug que dobrava o custo de física toda vez.
-        if (Physics.Raycast(ray, out hit, enemyDetectionDistance, ~uiLayerMask)
-            && TryGetComponentInParent(hit.collider, out EnemyBase enemy))
-        {
-            // CONCEITO: Encontramos um inimigo. Só atualizamos se for diferente do atual.
-            if (currentTargetedEnemy != enemy)
-            {
-                // CONCEITO: Logger.Log só compila em Editor/Development Build.
-                // Em release builds, esta linha é REMOVIDA pelo compilador.
-                Logger.Log($"[PlayerInteraction] Detected new enemy: {enemy.name}. Setting as target.");
-                currentTargetedEnemy = enemy;
-                enemyHealthBarUI.SetTargetEnemy(enemy);
-            }
-            return;
-        }
-
-        // Se chegou aqui: raycast falhou ou o alvo não tem EnemyBase
-        if (currentTargetedEnemy != null)
-        {
-            Logger.Log($"[PlayerInteraction] No enemy targeted or lost target. Current target was: {currentTargetedEnemy.name}. Setting target to null.");
-            currentTargetedEnemy = null;
-            enemyHealthBarUI.SetTargetEnemy(null);
-        }
-
     #endregion
-    }
-
 }

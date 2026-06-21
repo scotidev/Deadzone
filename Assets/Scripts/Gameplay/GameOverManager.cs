@@ -86,37 +86,28 @@ public class GameOverManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Called when PlayerHealth.OnPlayerDied is invoked.
-    /// Orchestrates the full Game Over flow.
+    /// Called when PlayerHealth.OnPlayerDied is invoked. Orchestrates the full Game Over flow.
     /// </summary>
     private void HandlePlayerDied() {
         if (!canGameOver)
             return;
 
-        Debug.Log("[GameOverManager] Player died — iniciando fluxo de Game Over");
-
-        // Desinscreve para evitar chamadas duplicadas.
         var playerHealth = GetPlayerHealth();
         if (playerHealth != null)
             playerHealth.OnPlayerDied -= HandlePlayerDied;
 
-        // Para a música de fundo.
         audioService?.StopBGM(0.5f);
 
-        // Desativa inputs do jogador e esconde a arma.
         if (playerCharacter != null) {
             playerCharacter.SetInterfaceMode(true);
             playerCharacter.SetHolstered(true);
             playerCharacter.ClearInputStates();
         }
 
-        // Mostra e destrava o cursor para interagir com o painel.
         SetCursorState(true);
 
-        // Toca o som de morte com o volume configurado.
         audioService?.PlaySFX2D(deathClip, deathClipVolume);
 
-        // Obtém a wave atual e exibe o painel de Game Over.
         int currentWave = WaveManager.Instance != null ? WaveManager.Instance.CurrentWave : 0;
         UIManager.Instance?.ShowGameOver(currentWave);
 

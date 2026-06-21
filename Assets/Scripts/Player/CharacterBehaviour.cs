@@ -1,5 +1,3 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-
 using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack {
@@ -19,6 +17,8 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
+        #region METHODS
+
         #region GETTERS
 
         /// <summary>
@@ -33,6 +33,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
         /// <summary>
         /// Returns true if the character is interacting with a menu or shop.
+        /// </summary>
         public abstract bool IsInterfaceMode();
 
         /// <summary>
@@ -54,6 +55,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Returns true if the Crosshair should be visible.
         /// </summary>
         public abstract bool IsCrosshairVisible();
+
         /// <summary>
         /// Returns true if the character is running.
         /// </summary>
@@ -63,6 +65,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Returns true if the character is aiming.
         /// </summary>
         public abstract bool IsAiming();
+
         /// <summary>
         /// Returns true if the game cursor is locked.
         /// </summary>
@@ -77,6 +80,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Returns the Movement Input.
         /// </summary>
         public abstract Vector2 GetInputMovement();
+
         /// <summary>
         /// Returns the Look Input.
         /// </summary>
@@ -100,6 +104,7 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Ejects a casing from the equipped weapon.
         /// </summary>
         public abstract void EjectCasing();
+
         /// <summary>
         /// Fills the character's equipped weapon's ammunition by a certain amount, or fully if set to -1.
         /// </summary>
@@ -119,10 +124,13 @@ namespace InfimaGames.LowPolyShooterPack {
         /// Inspect Animation Ended.
         /// </summary>
         public abstract void AnimationEndedInspect();
+
         /// <summary>
         /// Holster Animation Ended.
         /// </summary>
         public abstract void AnimationEndedHolster();
+
+        #endregion
 
         #endregion
     }

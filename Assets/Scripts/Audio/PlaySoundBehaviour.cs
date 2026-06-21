@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
-    /// Play Sound Behaviour. Plays an AudioClip using the centralized audio service.
+    /// Plays an AudioClip using the centralized audio service when a state machine enters this state.
     /// </summary>
     public class PlaySoundBehaviour : StateMachineBehaviour {
 
@@ -13,6 +13,10 @@ namespace InfimaGames.LowPolyShooterPack {
 
         [Header("Settings")]
         [SerializeField] private AudioSettings settings = new AudioSettings(1.0f, 0.0f, true);
+
+        #endregion
+
+        #region FIELDS
 
         private IAudioManagerService audioManagerService;
 

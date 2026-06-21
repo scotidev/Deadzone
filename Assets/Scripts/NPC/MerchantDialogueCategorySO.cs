@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// ScriptableObject that defines a category of merchant dialogue lines.
+/// Used by NPCAudio to organize dialogues by context (open shop, close, AFK, etc.).
+/// </summary>
 [CreateAssetMenu(fileName = "MerchantDialogueCategory", menuName = "Deadzone/Merchant Dialogue Category")]
 public class MerchantDialogueCategorySO : ScriptableObject {
     [Tooltip("Category name for identification")]
@@ -12,6 +16,9 @@ public class MerchantDialogueCategorySO : ScriptableObject {
     public bool allowImmediateRepeat = false;
 }
 
+/// <summary>
+/// Represents a single dialogue line with an audio clip and optional subtitle text.
+/// </summary>
 [System.Serializable]
 public struct MerchantDialogueLine {
     [Tooltip("Audio clip that will be played for this line")]

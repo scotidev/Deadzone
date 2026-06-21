@@ -9,8 +9,6 @@ public class SafeZone : MonoBehaviour {
     #region FIELDS
 
     private PlayerHealth health;
-    // Flag that controls whether this SafeZone should react to poison damage.
-    // During tutorial, this is false. After TutorialEndTrigger, this becomes true.
     private bool isPoisonEnabled = false;
 
     #endregion
@@ -18,26 +16,16 @@ public class SafeZone : MonoBehaviour {
     #region UNITY
 
     private void Start() {
-        // CONCEITO: PlayerCache guarda a referência ao player UMA VEZ.
-        // Isso é muito mais eficiente que FindWithTag("Player") toda vez,
-        // que varre a hierarquia inteira da cena a cada chamada.
         if (PlayerCache.Transform != null) {
             health = PlayerCache.GameObject.GetComponentInParent<PlayerHealth>();
         }
 
-        // Register this SafeZone's collider with the Fog ParticleSystem Trigger Module.
-        // This automatically kills any fog particle that enters or is inside the safe zone.
         RegisterWithFogTrigger();
     }
 
-    /// <summary>
-    /// Called when a Collider enters this area.
-    /// If it's the Player and poison is enabled, stops the poison damage.
-    /// </summary>
     private void OnTriggerEnter(Collider other) {
         if (!other.CompareTag("Player")) return;
 
-        // Only activate poison logic if poison system has been enabled.
         if (!isPoisonEnabled) return;
 
         if (health != null) {
@@ -45,38 +33,32 @@ public class SafeZone : MonoBehaviour {
         }
     }
 
-    /// <summary>
-    /// Called when a Collider exits this area.
-    /// If it's the Player and poison is enabled, checks if player is still inside another SafeZone.
-    /// Only starts poison damage if player is truly outside ALL SafeZones.
-    /// </summary>
     private void OnTriggerExit(Collider other) {
         if (!other.CompareTag("Player")) return;
 
-        // Only activate poison logic if poison system has been enabled.
         if (!isPoisonEnabled) return;
 
         if (health != null) {
-            // Before starting poison damage, check if player is inside another SafeZone.
-            // This handles overlapping SafeZones correctly.
             if (!IsPlayerInsideAnySafeZone(other)) {
                 health.StartPoisonDamage();
             }
         }
     }
 
+    #endregion
+
+    #region METHODS
+
     /// <summary>
-    /// Checks if the player (via collider) is currently inside ANY SafeZone (except this one).
-    /// Used to handle overlapping SafeZones correctly.
+    /// Checks if the player is currently inside any SafeZone other than this one.
     /// </summary>
     private bool IsPlayerInsideAnySafeZone(Collider playerCollider) {
         SafeZone[] allSafeZones = FindObjectsByType<SafeZone>(FindObjectsSortMode.None);
         foreach (SafeZone safeZone in allSafeZones) {
-            if (safeZone == this) continue; // Skip self
+            if (safeZone == this) continue;
 
             BoxCollider safeZoneBox = safeZone.GetComponent<BoxCollider>();
             if (safeZoneBox != null && safeZoneBox.isTrigger) {
-                // Check if player bounds overlap with this SafeZone's bounds.
                 if (safeZoneBox.bounds.Intersects(playerCollider.bounds)) {
                     return true;
                 }
@@ -87,7 +69,6 @@ public class SafeZone : MonoBehaviour {
 
     /// <summary>
     /// Enables the poison system for this SafeZone.
-    /// Called by TutorialEndTrigger when the tutorial ends.
     /// </summary>
     public void EnablePoisonSystem() {
         isPoisonEnabled = true;
@@ -95,8 +76,6 @@ public class SafeZone : MonoBehaviour {
 
     /// <summary>
     /// Registers this SafeZone's BoxCollider with the Fog ParticleSystem Trigger Module.
-    /// Particles that enter or are inside this collider are automatically killed by the ParticleSystem.
-    /// This prevents fog from appearing inside safe zones without affecting emission rates.
     /// </summary>
     private void RegisterWithFogTrigger() {
         GameObject fogObj = GameObject.Find("Fog");
@@ -109,7 +88,6 @@ public class SafeZone : MonoBehaviour {
         trigger.enabled = true;
         trigger.radiusScale = 0.3f;
 
-        // Set global overlap actions: kill particles entering or inside ANY assigned collider
         trigger.inside = ParticleSystemOverlapAction.Kill;
         trigger.enter = ParticleSystemOverlapAction.Kill;
 
@@ -118,6 +96,10 @@ public class SafeZone : MonoBehaviour {
 
         trigger.AddCollider(myCollider);
     }
+
+    #endregion
+
+    #region DEBUG
 
     private void OnDrawGizmos() {
         BoxCollider box = GetComponent<BoxCollider>();

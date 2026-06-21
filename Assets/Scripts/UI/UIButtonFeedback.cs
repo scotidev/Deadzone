@@ -101,7 +101,7 @@ public class UIButtonFeedback : MonoBehaviour,
     private void Awake() {
         targetScale = normalScale;
         audioService = ServiceLocator.Current.Get<IAudioManagerService>();
-        
+
         if (useBoundFix) {
             image = GetComponent<Image>();
         }
@@ -164,19 +164,19 @@ public class UIButtonFeedback : MonoBehaviour,
         ShopItemDataSO itemData = ShopUI.Instance.SelectedItemData;
         string buttonName = gameObject.name.ToLower();
 
-        bool isActionButton = buttonName.Contains("action") || 
+        bool isActionButton = buttonName.Contains("action") ||
                               buttonName.Contains("upgrade") ||
                               buttonName.Contains("unlock") ||
                               buttonName.Contains("purchase") ||
                               buttonName.Contains("btn") && !buttonName.Contains("ammo");
-        bool isAmmoButton = buttonName.Contains("ammo") || 
-                            buttonName.Contains("refill") || 
+        bool isAmmoButton = buttonName.Contains("ammo") ||
+                            buttonName.Contains("refill") ||
                             buttonName.Contains("replenish");
 
         if (isActionButton) {
             return ShopManager.Instance.GetActionButtonDisabledReason(itemData);
         }
-        
+
         if (isAmmoButton) {
             return ShopManager.Instance.GetAmmoButtonDisabledReason(itemData);
         }
@@ -245,11 +245,11 @@ public class UIButtonFeedback : MonoBehaviour,
         Texture2D cursor = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false);
         cursor.filterMode = FilterMode.Bilinear;
         cursor.wrapMode = TextureWrapMode.Clamp;
-        
+
         Color[] pixels = source.GetPixels();
         cursor.SetPixels(pixels);
         cursor.Apply();
-        
+
         return cursor;
     }
 }

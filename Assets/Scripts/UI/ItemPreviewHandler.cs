@@ -89,7 +89,7 @@ public class ItemPreviewHandler : MonoBehaviour {
         int weaponLayerID = LayerMask.NameToLayer("Weapon");
 
         if (weaponLayerID < 0) {
-            Debug.LogError("[ItemPreviewHandler] Layer 'Weapon' does not exist! Create it in Project Settings → Tags and Layers.");
+            Debug.LogError("[ItemPreviewHandler] Layer 'Weapon' does not exist! Create it in Project Settings \u2192 Tags and Layers.");
             return;
         }
 

@@ -1,6 +1,3 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-//Implementation from: https://medium.com/medialesson/simple-service-locator-for-your-unity-project-40e317aad307
-
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -29,7 +26,7 @@ namespace InfimaGames.LowPolyShooterPack
         public T Get<T>() where T : IGameService
         {
             string key = typeof(T).Name;
-            
+
             if (!services.ContainsKey(key))
             {
                 Debug.LogError($"[ServiceLocator] CRITICAL: Service '{key}' not registered!");
@@ -61,7 +58,6 @@ namespace InfimaGames.LowPolyShooterPack
                 return;
             }
 
-            //Add.
             services.Add(key, service);
         }
 

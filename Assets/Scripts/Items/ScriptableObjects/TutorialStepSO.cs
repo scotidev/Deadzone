@@ -6,27 +6,16 @@ namespace Deadzone.UI {
     /// Defines what action the player must perform to complete this tutorial step.
     /// </summary>
     public enum CompletionType {
-        /// <summary>Completes when the player moves the mouse (look input).</summary>
         OnMouseMove,
-        /// <summary>Completes when the player presses WASD (movement input).</summary>
         OnWASDPress,
-        /// <summary>Completes when the player selects a specific item by its ID (completionParam).</summary>
         OnItemSelected,
-        /// <summary>Completes when the player fires/attacks (left mouse button).</summary>
         OnAttack,
-        /// <summary>Completes automatically when the timeout expires (no player action needed).</summary>
         OnTimeout,
-        /// <summary>Completes when the player presses the jump key (Space).</summary>
         OnJumpPress,
-        /// <summary>Completes when the player presses the crouch key (Left Ctrl).</summary>
         OnCrouchPress,
-        /// <summary>Completes when the player presses the sprint key (Left Shift).</summary>
         OnRunPress,
-        /// <summary>Completes when the player presses the reload key (R).</summary>
         OnReloadPress,
-        /// <summary>Completes when the player presses the melee key (F).</summary>
         OnMeleePress,
-        /// <summary>Completes when the player starts aiming (right mouse button / aim action).</summary>
         OnAimPress
     }
 

@@ -10,7 +10,6 @@ public class WaveManager : MonoBehaviour {
 
     #region STATIC
 
-    /// <summary>Global access point to the single <see cref="WaveManager"/> instance.</summary>
     public static WaveManager Instance { get; private set; }
 
     #endregion
@@ -104,18 +103,20 @@ public class WaveManager : MonoBehaviour {
     private bool isCountdownActive = false;
     private int lastTickSecond = -1;
 
-    // Round-robin spawning (sempre ativo - padrão)
     private int currentSpawnerIndex = 0;
 
-    // Boss wave tracking - counts how many bosses have been spawned in this wave
     private int bossForcedCount = 0;
-
-    public event System.Action OnWaveStarted;
-    public event System.Action OnWaveCompleted;
 
     private List<EnemySpawnConfig> currentWaveEnemyTypes;
     private IAudioManagerService audioService;
     private FogController fogController;
+
+    #endregion
+
+    #region EVENTS
+
+    public event System.Action OnWaveStarted;
+    public event System.Action OnWaveCompleted;
 
     #endregion
 
@@ -144,8 +145,6 @@ public class WaveManager : MonoBehaviour {
 
     private void Start() {
         PenguinMode.Reset();
-        // audioService?.PlayBGM(ambientBGM, true, 1.5f, ambientBGMVolume);
-        // StartInitialCountdown(); // Removido para que a primeira wave seja engatilhada pelo TutorialEndTrigger
     }
 
     private void Update() {
@@ -157,13 +156,10 @@ public class WaveManager : MonoBehaviour {
     /// </summary>
     private void HandleTimers() {
         if (isWaveActive) {
-            // Durante a wave, o timer conta de forma crescente (tempo de duração da wave)
             waveTimer += Time.deltaTime;
         } else if (isCountdownActive) {
-            // Entre waves, o timer conta de forma decrescente (tempo para a próxima wave)
             waveTimer -= Time.deltaTime;
 
-            // Toca o som de tick nos últimos 10 segundos
             HandleCountdownAudio();
 
             if (waveTimer <= 0) {
@@ -178,11 +174,9 @@ public class WaveManager : MonoBehaviour {
     /// Plays a tick sound every second during the last 10 seconds of the countdown.
     /// </summary>
     private void HandleCountdownAudio() {
-        // Ajustado para 10.0f para evitar tocar 2x no início
         if (waveTimer <= 10.0f && waveTimer > 0) {
             int currentSecond = Mathf.CeilToInt(waveTimer);
 
-            // Só toca se mudamos de segundo e o clip existe
             if (currentSecond != lastTickSecond && countdownTickClip != null) {
                 lastTickSecond = currentSecond;
                 audioService?.PlaySFX2D(countdownTickClip, countdownTickVolume);
@@ -196,7 +190,7 @@ public class WaveManager : MonoBehaviour {
     private void StartInitialCountdown() {
         waveTimer = timeBetweenWaves;
         isCountdownActive = true;
-        lastTickSecond = -1; // Reseta o rastreador de áudio
+        lastTickSecond = -1;
     }
 
     private void OnEnable() {
@@ -213,8 +207,6 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Starts the next enemy wave.
-    /// Calls WaveButton.Interact() when the player presses E.
-    /// Blocks if wave is active.
     /// </summary>
     public void StartNextWave() {
         if (isWaveActive) {
@@ -225,20 +217,18 @@ public class WaveManager : MonoBehaviour {
             return;
         }
 
-        // Se o player apertar o botão antes do timer zerar, paramos o countdown
         isCountdownActive = false;
-        waveTimer = 0f; // Reseta para começar a contar o tempo da wave de forma crescente
+        waveTimer = 0f;
 
         currentWave++;
 
         totalEnemiesForWave = GetEnemyCountForWave(currentWave);
 
-        // Reset boss counter for new wave
         bossForcedCount = 0;
         lastWaveEnemyCount = totalEnemiesForWave;
         enemiesSpawned = 0;
         enemiesKilled = 0;
-        currentSpawnerIndex = 0;  // Reset for round-robin spawning
+        currentSpawnerIndex = 0;
         isWaveActive = true;
 
         GameManager.Instance?.SetState(GameState.InWave);
@@ -246,7 +236,6 @@ public class WaveManager : MonoBehaviour {
         currentWaveEnemyTypes = GetAvailableEnemyTypes(currentWave);
         PlayWaveStartSound();
 
-        // Handle boss wave special effects
         if (IsBossWave(currentWave)) {
             StartCoroutine(PlayBossWaveEffects());
         }
@@ -258,7 +247,6 @@ public class WaveManager : MonoBehaviour {
         StartCoroutine(SpawnInitialBatch());
 
         if (waveUI != null) {
-            // If the Penguin Easter egg was activated, show the special announcement
             if (PenguinMode.IsCurrentWavePenguinWave) {
                 waveUI.ShowPenguinWaveAnnouncement();
             } else {
@@ -270,7 +258,6 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Spawns the initial batch of enemies at the start of the wave.
-    /// It is limited by <see cref="maxEnemiesAliveAtOnce"/> to avoid overwhelming the scene.
     /// </summary>
     private IEnumerator SpawnInitialBatch() {
         int initialCount = Mathf.Min(maxEnemiesAliveAtOnce, totalEnemiesForWave);
@@ -284,31 +271,25 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Spawns exactly one enemy at a spawner using round-robin distribution.
-    /// In boss waves, spawns multiple bosses based on wave progression (1 at wave 5, 2 at wave 10, etc).
-    /// After all bosses are spawned, spawns remaining regular enemies.
     /// </summary>
     private void SpawnOneEnemy() {
         if (enemiesSpawned >= totalEnemiesForWave) return;
         if (currentWaveEnemyTypes == null || currentWaveEnemyTypes.Count == 0) return;
 
-        // Round-robin: cycle through spawners using modulo
         EnemySpawner spawner = spawners[currentSpawnerIndex % spawners.Count];
         currentSpawnerIndex++;
 
         List<EnemySpawnConfig> spawnConfig = new List<EnemySpawnConfig>();
 
-        // If this is a boss wave, check if we need to spawn more bosses
         int bossMissionsNeeded = IsBossWave(currentWave) ? GetBossCountForWave(currentWave) : 0;
 
         if (bossMissionsNeeded > 0 && bossForcedCount < bossMissionsNeeded) {
-            // Still need to spawn more bosses
             EnemySpawnConfig bossConfig = currentWaveEnemyTypes.Find(config => config.isBoss);
             if (bossConfig != null) {
                 spawnConfig.Add(bossConfig);
                 bossForcedCount++;
             }
         }
-        // All bosses spawned or not a boss wave - spawn regular enemies
         else {
             foreach (var config in currentWaveEnemyTypes) {
                 if (!config.isBoss) {
@@ -317,7 +298,6 @@ public class WaveManager : MonoBehaviour {
             }
         }
 
-        // Spawn with the filtered config
         if (spawnConfig.Count > 0) {
             spawner.SpawnEnemies(spawnConfig);
             enemiesSpawned++;
@@ -325,8 +305,7 @@ public class WaveManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Attempts to spawn the next enemy.
-    /// Called whenever an enemy dies, ensuring the scene remains populated.
+    /// Attempts to spawn the next enemy when an enemy dies.
     /// </summary>
     private void TrySpawnNext() {
         int aliveNow = enemiesSpawned - enemiesKilled;
@@ -353,18 +332,15 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Called when the last enemy of the wave dies.
-    /// Awards currency to the player based on wave completion.
-    /// Formula: 1000 for wave 1, +500 for each additional wave (1500 for wave 2, 2000 for wave 3, etc.)
+    /// Awards currency based on wave completion and speed bonus.
     /// </summary>
     private void CompleteWave() {
         isWaveActive = false;
 
-        // Reset boss wave effects if this was a boss wave
         if (IsBossWave(currentWave) && fogController != null) {
             fogController.ResetFogColor();
         }
 
-        // Reset fog color if the Penguin Easter egg was active this wave
         if (PenguinMode.IsCurrentWavePenguinWave && fogController != null) {
             fogController.ResetFogColor();
         }
@@ -377,34 +353,27 @@ public class WaveManager : MonoBehaviour {
             waveUI.ShowWaveClearAnnouncement();
 
         if (EconomyManager.Instance != null) {
-            // Recompensa base pela wave
             int waveReward = 1000 + (500 * (currentWave - 1));
 
-            // Recompensa bônus por velocidade (quanto mais rápido, mais ganha)
-            // A lógica é: bonusBase - (tempo gasto * multiplicador). Se demorar demais, o bônus zera.
             int speedBonus = Mathf.Max(0, bonusBaseAmount - Mathf.FloorToInt(waveTimer * bonusTimeMultiplier));
 
             EconomyManager.Instance.AddCurrency(waveReward + speedBonus);
-
-            Debug.Log($"[WaveManager] Wave {currentWave} completed! Base: {waveReward} | Bonus: {speedBonus} (Time: {waveTimer:F1}s)");
         }
 
-        // Ativa o botão de pular timer após a primeira wave
         if (currentWave == 1 && waveButtonObject != null) {
             waveButtonObject.SetActive(true);
         }
 
-        // Prepara o countdown para a próxima wave
         waveTimer = timeBetweenWaves;
         isCountdownActive = true;
-        lastTickSecond = -1; // Reseta para a próxima wave
+        lastTickSecond = -1;
 
         audioService?.PlayBGM(ambientBGM, true, 2.0f, ambientBGMVolume);
         audioService?.PlaySFX2D(waveClearClip, waveClearSFXVolume);
     }
 
     /// <summary>
-    /// Returns the amount of enemies for the given wave based on a progressive growth formula.
+    /// Returns the enemy count for a wave based on progressive growth formula.
     /// </summary>
     private int GetEnemyCountForWave(int wave) {
         if (wave == 1) return 5;
@@ -416,8 +385,6 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Returns the list of enemy types allowed for the current wave.
-    /// - If NOT a boss wave: excludes enemies marked as boss
-    /// - If IS a boss wave: includes all enemies, with boss guaranteed to appear at least once
     /// </summary>
     private List<EnemySpawnConfig> GetAvailableEnemyTypes(int wave) {
         var available = new List<EnemySpawnConfig>();
@@ -427,24 +394,17 @@ public class WaveManager : MonoBehaviour {
             if (config.prefab == null || config.minimumWave > wave)
                 continue;
 
-            // If NOT a boss wave, skip enemies marked as boss
             if (!isBossWave && config.isBoss)
                 continue;
 
             available.Add(config);
         }
 
-        // Debug log to verify filtering
-        Debug.Log($"[WaveManager] Wave {wave} - Boss Wave: {isBossWave} - Available types: {available.Count}");
-        foreach (var config in available) {
-            Debug.Log($"  - {config.prefab.name} (isBoss: {config.isBoss})");
-        }
-
         return available;
     }
 
     /// <summary>
-    /// Chooses the wave-start sound and plays it immediately or with the existing delay rule.
+    /// Chooses the wave-start sound and plays it.
     /// </summary>
     private void PlayWaveStartSound() {
         AudioClip clip = GetWaveStartClip();
@@ -468,23 +428,20 @@ public class WaveManager : MonoBehaviour {
 
     /// <summary>
     /// Returns true when the wave-start SFX should be delayed by 0.5 seconds.
-    /// Boss waves (every 5 waves) should not be delayed.
     /// </summary>
     private bool ShouldDelayWaveStartSound() {
         return currentWave > lastLightWave && !IsBossWave(currentWave);
     }
 
     /// <summary>
-    /// Returns the number of bosses that should spawn in a boss wave.
-    /// Formula: (wave / 5), so wave 5 = 1 boss, wave 10 = 2 bosses, wave 15 = 3 bosses, etc.
+    /// Returns the number of bosses to spawn in a boss wave (wave / 5).
     /// </summary>
     private int GetBossCountForWave(int wave) {
         return wave / 5;
     }
 
     /// <summary>
-    /// Returns the correct SFX for the current wave based on progression and boss presence.
-    /// Uses IsBossWave() (every 5 waves) instead of checking available enemy types.
+    /// Returns the correct SFX for the current wave based on progression.
     /// </summary>
     private AudioClip GetWaveStartClip() {
         if (IsBossWave(currentWave))
@@ -500,7 +457,7 @@ public class WaveManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Checks whether the current wave contains at least one enemy marked as boss.
+    /// Checks if the current wave has at least one boss enemy available.
     /// </summary>
     private bool HasBossEnemyAvailable() {
         if (currentWaveEnemyTypes == null)
@@ -522,18 +479,15 @@ public class WaveManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Plays boss wave effects: extra scream SFX after a delay and changes fog color to red.
+    /// Plays boss wave effects: extra scream SFX and fog color change.
     /// </summary>
     private IEnumerator PlayBossWaveEffects() {
-        // Wait for the specified delay before playing the scream
         yield return new WaitForSeconds(bossWaveScreamDelaySeconds);
 
-        // Play the extra scream sound using IAudioManagerService
         if (bossWaveExtraScream != null && audioService != null) {
             audioService.PlaySFX2D(bossWaveExtraScream, bossWaveScreamVolume);
         }
 
-        // Change fog color to red
         if (fogController != null) {
             fogController.SetFogColor(bossWaveFogColor);
         }

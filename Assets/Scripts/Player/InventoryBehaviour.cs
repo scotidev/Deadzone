@@ -1,5 +1,3 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-
 using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack
@@ -39,7 +37,7 @@ namespace InfimaGames.LowPolyShooterPack
         public abstract ItemBehaviour GetEquippedItem();
 
         #endregion
-        
+
         #region METHODS
 
         /// <summary>
@@ -48,7 +46,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// </summary>
         /// <param name="equippedAtStart">Inventory index of the weapon we want to equip when the game starts.</param>
         public abstract void Init(int equippedAtStart = 0);
-        
+
         /// <summary>
         /// Equips a Weapon.
         /// </summary>

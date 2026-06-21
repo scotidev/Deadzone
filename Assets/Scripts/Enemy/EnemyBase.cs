@@ -13,7 +13,7 @@ using UnityEngine;
 [RequireComponent(typeof(Animator))]
 public abstract class EnemyBase : MonoBehaviour {
 
-    #region FIELDS
+    #region SERIALIZED FIELDS
 
     [Header("Base Settings")]
     [Tooltip("If true, this enemy will not be counted by the WaveManager.")]
@@ -33,18 +33,16 @@ public abstract class EnemyBase : MonoBehaviour {
     [Tooltip("Maximum currency reward when wave scaling reaches its max wave.")]
     [SerializeField] private int maxRewardCurrencyCap = 300;
 
+    #endregion
+
+    #region FIELDS
+
     protected float maxHealth = 100f;
     protected float moveSpeed = 3.5f;
     protected float attackDamage = 10f;
     protected float attackRange = 1.8f;
     protected float attackCooldown = 1.5f;
     protected int rewardCurrency = 100;
-
-    /// <summary>Public read-only access for the Easter egg system to read the reward before transforming enemies.</summary>
-    public int RewardCurrency => rewardCurrency;
-
-    /// <summary>Public read-only access so external systems (Easter egg) can distinguish tutorial enemies.</summary>
-    public bool IsTutorialEnemy => isTutorialEnemy;
 
     private float currentHealth;
     private bool isDead;
@@ -54,21 +52,33 @@ public abstract class EnemyBase : MonoBehaviour {
     protected Animator animator;
     private AudioManagerService audioManagerService;
 
-    // Pooling support
-    // CONCEITO: Se o inimigo veio do pool, _pooledObject não é null.
-    // Usamos pra devolver ao pool em vez de Destroy na morte.
     private PooledObject _pooledObject;
-    // CONCEITO: Flag que controla se é a primeira vez que o OnEnable roda.
-    // Na primeira vez (Instantiate), o Awake já configurou tudo.
-    // Nas vezes seguintes (pool), precisamos resetar o estado.
     private bool _isFirstEnable = true;
 
-    private static readonly int HashDeath = Animator.StringToHash("Death");
+    #endregion
+
+    #region PROPERTIES
+
+    /// <summary>Public read-only access for the Easter egg system to read the reward before transforming enemies.</summary>
+    public int RewardCurrency => rewardCurrency;
+
+    /// <summary>Public read-only access so external systems (Easter egg) can distinguish tutorial enemies.</summary>
+    public bool IsTutorialEnemy => isTutorialEnemy;
+
+    #endregion
+
+    #region EVENTS
 
     /// <summary>
     /// Triggered by any Enemy when it dies. The WaveManager listens to this to decrement the count of alive enemies.
     /// </summary>
     public static event Action OnAnyEnemyDied;
+
+    #endregion
+
+    #region CONSTANTS
+
+    private static readonly int HashDeath = Animator.StringToHash("Death");
 
     #endregion
 
@@ -80,7 +90,6 @@ public abstract class EnemyBase : MonoBehaviour {
         animator = GetComponent<Animator>();
         audioManagerService = FindFirstObjectByType<AudioManagerService>();
 
-        // Cache do PooledObject — se existir, esse inimigo pode ser reutilizado pelo pool
         _pooledObject = GetComponent<PooledObject>();
 
         var rb = GetComponent<Rigidbody>();
@@ -106,26 +115,24 @@ public abstract class EnemyBase : MonoBehaviour {
     }
 
     /// <summary>
-    /// Called automaticamente quando o GameObject é ativado (primeira vez ou pool).
-    /// CONCEITO: Na primeira execução, o Awake já fez tudo, então ignoramos.
-    /// Nas reativações do pool, resetamos o estado pro inimigo nascer "novo".
+    /// Called automatically when the GameObject is activated (first time or pool reuse).
+    /// On first execution, Awake already handled initialization.
+    /// On pool reactivations, resets state so the enemy spawns as new.
     /// </summary>
     protected virtual void OnEnable() {
         if (!_isFirstEnable) {
-            // CONCEITO: Reutilização do pool — resetar estado pro inimigo parecer novo
             ResetForPoolReuse();
         }
         _isFirstEnable = false;
     }
 
     /// <summary>
-    /// Reseta o estado do inimigo quando reutilizado do pool.
-    /// Reaplica stats, saúde, colliders e componentes desativados na morte anterior.
+    /// Resets the enemy state when reused from the pool.
+    /// Reapplies stats, health, colliders, and components disabled on previous death.
     /// </summary>
     private void ResetForPoolReuse() {
         isDead = false;
 
-        // Reaplica stats e scaling (a onda pode ser diferente de quando foi criado)
         InitializeStats();
         if (!isTutorialEnemy)
             ApplyWaveScaling();
@@ -141,20 +148,16 @@ public abstract class EnemyBase : MonoBehaviour {
             enemyAttack.enabled = true;
         }
 
-        // Reativa colliders (desativados no Die())
         Collider[] colliders = GetComponentsInChildren<Collider>();
         foreach (Collider col in colliders) {
             col.enabled = true;
         }
 
-        // Reseta rigidbody
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null) {
             rb.isKinematic = true;
         }
 
-        // CONCEITO: Animator.Rebind reseta todos os parâmetros do animator
-        // pro estado padrão, como se o objeto tivesse acabado de ser instanciado.
         if (animator != null) {
             animator.Rebind();
         }
@@ -171,8 +174,8 @@ public abstract class EnemyBase : MonoBehaviour {
 
     /// <summary>
     /// Reduces the target's current health by the informed value.
-    /// Triggers death if health = 0.
-    /// Called by Projectile.cs when a case hits and enemy.
+    /// Triggers death if health reaches 0.
+    /// Called by Projectile.cs when a bullet hits an enemy.
     /// </summary>
     public void TakeDamage(float amount) {
         if (isDead) return;
@@ -203,36 +206,29 @@ public abstract class EnemyBase : MonoBehaviour {
 
         if (enemyAttack != null) enemyAttack.enabled = false;
 
-        // Disable all colliders to prevent body blocking and bullet interception
         Collider[] colliders = GetComponentsInChildren<Collider>();
         foreach (Collider col in colliders) {
             col.enabled = false;
         }
 
-        // Make rigidbody kinematic to prevent physics interactions
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null) {
             rb.isKinematic = true;
         }
 
-        // Trigger death animation
         if (animator != null)
             animator.SetTrigger(HashDeath);
 
-        // Play death sound (overridden by each zombie type)
         PlayDeathSound();
 
         if (EconomyManager.Instance != null) {
             EconomyManager.Instance.AddCurrency(rewardCurrency);
         }
 
-        // If this is a tutorial enemy, we don't notify the WaveManager to avoid "Wave Clear" messages
         if (!isTutorialEnemy) {
             OnAnyEnemyDied?.Invoke();
         }
 
-        // CONCEITO: Se tem PooledObject, devolve ao pool após a animação de morte.
-        // Senão, usa Destroy normal (fallback pra inimigos não-pooled como tutoriais).
         if (_pooledObject != null) {
             StartCoroutine(PooledDeathRoutine());
         } else {
@@ -241,10 +237,9 @@ public abstract class EnemyBase : MonoBehaviour {
     }
 
     /// <summary>
-    /// Aguarda a animação de morte e devolve o inimigo ao pool.
-    /// CONCEITO: Em vez de Destroy, que libera memória e causa GC,
-    /// devolvemos ao pool pra reutilização. O OnDisable do PooledObject
-    /// vai parar automaticamente as corrotinas quando o objeto for desativado.
+    /// Waits for the death animation then returns the enemy to the pool.
+    /// Instead of Destroy, returns to pool for reuse.
+    /// The PooledObject OnDisable automatically stops coroutines when the object is deactivated.
     /// </summary>
     private IEnumerator PooledDeathRoutine() {
         yield return new WaitForSeconds(GetDeathDestroyDelay());
@@ -271,7 +266,6 @@ public abstract class EnemyBase : MonoBehaviour {
         float t = (currentWave - 1f) / (maxScalingWave - 1f);
         t = Mathf.Clamp01(t);
 
-        // Exponential curve: starts slow, accelerates in later waves
         float factor = t * t;
 
         maxHealth = Mathf.Lerp(initialHealth, maxHealthCap, factor);

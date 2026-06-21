@@ -15,14 +15,17 @@ public class MedkitDataSO : ItemDataSO {
 
     #region PROPERTIES
 
-    // MaxAmmo is inherited from ItemDataSO, allowing it to be configured per medkit in the Inspector
-
     #endregion
 
     public override string[] GetStatLabels() => new[] { "Heal", "Ammo" };
 
     public override float[] GetStatValues() => new[] { healAmount, (float)MaxAmmo };
 
+    /// <summary>
+    /// Gets the stat values at a specific upgrade level. Heal amount scales exponentially with levelMultiplier.
+    /// </summary>
+    /// <param name="level">The upgrade level (1-based).</param>
+    /// <returns>An array containing the heal amount and max ammo at the specified level.</returns>
     public override float[] GetStatValues(int level) {
         level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
         return new[] { 

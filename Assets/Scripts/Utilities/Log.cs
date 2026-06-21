@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 /// <summary>
-/// This class is a joke, but it can be used to log messages in a more fun way. It has three main methods: wtf, warn
+/// Custom logging utility with shorthand methods for log, warning, and error messages.
+/// Provides null-safe logging wrappers.
 /// </summary>
 namespace InfimaGames.LowPolyShooterPack {
     public static class Log {
         public static void wtf() { Internal_Log("Wtf", LogType.Log); }
         public static void wtf(object toPrint) {
-            //Null check.
             if (toPrint == null)
                 toPrint = "Null";
 
@@ -18,7 +18,6 @@ namespace InfimaGames.LowPolyShooterPack {
 
         public static void warn_me() { Internal_Log("You have been warned", LogType.Warning); }
         public static void warn_me(object warning) {
-            //Null check.
             if (warning == null)
                 warning = "Null";
 
@@ -28,7 +27,6 @@ namespace InfimaGames.LowPolyShooterPack {
 
         public static void kill() { Internal_Log("I will find you, and I will kill you", LogType.Error); }
         public static void kill(object toKill) {
-            //Null check.
             if (toKill == null)
                 toKill = "Null";
 
@@ -39,7 +37,6 @@ namespace InfimaGames.LowPolyShooterPack {
         public static void oopsie(Exception oopsie, UnityEngine.Object context = default(UnityEngine.Object)) { Debug.LogException(oopsie, context); }
 
         private static void Internal_Log(string message, LogType type) {
-            // Null case.
             if (message == " ")
                 message = "Null";
 

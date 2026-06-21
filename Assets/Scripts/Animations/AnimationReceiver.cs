@@ -1,11 +1,11 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
+// Copyright 2021, Infima Games. All Rights Reserved.
 
 using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
     /// This class is helpful when disposing weapons alone in the scene that are playing animations.
-    /// As, without it, the animation events would not have a receiver, and thus create errors!
+    /// Without it, animation events would not have a receiver and would create errors.
     /// </summary>
     public class AnimationReceiver : MonoBehaviour {
         #region ANIMATION

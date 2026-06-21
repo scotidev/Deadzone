@@ -1,4 +1,4 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
+// Copyright 2021, Infima Games. All Rights Reserved.
 
 using UnityEngine;
 
@@ -21,7 +21,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
-        #region FIELDS SERIALIZED
+        #region SERIALIZED FIELDS
 
         [Header("Setup")]
 

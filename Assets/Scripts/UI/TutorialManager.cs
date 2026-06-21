@@ -9,13 +9,13 @@ namespace Deadzone.UI {
     /// Singleton manager that controls the tutorial flow.
     /// Lives in the HUD canvas hierarchy. Processes a queue of TutorialStepSO,
     /// checks completion conditions, and handles timeouts.
-    /// 
+    ///
     /// Flow:
-    /// 1. Game start → queues startTutorials (mouse look, WASD, jump, crouch, run)
-    /// 2. Shop closed with unlocks → queues item selection + attack tutorials
-    /// 3. Ammo conditions → queues reload / melee tutorials (first time only)
-    /// 4. Trigger zones → queue any tutorial step via QueueTutorial()
-    /// 5. Each step completes via action OR timeout → auto-advances queue
+    /// 1. Game start -> queues startTutorials (mouse look, WASD, jump, crouch, run)
+    /// 2. Shop closed with unlocks -> queues item selection + attack tutorials
+    /// 3. Ammo conditions -> queues reload / melee tutorials (first time only)
+    /// 4. Trigger zones -> queue any tutorial step via QueueTutorial()
+    /// 5. Each step completes via action OR timeout -> auto-advances queue
     /// </summary>
     public class TutorialManager : MonoBehaviour {
 
@@ -35,7 +35,7 @@ namespace Deadzone.UI {
         [SerializeField] private List<TutorialStepSO> startTutorials;
 
         [Header("Shop Tutorial Sprites")]
-        [Tooltip("Sprites dos números de 1 a 8 (índice 0 = tecla 1, índice 7 = tecla 8).")]
+        [Tooltip("Sprites dos n\u00fameros de 1 a 8 (\u00edndice 0 = tecla 1, \u00edndice 7 = tecla 8).")]
         [SerializeField] private Sprite[] numberSprites;
 
         [Header("Tutorial Icons")]
@@ -117,6 +117,8 @@ namespace Deadzone.UI {
 
         #endregion
 
+        #region METHODS
+
         #region QUEUE CONTROL
 
         /// <summary>
@@ -126,7 +128,6 @@ namespace Deadzone.UI {
         public void QueueTutorial(TutorialStepSO step) {
             if (step == null) return;
 
-            // If a tutorial is already showing, interrupt it immediately
             if (currentStep != null) {
                 tutorialUI?.Hide();
                 currentStep = null;
@@ -158,6 +159,9 @@ namespace Deadzone.UI {
             completionTriggered = false;
         }
 
+        /// <summary>
+        /// Starts processing the pending queue if not already processing.
+        /// </summary>
         private void ProcessQueue() {
             if (isProcessing) return;
 
@@ -172,6 +176,9 @@ namespace Deadzone.UI {
             ShowNextStep();
         }
 
+        /// <summary>
+        /// Shows the next step from the queue, skipping already-shown or null steps.
+        /// </summary>
         private void ShowNextStep() {
             if (!isResolved || pendingQueue.Count == 0) {
                 isProcessing = false;
@@ -192,33 +199,28 @@ namespace Deadzone.UI {
 
             shownSteps.Add(currentStep.StepId);
 
-            // CONCEITO: Usamos Time.realtimeSinceStartup (tempo real desde o boot) ao invés de
-            // acumular elapsedTime com Time.deltaTime. Isso garante que o timeout do tutorial
-            // SEMPRE dispare, mesmo durante loja (GameState.Shopping), slow-motion, pausa, etc.
-            // O tutorial vai sumir após o tempo configurado, não importa o que aconteça na tela.
             stepStartTime = Time.realtimeSinceStartup;
             completionTriggered = false;
             tutorialUI?.Show(currentStep.TutorialText, currentStep.TutorialImage);
         }
 
+        /// <summary>
+        /// Completes the current step, handles auto-chaining, and shows the next step if available.
+        /// </summary>
         private void CompleteCurrentStep() {
             if (currentStep == null) return;
 
-            // Salva o ID do próximo tutorial antes de limpar o step atual
             string nextId = currentStep.NextStepId;
 
             currentStep = null;
             tutorialUI?.Hide();
 
-            // CONCEITO: Se está na loja, não mostra o próximo tutorial agora.
-            // Ele será mostrado quando OnShopClosed() enfileirar os novos steps.
             bool isShopping = GameManager.Instance != null && GameManager.Instance.State == GameState.Shopping;
             if (isShopping) {
                 isProcessing = false;
                 return;
             }
 
-            // Auto-encadeamento: se este step especifica um próximo tutorial, enfileira ele
             if (!string.IsNullOrEmpty(nextId)) {
                 TutorialStepSO nextStep = FindStepById(nextId);
                 if (nextStep != null) {
@@ -241,22 +243,20 @@ namespace Deadzone.UI {
 
         #region COMPLETION DETECTION
 
+        /// <summary>
+        /// Processes the current tutorial step, checking completion conditions and timeouts.
+        /// </summary>
         private void ProcessCurrentStep() {
             if (currentStep == null || isCompleting) return;
 
-            // CONCEITO: Tempo real desde que o step começou (baseado em Time.realtimeSinceStartup).
-            // Isso nunca para, mesmo durante loja, slow-motion, pause, etc.
-            // Assim o tutorial SEMpre vai timed-out e desaparecerá após o tempo configurado.
             float elapsed = Time.realtimeSinceStartup - stepStartTime;
 
             bool isShopping = GameManager.Instance != null && GameManager.Instance.State == GameState.Shopping;
 
-            // Só verifica ação do jogador se NÃO estiver na loja (evita clique acidental)
             if (!isShopping) {
                 if (!completionTriggered)
                     completionTriggered = CheckCompletion();
 
-                // Interrupção imediata: se tem próximo step na fila e a ação foi detectada, pula sem fade out
                 if (completionTriggered && (!string.IsNullOrEmpty(currentStep.NextStepId) || pendingQueue.Count > 0)) {
                     tutorialUI?.Hide();
                     CompleteCurrentStep();
@@ -275,16 +275,25 @@ namespace Deadzone.UI {
             }
         }
 
+        /// <summary>
+        /// Starts the fade-out process for the current step.
+        /// </summary>
         private void BeginCompletion() {
             isCompleting = true;
             tutorialUI?.StartFadeOut(OnFadeOutComplete);
         }
 
+        /// <summary>
+        /// Callback invoked when the fade-out animation completes.
+        /// </summary>
         private void OnFadeOutComplete() {
             isCompleting = false;
             CompleteCurrentStep();
         }
 
+        /// <summary>
+        /// Checks whether the current step's completion condition has been met.
+        /// </summary>
         private bool CheckCompletion() {
             switch (currentStep.CompletionType) {
                 case CompletionType.OnMouseMove:
@@ -371,11 +380,9 @@ namespace Deadzone.UI {
             bool hasAmmo = equippedWeapon.HasAmmunition();
             int totalAmmo = PlayerProgress.Instance != null ? PlayerProgress.Instance.GetItemTotal(weaponID) : 0;
 
-            // Se a arma tinha munição e agora não tem, sugere o reload
             if (previousHadAmmo && !hasAmmo) {
                 string stepId = $"ammo_empty_{weaponID}";
                 if (!shownSteps.Contains(stepId)) {
-                    // Cria dinamicamente um tutorial step para reload
                     TutorialStepSO step = ScriptableObject.CreateInstance<TutorialStepSO>();
                     step.Setup(
                         stepId,
@@ -398,11 +405,17 @@ namespace Deadzone.UI {
 
         #region SHOP EVENTS
 
+        /// <summary>
+        /// Called when an item is unlocked in the shop. Records the item ID for later tutorial queueing.
+        /// </summary>
         private void OnItemUnlocked(string itemID) {
             if (!recentlyUnlockedItems.Contains(itemID))
                 recentlyUnlockedItems.Add(itemID);
         }
 
+        /// <summary>
+        /// Called when the shop closes. Queues item selection tutorials for any recently unlocked items.
+        /// </summary>
         private void OnShopClosed(bool hasPurchased) {
             if (recentlyUnlockedItems.Count == 0)
                 return;
@@ -442,17 +455,15 @@ namespace Deadzone.UI {
         #region HELPERS
 
         /// <summary>
-        /// Busca um TutorialStepSO pelo seu stepId.
-        /// Primeiro verifica na lista startTutorials, depois procura em todos os assets carregados.
+        /// Finds a TutorialStepSO by its stepId. Checks the serialized startTutorials list first,
+        /// then searches all loaded TutorialStepSO assets.
         /// </summary>
         private TutorialStepSO FindStepById(string stepId) {
-            // Verifica na lista serializada de tutoriais iniciais
             foreach (TutorialStepSO step in startTutorials) {
                 if (step != null && step.StepId == stepId)
                     return step;
             }
 
-            // Fallback: procura em todos os assets TutorialStepSO carregados
             TutorialStepSO[] allSteps = Resources.FindObjectsOfTypeAll<TutorialStepSO>();
             foreach (TutorialStepSO step in allSteps) {
                 if (step != null && step.StepId == stepId)
@@ -462,6 +473,9 @@ namespace Deadzone.UI {
             return null;
         }
 
+        /// <summary>
+        /// Resolves the player character reference and starts processing the tutorial queue.
+        /// </summary>
         private void ResolvePlayer() {
             if (isResolved) return;
 
@@ -474,7 +488,6 @@ namespace Deadzone.UI {
             playerCharacterInventory = playerCharacter.GetInventory();
             isResolved = true;
 
-            // Play tutorial background music
             IAudioManagerService audioService = ServiceLocator.Current.Get<IAudioManagerService>();
             if (audioService != null && tutorialBGM != null) {
                 audioService.PlayBGM(tutorialBGM, true, 1.5f, tutorialBGMVolume);
@@ -484,6 +497,9 @@ namespace Deadzone.UI {
                 ProcessQueue();
         }
 
+        /// <summary>
+        /// Gets the unlock text for a shop item by its ID.
+        /// </summary>
         private string GetItemUnlockText(string itemID) {
             ShopItemDataSO[] allItems = Resources.FindObjectsOfTypeAll<ShopItemDataSO>();
             foreach (ShopItemDataSO shopItem in allItems) {
@@ -493,6 +509,8 @@ namespace Deadzone.UI {
 
             return "pressione para selecionar";
         }
+
+        #endregion
 
         #endregion
 

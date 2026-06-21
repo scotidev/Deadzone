@@ -52,6 +52,31 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
+        #region EVENTS
+
+        #endregion
+
+        #region CONSTANTS
+
+        #endregion
+
+        #region UNITY
+
+        private void Awake() {
+            audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+        }
+
+        private void Update() {
+            if (shouldExplode && !routineStarted) {
+                StartCoroutine(Explode());
+                routineStarted = true;
+            }
+        }
+
+        #endregion
+
+        #region METHODS
+
         #region ITEM BEHAVIOUR IMPLEMENTATION
 
         public override string GetItemID() {
@@ -77,11 +102,10 @@ namespace InfimaGames.LowPolyShooterPack {
 
         /// <summary>
         /// Called when player selects this item (key 7).
-        /// Start placement mode (ghost preview appears).
+        /// Starts placement mode (ghost preview appears).
         /// </summary>
         public override void OnSelected() {
             PlayEquipSound();
-            // FIXED: Set current ammo to 1 when buildable is selected (1 in hand ready to place).
             if (PlayerProgress.Instance != null) {
                 string id = GetItemID();
                 int total = PlayerProgress.Instance.GetItemTotal(id);
@@ -93,8 +117,7 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Called when player selects another item.
-        /// Cancel placement mode.
+        /// Called when player selects another item. Cancels placement mode.
         /// </summary>
         public override void OnDeselected() {
             if (BuildingController.Instance != null && BuildingController.Instance.IsPlacing) {
@@ -103,7 +126,7 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// NORMAL use: Place explosive barrel with normal explosion force.
+        /// Normal use: Place explosive barrel with normal explosion force.
         /// </summary>
         public override void OnUse() {
             if (!CanBeUsed()) {
@@ -112,7 +135,7 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Check if barrel is unlocked AND has quantity in inventory.
+        /// Checks if barrel is unlocked and has quantity in inventory.
         /// </summary>
         public override bool CanBeUsed() {
             if (PlayerProgress.Instance == null) {
@@ -131,30 +154,9 @@ namespace InfimaGames.LowPolyShooterPack {
         #region ANIMATION
 
         /// <summary>
-        /// ExplosiveBarrel nao precisa de pose de arma. Mantem maos abaixadas ao equipar.
+        /// Explosive barrel does not need a weapon pose. Keeps hands lowered when equipped.
         /// </summary>
         public override bool KeepHolsteredOnEquip() => true;
-
-        #endregion
-
-        #region UNITY LIFECYCLE
-
-        private void Awake() {
-            audioService = ServiceLocator.Current.Get<IAudioManagerService>();
-        }
-
-        private void Update() {
-            // CONCEITO: Verificar a cada frame se o barril deve explodir.
-            // Update() é o método chamado uma vez por frame no Unity.
-            // Aqui fazemos uma simples verificação (shouldExplode == true).
-            if (shouldExplode && !routineStarted) {
-                // Iniciar a corrotina de explosão
-                // CONCEITO: Corrotinas permitem esperar tempo real no código.
-                // Sem corrotinas, teríamos que usar um timer manual.
-                StartCoroutine(Explode());
-                routineStarted = true;
-            }
-        }
 
         #endregion
 
@@ -162,10 +164,9 @@ namespace InfimaGames.LowPolyShooterPack {
 
         /// <summary>
         /// IDamageable interface method.
-        /// When barrel takes damage, trigger explosion.
+        /// When barrel takes damage, triggers explosion.
         /// </summary>
         public void TakeDamage(float amount) {
-            // Trigger explosion when hit
             shouldExplode = true;
         }
 
@@ -186,32 +187,21 @@ namespace InfimaGames.LowPolyShooterPack {
         #region EXPLOSION LOGIC
 
         /// <summary>
-        /// Corrotine to handle explosion with delay.
-        /// CONCEITO: IEnumerator permite pausar e retomar a execução.
-        /// "yield return new WaitForSeconds(time)" pausa a corrotina por 'time' segundos.
-        /// Isso simula o delay antes da explosão.
+        /// Coroutine that handles explosion with random delay.
+        /// Applies physics force, triggers chain reactions, damages enemies, and spawns VFX.
         /// </summary>
         private IEnumerator Explode() {
-            // CONCEITO: Delay aleatório torna a explosão mais realista.
-            // Barris não explodem instantaneamente, levam um tempo pequeno.
             float randomDelay = Random.Range(minTime, maxTime);
             yield return new WaitForSeconds(randomDelay);
 
             PlayExplosionSound();
 
-            // Trigger slow-motion effect
-            // CONCEITO: O operador "?." (null-conditional operator) chama o método
-            // SOMENTE se SlowMotionManager.Instance não for null.
-            // Isso evita exceções se o manager não existir na cena.
             SlowMotionManager.Instance?.TriggerSlowMotion(1.0f);
 
-            // Instantiate destroyed barrel prefab
             if (destroyedBarrelPrefab != null) {
                 Instantiate(destroyedBarrelPrefab, transform.position, transform.rotation);
             }
 
-            // Get scaled radius and damage from BuildableDataSO
-            // CONCEITO: O raio e dano escalam com o nível de upgrade do item.
             float radius = barrelData.ExplosionRadius;
             float damage = barrelData.Damage;
             if (PlayerProgress.Instance != null) {
@@ -220,25 +210,15 @@ namespace InfimaGames.LowPolyShooterPack {
                 damage = barrelData.GetDamageAtLevel(level);
             }
 
-            // Apply explosion physics
-            // CONCEITO: Physics.OverlapSphere encontra todos os colisores
-            // dentro de uma esfera de raio 'radius' centrada em 'explosionPos'.
-            // Isso nos dá todos os objetos atingidos pela explosão.
             Vector3 explosionPos = transform.position;
             Collider[] colliders = Physics.OverlapSphere(explosionPos, radius);
 
             foreach (Collider hit in colliders) {
-                // Apply explosion force to rigidbodies
                 Rigidbody rb = hit.GetComponent<Rigidbody>();
                 if (rb != null) {
-                    // CONCEITO: AddExplosionForce aplica uma força radial
-                    // que simula uma explosão física realista.
                     rb.AddExplosionForce(explosionForce * 50, explosionPos, radius);
                 }
 
-                // Chain reaction: trigger other explosive barrels
-                // CONCEITO: Se a explosão acertar outro barril explosivo,
-                // aquele barril também explodirá (reação em cadeia).
                 if (hit.transform.tag == "ExplosiveBarrel") {
                     ExplosiveBarrel otherBarrel = hit.GetComponent<ExplosiveBarrel>();
                     if (otherBarrel != null) {
@@ -246,9 +226,6 @@ namespace InfimaGames.LowPolyShooterPack {
                     }
                 }
 
-                // Damage enemies in radius, scaled by upgrade level
-                // CONCEITO: O dano vem do BuildableDataSO (única fonte de verdade).
-                // GetDamageAtLevel(level) já aplica o damageScaling configurado no SO.
                 if (barrelData == null) continue;
                 EnemyBase enemy = hit.GetComponent<EnemyBase>();
                 if (enemy != null) {
@@ -256,9 +233,6 @@ namespace InfimaGames.LowPolyShooterPack {
                 }
             }
 
-            // Raycast downwards to find ground and spawn explosion effect
-            // CONCEITO: Raycasting dispara uma "linha invisível" e retorna
-            // o primeiro objeto que acertou. Aqui estamos procurando o ground.
             RaycastHit hitInfo;
             if (Physics.Raycast(transform.position, Vector3.down, out hitInfo, 50f)) {
                 if (explosionPrefab != null) {
@@ -267,7 +241,6 @@ namespace InfimaGames.LowPolyShooterPack {
                 }
             }
 
-            // Destroy the barrel gameobject
             Destroy(gameObject);
         }
 
@@ -292,6 +265,12 @@ namespace InfimaGames.LowPolyShooterPack {
                 audioService.PlaySFX3D(explosionClip, transform.position, explosionVolume);
             }
         }
+
+        #endregion
+
+        #region DEBUG
+
+        #endregion
 
         #endregion
     }

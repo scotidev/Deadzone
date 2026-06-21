@@ -7,7 +7,7 @@ using TMPro;
 /// </summary>
 public class CreditsUI : BaseUI {
 
-    #region FIELDS
+    #region SERIALIZED FIELDS
 
     [Header("Scroll Settings")]
     [SerializeField] private float scrollSpeed = 50f;
@@ -25,6 +25,10 @@ public class CreditsUI : BaseUI {
     [Header("UI Elements")]
     [SerializeField] private RectTransform contentContainer;
     [SerializeField] private Button closeButton;
+
+    #endregion
+
+    #region FIELDS
 
     /// <summary>
     /// Enables Escape-close behavior for this panel.
@@ -44,11 +48,9 @@ public class CreditsUI : BaseUI {
         if (closeButton != null)
             closeButton.onClick.AddListener(OnBackClick);
 
-        // The contentContainer's parent should be the Mask GameObject
         if (contentContainer != null) {
             maskRectTransform = contentContainer.parent.GetComponent<RectTransform>();
 
-            // Force alignment so the scroll math is reliable
             contentContainer.anchorMin = new Vector2(0, 1);
             contentContainer.anchorMax = new Vector2(1, 1);
             contentContainer.pivot = new Vector2(0.5f, 1);
@@ -76,13 +78,11 @@ public class CreditsUI : BaseUI {
             return;
 
         if (scrollUp) {
-            // Scroll content downward (from top to bottom)
             contentContainer.anchoredPosition += new Vector2(0, scrollSpeed * Time.deltaTime);
 
             if (contentContainer.anchoredPosition.y >= contentHeight + endPadding)
                 isScrolling = false;
         } else {
-            // Scroll content upward (from bottom to top)
             contentContainer.anchoredPosition -= new Vector2(0, scrollSpeed * Time.deltaTime);
 
             if (contentContainer.anchoredPosition.y <= -(contentHeight + endPadding))

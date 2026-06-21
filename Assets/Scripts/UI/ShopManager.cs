@@ -62,9 +62,8 @@ public class ShopManager : MonoBehaviour {
         else
             Destroy(gameObject);
 
-        // Calculate global max values for weapon stats normalization
         WeaponStatsCalculator.CalculateGlobalMaxValues();
-        
+
         ResolvePlayerCharacter();
     }
 
@@ -134,11 +133,17 @@ public class ShopManager : MonoBehaviour {
         Cursor.lockState = visible ? CursorLockMode.None : CursorLockMode.Locked;
     }
 
+    /// <summary>
+    /// Starts the coroutine that tracks AFK time in the shop.
+    /// </summary>
     private void StartAFKTimer() {
         if (afkCoroutine != null) StopCoroutine(afkCoroutine);
         afkCoroutine = StartCoroutine(AFKTimerCoroutine());
     }
 
+    /// <summary>
+    /// Stops the AFK timer coroutine and resets the timer.
+    /// </summary>
     private void StopAFKTimer() {
         if (afkCoroutine != null) {
             StopCoroutine(afkCoroutine);
@@ -147,6 +152,10 @@ public class ShopManager : MonoBehaviour {
         afkTimer = 0f;
     }
 
+    /// <summary>
+    /// Coroutine that tracks how long the player has been idle in the shop.
+    /// Invokes PlayerAFK event when the threshold is exceeded.
+    /// </summary>
     private IEnumerator AFKTimerCoroutine() {
         afkTimer = 0f;
         while (isShopOpen) {
@@ -162,10 +171,16 @@ public class ShopManager : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Called when the player interacts with the shop, resetting the AFK timer.
+    /// </summary>
     public void OnShopInteraction() {
         afkTimer = 0f;
     }
 
+    /// <summary>
+    /// Called when a purchase is made in the shop.
+    /// </summary>
     public void OnPurchaseMade() {
         hasPurchasedSomething = true;
     }
@@ -173,66 +188,44 @@ public class ShopManager : MonoBehaviour {
     /// <summary>
     /// Returns the current state of the shop interface.
     /// </summary>
-    /// <returns>True if the shop is currently open, false otherwise.</returns>
     public bool IsShopOpen() => isShopOpen;
 
     /// <summary>
-    /// Notifies the SPECIFIC item that was unlocked.
-    /// BUG FIX: Only notify the item that was actually unlocked, not ALL items!
+    /// Notifies the specific item that was unlocked. Only notifies the item matching the unlocked ID.
     /// </summary>
     private void NotifyItemUnlocked(ShopItemDataSO unlockedItem) {
-        Debug.Log($"[ShopManager] NOTIFY ITEM UNLOCKED CALLED! Item: {unlockedItem?.ItemName ?? "NULL"}");
-        
         if (playerCharacter == null || unlockedItem?.ItemData == null) {
-            Debug.Log($"[ShopManager] Early return - playerCharacter: {playerCharacter}, unlockedItem: {unlockedItem}");
             return;
         }
-        
+
         var callbacks = playerCharacter.GetComponents<IShopItemCallback>();
-        Debug.Log($"[ShopManager] NotifyItemUnlocked called for: {unlockedItem.ItemName} (ID: {unlockedItem.ItemID}), found {callbacks?.Length ?? 0} callbacks");
-        
+
         foreach (var callback in callbacks) {
-            // Only notify the SPECIFIC item that was unlocked!
-            // Check if this callback belongs to the unlocked item
             if (callback is MonoBehaviour mono && mono.GetComponent<InfimaGames.LowPolyShooterPack.ItemBehaviour>() is { } itemBehaviour) {
-                // This is a weapon/grenade/etc. - check if it's the unlocked one
                 if (itemBehaviour.GetItemID() == unlockedItem.ItemID) {
-                    Debug.Log($"[ShopManager] ✓ Calling OnShopUnlock() ONLY for: {unlockedItem.ItemName}");
                     callback.OnShopUnlock();
                 }
             } else if (callback is Vest vest && vest.GetItemID() == unlockedItem.ItemID) {
-                Debug.Log($"[ShopManager] ✓ Calling OnShopUnlock() ONLY for: {unlockedItem.ItemName} (Vest)");
                 callback.OnShopUnlock();
-            } else {
-                Debug.Log($"[ShopManager] ✗ SKIPPING callback for different item");
             }
         }
     }
 
     /// <summary>
-    /// Notifies the SPECIFIC item that was upgraded.
-    /// BUG FIX: Only notify the item that was actually upgraded, not ALL items!
+    /// Notifies the specific item that was upgraded. Only notifies the item matching the upgraded ID.
     /// </summary>
     private void NotifyItemUpgraded(ShopItemDataSO upgradedItem) {
         if (playerCharacter == null || upgradedItem?.ItemData == null) return;
-        
+
         var callbacks = playerCharacter.GetComponents<IShopItemCallback>();
-        Debug.Log($"[ShopManager] NotifyItemUpgraded called for: {upgradedItem.ItemName} (ID: {upgradedItem.ItemID}), found {callbacks?.Length ?? 0} callbacks");
-        
+
         foreach (var callback in callbacks) {
-            // Only notify the SPECIFIC item that was upgraded!
-            // Check if this callback belongs to the upgraded item
             if (callback is MonoBehaviour mono && mono.GetComponent<InfimaGames.LowPolyShooterPack.ItemBehaviour>() is { } itemBehaviour) {
-                // This is a weapon/grenade/etc. - check if it's the upgraded one
                 if (itemBehaviour.GetItemID() == upgradedItem.ItemID) {
-                    Debug.Log($"[ShopManager] ✓ Calling OnShopUpgrade() ONLY for: {upgradedItem.ItemName}");
                     callback.OnShopUpgrade();
                 }
             } else if (callback is Vest vest && vest.GetItemID() == upgradedItem.ItemID) {
-                Debug.Log($"[ShopManager] ✓ Calling OnShopUpgrade() ONLY for: {upgradedItem.ItemName} (Vest)");
                 callback.OnShopUpgrade();
-            } else {
-                Debug.Log($"[ShopManager] ✗ SKIPPING callback for different item");
             }
         }
     }
@@ -252,12 +245,11 @@ public class ShopManager : MonoBehaviour {
 
         if (!EconomyManager.Instance.TrySpendCurrency(cost)) {
             int missingAmount = cost - EconomyManager.Instance.GetCurrentCurrency();
-            Debug.LogWarning($"[ShopManager] Insufficient funds! Need {missingAmount} more coins."); // Adicionar feedback de som
+            Debug.LogWarning($"[ShopManager] Insufficient funds! Need {missingAmount} more coins.");
             return false;
         }
 
         PlayerProgress.Instance.UnlockItem(itemData);
-        Debug.Log($"[ShopManager] Unlocked {itemData.ItemName}!");
 
         ItemUnlocked?.Invoke(itemData.ItemID);
 
@@ -278,8 +270,6 @@ public class ShopManager : MonoBehaviour {
         int currentLevel = PlayerProgress.Instance.GetItemLevel(itemData.ItemID);
         int cost = GetUpgradeCost(itemData, currentLevel);
 
-        Debug.Log($"[ShopManager] TryUpgradeItem called for: {itemData.ItemName} (ID: {itemData.ItemID}), type: {itemData.ItemData?.GetType().Name}");
-
         if (cost <= 0 || !EconomyManager.Instance.CanAfford(cost)) {
             int missingAmount = cost - EconomyManager.Instance.GetCurrentCurrency();
             Debug.LogWarning($"[ShopManager] Insufficient funds! Need {missingAmount} more coins.");
@@ -289,8 +279,6 @@ public class ShopManager : MonoBehaviour {
         if (!UpgradeManager.Instance.TryUpgradeItem(itemData.ItemID, cost, itemData.ItemData)) {
             return false;
         }
-
-        Debug.Log($"[ShopManager] Upgraded {itemData.ItemName} to level {PlayerProgress.Instance.GetItemLevel(itemData.ItemID)}!");
 
         NotifyItemUpgraded(itemData);
         return true;
@@ -317,7 +305,7 @@ public class ShopManager : MonoBehaviour {
 
     /// <summary>
     /// Attempts to purchase ammo/supplies for an item.
-    /// Delegates to AmmoManager which handles all item types (Weapon, Vest, Medkit, Grenade, Buildable).
+    /// Delegates to AmmoManager which handles all item types.
     /// </summary>
     /// <param name="itemData">The shop item data to purchase.</param>
     /// <returns>True if purchase was successful, false otherwise.</returns>
@@ -384,12 +372,11 @@ public class ShopManager : MonoBehaviour {
     /// <summary>
     /// Gets current ammo status for an item.
     /// Uses smart dispatcher GetCurrentAmmoForItem() to return the correct current amount
-    /// based on where that item type stores its data (weapons dict vs consumables dict).
+    /// based on where that item type stores its data.
     /// </summary>
     public (int current, int max) GetAmmoStatus(ShopItemDataSO itemData) {
         if (itemData == null || PlayerProgress.Instance == null) return (0, 0);
 
-        // Vest: special case - uses armor system (percentage-based), not quantity-based
         if (itemData.ItemData is VestDataSO) {
             Vest vest = Vest.GetFromPlayer(playerCharacter);
             if (vest != null) {
@@ -398,15 +385,15 @@ public class ShopManager : MonoBehaviour {
             return (0, 0);
         }
 
-        // All other items: use smart dispatcher to route to correct storage location
-        // Weapons → GetWeaponReserveAmmo()
-        // Buildables/Consumables → GetConsumableQuantity()
         int current = PlayerProgress.Instance.GetCurrentAmmoForItem(itemData.ItemID);
         int currentLevel = PlayerProgress.Instance.GetItemLevel(itemData.ItemID);
         int max = PlayerProgress.Instance.GetMaxAmmoAtLevel(itemData.ItemID, currentLevel);
         return (current, max);
     }
 
+    /// <summary>
+    /// Determines why the action button should be disabled for a given item.
+    /// </summary>
     public ShopButtonDisabledReason GetActionButtonDisabledReason(ShopItemDataSO itemData) {
         if (itemData == null || PlayerProgress.Instance == null || EconomyManager.Instance == null) {
             return ShopButtonDisabledReason.None;
@@ -418,8 +405,8 @@ public class ShopManager : MonoBehaviour {
         int maxLevel = PlayerProgress.Instance.GetItemMaxLevel(itemID);
 
         if (!isUnlocked) {
-            return EconomyManager.Instance.CanAfford(itemData.UnlockCost) 
-                ? ShopButtonDisabledReason.None 
+            return EconomyManager.Instance.CanAfford(itemData.UnlockCost)
+                ? ShopButtonDisabledReason.None
                 : ShopButtonDisabledReason.InsufficientFunds;
         }
 
@@ -435,6 +422,9 @@ public class ShopManager : MonoBehaviour {
         return ShopButtonDisabledReason.None;
     }
 
+    /// <summary>
+    /// Determines why the ammo button should be disabled for a given item.
+    /// </summary>
     public ShopButtonDisabledReason GetAmmoButtonDisabledReason(ShopItemDataSO itemData) {
         if (itemData == null || PlayerProgress.Instance == null || EconomyManager.Instance == null) {
             return ShopButtonDisabledReason.None;

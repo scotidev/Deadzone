@@ -36,18 +36,15 @@ public class EnemyAttack : MonoBehaviour {
     private Animator animator;
     private NavMeshAgent navMeshAgent;
 
-    private static readonly int HashAttack = Animator.StringToHash("Attack");
-
-    // CONCEITO: NavMeshPath cacheado — reusa o MESMO objeto em vez de alocar um novo
-    // a cada frame. new NavMeshPath() toda vez = pressão no GC.
-    // Criado no Awake porque NavMeshPath usa código nativo da Unity e não pode
-    // ser inicializado na declaração do campo (dá UnityException).
     private NavMeshPath cachedPath;
 
-    // CONCEITO: Buffer pré-alocado pra OverlapSphereNonAlloc.
-    // OverlapSphere comum aloca um Collider[] novo a cada chamada.
-    // NonAlloc reusa o mesmo array, sem alocação.
     private Collider[] hitBuffer = new Collider[16];
+
+    #endregion
+
+    #region CONSTANTS
+
+    private static readonly int HashAttack = Animator.StringToHash("Attack");
 
     #endregion
 
@@ -57,8 +54,6 @@ public class EnemyAttack : MonoBehaviour {
         enemyFollow = GetComponent<EnemyFollow>();
         animator = GetComponent<Animator>();
         navMeshAgent = GetComponent<NavMeshAgent>();
-        // CONCEITO: NavMeshPath precisa ser criado em Awake, não no field initializer,
-        // porque chama código nativo (InitializeNavMeshPath) que exige o engine pronto.
         cachedPath = new NavMeshPath();
     }
 
@@ -66,8 +61,6 @@ public class EnemyAttack : MonoBehaviour {
         if (enemyFollow != null)
             playerTransform = enemyFollow.GetPlayerTransform();
 
-        // CONCEITO: Fallback usando PlayerCache em vez de FindWithTag.
-        // PlayerCache só procura na cena UMA VEZ e guarda a referência.
         if (playerTransform == null)
             playerTransform = PlayerCache.Transform;
 
@@ -119,17 +112,13 @@ public class EnemyAttack : MonoBehaviour {
     private void CheckForObstacleOnPath() {
         if (enemyFollow == null) return;
 
-        // If the player is reachable via NavMesh, no obstacle is blocking the path
         if (enemyFollow.CanReachPlayer()) {
             ClearCurrentTarget();
             return;
         }
 
-        // NavMesh path is blocked — find the blocked corner
         if (navMeshAgent == null || !navMeshAgent.isOnNavMesh) return;
 
-        // CONCEITO: Reusa cachedPath em vez de criar new NavMeshPath() a cada frame.
-        // NavMesh.CalculatePath preenche o objeto existente em vez de alocar um novo.
         navMeshAgent.CalculatePath(playerTransform.position, cachedPath);
 
         if (cachedPath.status == NavMeshPathStatus.PathComplete) {
@@ -137,25 +126,16 @@ public class EnemyAttack : MonoBehaviour {
             return;
         }
 
-        // Search near the last corner of the blocked path for obstacles
         Vector3 searchCenter = cachedPath.corners.Length > 0
             ? cachedPath.corners[cachedPath.corners.Length - 1]
             : transform.position;
 
-        // CONCEITO: OverlapSphereNonAlloc reusa hitBuffer em vez de alocar um array novo.
-        // Retorna a quantidade de colliders encontrados (útil pra iterar só até o count).
         int hitCount = Physics.OverlapSphereNonAlloc(searchCenter, barricadeSearchRadius, hitBuffer, barricadeLayer);
         IDamageable closestTarget = null;
         float closestDist = float.MaxValue;
 
-        // CONCEITO: for loop em vez de foreach — evita alocação do enumerator.
-        // Só itera até hitCount (quantidade real de hits) em vez do buffer inteiro.
         for (int i = 0; i < hitCount; i++) {
             Collider hit = hitBuffer[i];
-            // CONCEITO: TryGetComponent é MAIS EFICIENTE que GetComponent<T>().
-            // GetComponent<T>() aloca memória indiretamente via boxing em certos casos,
-            // enquanto TryGetComponent é um método nativo da Unity que não aloca nada.
-            // A diferença é pequena por chamada, mas num loop a cada frame, acumula.
             if (hit.TryGetComponent(out Barricade b) && !b.IsDestroyed) {
                 float d = Vector3.Distance(transform.position, b.transform.position);
                 if (d < closestDist && d <= barricadeCheckDistance) {
@@ -192,26 +172,22 @@ public class EnemyAttack : MonoBehaviour {
             return;
         }
 
-        // Check if target game object was destroyed
         MonoBehaviour targetBehaviour = currentTarget as MonoBehaviour;
         if (targetBehaviour == null || targetBehaviour.gameObject == null) {
             ClearCurrentTarget();
             return;
         }
 
-        // Check if barricade was destroyed
         if (currentTarget is Barricade barricade && barricade.IsDestroyed) {
             ClearCurrentTarget();
             return;
         }
 
-        // Check if barrel has already started exploding
         if (currentTarget is ExplosiveBarrel barrel && barrel.IsExploding) {
             ClearCurrentTarget();
             return;
         }
 
-        // Re-check if the player is now reachable
         if (enemyFollow != null && enemyFollow.CanReachPlayer()) {
             ClearCurrentTarget();
             enemyFollow.SetMovementEnabled(true);
@@ -241,15 +217,12 @@ public class EnemyAttack : MonoBehaviour {
         if (animator != null)
             animator.SetTrigger(HashAttack);
 
-        // Play attack sound
         if (enemyBase != null)
             enemyBase.PlayAttackSound();
 
-        // Try to cast to PlayerHealth for specialized zombie damage with correct audio
         if (playerDamageable is PlayerHealth playerHealth) {
             playerHealth.TakeDamageFromZombie(attackDamage);
         } else {
-            // Fallback for other IDamageable implementations
             playerDamageable?.TakeDamage(attackDamage);
         }
     }
@@ -262,7 +235,6 @@ public class EnemyAttack : MonoBehaviour {
         if (animator != null)
             animator.SetTrigger(HashAttack);
 
-        // Play attack sound
         if (enemyBase != null)
             enemyBase.PlayAttackSound();
 

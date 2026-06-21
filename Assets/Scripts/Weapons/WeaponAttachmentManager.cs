@@ -1,10 +1,9 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-
 using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
-    /// Weapon Attachment Manager. Handles equipping and storing a Weapon's Attachments.
+    /// Weapon Attachment Manager. Handles equipping and storing a Weapon's Attachments
+    /// (scope, muzzle, magazine) and provides access to the currently equipped ones.
     /// </summary>
     public class WeaponAttachmentManager : WeaponAttachmentManagerBehaviour {
 
@@ -57,6 +56,8 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
+        #region METHODS
+
         #region GETTERS
 
         public override ScopeBehaviour GetEquippedScope() => scopeBehaviour;
@@ -64,6 +65,8 @@ namespace InfimaGames.LowPolyShooterPack {
 
         public override MagazineBehaviour GetEquippedMagazine() => magazineBehaviour;
         public override MuzzleBehaviour GetEquippedMuzzle() => muzzleBehaviour;
+
+        #endregion
 
         #endregion
     }

@@ -4,9 +4,8 @@ using UnityEngine.InputSystem;
 using Deadzone.Interfaces;
 
 /// <summary>
-/// Singleton that manages the game's pause state and related behaviour:
-/// UI visibility, cursor locking, input interception, and delegation
-/// of time scale changes to <see cref="GameManager"/>.
+/// Singleton that manages the game's pause state: UI visibility, cursor locking,
+/// input interception, and time scale delegation to <see cref="GameManager"/>.
 /// </summary>
 public class PauseManager : MonoBehaviour {
 
@@ -17,10 +16,15 @@ public class PauseManager : MonoBehaviour {
 
     #endregion
 
+    #region SERIALIZED FIELDS
+
+    [SerializeField] private Character playerCharacter;
+
+    #endregion
+
     #region FIELDS
 
     private bool isPaused = false;
-    [SerializeField] private Character playerCharacter;
 
     #endregion
 
@@ -65,10 +69,7 @@ public class PauseManager : MonoBehaviour {
         if (!escPressed)
             return;
 
-        Debug.Log($"[PauseManager] ESC detectado no HandlePauseInput() | isPaused={isPaused} | Time.timeScale={Time.timeScale}");
-
         if (GameManager.Instance?.State == GameState.Shopping) {
-            Debug.Log("[PauseManager] No shopping, fechando shop");
             ShopManager.Instance?.CloseShop();
             return;
         }
@@ -87,10 +88,9 @@ public class PauseManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Pauses the game: freezes time via <see cref="GameManager.PauseTime"/>, shows the pause menu, and unlocks the cursor.
+    /// Freezes time, shows the pause menu, and unlocks the cursor.
     /// </summary>
     public void PauseGame() {
-        Debug.Log("[PauseManager] PauseGame()");
         ResolvePlayerCharacter();
         isPaused = true;
         GameManager.Instance?.SetState(GameState.Paused);
@@ -112,10 +112,9 @@ public class PauseManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Resumes the game: restores time via <see cref="GameManager.ResumeTime"/>, hides all menus, and locks the cursor back to the viewport.
+    /// Restores time, hides all menus, and locks the cursor back to the viewport.
     /// </summary>
     public void ResumeGame() {
-        Debug.Log($"[PauseManager] ResumeGame() | Stack:\n{new System.Diagnostics.StackTrace(true)}");
         ResolvePlayerCharacter();
         GameManager.Instance?.ResumeTime();
         isPaused = false;
@@ -134,8 +133,7 @@ public class PauseManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Unloads the gameplay scene and returns to the main menu.
-    /// Restores time before loading so the menu runs at normal speed.
+    /// Unloads the gameplay scene and returns to the main menu. Restores time before loading.
     /// </summary>
     public void BackToMainMenu() {
         GameManager.ResetGameSession();

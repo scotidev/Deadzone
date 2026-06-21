@@ -3,14 +3,6 @@ using InfimaGames.LowPolyShooterPack;
 using Deadzone.Interfaces;
 using Deadzone.UI;
 
-// CONCEITO: Este script agora segue o princípio da responsabilidade única.
-// maxHealth NÃO é mais um campo serializado — cada instância lê seu valor
-// diretamente do BuildableDataSO.GetResistanceAtLevel() via PlayerProgress.
-// O SO é a única fonte da verdade para os dados de design.
-//
-// CONCEITO: A cor foi substituída por um array de materiais (damageStateMaterials),
-// permitindo texturas de rachadura progressiva em vez de simples tintas.
-
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
     /// Represents a barricade that blocks enemy path to the player.
@@ -48,6 +40,38 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #endregion
 
+        #region PROPERTIES
+
+        public float HealthFraction => maxHealth > 0f ? currentHealth / maxHealth : 0f;
+        public bool IsDestroyed => currentHealth <= 0f;
+
+        #endregion
+
+        #region EVENTS
+
+        #endregion
+
+        #region CONSTANTS
+
+        #endregion
+
+        #region UNITY
+
+        private void Awake() {
+            audioService = ServiceLocator.Current.Get<IAudioManagerService>();
+            InitializeHealth();
+            if (barricadeRenderer == null)
+                barricadeRenderer = GetComponent<Renderer>();
+        }
+
+        private void Start() {
+            UpdateBarricadeVisual();
+        }
+
+        #endregion
+
+        #region METHODS
+
         #region ITEM BEHAVIOUR IMPLEMENTATION
 
         public override string GetItemID() {
@@ -73,19 +97,16 @@ namespace InfimaGames.LowPolyShooterPack {
 
         /// <summary>
         /// Called when player selects this item (key 6).
-        /// Start placement mode (ghost preview appears).
+        /// Starts placement mode (ghost preview appears).
         /// </summary>
         public override void OnSelected() {
-            Debug.Log($"[Barricade] OnSelected called");
             PlayEquipSound();
-            // FIXED: Set current ammo to 1 when buildable is selected (1 in hand ready to place).
             if (PlayerProgress.Instance != null) {
                 string id = GetItemID();
                 int total = PlayerProgress.Instance.GetItemTotal(id);
                 PlayerProgress.Instance.SetItemCurrent(id, total > 0 ? 1 : 0);
             }
             if (BuildingController.Instance != null && barricadeData != null) {
-                Debug.Log($"[Barricade] Starting placement with BuildingController");
                 BuildingController.Instance.StartPlacement(barricadeData);
             } else {
                 Debug.LogWarning($"[Barricade] OnSelected: BuildingController.Instance={BuildingController.Instance}, barricadeData={barricadeData}");
@@ -93,19 +114,16 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Called when player selects another item.
-        /// Cancel placement mode.
+        /// Called when player selects another item. Cancels placement mode.
         /// </summary>
         public override void OnDeselected() {
-            Debug.Log($"[Barricade] OnDeselected called");
             if (BuildingController.Instance != null && BuildingController.Instance.IsPlacing) {
-                Debug.Log($"[Barricade] Canceling placement");
                 BuildingController.Instance.CancelPlacement();
             }
         }
 
         /// <summary>
-        /// NORMAL use: Place barricade with normal health.
+        /// Normal use: Place barricade with normal health.
         /// </summary>
         public override void OnUse() {
             if (!CanBeUsed()) {
@@ -114,7 +132,7 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Check if barricade can be placed (unlocked AND has quantity in inventory).
+        /// Checks if barricade can be placed (unlocked and has quantity in inventory).
         /// </summary>
         public override bool CanBeUsed() {
             if (PlayerProgress.Instance == null) {
@@ -126,9 +144,7 @@ namespace InfimaGames.LowPolyShooterPack {
             int quantity = PlayerProgress.Instance.GetBuildableQuantity(GetItemID());
             if (isUnlocked && quantity <= 0)
                 FeedbackMessageUI.Instance?.Show();
-            bool canUse = isUnlocked && quantity > 0;
-            Debug.Log($"[Barricade] CanBeUsed check: ID={GetItemID()}, Unlocked={isUnlocked}, Quantity={quantity}, CanUse={canUse}");
-            return canUse;
+            return isUnlocked && quantity > 0;
         }
 
         #endregion
@@ -136,44 +152,16 @@ namespace InfimaGames.LowPolyShooterPack {
         #region ANIMATION
 
         /// <summary>
-        /// Barricade nao precisa de pose de arma. Mantem maos abaixadas ao equipar.
+        /// Barricade does not need a weapon pose. Keeps hands lowered when equipped.
         /// </summary>
         public override bool KeepHolsteredOnEquip() => true;
 
         #endregion
 
-        #region PROPERTIES
-
-        public float HealthFraction => maxHealth > 0f ? currentHealth / maxHealth : 0f;
-        public bool IsDestroyed => currentHealth <= 0f;
-
-        #endregion
-
-        #region UNITY
-
-        private void Awake() {
-            audioService = ServiceLocator.Current.Get<IAudioManagerService>();
-
-            // CONCEITO: Inicializa a saúde lendo do BuildableDataSO + nível do jogador.
-            // O valor serializado antigo (maxHealth = 100f) foi removido — o SO é a fonte da verdade.
-            InitializeHealth();
-
-            if (barricadeRenderer == null)
-                barricadeRenderer = GetComponent<Renderer>();
-        }
-
-        private void Start() {
-            UpdateBarricadeVisual();
-        }
-
-        #endregion
-
-        #region METHODS
+        #region HEALTH
 
         /// <summary>
         /// Reads the barricade's max health from BuildableDataSO scaled by the player's current upgrade level.
-        /// CONCEITO: O SO define o valor base + scaling por nível. PlayerProgress fornece o nível atual.
-        /// Isso garante que barricadas recém-colocadas sempre usem o nível de upgrade mais recente.
         /// </summary>
         private void InitializeHealth() {
             if (barricadeData == null) {
@@ -181,24 +169,14 @@ namespace InfimaGames.LowPolyShooterPack {
                 return;
             }
 
-            // CONCEITO: Lê o nível de upgrade atual do jogador para este item.
-            // Se PlayerProgress ainda não estiver disponível, usa level 1 como fallback.
             int level = PlayerProgress.Instance?.GetItemLevel(GetItemID()) ?? 1;
-
-            // CONCEITO: GetResistanceAtLevel(level) aplica resistanceScaling configurado no SO.
-            // level 1 = valor base do SO; level N = valor base * (1 + resistanceScaling * (N-1)).
             maxHealth = barricadeData.GetResistanceAtLevel(level);
             currentHealth = maxHealth;
-
-            Debug.Log($"[Barricade] Initialized: maxHealth={maxHealth}, level={level}, itemID={GetItemID()}");
         }
 
         /// <summary>
         /// Reduces the barricade's current health by the specified amount and triggers destruction if health reaches zero.
         /// </summary>
-        /// <remarks>If the barricade's health is already zero or less, this method has no effect. When health
-        /// drops to zero or below, the barricade is destroyed.</remarks>
-        /// <param name="amount">The amount of damage to apply to the barricade. Must be a non-negative value.</param>
         public void TakeDamage(float amount) {
             if (currentHealth <= 0f) return;
 
@@ -212,9 +190,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
         /// <summary>
         /// Swaps the barricade's material based on current health percentage.
-        /// CONCEITO: Ao invés de tintar a cor via código, trocamos o material inteiro.
-        /// Isso permite usar texturas com rachaduras progressivas definidas pelo artista.
-        /// Índices: 0=Intact (>66%), 1=Damaged (>33%), 2=Heavy (>0%), 3=Critical (<=0%).
+        /// Indexes: 0=Intact (>66%), 1=Damaged (>33%), 2=Heavy (>0%), 3=Critical (<=0%).
         /// </summary>
         private void UpdateBarricadeVisual() {
             if (barricadeRenderer == null) return;
@@ -222,9 +198,6 @@ namespace InfimaGames.LowPolyShooterPack {
 
             float healthPercent = maxHealth > 0f ? currentHealth / maxHealth : 0f;
 
-            // CONCEITO: Mapeia a fração de vida para um índice no array de materiais.
-            // Se o array não tiver material suficiente para o índice calculado,
-            // usa o último material disponível como fallback.
             int index;
             if (healthPercent > 0.66f)
                 index = 0;
@@ -235,9 +208,7 @@ namespace InfimaGames.LowPolyShooterPack {
             else
                 index = 3;
 
-            // Clamp: se o array for menor que 4, usa o último elemento como fallback
             index = Mathf.Clamp(index, 0, damageStateMaterials.Length - 1);
-
             barricadeRenderer.material = damageStateMaterials[index];
         }
 
@@ -270,6 +241,12 @@ namespace InfimaGames.LowPolyShooterPack {
                 audioService.PlaySFX3D(destroyClip, transform.position, destroyVolume);
             }
         }
+
+        #endregion
+
+        #region DEBUG
+
+        #endregion
 
         #endregion
     }

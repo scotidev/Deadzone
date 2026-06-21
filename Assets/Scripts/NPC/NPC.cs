@@ -10,9 +10,7 @@ public class NPC : Interactable {
 
     [SerializeField] private string npcName = "Merchant";
 
-    [Header("Proximity Settings")]
-    [Tooltip("Radius for detecting when player is close to NPC")]
-    [SerializeField] private float proximityRadius = 5f;
+
 
     #endregion
 
@@ -28,11 +26,10 @@ public class NPC : Interactable {
 
     #region METHODS
 
-    /// <returns>The NPC's name as a string.</returns>
     public string GetNPCName() => npcName;
 
     /// <summary>
-    /// Opens the shop interface through the ShopInterface singleton when interacted with.
+    /// Opens the shop interface through the ShopManager singleton when interacted with.
     /// </summary>
     public override void Interact() {
         if (ShopManager.Instance != null) {

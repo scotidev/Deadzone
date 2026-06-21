@@ -4,9 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using InfimaGames.LowPolyShooterPack;
 
-// REFATORAÇÃO: esse script deveria herdaer de element.cs?
-// FEATURE: quando o acerto for critico, o hitmarker poderia ser diferente (cor vermelha, por exemplo) para dar feedback visual mais claro ao jogador. Isso pode ser feito adicionando um parâmetro à TriggerHitmarker() para indicar o tipo de acerto e ajustando a lógica de exibição do hitmarker com base nisso.
-
 /// <summary>
 /// Manages the hitmarker system for the game. Displays visual feedback and plays audio
 /// when the player successfully hits an enemy.

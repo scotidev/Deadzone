@@ -3,14 +3,25 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Dialogue pool for a specific item, used for unlock, upgrade, and ammo purchase contexts.
+/// </summary>
 [System.Serializable]
 public struct ItemDialoguePool {
     public string itemID;
     public MerchantDialogueCategorySO dialogueCategory;
 }
 
+/// <summary>
+/// Controls NPC audio playback including merchant dialogue lines for various shop events
+/// (open, close, purchase, unlock, AFK, out-of-funds). Prevents dialogue overlap and
+/// manages subtitle display.
+/// </summary>
 [DisallowMultipleComponent]
 public class NPCAudio : MonoBehaviour {
+
+    #region SERIALIZED FIELDS
+
     [Header("Dialogue Categories (ScriptableObjects)")]
     [SerializeField] private MerchantDialogueCategorySO closeRangeDialogue;
     [SerializeField] private MerchantDialogueCategorySO openShopDialogue;
@@ -47,13 +58,20 @@ public class NPCAudio : MonoBehaviour {
     [Tooltip("Optional explicit subtitle UI reference")]
     [SerializeField] private MerchantSubtitleUI subtitleUI;
 
+    #endregion
+
+    #region FIELDS
+
     private IAudioManagerService audioService;
-    private bool isDialoguePlaying;
     private Coroutine dialogueLockCoroutine;
     private int lastPlayedIndex = -1;
     private int lastUnlockPlayedIndex = -1;
     private int lastUpgradePlayedIndex = -1;
     private int lastAmmoPlayedIndex = -1;
+
+    #endregion
+
+    #region UNITY
 
     private void Awake() {
         ResolveAudioService();
@@ -86,10 +104,20 @@ public class NPCAudio : MonoBehaviour {
         UpgradeManager.OnItemUpgraded -= HandleItemUpgraded;
     }
 
+    #endregion
+
+    #region METHODS
+
+    /// <summary>
+    /// Called when the player enters the NPC's proximity range. Plays a close-range dialogue.
+    /// </summary>
     public void OnPlayerEnteredRange() {
         PlayDialogueFromCategory(closeRangeDialogue, "close-range", ref lastPlayedIndex);
     }
 
+    /// <summary>
+    /// Plays a random shop-open dialogue when the player opens the shop interface.
+    /// </summary>
     public void PlayRandomShopOpenDialogue() {
         PlayDialogueFromCategory(openShopDialogue, "shop-open", ref lastPlayedIndex);
     }
@@ -118,14 +146,23 @@ public class NPCAudio : MonoBehaviour {
         PlayDialogueFromCategory(playerAFKDialogue, "player-afk", ref lastPlayedIndex);
     }
 
+    /// <summary>
+    /// Called when a purchase fails due to insufficient currency. Plays the out-of-funds dialogue.
+    /// </summary>
     public void HandlePurchaseFailed(int cost, int currentCurrency) {
         PlayDialogueFromCategory(outOfFundsDialogue, "out-of-funds", ref lastPlayedIndex);
     }
 
+    /// <summary>
+    /// Manually triggers the out-of-funds dialogue.
+    /// </summary>
     public void PlayOutOfFundsDialogue() {
         PlayDialogueFromCategory(outOfFundsDialogue, "out-of-funds", ref lastPlayedIndex);
     }
 
+    /// <summary>
+    /// Handles button disabled events, playing the out-of-funds dialogue when appropriate.
+    /// </summary>
     public void OnButtonDisabled(ShopButtonDisabledReason reason) {
         if (reason == ShopButtonDisabledReason.InsufficientFunds) {
             PlayDialogueFromCategory(outOfFundsDialogue, "out-of-funds", ref lastPlayedIndex);
@@ -162,7 +199,6 @@ public class NPCAudio : MonoBehaviour {
             StopCoroutine(dialogueLockCoroutine);
             dialogueLockCoroutine = null;
         }
-        isDialoguePlaying = false;
         subtitleUI?.HideImmediate();
     }
 
@@ -224,9 +260,7 @@ public class NPCAudio : MonoBehaviour {
     }
 
     private IEnumerator ReleaseLock(float delay) {
-        isDialoguePlaying = true;
         yield return new WaitForSeconds(Mathf.Max(0.1f, delay));
-        isDialoguePlaying = false;
         dialogueLockCoroutine = null;
     }
 
@@ -237,4 +271,6 @@ public class NPCAudio : MonoBehaviour {
     private void ResolveSubtitleUI() {
         subtitleUI ??= MerchantSubtitleUI.Instance;
     }
+
+    #endregion
 }

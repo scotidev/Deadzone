@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// refatoração: Esse script deveria implementar Element.cs?
-
 /// <summary>
 /// Manages a single reusable health bar that displays above the currently targeted enemy.
 /// Shows only when the player's aim is on an enemy.
@@ -30,10 +28,6 @@ public class EnemyHealthBarUI : MonoBehaviour {
     private RectTransform rectTransform;
     private EnemyBase currentTargetEnemy;
 
-    // Cache do renderer e collider do inimigo para evitar GetComponentInChildren toda vez
-    // CONCEITO: Guardamos o Renderer e Collider do inimigo quando ele é definido como alvo.
-    // Assim, não precisamos chamar GetComponentInChildren (que sobe/desce a hierarquia)
-    // a cada frame durante o UpdatePosition().
     private Renderer cachedEnemyRenderer;
     private Collider cachedEnemyCollider;
 
@@ -73,9 +67,6 @@ public class EnemyHealthBarUI : MonoBehaviour {
         currentTargetEnemy = enemy;
 
         if (currentTargetEnemy != null) {
-            // CONCEITO: Cache do Renderer e Collider quando o alvo é definido.
-            // Isso elimina a necessidade de GetComponentInChildren / GetComponent
-            // no Update() a cada frame — uma busca que percorre toda a hierarquia.
             cachedEnemyRenderer = currentTargetEnemy.GetComponentInChildren<Renderer>();
             cachedEnemyCollider = currentTargetEnemy.GetComponent<Collider>();
 
@@ -111,11 +102,8 @@ public class EnemyHealthBarUI : MonoBehaviour {
     /// <summary>
     /// Gets the world position of the enemy's head (top of collider bounds).
     /// Uses cached Renderer/Collider references instead of GetComponentInChildren every frame.
-    /// CONCEITO: Como já cacheamos Renderer e Collider no SetTargetEnemy(),
-    /// este método só acessa as referências guardadas — sem percorrer hierarquia.
     /// </summary>
     private Vector3 GetEnemyHeadPosition() {
-        // CONCEITO: Usa o Renderer cacheado em vez de GetComponentInChildren.
         if (cachedEnemyRenderer != null)
         {
             return new Vector3(
@@ -125,7 +113,6 @@ public class EnemyHealthBarUI : MonoBehaviour {
             );
         }
 
-        // CONCEITO: Fallback usando Collider cacheado.
         if (cachedEnemyCollider != null)
         {
             return new Vector3(

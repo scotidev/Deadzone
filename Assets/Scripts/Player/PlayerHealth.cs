@@ -118,7 +118,6 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
     private void PlayZombieDamageSound() {
         if (zombieDamageSound == null) return;
 
-        // Get the audio service and play the damage sound at player position.
         IAudioManagerService audioService = ServiceLocator.Current.Get<IAudioManagerService>();
         if (audioService != null) {
             audioService.PlaySFX3D(zombieDamageSound, transform.position, 1f);
@@ -132,7 +131,6 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
     private void PlayPoisonDamageSound() {
         if (poisonDamageSound == null) return;
 
-        // Get the audio service and play the poison damage sound at player position.
         IAudioManagerService audioService = ServiceLocator.Current.Get<IAudioManagerService>();
         if (audioService != null) {
             audioService.PlaySFX3D(poisonDamageSound, transform.position, 1f);
@@ -202,10 +200,11 @@ public class PlayerHealth : MonoBehaviour, IDamageable {
         OnHealthChanged?.Invoke(currentHealth / maxHealth);
     }
 
+    /// <summary>
+    /// Called when the player's health reaches zero. Invokes the death event.
+    /// </summary>
     private void Die() {
         OnPlayerDied?.Invoke();
-
-        Debug.Log("[PlayerHealth] Player died."); // disparar evento de morte, carregando o canvas, sfx, etc.
     }
 
     /// <summary>

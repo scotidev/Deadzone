@@ -58,12 +58,10 @@ public class Teleport : MonoBehaviour {
     private void OnEnable() {
         SubscribeToWaveEvents();
 
-        // Sincronização imediata ao ativar o script
         SyncWithWaveState();
     }
 
     private void Start() {
-        // Fallback para garantir inscrição caso o WaveManager tenha demorado para acordar
         SubscribeToWaveEvents();
         SyncWithWaveState();
     }
@@ -89,9 +87,11 @@ public class Teleport : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Subscribes to WaveManager wave lifecycle events.
+    /// </summary>
     private void SubscribeToWaveEvents() {
         if (WaveManager.Instance != null) {
-            // Desinscreve primeiro para evitar duplicatas
             WaveManager.Instance.OnWaveStarted -= HandleWaveStarted;
             WaveManager.Instance.OnWaveCompleted -= HandleWaveCompleted;
 
@@ -100,6 +100,9 @@ public class Teleport : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Unsubscribes from WaveManager wave lifecycle events.
+    /// </summary>
     private void UnsubscribeFromWaveEvents() {
         if (WaveManager.Instance != null) {
             WaveManager.Instance.OnWaveStarted -= HandleWaveStarted;
@@ -107,12 +110,17 @@ public class Teleport : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Handles the wave started event by disabling teleports.
+    /// </summary>
     private void HandleWaveStarted() {
         ToggleTeleports(false);
     }
 
+    /// <summary>
+    /// Handles the wave completed event by enabling teleports if past wave 1.
+    /// </summary>
     private void HandleWaveCompleted() {
-        // Só ativa os teleportes se o jogador já tiver completado pelo menos a Wave 1
         if (WaveManager.Instance != null && WaveManager.Instance.CurrentWave >= 1) {
             ToggleTeleports(true);
         } else {
@@ -122,16 +130,13 @@ public class Teleport : MonoBehaviour {
 
     /// <summary>
     /// Enables or disables teleport trigger GameObjects.
-    /// Everything child of these objects will also be toggled.
     /// </summary>
     private void ToggleTeleports(bool state) {
         if (triggerA != null) {
             triggerA.SetActive(state);
-            Debug.Log($"[Teleport] Setting triggerA to {state}");
         }
         if (triggerB != null) {
             triggerB.SetActive(state);
-            Debug.Log($"[Teleport] Setting triggerB to {state}");
         }
     }
 
@@ -139,13 +144,10 @@ public class Teleport : MonoBehaviour {
     /// Called by TeleportTrigger components when the player enters them.
     /// </summary>
     public void NotifyTriggerEnter(GameObject triggerHit, Collider playerCollider) {
-        // Cooldown check
         if (Time.time < lastTeleportTime + cooldownTime) return;
 
-        // Layer/Tag check
         if (!playerCollider.CompareTag("Player") && ((1 << playerCollider.gameObject.layer) & characterLayer) == 0) return;
 
-        // Determine destination
         if (triggerHit == triggerA) {
             PlayTriggerVFX(triggerA);
             ExecuteTeleport(playerCollider.transform, arrivalPointB);
@@ -156,7 +158,7 @@ public class Teleport : MonoBehaviour {
     }
 
     /// <summary>
-    /// Attempts to find the TeleportTrigger component and play its VFX.
+    /// Finds the TeleportTrigger component and plays its VFX.
     /// </summary>
     private void PlayTriggerVFX(GameObject triggerObj) {
         if (triggerObj == null) return;
@@ -167,26 +169,24 @@ public class Teleport : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Executes the teleport by moving the player and resetting physics.
+    /// </summary>
     private void ExecuteTeleport(Transform player, Transform destination) {
         if (destination == null) return;
 
-        // Reset physics
         Rigidbody rb = player.GetComponent<Rigidbody>();
         if (rb != null) {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
 
-        // Move player
         player.position = destination.position;
         lastTeleportTime = Time.time;
 
-        // Audio
         if (teleportClip != null) {
             audioService?.PlaySFX2D(teleportClip, teleportVolume);
         }
-
-        Debug.Log($"[Teleport] Success! Moved to {destination.name}");
     }
 
     #endregion

@@ -1,9 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// REFATORAÇÃO: esse script deveria herdar de Element.cs? ANALISE NECESSARIA.
-//REFATORAÇÃO: esse script poderia ser unido ao script PlayerArmorUI, já que ambos são barras de status? ANALISE NECESSARIA.
-
 /// <summary>
 /// Manages the player health bar UI. Subscribes to PlayerHealth events and updates
 /// the green bar fill amount in real-time when the player takes damage or heals.

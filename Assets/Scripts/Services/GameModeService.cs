@@ -1,5 +1,3 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
     /// Game Mode Service.
@@ -16,12 +14,13 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #region FUNCTIONS
 
+        /// <summary>
+        /// Returns the Player Character, finding it if not yet cached.
+        /// </summary>
         public CharacterBehaviour GetPlayerCharacter() {
-            //Make sure we have a player character that is good to go!
             if (playerCharacter == null)
                 playerCharacter = UnityEngine.Object.FindFirstObjectByType<CharacterBehaviour>();
 
-            //Return.
             return playerCharacter;
         }
 

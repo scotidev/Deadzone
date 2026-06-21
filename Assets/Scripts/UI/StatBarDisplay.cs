@@ -73,12 +73,18 @@ public class StatBarDisplay : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Updates bar colors from serialized fields.
+    /// </summary>
     private void UpdateBarColors() {
         if (backgroundBar != null) backgroundBar.color = backgroundColor;
         if (currentBar != null) currentBar.color = currentColor;
         if (upgradeBar != null) upgradeBar.color = upgradeColor;
     }
 
+    /// <summary>
+    /// Returns the appropriate icon sprite for a stat name.
+    /// </summary>
     private Sprite GetIconForStat(string statName) {
         if (string.IsNullOrEmpty(statName)) return iconDefault;
 
@@ -94,6 +100,9 @@ public class StatBarDisplay : MonoBehaviour {
         return iconDefault;
     }
 
+    /// <summary>
+    /// Sets custom bar colors for this stat bar.
+    /// </summary>
     public void SetBarColors(Color current, Color upgrade, Color background) {
         currentColor = current;
         upgradeColor = upgrade;

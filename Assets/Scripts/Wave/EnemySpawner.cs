@@ -27,14 +27,10 @@ public class EnemySpawner : MonoBehaviour {
 
     /// <summary>
     /// Spawns exactly one enemy immediately near this spawner.
-    /// Called by the WaveManager in the throttle system: each time
-    /// an enemy dies and opens a slot, the WaveManager calls this method
-    /// on a randomly chosen spawner.
     /// </summary>
     public void SpawnEnemies(List<EnemySpawnConfig> availableTypes) {
         if (availableTypes == null || availableTypes.Count == 0) return;
 
-        // If the Penguin easter egg is active, spawn penguins instead of normal enemies
         GameObject prefab;
         if (PenguinMode.IsCurrentWavePenguinWave) {
             prefab = penguinPrefab;
@@ -47,24 +43,17 @@ public class EnemySpawner : MonoBehaviour {
         }
 
         Vector3 spawnPos = GetValidSpawnPosition();
-        // CONCEITO: Usa o pool em vez de Instantiate. O pool reutiliza inimigos
-        // que morreram em vez de criar novos. Reduz drasticamente o GC.
-        // A primeira vez que um tipo de inimigo é spawnado, o pool cria um novo
-        // e adiciona PooledObject automaticamente.
         GameObjectPool.Get(prefab, spawnPos, Quaternion.identity);
     }
 
     /// <summary>
     /// Coroutine that spawns a burst of enemies, one every spawnDelay seconds.
     /// </summary>
-    /// <param name="availableTypes">List of available enemy types to spawn.</param>
-    /// <param name="count">Number of enemies to spawn.</param>
     private IEnumerator SpawnRoutine(List<EnemySpawnConfig> availableTypes, int count) {
         for (int i = 0; i < count; i++) {
             GameObject prefab = PickWeightedRandom(availableTypes);
             Vector3 spawnPos = GetValidSpawnPosition();
 
-            // CONCEITO: Mesma lógica de pool do SpawnEnemies acima
             GameObjectPool.Get(prefab, spawnPos, Quaternion.identity);
 
             yield return new WaitForSeconds(spawnDelay);
@@ -75,8 +64,6 @@ public class EnemySpawner : MonoBehaviour {
     /// Selects a random enemy prefab from the provided configurations, using each configuration's spawn weight to
     /// determine selection probability.
     /// </summary>
-    /// <param name="configs">A list of enemy spawn configurations, each containing a prefab and its associated spawn weight. Must contain at least one element. Each spawn weight should be non-negative.</param>
-    /// <returns>The prefab of the selected enemy, chosen based on weighted probability from the provided configurations.</returns>
     private GameObject PickWeightedRandom(List<EnemySpawnConfig> configs) {
         float totalWeight = 0f;
         foreach (var config in configs)
@@ -96,7 +83,7 @@ public class EnemySpawner : MonoBehaviour {
 
     /// <summary>
     /// Tries to find a valid position on the NavMesh within the spawn radius.
-    /// If it fails after 10 attempts, it falls back to the spawner's own position.
+    /// Falls back to the spawner's own position after 10 failed attempts.
     /// </summary>
     private Vector3 GetValidSpawnPosition() {
         for (int attempt = 0; attempt < 10; attempt++) {
@@ -120,5 +107,4 @@ public class EnemySpawner : MonoBehaviour {
     }
 
     #endregion
-
 }

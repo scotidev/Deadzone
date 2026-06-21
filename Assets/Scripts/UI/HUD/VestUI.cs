@@ -2,18 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using InfimaGames.LowPolyShooterPack;
 
-/*============================================================================
-    VestUI.cs - Script da Barra de Armadura no HUD
-    
-    Este script controla a barra visual de armadura no canto da tela.
-    Ele "ouve" os eventos do Vest para saber quando atualizar.
-    
-    FLUXO DE TRABALHO:
-    1. Quando Vest muda (recebe dano ou repara), dispara OnArmorChanged
-    2. Esse script recebe o evento e atualiza o fillAmount da barra
-    3. Também mostra/esconde a UI dependendo se tem armadura ou não
-============================================================================*/
-
 /// <summary>
 /// Manages the vest armor bar UI. Subscribes to Vest events and updates
 /// the blue-gray bar fill amount in real-time when the player takes damage or adds armor.
@@ -89,6 +77,9 @@ public class VestUI : MonoBehaviour {
 
     #region METHODS
 
+    /// <summary>
+    /// Called when the vest armor value changes. Updates the armor bar UI.
+    /// </summary>
     private void OnArmorChanged(float armorFraction) {
         if (armorFraction > 0f && !gameObject.activeSelf) {
             ShowArmorUI();
@@ -104,12 +95,18 @@ public class VestUI : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Smoothly interpolates the armor bar fill toward the target value each frame.
+    /// </summary>
     private void UpdateArmorFill() {
         float currentFill = armorBar.fillAmount;
         float newFill = Mathf.Lerp(currentFill, targetFillAmount, Time.deltaTime * lerpSpeed);
         armorBar.fillAmount = newFill;
     }
 
+    /// <summary>
+    /// Sets the armor bar to a specific fill amount instantly.
+    /// </summary>
     public void SetArmorInstant(float armorFraction) {
         float clampedFraction = Mathf.Clamp01(armorFraction);
         armorBar.fillAmount = clampedFraction;
@@ -117,6 +114,9 @@ public class VestUI : MonoBehaviour {
         armorBackground.fillAmount = 1f;
     }
 
+    /// <summary>
+    /// Called when the vest armor is fully depleted. Grays out the shield icon and hides the UI.
+    /// </summary>
     private void OnArmorDepleted() {
         if (shieldIcon != null) {
             Color depletedColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
@@ -125,10 +125,16 @@ public class VestUI : MonoBehaviour {
         HideArmorUI();
     }
 
+    /// <summary>
+    /// Called when the vest object is destroyed. Hides the armor UI.
+    /// </summary>
     private void OnVestDestroyed() {
         HideArmorUI();
     }
 
+    /// <summary>
+    /// Shows the armor UI and resets the shield icon color.
+    /// </summary>
     public void ShowArmorUI() {
         gameObject.SetActive(true);
         if (shieldIcon != null) {
@@ -136,6 +142,9 @@ public class VestUI : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Hides the armor UI.
+    /// </summary>
     public void HideArmorUI() {
         gameObject.SetActive(false);
     }

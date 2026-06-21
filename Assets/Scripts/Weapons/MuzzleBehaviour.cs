@@ -1,14 +1,15 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-
 using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack
 {
     /// <summary>
-    /// Muzzle Abstract Class.
+    /// Muzzle Behaviour. Abstract base class defining muzzle properties
+    /// including firing socket, sprite, audio, particles, and flash light.
     /// </summary>
     public abstract class MuzzleBehaviour : MonoBehaviour
     {
+        #region METHODS
+
         #region GETTERS
 
         /// <summary>
@@ -35,7 +36,7 @@ namespace InfimaGames.LowPolyShooterPack
         public abstract int GetParticlesFireCount();
 
         /// <summary>
-        /// Returns the light component used when firing..
+        /// Returns the light component used when firing.
         /// </summary>
         public abstract Light GetFlashLight();
         /// <summary>
@@ -44,8 +45,6 @@ namespace InfimaGames.LowPolyShooterPack
         public abstract float GetFlashLightDuration();
 
         #endregion
-
-        #region METHODS
 
         /// <summary>
         /// Plays all of the muzzle effects.

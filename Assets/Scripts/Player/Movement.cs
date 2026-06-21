@@ -1,5 +1,3 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-
 using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack {
@@ -130,8 +128,6 @@ namespace InfimaGames.LowPolyShooterPack {
             ProbeGround();
             MoveCharacter();
 
-            // Só aplicamos forças de aderência e gravidade de inclinação se NÃO estivermos no meio de uma subida de degrau.
-            // Isso evita o "jitter" (flicker) causado pelo conflito entre subir o degrau e ser puxado para baixo.
             if (grounded && Velocity.y <= 0.001f && Time.time - lastStepTime > 0.1f) {
                 rigidBody.AddForce(-groundNormal * groundStickForce, ForceMode.Acceleration);
 
@@ -152,14 +148,12 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <summary>
         /// Uses SphereCast to probe the ground and determine if
         /// The character is grounded and what the ground normal is (surface orientation).
-        /// Rule: only considers surfaces with an angle up to <see cref="maxGroundAngle"/>.
+        /// Rule: only considers surfaces with an angle up to maxGroundAngle.
         /// </summary>
         private void ProbeGround() {
             Bounds bounds = capsule.bounds;
             Vector3 extents = bounds.extents;
-            // O raio da esfera deve ser um pouco menor que o da cápsula para evitar colisões fantasmas nas quinas.
             float radius = Mathf.Max(0.01f, extents.x - 0.02f);
-            // A distância do cast cobre a altura da cápsula mais a margem de detecção do chão.
             float castDistance = extents.y - radius + groundProbeDistance;
 
             Physics.SphereCastNonAlloc(
@@ -184,21 +178,15 @@ namespace InfimaGames.LowPolyShooterPack {
                 if (hit.collider == null || hit.collider == capsule)
                     continue;
 
-                // Calculamos o ângulo entre a normal da superfície e o vetor 'Up' (Cima).
-                // O princípio aqui é que 0 graus é plano e 90 graus é uma parede vertical.
                 float angle = Vector3.Angle(hit.normal, Vector3.up);
-                
+
                 if (angle <= maxGroundAngle) {
-                    // Se o ângulo for menor que o máximo permitido, consideramos como chão firme.
                     if (hit.distance < bestDistance) {
                         bestDistance = hit.distance;
                         groundNormal = hit.normal;
                         grounded = true;
                     }
                 } else {
-                    // Verificamos a altura do contato. Se o contato íngreme for abaixo do maxStepHeight,
-                    // nós o ignoramos como "Steep Slope" para permitir que o sistema de Stairs (degraus) funcione.
-                    // Isso resolve o problema de ficar travado em quinas de pisos ou degraus baixos.
                     float contactHeight = hit.point.y - (bounds.center.y - extents.y);
                     if (contactHeight > maxStepHeight) {
                         touchingSteepSlope = true;
@@ -232,18 +220,10 @@ namespace InfimaGames.LowPolyShooterPack {
 
             movement = transform.TransformDirection(movement);
 
-            // Se estivermos tocando uma inclinação muito íngreme, precisamos filtrar o movimento.
-            // O princípio é tratar a inclinação como uma parede horizontal para impedir que o personagem "suba" nela.
             if (touchingSteepSlope) {
-                // Criamos um vetor horizontal baseado na inclinação da montanha. 
-                // Isso transforma a montanha em uma "parede virtual" para o cálculo de movimento.
                 Vector3 wallNormal = new Vector3(steepNormal.x, 0, steepNormal.z).normalized;
-                
-                // O Produto Escalar (Dot Product) nos diz se estamos andando na direção da montanha.
-                // Se o valor for menor que zero, significa que o movimento aponta "para dentro" da superfície.
+
                 if (Vector3.Dot(movement, wallNormal) < 0) {
-                    // Projetamos o movimento no plano da parede. 
-                    // Isso remove a componente do movimento que faz o personagem subir a montanha à força.
                     movement = Vector3.ProjectOnPlane(movement, wallNormal);
                 }
             }
@@ -284,54 +264,40 @@ namespace InfimaGames.LowPolyShooterPack {
             moveDirection.Normalize();
 
             Bounds bounds = capsule.bounds;
-            // Calculamos a posição dos "pés" levemente acima do chão real para evitar detecções erradas com o próprio chão.
             Vector3 feet = new Vector3(bounds.center.x, bounds.min.y + 0.05f, bounds.center.z);
-            
-            // RAYCAST 1: Detecta se há um obstáculo frontal (o degrau).
-            // Usamos uma distância um pouco maior que o raio da cápsula para antecipar o degrau.
+
             float checkDist = capsule.radius + stepCheckDistance;
             if (!Physics.Raycast(feet, moveDirection, out RaycastHit lowerHit, checkDist, groundLayer, QueryTriggerInteraction.Ignore))
                 return;
 
-            // Se o que atingimos for muito inclinado (chão), não é um degrau que precisa de "step up".
             if (Vector3.Angle(lowerHit.normal, Vector3.up) < maxGroundAngle)
                 return;
 
-            // RAYCAST 2: Verifica se há espaço livre acima do degrau para o player passar.
             Vector3 upperOrigin = feet + Vector3.up * maxStepHeight;
             if (Physics.Raycast(upperOrigin, moveDirection, checkDist, groundLayer, QueryTriggerInteraction.Ignore))
                 return;
 
-            // RAYCAST 3: Procura a superfície horizontal do degrau.
-            // Movemos a origem para frente para garantir que o raio caia em cima do degrau detectado.
             Vector3 stepProbeOrigin = upperOrigin + moveDirection * (checkDist + 0.05f);
             if (!Physics.Raycast(stepProbeOrigin, Vector3.down, out RaycastHit stepHit, maxStepHeight + 0.2f, groundLayer,
                     QueryTriggerInteraction.Ignore))
                 return;
 
-            // Verificamos se a superfície onde vamos pisar é plana o suficiente.
             float stepAngle = Vector3.Angle(stepHit.normal, Vector3.up);
             if (stepAngle > maxGroundAngle)
                 return;
 
-            // Diferença de altura entre o pé atual e o degrau.
             float delta = stepHit.point.y - bounds.min.y;
-            
-            // Se o degrau for muito baixo ou muito alto, ignoramos.
+
             if (delta <= 0.01f || delta > maxStepHeight)
                 return;
 
-            // Aplicamos a subida suave. O MovePosition do Rigidbody garante que a física continue consistente.
             float stepAmount = Mathf.Min(delta, stepSmooth);
             rigidBody.MovePosition(rigidBody.position + Vector3.up * stepAmount);
-            
-            // Registramos o tempo do passo para desativar forças contrárias no FixedUpdate.
+
             lastStepTime = Time.time;
-            
-            // Zeramos a velocidade vertical para evitar que a gravidade acumulada cause um tranco na subida.
+
             Velocity = new Vector3(Velocity.x, 0.0f, Velocity.z);
-            
-            // Pequeno impulso para frente para ajudar a superar a quina do collider.
+
             rigidBody.AddForce(moveDirection * 2f, ForceMode.Acceleration);
         }
 
@@ -351,7 +317,7 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Processes the character's crouching view, smoothly.
+        /// Processes the character's crouching view and collider smoothly.
         /// </summary>
         private void ProcessCrouch() {
             bool isCrouching = playerCharacter.IsCrouching();
@@ -392,9 +358,8 @@ namespace InfimaGames.LowPolyShooterPack {
             }
         }
 
-        #endregion
-
         #region GIZMOS
+
         private void OnDrawGizmosSelected() {
             if (capsule == null) capsule = GetComponent<CapsuleCollider>();
 
@@ -407,28 +372,25 @@ namespace InfimaGames.LowPolyShooterPack {
 
             Gizmos.DrawLine(sphereOrigin, sphereOrigin + Vector3.down * groundProbeDistance);
 
-            // DIAGNOSTIC: Visualize step check raycasts
             Gizmos.color = Color.yellow;
             Vector3 moveDir = transform.forward;
             Vector3 feet = new Vector3(bounds.center.x, bounds.min.y + 0.02f, bounds.center.z);
 
-            // Raycast 1: Front obstacle check at feet level
             Gizmos.DrawRay(feet, moveDir * stepCheckDistance);
             Gizmos.color = Color.cyan;
 
-            // Raycast 2: Check space above
             Vector3 upperOrigin = feet + Vector3.up * maxStepHeight;
             Gizmos.DrawRay(upperOrigin, moveDir * stepCheckDistance);
             Gizmos.color = Color.magenta;
 
-            // Raycast 3: Step surface probe
             Vector3 stepProbeOrigin = upperOrigin + moveDir * stepCheckDistance;
             Gizmos.DrawLine(stepProbeOrigin, stepProbeOrigin + Vector3.down * (maxStepHeight + 0.2f));
-            
-            // Additional diagnostic: Show the capsule feet position
+
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(feet, 0.05f);
         }
+
+        #endregion
 
         #endregion
     }

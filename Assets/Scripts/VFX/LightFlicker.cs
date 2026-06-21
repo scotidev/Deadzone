@@ -1,16 +1,14 @@
 using System.Collections;
 using UnityEngine;
 
-// REFATORAÇÃO: o audio deve tocar por aqui implementando o Service de Audio, e não por script separado. Usar o AudioManagerService de dentro do dicionário de serviçoos para tocar o som de falha de luz, por exemplo, quando a luz "falha" e não pisca naquele intervalo, usar som 3D
-// REFATORAÇÃO: isFlickering é necesasrio?
-
 /// <summary>
-/// This VFX script simulates a flickering light effect, used to represent faulty or unstable light sources in the game. It randomly changes the light's intensity at varying intervals to create a dynamic and unpredictable flickering pattern.
+/// Simulates a flickering light effect for faulty or unstable light sources.
+/// Randomly changes light intensity at varying intervals to create a dynamic flicker pattern.
 /// </summary>
 [RequireComponent(typeof(Light))]
 public class LightFlicker : MonoBehaviour {
 
-    #region FIELDS
+    #region SERIALIZED FIELDS
 
     [Header("Flicker Event Settings")]
     public bool useFlicker = true;
@@ -26,8 +24,11 @@ public class LightFlicker : MonoBehaviour {
     [Header("Audio")]
     public AudioClip flickerAudio;
 
+    #endregion
+
+    #region FIELDS
+
     private Light myLight;
-    private bool isFlickering = false;
 
     #endregion
 
@@ -46,6 +47,9 @@ public class LightFlicker : MonoBehaviour {
 
     #region METHODS
 
+    /// <summary>
+    /// Main flicker loop that waits a random interval between bursts then triggers a flicker burst.
+    /// </summary>
     private IEnumerator FlickerRoutine() {
         while (useFlicker) {
             float waitTime = Random.Range(timeBetweenBursts.x, timeBetweenBursts.y);
@@ -55,11 +59,11 @@ public class LightFlicker : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Executes a single flicker burst, randomly changing light intensity multiple times in rapid succession.
+    /// </summary>
     private IEnumerator DoBurst() {
-        isFlickering = true;
         int burstCount = (int)Random.Range(flickersPerBurst.x, flickersPerBurst.y);
-
-        //PlayFlickerSound();
 
         for (int i = 0; i < burstCount; i++) {
             myLight.intensity = Random.Range(minIntensity, maxIntensity);
@@ -68,18 +72,7 @@ public class LightFlicker : MonoBehaviour {
         }
 
         myLight.intensity = (Random.value > 0.5f) ? defaultIntensity : 0f;
-
-        isFlickering = false;
     }
-
-    //private void PlayFlickerSound() {
-    //    // Exemplo de uso do Service Locator para o AudioManager
-    //    var audioManager = ServiceLocator.Instance.GetService<IAudioManagerService>();
-    //    if (audioManager != null) {
-    //        // Toca com volume baixo conforme pedido
-    //        audioManager.PlayOneShot(flickerAudioKey, 0.3f);
-    //    }
-    //}
 
     #endregion
 }

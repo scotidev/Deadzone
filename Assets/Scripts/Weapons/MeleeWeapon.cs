@@ -5,7 +5,8 @@ using UnityEngine.InputSystem;
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
-    /// Implementation of a simple melee weapon. This is not a "weapon" in the traditional sense, as it does not shoot projectiles, but it is still a "weapon" in terms of gameplay mechanics. It performs a short-range attack that damages enemies in front of the player.
+    /// Implementation of a simple melee weapon. Performs a short-range attack that damages enemies
+    /// in front of the player using an OverlapBox check. Not a projectile-based weapon.
     /// </summary>
     public class MeleeWeapon : MonoBehaviour {
 
@@ -81,6 +82,9 @@ namespace InfimaGames.LowPolyShooterPack {
         #endregion
         #region METHODS
 
+        /// <summary>
+        /// Attempts to start a melee attack if cooldown and character state permit.
+        /// </summary>
         private void TryMeleeAttack() {
             if (Time.time - lastMeleeTime < meleeCooldown)
                 return;
@@ -97,20 +101,19 @@ namespace InfimaGames.LowPolyShooterPack {
             StartCoroutine(MeleeAttackRoutine());
         }
 
+        /// <summary>
+        /// Coroutine that plays the melee attack over its duration, including visuals and damage.
+        /// </summary>
         private IEnumerator MeleeAttackRoutine() {
-            // Ativa o mesh dos braços para que o soco seja visível, mesmo que o player comece "sem braços"
             if (playerArmsMesh != null) {
                 playerArmsMesh.SetActive(true);
             }
 
-            // CONCEITO: Resetar a flag de hitmarker no início de cada novo ataque.
-            // Isso garante que o hitmarker seja disparado no máximo uma vez por ataque.
             hitmarkerTriggeredThisAttack = false;
 
             if (meleeKnifeVisual != null)
                 meleeKnifeVisual.SetActive(true);
 
-            // Play melee SFX when attack starts.
             if (meleeSFX != null && audioService != null) {
                 audioService.PlaySFX2D(meleeSFX, meleeSFXVolume);
             }
@@ -126,8 +129,6 @@ namespace InfimaGames.LowPolyShooterPack {
                 playerCharacter.EndMeleeAttack();
             }
 
-            // SEGURANÇA TUTORIAL: Se o jogador ainda não desbloqueou a pistola (ID 1),
-            // escondemos os braços novamente após o soco para manter o visual de "mãos vazias".
             if (PlayerProgress.Instance != null && !PlayerProgress.Instance.IsWeaponUnlocked("1")) {
                 if (playerArmsMesh != null) {
                     playerArmsMesh.SetActive(false);
@@ -137,6 +138,9 @@ namespace InfimaGames.LowPolyShooterPack {
             isAttacking = false;
         }
 
+        /// <summary>
+        /// Performs the melee damage check using an OverlapBox in front of the camera.
+        /// </summary>
         private void PerformMeleeDamage() {
             if (playerCharacter == null)
                 return;
@@ -174,23 +178,17 @@ namespace InfimaGames.LowPolyShooterPack {
 
                 enemy.TakeDamage(meleeDamage);
 
-                // CONCEITO: Disparar o hitmarker apenas uma vez por ataque.
-                // A flag 'hitmarkerTriggeredThisAttack' garante que mesmo com múltiplos inimigos atingidos,
-                // o feedback visual/audio do hitmarker ocorra apenas uma vez para melhor UX.
                 if (!hitmarkerTriggeredThisAttack) {
                     HitmarkerManager.TriggerHitmarker();
                     hitmarkerTriggeredThisAttack = true;
                 }
 
-                Debug.Log($"[MELEE] Acertou inimigo: {enemy.name}");
                 Debug.DrawLine(cameraWorld.transform.position, enemy.transform.position, Color.red, 0.25f);
             }
 
             for (int i = 0; i < hits; i++)
                 meleeHits[i] = null;
         }
-
-
 
         #endregion
     }

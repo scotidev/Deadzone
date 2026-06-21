@@ -3,8 +3,8 @@ using UnityEngine;
 using InfimaGames.LowPolyShooterPack;
 
 /// <summary>
-/// Script especializado para a coleta da pistola no tutorial.
-/// Herda de Interactable para usar o sistema de "Olhar e apertar E".
+/// Handles the pistol pickup interaction in the tutorial. Unlocks the pistol,
+/// activates the ammo HUD and player arms, removes barriers, and equips the weapon.
 /// </summary>
 public class PistolPickup : Interactable {
 
@@ -34,6 +34,10 @@ public class PistolPickup : Interactable {
     [Tooltip("Paredes invisíveis ou objetos a serem desativados ao coletar a pistola.")]
     [SerializeField] private List<GameObject> barriersToDeactivate;
 
+    #endregion
+
+    #region FIELDS
+
     private Vector3 startPosition;
 
     #endregion
@@ -45,20 +49,19 @@ public class PistolPickup : Interactable {
     }
 
     private void Update() {
-        // Efeito de Rotação 360 no eixo Y
         transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
 
-        // Efeito de Flutuar (Seno)
         float newY = startPosition.y + Mathf.Sin(Time.time * floatSpeed) * floatAmplitude;
         transform.position = new Vector3(transform.position.x, newY, transform.position.z);
     }
 
     #endregion
 
-    #region PUBLIC METHODS
+    #region METHODS
 
     /// <summary>
-    /// Implementação da interação: desbloqueia a pistola, ativa visuais e a equipa.
+    /// Unlocks the pistol, activates the ammo HUD and player arms, removes tutorial barriers,
+    /// plays the pickup sound, equips the pistol, and destroys the pickup object.
     /// </summary>
     public override void Interact() {
         if (PlayerProgress.Instance == null) return;
@@ -67,7 +70,6 @@ public class PistolPickup : Interactable {
             return;
         }
 
-        // 1. Ativa o HUD, os Braços e Desativa as Barreiras
         if (ammoHUDObject != null) ammoHUDObject.SetActive(true);
         if (playerArmsMesh != null) playerArmsMesh.SetActive(true);
         
@@ -77,11 +79,8 @@ public class PistolPickup : Interactable {
             }
         }
 
-        // 2. Desbloqueia a pistola no progresso do jogador
         PlayerProgress.Instance.UnlockItem(pistolData);
-        Debug.Log("[PistolPickup] Pistola desbloqueada!");
 
-        // 3. Toca o efeito sonoro de coleta
         if (pickupSFX != null) {
             IAudioManagerService audioService = ServiceLocator.Current.Get<IAudioManagerService>();
             if (audioService != null) {
@@ -89,17 +88,14 @@ public class PistolPickup : Interactable {
             }
         }
 
-        // 4. Tenta encontrar o inventário no jogador para equipar a pistola na hora
         Character player = Object.FindFirstObjectByType<Character>();
         if (player != null) {
             Inventory inventory = player.GetComponentInChildren<Inventory>();
             if (inventory != null) {
                 inventory.SelectItem(0);
-                Debug.Log("[PistolPickup] Pistola equipada automaticamente.");
             }
         }
 
-        // 5. Destrói o objeto de pickup do mundo
         Destroy(gameObject);
     }
 

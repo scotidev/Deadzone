@@ -1,5 +1,3 @@
-// Copyright 2021, Infima Games. All Rights Reserved.
-
 using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack {
@@ -30,6 +28,8 @@ namespace InfimaGames.LowPolyShooterPack {
         
         #endregion
         
+        #region METHODS
+
         #region LIFECYCLE
         
         /// <summary>
@@ -55,8 +55,8 @@ namespace InfimaGames.LowPolyShooterPack {
         #region ANIMATION
         
         /// <summary>
-        /// Se true, o personagem mantém as mãos abaixadas (holstered) ao equipar este item.
-        /// Itens que não precisam de pose de tiro (medkit, grenade, buildables) devem retornar true.
+        /// If true, the character keeps hands holstered when equipping this item.
+        /// Items that don't need a shooting pose (medkit, grenade, buildables) should return true.
         /// </summary>
         public virtual bool KeepHolsteredOnEquip() => false;
         
@@ -65,11 +65,13 @@ namespace InfimaGames.LowPolyShooterPack {
         #region VALIDATION
         
         /// <summary>
-        /// Check if item can be selected/used (desbloqueado? tem munição/quantidade?).
-        /// Used to prevent selecting locked items or items without ammo.
+        /// Checks if the item can be selected or used (unlocked, has ammo/quantity).
+        /// Prevents selecting locked items or items without ammo.
         /// </summary>
         public abstract bool CanBeUsed();
         
+        #endregion
+
         #endregion
     }
 }

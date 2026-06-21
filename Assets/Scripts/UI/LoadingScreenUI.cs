@@ -31,7 +31,6 @@ public class LoadingScreenUI : MonoBehaviour {
 
     #region FIELDS
 
-    // Guarda o índice do último sprite que tocou pra não repetir.
     private int _lastBackgroundIndex = -1;
 
     #endregion
@@ -39,79 +38,58 @@ public class LoadingScreenUI : MonoBehaviour {
     #region METHODS
 
     /// <summary>
-    /// Torna a tela de loading visível, reseta a barra para 0%
-    /// e sorteia um fundo aleatório.
+    /// Makes the loading screen visible, resets progress to 0, and picks a random background.
     /// </summary>
     public void Show() {
-        // Ativa o GameObject (que contém o Canvas e tudo da loading screen).
         gameObject.SetActive(true);
 
-        // Garante que o Canvas da loading screen renderize SEMPRE por cima
-        // de todos os outros Canvases durante a transição de cenas.
-        // O overrideSorting=true + sortingOrder alto impede que o Canvas da
-        // cena antiga ou da nova cena apareça por cima da loading screen.
         Canvas canvas = GetComponent<Canvas>();
         if (canvas != null) {
             canvas.overrideSorting = true;
             canvas.sortingOrder = 32767;
         }
 
-        // Começa com a barra vazia.
         SetProgress(0f);
-        // Sorteia um sprite de fundo diferente do último.
         PickRandomBackground();
     }
 
     /// <summary>
-    /// Sorteia um sprite do array <see cref="backgroundSprites"/> que seja
-    /// diferente do último que tocou. Se o array tiver menos de 2 elementos,
-    /// sempre pega o índice 0 (ou não faz nada se estiver vazio).
+    /// Picks a random sprite from the backgrounds array different from the last one used.
     /// </summary>
     private void PickRandomBackground() {
-        // Se não tem Image de fundo ou não tem sprites, não faz nada.
         if (backgroundImage == null || backgroundSprites == null || backgroundSprites.Length == 0)
             return;
 
-        // Se só tem um sprite, usa ele sempre.
         if (backgroundSprites.Length == 1) {
             backgroundImage.sprite = backgroundSprites[0];
             _lastBackgroundIndex = 0;
             return;
         }
 
-        // Sorteia um índice diferente do último.
         int randomIndex;
         do {
             randomIndex = Random.Range(0, backgroundSprites.Length);
         } while (randomIndex == _lastBackgroundIndex);
 
-        // Aplica o sprite sorteado e guarda o índice.
         backgroundImage.sprite = backgroundSprites[randomIndex];
         _lastBackgroundIndex = randomIndex;
     }
 
     /// <summary>
-    /// Esconde a tela de loading.
+    /// Hides the loading screen.
     /// </summary>
     public void Hide() {
         gameObject.SetActive(false);
     }
 
     /// <summary>
-    /// Atualiza o preenchimento da barra de progresso e, se houver,
-    /// o texto de porcentagem.
+    /// Updates the progress bar fill amount and optional percentage text.
     /// </summary>
-    /// <param name="progress">
-    /// Valor de 0 (vazio) a 1 (completo).
-    /// Exemplo: 0.75f = 75% preenchido.
-    /// </param>
+    /// <param name="progress">Value from 0 (empty) to 1 (complete).</param>
     public void SetProgress(float progress) {
-        // Se temos uma Image de barra, atualiza o fillAmount.
-        // O fillAmount já trabalha com valores de 0 a 1 — exatamente o que precisamos.
         if (progressBar != null)
             progressBar.fillAmount = progress;
 
-        // Se temos um texto de porcentagem, atualiza ele também.
         if (percentageText != null)
             percentageText.text = Mathf.RoundToInt(progress * 100f) + "%";
     }

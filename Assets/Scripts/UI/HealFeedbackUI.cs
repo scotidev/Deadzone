@@ -12,7 +12,7 @@ namespace Deadzone.UI {
         #region SERIALIZED FIELDS
 
         [Header("Vignette Image")]
-        [Tooltip("Arraste aqui o objeto Image que contém a vignette")]
+        [Tooltip("Arraste aqui o objeto Image que cont\u00e9m a vignette")]
         [SerializeField] private Image vignetteImage;
 
         [Header("Settings")]
@@ -52,7 +52,7 @@ namespace Deadzone.UI {
         /// <param name="duration">How long the effect lasts in seconds.</param>
         public void Show(float duration) {
             if (vignetteImage == null) {
-                Debug.LogWarning("[HealFeedbackUI] vignetteImage não atribuída no Inspector!");
+                Debug.LogWarning("[HealFeedbackUI] vignetteImage not assigned in the Inspector!");
                 return;
             }
 
@@ -62,6 +62,9 @@ namespace Deadzone.UI {
             currentCoroutine = StartCoroutine(ShowEffect(duration));
         }
 
+        /// <summary>
+        /// Coroutine that pulses the vignette alpha over the specified duration.
+        /// </summary>
         private IEnumerator ShowEffect(float duration) {
             vignetteImage.gameObject.SetActive(true);
 

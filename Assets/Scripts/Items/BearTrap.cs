@@ -8,6 +8,7 @@ namespace InfimaGames.LowPolyShooterPack
 {
     /// <summary>
     /// BearTrap buildable item. Places a bear trap in the world.
+    /// When triggered by an enemy, applies damage and stun.
     /// </summary>
     public class BearTrap : ItemBehaviour
     {
@@ -42,6 +43,18 @@ namespace InfimaGames.LowPolyShooterPack
 
         #endregion
 
+        #region PROPERTIES
+
+        #endregion
+
+        #region EVENTS
+
+        #endregion
+
+        #region CONSTANTS
+
+        #endregion
+
         #region UNITY
 
         private void Awake()
@@ -53,38 +66,31 @@ namespace InfimaGames.LowPolyShooterPack
 
         private void OnTriggerEnter(Collider collider)
         {
-            // Check if trap has been placed in the world (not in player's hand)
             if (!isPlaced) {
                 return;
             }
 
-            // Check if trap has already triggered
             if (hasTriggered)
             {
                 return;
             }
 
-            // Attempt to get EnemyBase component from the collider
             EnemyBase enemy = collider.GetComponent<EnemyBase>();
             if (enemy == null)
             {
                 return;
             }
 
-            // Boss immunity check: don't stun ZombieBoss
-            // Use type name checking to avoid direct reference issues
             if (enemy.GetType().Name == "ZombieBoss")
             {
                 return;
             }
 
-            // Check if this enemy is already stunned by this trap
             if (stubbedEnemies.Contains(enemy))
             {
                 return;
             }
 
-            // Apply damage from trap data, scaled by upgrade level
             if (bearTrapData != null)
             {
                 float damage = bearTrapData.Damage;
@@ -100,10 +106,8 @@ namespace InfimaGames.LowPolyShooterPack
                 Debug.LogWarning("[BearTrap] bearTrapData is null!");
             }
 
-            // Apply stun effect
             ApplyStun(enemy);
 
-            // Play trigger sound and change visual (only once per trap placement)
             if (!hasTriggered)
             {
                 PlayTriggerSound();
@@ -114,11 +118,8 @@ namespace InfimaGames.LowPolyShooterPack
 
         /// <summary>
         /// Applies stun effect to an enemy by disabling movement for a duration.
-        /// First principle: We disable the NavMeshAgent via EnemyFollow.SetMovementEnabled(false)
-        /// which stops the agent from moving towards the player. We also zero out velocity
-        /// (momentum) so the enemy stops IMMEDIATELY without drifting.
-        /// We also set the stun lock flag so EnemyAttack cannot re-enable movement during stun.
-        /// After the stun duration expires, we re-enable it so the enemy can resume chasing.
+        /// Disables NavMeshAgent via EnemyFollow.SetMovementEnabled(false) and zeros velocity
+        /// to stop the enemy immediately. After the stun duration, movement is re-enabled.
         /// </summary>
         private void ApplyStun(EnemyBase enemy)
         {
@@ -129,13 +130,9 @@ namespace InfimaGames.LowPolyShooterPack
                 return;
             }
 
-            // Track this enemy as stunned by this trap
             stubbedEnemies.Add(enemy);
-
-            // Set stun lock - prevents EnemyAttack from re-enabling movement
             enemyFollow.SetStunned(true);
 
-            // Zero out NavMeshAgent velocity immediately (stops momentum/drifting)
             NavMeshAgent agent = enemy.GetComponent<NavMeshAgent>();
             if (agent != null)
             {
@@ -146,45 +143,31 @@ namespace InfimaGames.LowPolyShooterPack
                 Debug.LogWarning($"[BearTrap] {enemy.gameObject.name} has no NavMeshAgent!");
             }
 
-            // Also zero Rigidbody velocity if it exists (and not kinematic)
             Rigidbody rb = enemy.GetComponent<Rigidbody>();
             if (rb != null)
             {
-                // Only set velocity for non-kinematic bodies
                 if (!rb.isKinematic)
                 {
                     rb.linearVelocity = Vector3.zero;
                 }
             }
 
-            // Disable movement
             enemyFollow.SetMovementEnabled(false);
 
-            // Start coroutine to re-enable movement after stun duration
             StartCoroutine(StunCoroutine(enemy, enemyFollow));
         }
 
         /// <summary>
         /// Coroutine that waits for the stun duration then re-enables enemy movement.
-        /// First principle: We use WaitForSeconds to suspend execution for stunDurationSeconds,
-        /// then re-enable movement so the enemy AI can resume normal behavior.
-        /// We also clear the stun lock flag so EnemyAttack can control movement again.
-        /// Important: We capture the GameObject reference upfront and verify it still exists
-        /// before accessing any component (enemy, enemyFollow, Agent, etc.). This prevents
-        /// MissingReferenceException from zombie object references after the enemy dies.
+        /// Captures the GameObject reference upfront and verifies it still exists
+        /// before accessing any component to prevent MissingReferenceException.
         /// </summary>
         private System.Collections.IEnumerator StunCoroutine(EnemyBase enemy, EnemyFollow enemyFollow)
         {
-            // Capture the GameObject reference immediately — this is what we check
-            // instead of the component references, since destroyed Unity objects
-            // are not null in C# but become zombie objects that throw on access.
             GameObject enemyGO = enemy != null ? enemy.gameObject : null;
 
             yield return new WaitForSeconds(stunDurationSeconds);
 
-            // Guard: Check if the GameObject still exists before touching ANY component.
-            // TryGetComponent is safe even on destroyed objects — it returns null.
-            // We do NOT use enemyFollow directly because it may already be a zombie.
             if (enemyGO != null && !ReferenceEquals(enemyGO, null))
             {
                 enemyGO.TryGetComponent(out EnemyFollow follow);
@@ -197,7 +180,6 @@ namespace InfimaGames.LowPolyShooterPack
             }
             else
             {
-                // Enemy was destroyed during stun — remove from tracking
                 if (!ReferenceEquals(enemy, null))
                 {
                     stubbedEnemies.Remove(enemy);
@@ -205,13 +187,11 @@ namespace InfimaGames.LowPolyShooterPack
             }
         }
 
-/// <summary>
+        /// <summary>
         /// Changes the visual state of the trap from open to closed.
         /// Swaps the active trap GameObject with the closed model prefab.
-        /// Instantiates the closed trap WITHOUT a parent so it remains visible
-        /// even if the open trap (parent) is deactivated.
+        /// Instantiates without a parent so it remains visible even if the open trap is deactivated.
         /// Automatically destroys the closed trap after a delay to clean up the scene.
-        /// IMPORTANT: We only disable the Renderer, NOT the GameObject, so the coroutine can continue!
         /// </summary>
         private void ChangeVisualState()
         {
@@ -249,6 +229,8 @@ namespace InfimaGames.LowPolyShooterPack
 
         #endregion
 
+        #region METHODS
+
         #region ITEM BEHAVIOUR IMPLEMENTATION
 
         public override string GetItemID()
@@ -279,13 +261,11 @@ namespace InfimaGames.LowPolyShooterPack
 
         /// <summary>
         /// Called when player selects this item (key 8).
-        /// Start placement mode (ghost preview appears).
+        /// Starts placement mode (ghost preview appears).
         /// </summary>
         public override void OnSelected()
         {
             PlayEquipSound();
-            // FIXED: Set current ammo to 1 when buildable is selected (1 in hand ready to place).
-            // This ensures TextAmmunitionCurrent shows 1 instead of 0.
             if (PlayerProgress.Instance != null)
             {
                 string id = GetItemID();
@@ -299,8 +279,7 @@ namespace InfimaGames.LowPolyShooterPack
         }
 
         /// <summary>
-        /// Called when player selects another item.
-        /// Cancel placement mode.
+        /// Called when player selects another item. Cancels placement mode.
         /// </summary>
         public override void OnDeselected()
         {
@@ -311,9 +290,8 @@ namespace InfimaGames.LowPolyShooterPack
         }
 
         /// <summary>
-        /// NORMAL use: Place bear trap with normal damage.
+        /// Normal use: Place bear trap with normal damage.
         /// Placement logic is handled by BuildingController.
-        /// This method is here for interface compliance.
         /// </summary>
         public override void OnUse()
         {
@@ -324,7 +302,7 @@ namespace InfimaGames.LowPolyShooterPack
         }
 
         /// <summary>
-        /// Check if bear trap is unlocked AND has quantity in inventory.
+        /// Checks if bear trap is unlocked and has quantity in inventory.
         /// </summary>
         public override bool CanBeUsed() {
             if (PlayerProgress.Instance == null) {
@@ -343,7 +321,7 @@ namespace InfimaGames.LowPolyShooterPack
         #region ANIMATION
 
         /// <summary>
-        /// BearTrap nao precisa de pose de arma. Mantem maos abaixadas ao equipar.
+        /// BearTrap does not need a weapon pose. Keeps hands lowered when equipped.
         /// </summary>
         public override bool KeepHolsteredOnEquip() => true;
 
@@ -374,6 +352,12 @@ namespace InfimaGames.LowPolyShooterPack
                 audioService.PlaySFX3D(triggerClip, transform.position, triggerVolume);
             }
         }
+
+        #endregion
+
+        #region DEBUG
+
+        #endregion
 
         #endregion
     }

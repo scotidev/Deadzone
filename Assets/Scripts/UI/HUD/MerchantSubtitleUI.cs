@@ -2,9 +2,6 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
-// REFATORAÇÃO: esse script deveria implementar Element.cs? analise necessaria
-// REFATORAÇÃO: esse script precisa ser um serviço do ServiceLocator? analise necessaria
-
 /// <summary>
 /// Displays temporary subtitle text for merchant dialogue lines.
 /// </summary>
@@ -52,7 +49,6 @@ public class MerchantSubtitleUI : MonoBehaviour {
     #endregion
 
     #region METHODS
-
 
     /// <summary>
     /// Shows a subtitle for a fixed duration.

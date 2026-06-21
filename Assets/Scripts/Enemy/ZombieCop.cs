@@ -5,6 +5,8 @@ using UnityEngine;
 /// </summary>
 public class ZombieCop : EnemyBase {
 
+    #region SERIALIZED FIELDS
+
     [Header("Cop Zombie Stats")]
     [SerializeField] private float defaultMoveSpeed = 3.2f;
     [SerializeField] private float defaultAttackRange = 1.9f;
@@ -22,6 +24,10 @@ public class ZombieCop : EnemyBase {
     [SerializeField] private AudioClip deathSound;
     [Range(0f, 1f)]
     [SerializeField] private float deathSoundVolume = 1f;
+
+    #endregion
+
+    #region METHODS
 
     /// <summary>
     /// Initialize cop zombie stats. Called during Awake() by EnemyBase.
@@ -53,4 +59,6 @@ public class ZombieCop : EnemyBase {
     public override void PlayDeathSound() {
         Play3DSound(deathSound, deathSoundVolume);
     }
+
+    #endregion
 }

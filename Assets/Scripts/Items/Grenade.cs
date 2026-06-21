@@ -14,16 +14,11 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #region ENUMS
 
-        /// <summary>
-        /// CONCEITO: Enum define os estados possíveis da granada.
-        /// Isso evita usar strings e permite que o compilador valide transições.
-        /// Cada estado representa uma etapa diferente do ciclo de vida da granada.
-        /// </summary>
         private enum GrenadeState {
-            Idle,       // Granada está na mão, pronta para ser armada
-            Pinned,     // Pino foi puxado, player está segurando o botão
-            Thrown,     // Granada foi lançada, aguardando detonação
-            Exploded    // Granada explodiu, ciclo completo
+            Idle,
+            Pinned,
+            Thrown,
+            Exploded
         }
 
         #endregion
@@ -50,7 +45,19 @@ namespace InfimaGames.LowPolyShooterPack {
         private IAudioManagerService audioService;
         private GrenadeState currentState = GrenadeState.Idle;
         private GameObject thrownGrenadeInstance;
-        private InputAction fireAction; // CONCEITO: Cache da ação de input para garantir desinscrição segura
+        private InputAction fireAction;
+
+        #endregion
+
+        #region PROPERTIES
+
+        #endregion
+
+        #region EVENTS
+
+        #endregion
+
+        #region CONSTANTS
 
         #endregion
 
@@ -61,9 +68,6 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         private void OnDisable() {
-            // SEGURANÇA: Sempre desinscrever ao desativar ou destruir o objeto.
-            // Isso evita MissingReferenceException se o InputSystem tentar chamar o callback
-            // em um objeto que foi desativado ou destruído.
             UnsubscribeFromFireInput();
         }
 
@@ -72,6 +76,8 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         #endregion
+
+        #region METHODS
 
         #region ITEM BEHAVIOUR IMPLEMENTATION
 
@@ -98,67 +104,48 @@ namespace InfimaGames.LowPolyShooterPack {
 
         /// <summary>
         /// Called when player selects this item (key 5).
-        /// Activate visual representation (grenade model in hand).
-        /// Subscribe to Fire input callbacks.
+        /// Activates visual representation and subscribes to Fire input callbacks.
         /// </summary>
         public override void OnSelected() {
-            // LOG: report selection and inventory
             string id = GetItemID();
             int total = PlayerProgress.Instance != null ? PlayerProgress.Instance.GetItemTotal(id) : -1;
-            Debug.Log($"[Grenade] OnSelected: itemID={id}, total={total}");
 
-            // CONCEITO: Verificar se tem ammo ANTES de equipar.
-            // CanBeUsed() já valida isso, então isto é apenas precaução.
             if (PlayerProgress.Instance != null) {
-                
-                // Se sem ammo e conseguiu chegar aqui (bug), não ativar
                 if (total <= 0) {
                     return;
                 }
-                
                 PlayerProgress.Instance.SetItemCurrent(id, 1);
             }
-            
+
             PlayEquipSound();
             gameObject.SetActive(true);
             SubscribeToFireInput();
-            
-            // Reset state to Idle when selected
             currentState = GrenadeState.Idle;
         }
 
         /// <summary>
         /// Called when player selects another item.
-        /// Deactivate visual and unsubscribe from input.
+        /// Deactivates visual and unsubscribes from input.
         /// </summary>
         public override void OnDeselected() {
-            Debug.Log($"[Grenade] OnDeselected: itemID={GetItemID()}, state={currentState}");
-            // CONCEITO: Se player trocou de item enquanto puxava a granada,
-            // cancelar qualquer ação em andamento (hold).
             if (currentState == GrenadeState.Pinned) {
-                // CONCEITO: Rescindir a inscrição impede que callbacks façam ação
                 UnsubscribeFromFireInput();
                 currentState = GrenadeState.Idle;
             } else if (currentState == GrenadeState.Thrown && thrownGrenadeInstance != null) {
-                // Se já lançou, deixar a corrotina de detonação continuar
-                // (a instância vai explodir normalmente)
             }
-            
+
             gameObject.SetActive(false);
             UnsubscribeFromFireInput();
         }
 
         /// <summary>
-        /// NORMAL use: Not used directly. Grenade uses input callbacks instead.
-        /// This is called by ItemBehaviour interface but grenade ignores it.
+        /// Normal use: Not used directly. Grenade uses input callbacks instead.
         /// </summary>
         public override void OnUse() {
-            // Grenade uses InputAction callbacks (OnFireStarted/OnFireCanceled) instead
-            // This method is kept for interface compatibility but does nothing
         }
 
         /// <summary>
-        /// Check if grenade can be selected (unlocked AND has quantity available).
+        /// Checks if grenade can be selected (unlocked and has quantity available).
         /// </summary>
         public override bool CanBeUsed() {
             if (PlayerProgress.Instance == null) {
@@ -177,7 +164,7 @@ namespace InfimaGames.LowPolyShooterPack {
         #region ANIMATION
 
         /// <summary>
-        /// Grenade nao precisa de pose de arma. Mantem maos abaixadas ao equipar.
+        /// Grenade does not need a weapon pose. Keeps hands lowered when equipped.
         /// </summary>
         public override bool KeepHolsteredOnEquip() => true;
 
@@ -186,13 +173,10 @@ namespace InfimaGames.LowPolyShooterPack {
         #region INPUT HANDLING
 
         /// <summary>
-        /// Subscribe to Fire input using InputSystem callbacks.
-        /// CONCEITO: Em vez de depender do Character para chamar callbacks,
-        /// a Granada se inscreve diretamente no Input System.
-        /// Isso permite que ela controle sua própria lógica de hold/release.
+        /// Subscribes to Fire input using InputSystem callbacks.
+        /// Allows the grenade to control its own hold/release logic.
         /// </summary>
         private void SubscribeToFireInput() {
-            // Se já temos a referência e estamos inscritos, evitar duplicidade
             if (fireAction != null) return;
 
             PlayerInput playerInput = GetComponentInParent<PlayerInput>();
@@ -212,7 +196,7 @@ namespace InfimaGames.LowPolyShooterPack {
         }
 
         /// <summary>
-        /// Unsubscribe from Fire input to prevent callbacks after deselection.
+        /// Unsubscribes from Fire input to prevent callbacks after deselection.
         /// </summary>
         private void UnsubscribeFromFireInput() {
             if (fireAction == null) return;
@@ -224,30 +208,23 @@ namespace InfimaGames.LowPolyShooterPack {
 
         /// <summary>
         /// Called when fire button is pressed (InputActionPhase.Started).
-        /// Pull pin and enter Pinned state.
+        /// Pulls pin and enters Pinned state.
         /// </summary>
         private void OnFireStarted(InputAction.CallbackContext context) {
-            // SEGURANÇA: Se o objeto foi destruído (reinicio de jogo), abortar imediatamente.
             if (this == null) return;
 
-            // Only proceed if in Idle state.
             if (currentState != GrenadeState.Idle) {
                 return;
             }
 
-            // SEGURANÇA: Não puxar o pino se estiver em modo de interface (loja/menus)
-            // ou se o mouse estiver sobre um elemento da UI.
             Character character = GetComponentInParent<Character>();
             if (character != null && character.IsInterfaceMode())
                 return;
 
-            if (UnityEngine.EventSystems.EventSystem.current != null && 
+            if (UnityEngine.EventSystems.EventSystem.current != null &&
                 UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
                 return;
 
-            Debug.Log($"[Grenade] OnFireStarted: itemID={GetItemID()}, state={currentState}");
-
-            // Ensure audioService is available.
             EnsureAudioService();
 
             currentState = GrenadeState.Pinned;
@@ -256,55 +233,40 @@ namespace InfimaGames.LowPolyShooterPack {
 
         /// <summary>
         /// Called when fire button is released (InputActionPhase.Canceled).
-        /// Throw grenade and start detonation countdown.
+        /// Throws grenade and starts detonation countdown.
         /// </summary>
         private void OnFireCanceled(InputAction.CallbackContext context) {
-            // SEGURANÇA: Se o objeto foi destruído, abortar.
             if (this == null) return;
 
-            // CONCEITO: Só proceder se estamos no estado Pinned (segurando o botão).
-            // Se não tiver puxado o pino, não fazer nada.
             if (currentState != GrenadeState.Pinned) {
                 return;
             }
 
-            // SEGURANÇA: Não lançar a granada se o release aconteceu sobre um elemento da UI.
-            // Isso evita que cliques em botões de menu lancem a granada "pela culatra".
-            if (UnityEngine.EventSystems.EventSystem.current != null && 
+            if (UnityEngine.EventSystems.EventSystem.current != null &&
                 UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
-                
-                // Resetamos para Idle para que o player possa tentar novamente sem ficar preso no estado Pinned.
                 currentState = GrenadeState.Idle;
                 return;
             }
 
-            // CONCEITO: Verificar se tem ammo antes de lançar.
-            // Se não tiver, rescindir e retornar ao estado Idle.
             if (!CanBeUsed()) {
                 currentState = GrenadeState.Idle;
                 return;
             }
 
-            // CONCEITO: Verificar se tem quantidade em inventário.
-            // GetItemTotal retorna o número total de granadas que o player tem.
             if (PlayerProgress.Instance != null && PlayerProgress.Instance.GetItemTotal(GetItemID()) <= 0) {
                 currentState = GrenadeState.Idle;
                 return;
             }
 
-            // CONCEITO: Transição de estado: Pinned → Thrown
             currentState = GrenadeState.Thrown;
-            
+
             ThrowGrenade();
             PlayThrowSound();
-            
-            // CONCEITO: Se ainda tem ammo depois de lançar, re-inscrever callbacks de input.
-            // Isso permite que o player lance de novo SEM apertar a tecla 5 novamente.
-            // A visual da granada continua na mão (porque não desativamos), e os callbacks agora estão re-inscritos.
-            if (PlayerProgress.Instance != null && 
+
+            if (PlayerProgress.Instance != null &&
                 PlayerProgress.Instance.GetItemTotal(GetItemID()) > 0) {
-                currentState = GrenadeState.Idle; // Back to Idle to allow another throw
-                SubscribeToFireInput(); // Re-subscribe for the next throw
+                currentState = GrenadeState.Idle;
+                SubscribeToFireInput();
             }
         }
 
@@ -313,9 +275,7 @@ namespace InfimaGames.LowPolyShooterPack {
         #region THROW LOGIC
 
         /// <summary>
-        /// Instantiate grenade prefab and apply initial velocity.
-        /// CONCEITO: Este método instancia o GameObject do prefab e o lança.
-        /// O prefab tem Rigidbody com Is Kinematic=false para sofrer gravidade.
+        /// Instantiates grenade prefab and applies initial velocity.
         /// </summary>
         private void ThrowGrenade() {
             if (grenadePrefab == null) {
@@ -338,39 +298,21 @@ namespace InfimaGames.LowPolyShooterPack {
                 return;
             }
 
-            // CONCEITO: Instanciar o prefab na posição da câmera do player.
-            // Isso faz parecer que a granada sai da mão do player em primeira pessoa.
             thrownGrenadeInstance = Instantiate(grenadePrefab, cameraTransform.position, Quaternion.identity);
 
-            // CONCEITO: Aplicar velocidade inicial (throwForce) na direção que o player está olhando.
-            // linearVelocity é preferível a AddForce quando se quer velocidade instantânea
             Rigidbody rb = thrownGrenadeInstance.GetComponent<Rigidbody>();
             if (rb != null) {
                 rb.linearVelocity = cameraTransform.forward * throwForce;
             }
 
-            // CONCEITO: O prefab lançado tem GrenadeThrown.cs anexado automaticamente.
-            // Esse script gerencia sua própria detonação de forma independente.
-            // Não é necessário referenciar aqui - StartCoroutine em GrenadeThrown.cs faz tudo.
-
-            // CONCEITO: Consumir 1 granada do inventário.
-            // UseItem decrementa o total em inventário e ammo em mão.
             if (PlayerProgress.Instance != null) {
                 PlayerProgress.Instance.UseItem(GetItemID(), 1);
                 int remaining = PlayerProgress.Instance.GetItemTotal(GetItemID());
-                Debug.Log($"[Grenade] ThrowGrenade: itemID={GetItemID()}, remainingAfterUse={remaining}");
 
-                // NOVO: Verificar se chegou a zero
                 if (remaining > 0) {
-                    // Ainda há granadas: mantém equipado para lançar novamente
                     PlayerProgress.Instance.SetItemCurrent(GetItemID(), 1);
-                    Debug.Log($"[Grenade] ThrowGrenade: remaining={remaining}, keep grenades equipped");
-                    // The grenade hand object remains active, re-subscribed in OnFireCanceled
                 } else {
-                    // Última granada lançada: volta à pistola com animação
                     PlayerProgress.Instance.SetItemCurrent(GetItemID(), 0);
-                    Debug.Log($"[Grenade] ThrowGrenade: used last grenade, auto-equipping weapon");
-                    
                     EquipWeaponAutomatically();
                 }
             }
@@ -381,8 +323,8 @@ namespace InfimaGames.LowPolyShooterPack {
         #region AUDIO
 
         /// <summary>
-        /// Ensures audioService is cached. If null, attempts to re-cache from ServiceLocator.
-        /// This handles cases where AudioManagerService may have been destroyed and recreated.
+        /// Ensures audioService is cached. If null, re-caches from ServiceLocator.
+        /// Handles cases where AudioManagerService may be destroyed and recreated.
         /// </summary>
         private void EnsureAudioService()
         {
@@ -394,7 +336,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private void PlayEquipSound() {
             EnsureAudioService();
-            
+
             if (equipClip != null && audioService != null) {
                 audioService.PlaySFX2D(equipClip, equipVolume);
             }
@@ -402,7 +344,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private void PlayPinPullSound() {
             EnsureAudioService();
-            
+
             if (pinPullClip != null && audioService != null) {
                 audioService.PlaySFX2D(pinPullClip, pinPullVolume);
             }
@@ -410,7 +352,7 @@ namespace InfimaGames.LowPolyShooterPack {
 
         private void PlayThrowSound() {
             EnsureAudioService();
-            
+
             if (throwClip != null && audioService != null) {
                 audioService.PlaySFX2D(throwClip, throwVolume);
             }
@@ -423,18 +365,20 @@ namespace InfimaGames.LowPolyShooterPack {
         /// <summary>
         /// Automatically equips the default weapon (pistol) when grenade quantity reaches zero.
         /// Uses smooth animation transition via Character.TryRestoreWeaponSmoothly().
-        /// CONCEITO: Assim como no Medkit, delegamos a responsabilidade da animação
-        /// ao Character para garantir que o braço abaixe antes da troca ocorrer.
         /// </summary>
         private void EquipWeaponAutomatically() {
             Character character = GetComponentInParent<Character>();
             if (character == null) return;
 
-            // Chama a nova lógica suave
             character.TryRestoreWeaponSmoothly();
         }
 
         #endregion
+
+        #region DEBUG
+
+        #endregion
+
+        #endregion
     }
 }
-

@@ -1,7 +1,3 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-
-// FEATURE:  a mira deve alargar quando o personagem estiver correndo, e encolher quando estiver parado ou andando. Talvez também alargar um pouco quando estiver pulando, para dar a sensação de que o personagem está mais vulnerável. para isso precisamos consultar o estado do personagem.
-
 using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack.Interface {
@@ -10,7 +6,7 @@ namespace InfimaGames.LowPolyShooterPack.Interface {
     /// </summary>
     public class Crosshair : Element {
 
-        #region FIELDS SERIALIZED
+        #region SERIALIZED FIELDS
 
         [Header("Settings")]
 
@@ -43,8 +39,10 @@ namespace InfimaGames.LowPolyShooterPack.Interface {
 
         #region METHODS
 
+        /// <summary>
+        /// Updates the crosshair scale based on character state and visibility.
+        /// </summary>
         protected override void Tick() {
-
             bool visible = playerCharacter.IsCrosshairVisible();
             target = visible ? 1.0f : 0.0f;
 

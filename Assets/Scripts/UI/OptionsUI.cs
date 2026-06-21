@@ -74,11 +74,17 @@ public class OptionsUI : BaseUI {
         LoadSettings();
     }
 
+    /// <summary>
+    /// Saves sensitivity and applies it to the camera.
+    /// </summary>
     private void OnMouseSensitivityChanged(float value) {
         SaveSetting(SENSITIVITY_KEY, value);
         ApplySensitivityToCamera(value);
     }
 
+    /// <summary>
+    /// Applies the sensitivity value to the player's CameraLook component.
+    /// </summary>
     private void ApplySensitivityToCamera(float value) {
         var gameMode = ServiceLocator.Current?.Get<IGameMode>();
         var player = gameMode?.GetPlayerCharacter();
@@ -89,41 +95,57 @@ public class OptionsUI : BaseUI {
         }
     }
 
+    /// <summary>
+    /// Saves master volume and applies it to AudioListener.
+    /// </summary>
     private void OnMasterVolumeChanged(float value) {
         SaveSetting(MASTER_VOLUME_KEY, value);
         AudioListener.volume = value;
     }
 
+    /// <summary>
+    /// Saves SFX volume and applies it to the audio service.
+    /// </summary>
     private void OnSFXVolumeChanged(float value) {
         SaveSetting(SFX_VOLUME_KEY, value);
         audioService?.SetSFXVolume(value);
     }
 
+    /// <summary>
+    /// Saves BGM volume and applies it to the audio service.
+    /// </summary>
     private void OnBGMVolumeChanged(float value) {
         SaveSetting(BGM_VOLUME_KEY, value);
         audioService?.SetBGMVolume(value);
     }
 
+    /// <summary>
+    /// Handles the back button click, returning to pause menu.
+    /// </summary>
     private void OnBackClick() {
-        Debug.Log("[OptionsUI] OnBackClick() - ANTES de Hide()");
         Hide();
-        Debug.Log("[OptionsUI] OnBackClick() - DEPOIS de Hide(), ANTES de ShowPauseMenu()");
         if (UIManager.Instance != null)
             UIManager.Instance.ShowPauseMenu();
-        Debug.Log("[OptionsUI] OnBackClick() - DEPOIS de ShowPauseMenu()");
-        UIManager.Instance?.LogVisiblePanels("[OptionsUI] depois de OnBackClick:");
     }
 
+    /// <summary>
+    /// Handles Escape key behavior by reusing the back action.
+    /// </summary>
     protected override void OnEscapePressed() {
-        Debug.Log("[OptionsUI] OnEscapePressed()");
         OnBackClick();
     }
 
+    /// <summary>
+    /// Saves a float setting to PlayerPrefs.
+    /// </summary>
     private void SaveSetting(string key, float value) {
         PlayerPrefs.SetFloat(key, value);
         PlayerPrefs.Save();
     }
 
+    /// <summary>
+    /// Loads all settings from PlayerPrefs and applies them.
+    /// </summary>
     private void LoadSettings() {
         if (mouseSensitivitySlider != null) {
             float sensitivity = PlayerPrefs.GetFloat(SENSITIVITY_KEY, 1.0f);

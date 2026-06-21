@@ -68,7 +68,6 @@ namespace Deadzone.UI {
 
             audioService = ServiceLocator.Current.Get<IAudio>();
 
-            // Salva os alphas configurados no Inspector antes de esconder
             initialAlphas = new float[graphics.Length];
             for (int i = 0; i < graphics.Length; i++)
                 initialAlphas[i] = graphics[i].color.a;
@@ -83,7 +82,7 @@ namespace Deadzone.UI {
 
         /// <summary>
         /// Shows the tutorial panel with fade in effect and plays the universal sound.
-        /// Fadeia cada graphic de 0 até seu alpha definido no Inspector.
+        /// Fades each graphic from 0 to its Inspector-defined alpha.
         /// </summary>
         public void Show(string text, Sprite image) {
             if (fadeRoutine != null)
@@ -103,7 +102,6 @@ namespace Deadzone.UI {
             foreach (Graphic g in graphics)
                 g.color = new Color(g.color.r, g.color.g, g.color.b, 0f);
 
-            // Fade de 0 até o alpha de cada graphic definido no Inspector
             float[] from = new float[graphics.Length];
             fadeRoutine = StartCoroutine(FadeRoutine(from, initialAlphas, fadeInDuration, null));
 
@@ -119,7 +117,7 @@ namespace Deadzone.UI {
 
         /// <summary>
         /// Starts a fade out over fadeOutDuration seconds, then calls onComplete.
-        /// Fadeia cada graphic do alpha atual até 0.
+        /// Fades each graphic from current alpha to 0.
         /// </summary>
         public void StartFadeOut(Action onComplete) {
             if (fadeRoutine != null)
@@ -154,6 +152,9 @@ namespace Deadzone.UI {
                 g.color = new Color(g.color.r, g.color.g, g.color.b, 0f);
         }
 
+        /// <summary>
+        /// Coroutine that interpolates graphic alpha values over a duration.
+        /// </summary>
         private IEnumerator FadeRoutine(float[] from, float[] to, float duration, Action onComplete) {
             float elapsed = 0f;
 

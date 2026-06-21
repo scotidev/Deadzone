@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 namespace InfimaGames.LowPolyShooterPack {
@@ -61,9 +61,6 @@ namespace InfimaGames.LowPolyShooterPack {
 
         #region CONSTANTS
 
-        /// <summary>
-        /// Constant.
-        /// </summary>
         private const float KSqrEpsilon = 1e-8f;
 
         #endregion

@@ -11,7 +11,7 @@ namespace Deadzone.UI {
     /// </summary>
     public class FeedbackMessageUI : MonoBehaviour {
 
-        #region SINGLETON
+        #region STATIC
 
         public static FeedbackMessageUI Instance { get; private set; }
 
@@ -31,14 +31,14 @@ namespace Deadzone.UI {
 
         #endregion
 
-        #region PRIVATE FIELDS
+        #region FIELDS
 
         private IAudio audioService;
         private Coroutine autoHideRoutine;
 
         #endregion
 
-        #region UNITY LIFECYCLE
+        #region UNITY
 
         private void Awake() {
             if (Instance != null && Instance != this) {
@@ -58,6 +58,8 @@ namespace Deadzone.UI {
         }
 
         #endregion
+
+        #region METHODS
 
         #region PUBLIC METHODS
 
@@ -90,10 +92,15 @@ namespace Deadzone.UI {
 
         #region PRIVATE METHODS
 
+        /// <summary>
+        /// Waits for the display duration then hides the feedback message.
+        /// </summary>
         private System.Collections.IEnumerator HideAfterDelay() {
             yield return new WaitForSeconds(displayDuration);
             ForceHide();
         }
+
+        #endregion
 
         #endregion
 

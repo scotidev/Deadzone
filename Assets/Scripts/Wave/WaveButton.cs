@@ -6,10 +6,8 @@ using UnityEngine;
 /// </summary>
 public class WaveButton : Interactable {
 
-    /// <summary>
-    /// Starts the next wave when the player interacts with this button.
-    /// Does nothing if a wave is already active.
-    /// </summary>
+    #region METHODS
+
     public override void Interact() {
         if (WaveManager.Instance == null) return;
 
@@ -19,4 +17,6 @@ public class WaveButton : Interactable {
 
         WaveManager.Instance.StartNextWave();
     }
+
+    #endregion
 }

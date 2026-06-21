@@ -60,8 +60,6 @@ public class GameOverUI : BaseUI {
     /// Resets time scale and loads the SelectMap scene.
     /// </summary>
     private void OnTryAgainClick() {
-        Debug.Log("[GameOverUI] Botão Try Again clicado");
-
         GameManager.ResetGameSession();
         GameManager.Instance?.SetTimeScale(1f);
 
@@ -73,8 +71,6 @@ public class GameOverUI : BaseUI {
     /// Resets time scale, sets game state to MainMenu, and loads the Menu scene.
     /// </summary>
     private void OnQuitClick() {
-        Debug.Log("[GameOverUI] Botão Quit clicado");
-
         GameManager.ResetGameSession();
         GameManager.Instance?.SetTimeScale(1f);
         GameManager.Instance?.SetState(GameState.MainMenu);

@@ -59,10 +59,6 @@ public class ShopUI : BaseUI {
 
     #endregion
 
-    #region EVENTS
-
-    #endregion
-
     #region UNITY
 
     protected override void Awake() {
@@ -85,6 +81,9 @@ public class ShopUI : BaseUI {
 
     #region METHODS
 
+    /// <summary>
+    /// Binds all button click events to their respective handlers.
+    /// </summary>
     private void BindButtons() {
         if (closeButton != null)
             closeButton.onClick.AddListener(OnCloseClick);
@@ -121,6 +120,9 @@ public class ShopUI : BaseUI {
             EconomyManager.Instance.OnCurrencyChanged -= OnCurrencyChanged;
     }
 
+    /// <summary>
+    /// Updates currency display and action button state when currency changes.
+    /// </summary>
     private void OnCurrencyChanged(int newAmount) {
         UpdateCurrencyDisplay();
 
@@ -129,6 +131,9 @@ public class ShopUI : BaseUI {
         }
     }
 
+    /// <summary>
+    /// Updates the currency display text with current amount.
+    /// </summary>
     private void UpdateCurrencyDisplay() {
         if (currencyText == null || EconomyManager.Instance == null) return;
 
@@ -138,6 +143,9 @@ public class ShopUI : BaseUI {
         currencyText.GetComponent<TextScalePulse>()?.Pulse();
     }
 
+    /// <summary>
+    /// Populates the shop items container with cards for each configured item.
+    /// </summary>
     private void PopulateShopItems() {
         if (itemsContainer == null || shopItemCardPrefab == null) {
             Debug.LogWarning($"{nameof(ShopUI)} has missing references for items container or card prefab.", this);
@@ -165,6 +173,9 @@ public class ShopUI : BaseUI {
         }
     }
 
+    /// <summary>
+    /// Clears all shop item cards from the container.
+    /// </summary>
     private void ClearShopItems() {
         selectedItemData = null;
 
@@ -173,6 +184,9 @@ public class ShopUI : BaseUI {
         }
     }
 
+    /// <summary>
+    /// Selects the first weapon item, or falls back to the first valid item.
+    /// </summary>
     private void SelectInitialItem() {
         ShopItemDataSO fallbackItem = null;
 
@@ -199,6 +213,9 @@ public class ShopUI : BaseUI {
         }
     }
 
+    /// <summary>
+    /// Handles card selection, updating the selected item and preview.
+    /// </summary>
     private void HandleCardSelected(ShopItemDataSO itemData) {
         if (currentSelectedCard != null) {
             currentSelectedCard.SetSelected(false);
@@ -223,6 +240,9 @@ public class ShopUI : BaseUI {
         ShopManager.Instance?.OnShopInteraction();
     }
 
+    /// <summary>
+    /// Updates the selected item info panel with name, stats, and buttons.
+    /// </summary>
     private void UpdateSelectedItemInfo() {
         if (selectedItemData == null) {
             SetSelectedInfoTexts(string.Empty);
@@ -240,10 +260,16 @@ public class ShopUI : BaseUI {
         UpdateActionButton(selectedItemData, 0);
     }
 
+    /// <summary>
+    /// Sets the selected item name text.
+    /// </summary>
     private void SetSelectedInfoTexts(string itemName) {
         if (selectedItemNameText != null) selectedItemNameText.text = itemName;
     }
 
+    /// <summary>
+    /// Builds stat bars for the selected item's current and next level values.
+    /// </summary>
     private void BuildDynamicStats() {
         foreach (Transform child in statsContainer) {
             Destroy(child.gameObject);
@@ -271,9 +297,8 @@ public class ShopUI : BaseUI {
         int nextLevel = (currentLevel >= maxLevel) ? currentLevel : currentLevel + 1;
 
         float[] currentValues = itemData.GetStatValues(currentLevel);
-        float[] nextValues = isUnlocked ? itemData.GetStatValues(nextLevel) : new float[currentValues.Length]; // If locked, upgrade shows 0 progress
+        float[] nextValues = isUnlocked ? itemData.GetStatValues(nextLevel) : new float[currentValues.Length];
 
-        // Calculate global max values using the shop items list - this ensures all items are scanned for max values
         WeaponStatsCalculator.CalculateGlobalMaxValues(shopItems);
 
         for (int i = 0; i < labels.Length && i < 3; i++) {
@@ -290,7 +315,6 @@ public class ShopUI : BaseUI {
             float maxValue = WeaponStatsCalculator.GetMaxValueForStat(labels[i]);
 
             bar.Setup(labels[i], maxValue, i);
-            // Show upgrade bar only if item is unlocked, otherwise hide it
             bar.SetValues(currentValues[i], nextValues[i], isUnlocked);
 
             activeStatBars.Add(bar);
@@ -300,6 +324,9 @@ public class ShopUI : BaseUI {
         UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(statsContainer as RectTransform);
     }
 
+    /// <summary>
+    /// Clears all active stat bars.
+    /// </summary>
     private void ClearStatBars() {
         foreach (var bar in activeStatBars) {
             if (bar != null) Destroy(bar.gameObject);
@@ -307,6 +334,9 @@ public class ShopUI : BaseUI {
         activeStatBars.Clear();
     }
 
+    /// <summary>
+    /// Updates the ammo display for the selected item.
+    /// </summary>
     private void UpdateAmmoDisplay(string itemID) {
         if (string.IsNullOrEmpty(itemID) || selectedItemData == null || ShopManager.Instance == null) {
             ClearAmmoDisplay();
@@ -325,11 +355,17 @@ public class ShopUI : BaseUI {
         }
     }
 
+    /// <summary>
+    /// Clears the ammo display.
+    /// </summary>
     private void ClearAmmoDisplay() {
         if (ammoPriceText != null) ammoPriceText.text = string.Empty;
         if (ammoButton != null) ammoButton.interactable = false;
     }
 
+    /// <summary>
+    /// Updates the action button label, price, and interactability based on item state.
+    /// </summary>
     private void UpdateActionButton(ShopItemDataSO itemData, int dummy) {
         if (selectedItemActionButton == null || itemData == null) {
             return;
@@ -377,6 +413,9 @@ public class ShopUI : BaseUI {
         UpdateAmmoDisplay(itemID);
     }
 
+    /// <summary>
+    /// Handles the action button press, dispatching unlock or upgrade.
+    /// </summary>
     private void OnActionButtonPressed() {
         if (selectedItemData == null || ShopManager.Instance == null) {
             return;
@@ -394,6 +433,9 @@ public class ShopUI : BaseUI {
         }
     }
 
+    /// <summary>
+    /// Handles the unlock operation from the right panel action button.
+    /// </summary>
     private void OnRightPanelUnlock(ShopItemDataSO itemData) {
         if (itemData == null || ShopManager.Instance == null) {
             return;
@@ -407,6 +449,9 @@ public class ShopUI : BaseUI {
         }
     }
 
+    /// <summary>
+    /// Handles the upgrade operation from the right panel action button.
+    /// </summary>
     private void OnRightPanelUpgrade(ShopItemDataSO itemData) {
         if (itemData == null || ShopManager.Instance == null) {
             return;
@@ -429,6 +474,9 @@ public class ShopUI : BaseUI {
         }
     }
 
+    /// <summary>
+    /// Handles the ammo purchase button press.
+    /// </summary>
     private void OnAmmoButtonPressed() {
         if (selectedItemData == null || ShopManager.Instance == null) return;
 
@@ -440,6 +488,9 @@ public class ShopUI : BaseUI {
         }
     }
 
+    /// <summary>
+    /// Plays the appropriate sound for the ammo type being purchased.
+    /// </summary>
     private void PlayAmmoSound(ShopItemDataSO itemData) {
         if (itemData?.ItemData == null) return;
 
@@ -455,6 +506,9 @@ public class ShopUI : BaseUI {
         }
     }
 
+    /// <summary>
+    /// Refreshes all card visuals and updates the selected item info.
+    /// </summary>
     private void RefreshAllCards() {
         foreach (Transform child in itemsContainer) {
             ShopItemCard card = child.GetComponent<ShopItemCard>();
@@ -467,6 +521,9 @@ public class ShopUI : BaseUI {
         UpdateSelectedItemInfo();
     }
 
+    /// <summary>
+    /// Handles the close button click, closing the shop.
+    /// </summary>
     private void OnCloseClick() {
         if (ShopManager.Instance != null)
             ShopManager.Instance.CloseShop();

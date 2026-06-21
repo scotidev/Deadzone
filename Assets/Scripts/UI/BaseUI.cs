@@ -8,9 +8,14 @@ using UnityEngine.InputSystem;
 public abstract class BaseUI : MonoBehaviour {
 
     #region FIELDS
+
     [SerializeField] protected GameObject panel;
 
     private bool _showCalledBeforeStart = false;
+
+    #endregion
+
+    #region PROPERTIES
 
     /// <summary>
     /// Gets whether this panel should close when Escape is pressed.
@@ -55,8 +60,6 @@ public abstract class BaseUI : MonoBehaviour {
     /// Only hides the panel if it's NOT the same GameObject as this script.
     /// </summary>
     protected virtual void Awake() {
-        // Don't hide panel in Awake - let Start handle it
-        // This prevents issues when panel references itself
     }
 
     /// <summary>
@@ -82,7 +85,6 @@ public abstract class BaseUI : MonoBehaviour {
             return;
 
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) {
-            Debug.Log($"[BaseUI] HandleEscapeClose() fechando {GetType().Name} via ESC");
             OnEscapePressed();
         }
     }

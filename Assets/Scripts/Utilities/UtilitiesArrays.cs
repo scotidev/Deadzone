@@ -1,4 +1,4 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
+// Copyright 2021, Infima Games. All Rights Reserved.
 
 using UnityEngine;
 
@@ -18,7 +18,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// </summary>
         public static bool IsValid<T>(this T[] array) => !array.Equals(null) && array.Length > 0;
         /// <summary>
-        /// Returns a random audio clip from an array of clips.
+        /// Returns a random element from an array.
         /// </summary>
         public static T GetRandom<T>(this T[] array) => array[Random.Range(0, array.Length)];
     }

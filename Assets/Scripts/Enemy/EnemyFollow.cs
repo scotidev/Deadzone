@@ -18,22 +18,16 @@ public class EnemyFollow : MonoBehaviour {
     private Animator animator;
     private EnemyBase enemyBase;
 
-    private static readonly int HashIsWalking = Animator.StringToHash("IsWalking");
-
-    // Idle sound timing
     private float idleSoundTimer = 0f;
     private float idleSoundNextTime = 0f;
 
-    // SetDestination threshold
-    // CONCEITO: Só recalcula pathfinding quando o player se moveu mais que isso.
-    // Evita recálculo desnecessário quando o player está parado ou se movendo pouco.
     private Vector3 lastSetDestinationPosition;
-    private const float DESTINATION_THRESHOLD = 1.0f;
 
-    // NavMeshPath cacheado pra CanReachPlayer
-    // CONCEITO: Reusa o mesmo objeto em vez de new NavMeshPath() a cada chamada.
-    // Criado no Awake porque NavMeshPath usa código nativo da Unity.
     private NavMeshPath cachedPath;
+
+    #endregion
+
+    #region PROPERTIES
 
     private NavMeshAgent Agent {
         get {
@@ -44,12 +38,18 @@ public class EnemyFollow : MonoBehaviour {
 
     #endregion
 
+    #region CONSTANTS
+
+    private static readonly int HashIsWalking = Animator.StringToHash("IsWalking");
+    private const float DESTINATION_THRESHOLD = 1.0f;
+
+    #endregion
+
     #region UNITY
 
     private void Awake() {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
-        // CONCEITO: NavMeshPath precisa ser criado em Awake, não no field initializer.
         cachedPath = new NavMeshPath();
         FindPlayer();
         ResetIdleSoundTimer();
@@ -65,10 +65,6 @@ public class EnemyFollow : MonoBehaviour {
         }
         else
         {
-            // CONCEITO: Só recalcula pathfinding se o player moveu mais que o threshold.
-            // SetDestination dispara um recálculo interno do NavMesh, que é caro.
-            // Com 15 inimigos, pular 90% dos recálculos quando o player está parado
-            // é uma economia gigante de CPU.
             if (Vector3.Distance(playerTransform.position, lastSetDestinationPosition) > DESTINATION_THRESHOLD)
             {
                 Agent.SetDestination(playerTransform.position);
@@ -101,13 +97,12 @@ public class EnemyFollow : MonoBehaviour {
 
     /// <summary>
     /// Updates the IsWalking animator parameter based on NavMeshAgent movement.
-    /// Checks if agent has velocity to determine if it's walking or idle.
+    /// Checks if agent has velocity to determine if it is walking or idle.
     /// </summary>
     private void UpdateWalkAnimation() {
         if (animator == null)
             return;
 
-        // Check if the agent is actually moving (velocity > 0)
         bool isMoving = Agent.velocity.sqrMagnitude > 0.1f;
         animator.SetBool(HashIsWalking, isMoving);
     }
@@ -142,17 +137,13 @@ public class EnemyFollow : MonoBehaviour {
     /// This prevents EnemyAttack from re-enabling movement while the enemy is stunned by a trap.
     /// </summary>
     public void SetMovementEnabled(bool enabled) {
-        // If we're trying to enable movement but the enemy is stunned, don't allow it
         if (enabled && isStunned) {
             Logger.Log($"[EnemyFollow] SetMovementEnabled(true) called but stunned, rejecting");
             return;
         }
 
-        Logger.Log($"[EnemyFollow] SetMovementEnabled({enabled}) - isStopped will be: {!enabled}, Agent valid: {Agent != null && Agent.isOnNavMesh}");
-        
         if (Agent != null && Agent.isOnNavMesh) {
             Agent.isStopped = !enabled;
-            Logger.Log($"[EnemyFollow] NavMeshAgent.isStopped set to: {Agent.isStopped}");
         } else {
             Logger.LogWarning($"[EnemyFollow] Agent is null or not on NavMesh!");
         }
@@ -163,7 +154,6 @@ public class EnemyFollow : MonoBehaviour {
     /// Called by BearTrap when applying stun, and cleared when stun duration expires.
     /// </summary>
     public void SetStunned(bool stunned) {
-        Logger.Log($"[EnemyFollow] SetStunned({stunned})");
         isStunned = stunned;
     }
 
@@ -191,16 +181,13 @@ public class EnemyFollow : MonoBehaviour {
         if (playerTransform == null || agent == null || !agent.isOnNavMesh)
             return false;
 
-        // CONCEITO: Reusa cachedPath em vez de alocar um novo NavMeshPath a cada chamada.
-        // EnemyAttack chama este método todo frame, então a alocação acumula rápido.
         agent.CalculatePath(playerTransform.position, cachedPath);
         return cachedPath.status == NavMeshPathStatus.PathComplete;
     }
 
     /// <summary>
     /// Returns the Transform of the player (found by FindPlayer).
-    /// Called by EnemyAttack.Start() to get the player reference
-    /// without needing another GameObject.FindWithTag() call.
+    /// Called by EnemyAttack.Start() to get the player reference without needing another Find call.
     /// </summary>
     public Transform GetPlayerTransform() {
         if (playerTransform == null)
@@ -210,10 +197,8 @@ public class EnemyFollow : MonoBehaviour {
 
     /// <summary>
     /// Gets the player's Transform via PlayerCache, which only searches the scene once.
-    /// CONCEITO: PlayerCache usa um cache estático que evita varrer
-    /// a hierarquia da cena toda vez que um inimigo nasce.
-    /// O primeiro inimigo a chamar paga o custo do FindWithTag,
-    /// todos os outros ganham a referência de graça.
+    /// PlayerCache uses a static cache that avoids scanning the scene hierarchy every time an enemy spawns.
+    /// The first enemy to call it pays the cost of FindWithTag, all others get the reference for free.
     /// </summary>
     private void FindPlayer() {
         playerTransform = PlayerCache.Transform;

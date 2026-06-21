@@ -1,8 +1,6 @@
 using System.Collections;
 using UnityEngine;
 
-// REFATORAÇÃO: Esse script deveria ser um Service do Service Locator? Analise mais profunda necessaria.
-
 /// <summary>
 /// Enum that represents every top-level state the game can be in.
 /// </summary>
@@ -89,7 +87,6 @@ public class GameManager : MonoBehaviour {
     /// The desired time multiplier. 1.0 = normal speed, 0.5 = half speed.
     /// </param>
     public void SetTimeScale(float scale) {
-        Debug.Log($"[GameManager] SetTimeScale({scale}) | _baseTimeScale={_baseTimeScale} | Stack:\n{new System.Diagnostics.StackTrace(true)}");
         _baseTimeScale = scale;
 
         Time.timeScale = scale;
@@ -150,15 +147,11 @@ public class GameManager : MonoBehaviour {
     /// returns to the menu or starts a new game.
     /// </summary>
     public static void ResetGameSession() {
-        Debug.Log("[GameManager] Resetting game session data...");
-
         PlayerProgress.Instance?.ResetProgress();
 
         EconomyManager.Instance?.ResetCurrency();
 
         PenguinMode.Reset();
-
-        Debug.Log("[GameManager] Game session has been reset.");
     }
 
     /// <summary>
@@ -170,7 +163,6 @@ public class GameManager : MonoBehaviour {
     private IEnumerator SlowMotionRoutine(float realDuration) {
         Time.timeScale = slowTimeScale;
 
-        // Adjust physics tick rate proportionally.
         Time.fixedDeltaTime = 0.02f * slowTimeScale;
 
         yield return new WaitForSecondsRealtime(realDuration);

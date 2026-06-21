@@ -1,4 +1,4 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
+// Copyright 2021, Infima Games. All Rights Reserved.
 
 using UnityEngine;
 
@@ -24,7 +24,7 @@ namespace InfimaGames.LowPolyShooterPack {
         #region ANIMATION
 
         /// <summary>
-        /// 
+        /// Called by the animation clip to eject a casing from the weapon.
         /// </summary>
         private void OnEjectCasing() {
             if (weapon != null)

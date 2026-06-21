@@ -62,18 +62,10 @@ public class ShopItemDataSO : ScriptableObject {
     /// <summary>
     /// Calculates the upgrade cost for a specific level using exponential scaling.
     /// Formula: unlockCost + (baseUpgradeCost * (multiplier ^ currentLevel))
-    /// Example with unlock=1000, base=100, mult=1.5:
-    /// - Level 1→2: 1000 + 100*(1.5^1) = 1150
-    /// - Level 2→3: 1000 + 100*(1.5^2) = 1225
-    /// - Level 5→6: 1000 + 100*(1.5^5) = 1875
     /// </summary>
-    /// <param name="currentLevel">Current upgrade level (1-based)</param>
-    /// <returns>Cost for the next upgrade</returns>
     public int GetUpgradeCost(int currentLevel) {
         if (currentLevel < 1) currentLevel = 1;
-        // Calcula o custo exponencial bruto: baseUpgradeCost * (multiplier ^ currentLevel)
         float exponentialCost = baseUpgradeCost * Mathf.Pow(upgradeCostMultiplier, currentLevel);
-        // Soma o custo de unlock (mantido exato) e arredonda para baixo na centena
         int rawCost = unlockCost + Mathf.RoundToInt(exponentialCost);
         return (rawCost / 100) * 100;
     }
@@ -83,21 +75,21 @@ public class ShopItemDataSO : ScriptableObject {
     #region SETTERS
 
     /// <summary>
-    /// Set the item data reference (for editor configuration only).
+    /// Sets the item data reference (for editor configuration only).
     /// </summary>
     public void SetItemData(ItemDataSO newItemData) {
         itemData = newItemData;
     }
 
     /// <summary>
-    /// Set the item icon (for editor configuration only).
+    /// Sets the item icon (for editor configuration only).
     /// </summary>
     public void SetIcon(Sprite newIcon) {
         icon = newIcon;
     }
 
     /// <summary>
-    /// Set the preview prefab (for editor configuration only).
+    /// Sets the preview prefab (for editor configuration only).
     /// </summary>
     public void SetPreviewPrefab(GameObject newPrefab) {
         previewPrefab = newPrefab;
@@ -105,4 +97,3 @@ public class ShopItemDataSO : ScriptableObject {
 
     #endregion
 }
-

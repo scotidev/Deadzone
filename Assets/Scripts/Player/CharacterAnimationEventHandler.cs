@@ -1,116 +1,113 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-
 using UnityEngine;
 
-// NAO PRECISAMOS MAIS DA FEATURE INSPECT 
-
 namespace InfimaGames.LowPolyShooterPack {
-	/// <summary>
-	/// Handles all the animation events that come from the character in the asset.
-	/// </summary>
-	public class CharacterAnimationEventHandler : MonoBehaviour {
+    /// <summary>
+    /// Handles all the animation events that come from the character in the asset.
+    /// </summary>
+    public class CharacterAnimationEventHandler : MonoBehaviour {
 
-		#region FIELDS
+        #region FIELDS
 
-		private CharacterBehaviour playerCharacter;
+        private CharacterBehaviour playerCharacter;
 
-		#endregion
+        #endregion
 
-		#region UNITY
+        #region UNITY
 
-		private void Awake() {
-			playerCharacter = ServiceLocator.Current.Get<IGameModeService>().GetPlayerCharacter();
-		}
+        private void Awake() {
+            playerCharacter = ServiceLocator.Current.Get<IGameModeService>().GetPlayerCharacter();
+        }
 
-		#endregion
+        #endregion
 
-		#region ANIMATION
+        #region METHODS
 
-		/// <summary>
-		/// Ejects a casing from the character's equipped weapon. This function is called from an Animation Event.
-		/// </summary>
-		private void OnEjectCasing() {
-			if (playerCharacter != null)
-				playerCharacter.EjectCasing();
-		}
+        #region ANIMATION
 
-		/// <summary>
-		/// Fills the character's equipped weapon's ammunition by a certain amount, or fully if set to 0. This function is called from a Animation Event.
-		/// </summary>
-		private void OnAmmunitionFill(int amount = 0) {
-			if (playerCharacter != null)
-				playerCharacter.FillAmmunition(amount);
-		}
-		/// <summary>
-		/// Sets the character's knife active value. This function is called from an Animation Event.
-		/// </summary>
-		private void OnSetActiveKnife(int active) {
-		}
+        /// <summary>
+        /// Ejects a casing from the character's equipped weapon. This function is called from an Animation Event.
+        /// </summary>
+        private void OnEjectCasing() {
+            if (playerCharacter != null)
+                playerCharacter.EjectCasing();
+        }
 
-		/// <summary>
-		/// Spawns a grenade at the correct location. This function is called from an Animation Event.
-		/// </summary>
-		private void OnGrenade() {
-		}
-		/// <summary>
-		/// Sets the equipped weapon's magazine to be active or inactive! This function is called from an Animation Event.
-		/// </summary>
-		private void OnSetActiveMagazine(int active) {
-			//Notify the character.
-			if (playerCharacter != null)
-				playerCharacter.SetActiveMagazine(active);
-		}
+        /// <summary>
+        /// Fills the character's equipped weapon's ammunition by a certain amount, or fully if set to 0. This function is called from a Animation Event.
+        /// </summary>
+        private void OnAmmunitionFill(int amount = 0) {
+            if (playerCharacter != null)
+                playerCharacter.FillAmmunition(amount);
+        }
+        /// <summary>
+        /// Sets the character's knife active value. This function is called from an Animation Event.
+        /// </summary>
+        private void OnSetActiveKnife(int active) {
+        }
 
-		/// <summary>
-		/// Bolt Animation Ended. This function is called from an Animation Event.
-		/// </summary>
-		private void OnAnimationEndedBolt() {
-		}
-		/// <summary>
-		/// Reload Animation Ended. This function is called from an Animation Event.
-		/// </summary>
-		private void OnAnimationEndedReload() {
-			if (playerCharacter != null)
-				playerCharacter.AnimationEndedReload();
-		}
+        /// <summary>
+        /// Spawns a grenade at the correct location. This function is called from an Animation Event.
+        /// </summary>
+        private void OnGrenade() {
+        }
+        /// <summary>
+        /// Sets the equipped weapon's magazine to be active or inactive! This function is called from an Animation Event.
+        /// </summary>
+        private void OnSetActiveMagazine(int active) {
+            if (playerCharacter != null)
+                playerCharacter.SetActiveMagazine(active);
+        }
 
-		/// <summary>
-		/// Grenade Throw Animation Ended. This function is called from an Animation Event.
-		/// </summary>
-		private void OnAnimationEndedGrenadeThrow() {
-		}
-		/// <summary>
-		/// Melee Animation Ended. This function is called from an Animation Event.
-		/// </summary>
-		private void OnAnimationEndedMelee() {
-			if (playerCharacter != null && playerCharacter is Character character) {
-				character.EndMeleeAttack();
-			}
-		}
+        /// <summary>
+        /// Bolt Animation Ended. This function is called from an Animation Event.
+        /// </summary>
+        private void OnAnimationEndedBolt() {
+        }
+        /// <summary>
+        /// Reload Animation Ended. This function is called from an Animation Event.
+        /// </summary>
+        private void OnAnimationEndedReload() {
+            if (playerCharacter != null)
+                playerCharacter.AnimationEndedReload();
+        }
 
-		/// <summary>
-		/// Inspect Animation Ended. This function is called from an Animation Event.
-		/// </summary>
-		private void OnAnimationEndedInspect() {
-			//Notify the character.
-			if (playerCharacter != null)
-				playerCharacter.AnimationEndedInspect();
-		}
-		/// <summary>
-		/// Holster Animation Ended. This function is called from an Animation Event.
-		/// </summary>
-		private void OnAnimationEndedHolster() {
-			//Notify the character.
-			if (playerCharacter != null)
-				playerCharacter.AnimationEndedHolster();
-		}
+        /// <summary>
+        /// Grenade Throw Animation Ended. This function is called from an Animation Event.
+        /// </summary>
+        private void OnAnimationEndedGrenadeThrow() {
+        }
+        /// <summary>
+        /// Melee Animation Ended. This function is called from an Animation Event.
+        /// </summary>
+        private void OnAnimationEndedMelee() {
+            if (playerCharacter != null && playerCharacter is Character character) {
+                character.EndMeleeAttack();
+            }
+        }
 
-		/// <summary>
-		/// Sets the character's equipped weapon's slide back pose. This function is called from an Animation Event.
-		/// </summary>
-		private void OnSlideBack(int back) {
-		}
+        /// <summary>
+        /// Inspect Animation Ended. This function is called from an Animation Event.
+        /// </summary>
+        private void OnAnimationEndedInspect() {
+            if (playerCharacter != null)
+                playerCharacter.AnimationEndedInspect();
+        }
+        /// <summary>
+        /// Holster Animation Ended. This function is called from an Animation Event.
+        /// </summary>
+        private void OnAnimationEndedHolster() {
+            if (playerCharacter != null)
+                playerCharacter.AnimationEndedHolster();
+        }
 
-		#endregion
-	}
+        /// <summary>
+        /// Sets the character's equipped weapon's slide back pose. This function is called from an Animation Event.
+        /// </summary>
+        private void OnSlideBack(int back) {
+        }
+
+        #endregion
+
+        #endregion
+    }
 }

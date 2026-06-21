@@ -1,5 +1,3 @@
-// Copyright 2021, Infima Games. All Rights Reserved.
-
 using UnityEngine;
 using UnityEngine.UI;
 

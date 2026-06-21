@@ -26,24 +26,16 @@ public class WeaponDataSO : ItemDataSO {
 
     #region PROPERTIES
 
-    // MaxAmmo is inherited from ItemDataSO, allowing it to be configured per weapon in the Inspector
-
     #endregion
 
     #region METHODS
 
     /// <summary>
     /// Calculates the damage stat for a given upgrade level.
-    /// Formula: baseDamage × (1 + damageScaling × level)
-    /// Example: Level 5 with 10% scaling = base × 1.5 (50% more damage)
+    /// Formula: baseDamage * (1 + damageScaling * (level - 1))
     /// </summary>
-    /// <param name="level">Current upgrade level.</param>
-    /// <returns>The calculated damage value.</returns>
     public float GetDamageAtLevel(int level) {
         level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
-
-        // FORMULA: baseDamage * (1 + damageScaling * (level - 1))
-        // Level 1 = baseDamage * 1
         return baseDamage * (1 + damageScaling * (level - 1));
     }
 
@@ -51,12 +43,8 @@ public class WeaponDataSO : ItemDataSO {
     /// Calculates the fire rate stat for a given upgrade level.
     /// Higher fire rate = faster shooting.
     /// </summary>
-    /// <param name="level">Current upgrade level.</param>
-    /// <returns>The calculated fire rate in rounds per minute (capped at maxFireRate).</returns>
     public float GetFireRateAtLevel(int level) {
         level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
-
-        // FORMULA: baseFireRate * (1 + fireRateScaling * (level - 1))
         return baseFireRate * (1 + fireRateScaling * (level - 1));
     }
 
@@ -68,7 +56,7 @@ public class WeaponDataSO : ItemDataSO {
         level = Mathf.Clamp(level, 1, MaxUpgradeLevel);
         return new[] { 
             GetDamageAtLevel(level), 
-            GetFireRateAtLevel(level), // Don't divide by 100f - let normalization handle it
+            GetFireRateAtLevel(level),
             (float)GetMaxAmmoAtLevel(level)
         };
     }

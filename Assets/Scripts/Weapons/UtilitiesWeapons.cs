@@ -1,14 +1,12 @@
-﻿// Copyright 2021, Infima Games. All Rights Reserved.
-
 using UnityEngine;
 
 namespace InfimaGames.LowPolyShooterPack {
     /// <summary>
-    /// Weapon Static Utilities.
+    /// Weapon Static Utilities. Provides extension methods for weapon attachment arrays.
     /// </summary>
     public static class UtilitiesWeapons {
         /// <summary>
-        /// Enables one object, disables all others.
+        /// Enables one object in the array at the given index, disables all others.
         /// </summary>
         public static T SelectAndSetActive<T>(this T[] array, int index) where T : MonoBehaviour {
             if (!array.IsValid())

@@ -80,10 +80,8 @@ public class ShopItemCard : MonoBehaviour, IPointerClickHandler {
     }
 
     /// <summary>
-    /// Internal method that updates the card's visuals and interactivity based on the current item data and player progress.
-    /// This method is called whenever the card needs to refresh its state (e.g., after an unlock or upgrade).
-    /// CONCEITO: Use IsItemUnlocked() and GetItemLevel() instead of weapon-specific methods
-    /// to ensure all 9 items (weapons, consumables, buildables) display correct state.
+    /// Internal method that updates the card's visuals based on item data and player progress.
+    /// Uses IsItemUnlocked() and GetItemLevel() for consistent state display across all item types.
     /// </summary>
     private void InternalRefreshCardState() {
         if (currentItemData == null || PlayerProgress.Instance == null) return;
