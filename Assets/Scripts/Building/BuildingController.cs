@@ -23,6 +23,8 @@ public class BuildingController : MonoBehaviour {
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask wallLayer;
     [SerializeField] private LayerMask obstacleLayer;
+    [Tooltip("Layer assigned to SafeZones. Excluded from placement overlap so SafeZones don't block building but trigger colliders (e.g. BearTrap) are still detected.")]
+    [SerializeField] private LayerMask safeZoneLayer;
     [SerializeField] private Character playerCharacter;
     [SerializeField] private float maxPlacementDistance = 8f;
     [SerializeField] private float maxSlopeAngle = 45f;
@@ -189,16 +191,18 @@ public class BuildingController : MonoBehaviour {
             if (Vector3.Distance(targetGhostPosition, placementPos) > 0.01f)
                 targetGhostPosition = placementPos;
 
-            LayerMask overlapMask = ~groundMask;
+            // CONCEITO: Incluímos trigger colliders na verificação para detectar BearTraps
+            // (que usam colliders trigger para OnTriggerEnter com inimigos),
+            // mas excluímos a layer da SafeZone para não bloquear construção sobre áreas seguras.
+            LayerMask safeZoneMask = safeZoneLayer.value != 0 ? safeZoneLayer.value : 0;
+            LayerMask overlapMask = ~groundMask & ~safeZoneMask;
 
-            // Agora o OverlapBox usa a rotação real do ghost para detectar colisões corretamente em ladeiras.
-            // IMPORTANTE: QueryTriggerInteraction.Ignore garante que Triggers (como SafeZones) não bloqueiem a construção.
             Collider[] collisions = Physics.OverlapBox(
                 placementPos,
                 selectedItem.OverlapBoxSize * 0.5f,
                 finalRotation,
                 overlapMask,
-                QueryTriggerInteraction.Ignore
+                QueryTriggerInteraction.Collide
             );
 
             bool hasInventory = HasInventoryQuantity();

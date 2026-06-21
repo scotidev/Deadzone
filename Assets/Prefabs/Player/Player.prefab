@@ -243,6 +243,11 @@ PrefabInstance:
       propertyPath: maxSlopeAngle
       value: 20
       objectReference: {fileID: 0}
+    - target: {fileID: 4350808895881984923, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
+        type: 3}
+      propertyPath: safeZoneLayer.m_Bits
+      value: 131072
+      objectReference: {fileID: 0}
     - target: {fileID: 4749104247355021179, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: meleeSFX
@@ -356,12 +361,12 @@ PrefabInstance:
     - target: {fileID: 6016615612185836426, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.085
+      value: -0.08
       objectReference: {fileID: 0}
     - target: {fileID: 6016615612185836426, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.46
+      value: 0.47
       objectReference: {fileID: 0}
     - target: {fileID: 6016615612185836426, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
@@ -456,7 +461,7 @@ PrefabInstance:
     - target: {fileID: 8432152278379913118, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 0.07
       objectReference: {fileID: 0}
     - target: {fileID: 8432152278379913118, guid: 19eadcf8fbed56b4da77ca94c1b4145f,
         type: 3}

@@ -72,6 +72,7 @@ namespace InfimaGames.LowPolyShooterPack {
         private Vector2 axisLook;
         private Vector2 axisMovement;
         private bool tutorialTextVisible;
+        private IAudioManagerService audioService;
 
         #endregion
 
@@ -138,6 +139,8 @@ namespace InfimaGames.LowPolyShooterPack {
             UpdateCursorState();
 
             characterKinematics = GetComponent<CharacterKinematics>();
+
+            audioService = ServiceLocator.Current.Get<IAudioManagerService>();
 
             // CONCEITO: Armazenar o controller inicial para usar como base para braços 
             // quando não estivermos segurando uma arma de fogo específica.
@@ -710,7 +713,7 @@ namespace InfimaGames.LowPolyShooterPack {
                             Debug.Log($"[Character] OnTryPlayReload: no reserve ammo — playing empty click.");
                             AudioClip clip = equippedWeapon.GetAudioClipFireEmpty();
                             if (clip != null) {
-                                AudioSource.PlayClipAtPoint(clip, transform.position);
+                                audioService?.PlaySFX2D(clip, 1f);
                             }
                             return;
                         }

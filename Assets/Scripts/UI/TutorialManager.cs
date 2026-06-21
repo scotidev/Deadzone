@@ -61,7 +61,7 @@ namespace Deadzone.UI {
         private readonly HashSet<string> shownSteps = new();
         private readonly Queue<TutorialStepSO> pendingQueue = new();
         private TutorialStepSO currentStep;
-        private float elapsedTime;
+        private float stepStartTime;
         private bool isProcessing;
         private bool isResolved;
 
@@ -132,7 +132,6 @@ namespace Deadzone.UI {
                 currentStep = null;
                 pendingQueue.Clear();
                 isProcessing = false;
-                elapsedTime = 0f;
                 isCompleting = false;
                 completionTriggered = false;
             }
@@ -155,7 +154,6 @@ namespace Deadzone.UI {
 
             pendingQueue.Clear();
             isProcessing = false;
-            elapsedTime = 0f;
             isCompleting = false;
             completionTriggered = false;
         }
@@ -194,7 +192,11 @@ namespace Deadzone.UI {
 
             shownSteps.Add(currentStep.StepId);
 
-            elapsedTime = 0f;
+            // CONCEITO: Usamos Time.realtimeSinceStartup (tempo real desde o boot) ao invés de
+            // acumular elapsedTime com Time.deltaTime. Isso garante que o timeout do tutorial
+            // SEMPRE dispare, mesmo durante loja (GameState.Shopping), slow-motion, pausa, etc.
+            // O tutorial vai sumir após o tempo configurado, não importa o que aconteça na tela.
+            stepStartTime = Time.realtimeSinceStartup;
             completionTriggered = false;
             tutorialUI?.Show(currentStep.TutorialText, currentStep.TutorialImage);
         }
@@ -206,8 +208,15 @@ namespace Deadzone.UI {
             string nextId = currentStep.NextStepId;
 
             currentStep = null;
-            elapsedTime = 0f;
             tutorialUI?.Hide();
+
+            // CONCEITO: Se está na loja, não mostra o próximo tutorial agora.
+            // Ele será mostrado quando OnShopClosed() enfileirar os novos steps.
+            bool isShopping = GameManager.Instance != null && GameManager.Instance.State == GameState.Shopping;
+            if (isShopping) {
+                isProcessing = false;
+                return;
+            }
 
             // Auto-encadeamento: se este step especifica um próximo tutorial, enfileira ele
             if (!string.IsNullOrEmpty(nextId)) {
@@ -235,28 +244,31 @@ namespace Deadzone.UI {
         private void ProcessCurrentStep() {
             if (currentStep == null || isCompleting) return;
 
-            if (GameManager.Instance != null && GameManager.Instance.State == GameState.Shopping) {
-                return;
-            }
+            // CONCEITO: Tempo real desde que o step começou (baseado em Time.realtimeSinceStartup).
+            // Isso nunca para, mesmo durante loja, slow-motion, pause, etc.
+            // Assim o tutorial SEMpre vai timed-out e desaparecerá após o tempo configurado.
+            float elapsed = Time.realtimeSinceStartup - stepStartTime;
 
-            elapsedTime += Time.deltaTime;
+            bool isShopping = GameManager.Instance != null && GameManager.Instance.State == GameState.Shopping;
 
-            // Detect completion action once (don't lose it on the exact frame it happens)
-            if (!completionTriggered)
-                completionTriggered = CheckCompletion();
+            // Só verifica ação do jogador se NÃO estiver na loja (evita clique acidental)
+            if (!isShopping) {
+                if (!completionTriggered)
+                    completionTriggered = CheckCompletion();
 
-            // Interrupção imediata: se tem próximo step na fila e a ação foi detectada, pula sem fade out
-            if (completionTriggered && (!string.IsNullOrEmpty(currentStep.NextStepId) || pendingQueue.Count > 0)) {
-                tutorialUI?.Hide();
-                CompleteCurrentStep();
-                return;
+                // Interrupção imediata: se tem próximo step na fila e a ação foi detectada, pula sem fade out
+                if (completionTriggered && (!string.IsNullOrEmpty(currentStep.NextStepId) || pendingQueue.Count > 0)) {
+                    tutorialUI?.Hide();
+                    CompleteCurrentStep();
+                    return;
+                }
             }
 
             float timeout = currentStep.Timeout > 0f ? currentStep.Timeout : tutorialUI.DefaultStepTimeout;
             float fadeStartTime = Mathf.Max(timeout - tutorialUI.FadeOutDuration, 0f);
 
-            bool canCompleteByAction = completionTriggered && elapsedTime >= minimumDisplayTime;
-            bool canCompleteByTimeout = elapsedTime >= fadeStartTime;
+            bool canCompleteByAction = !isShopping && completionTriggered && elapsed >= minimumDisplayTime;
+            bool canCompleteByTimeout = elapsed >= fadeStartTime;
 
             if (canCompleteByAction || canCompleteByTimeout) {
                 BeginCompletion();

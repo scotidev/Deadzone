@@ -129,7 +129,10 @@ namespace InfimaGames.LowPolyShooterPack
             var newSourceObject = new GameObject($"Audio Source -> {clip.name}");
             var newAudioSource = newSourceObject.AddComponent<AudioSource>();
 
-            newAudioSource.volume = settings.Volume;
+            // CONCEITO: Aplica o volume mestre de SFX (sfxVolume) em cima do volume específico do AudioSettings.
+            // Isso garante que TODOS os sons que passam pelo método legado PlayOneShot (incluindo
+            // PlaySoundCharacterBehaviour para armas) respeitem o slider de SFX do OptionsUI.
+            newAudioSource.volume = sfxVolume * settings.Volume;
             newAudioSource.spatialBlend = settings.SpatialBlend;
 
             newAudioSource.PlayOneShot(clip);
@@ -304,7 +307,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// </summary>
         public void PlayDialogue2D(AudioClip clip, float volumeScale = 1f)
         {
-            Play2DClip(clip, dialogueVolume, volumeScale);
+            Play2DClip(clip, sfxVolume, volumeScale);
         }
 
         /// <summary>
@@ -421,7 +424,7 @@ namespace InfimaGames.LowPolyShooterPack
             dialogueSource.spatialBlend = 1f;
             dialogueSource.minDistance = minDistance;
             dialogueSource.maxDistance = maxDistance;
-            dialogueSource.volume = dialogueVolume * volumeScale;
+            dialogueSource.volume = sfxVolume * volumeScale;
 
             dialogueSource.Play();
         }

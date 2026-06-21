@@ -224,11 +224,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ZombieDefault
   isTutorialEnemy: 0
   initialHealth: 100
-  maxHealthCap: 200
+  maxHealthCap: 500
   initialAttackDamage: 5
-  maxAttackDamageCap: 15
-  initialRewardCurrency: 100
-  maxRewardCurrencyCap: 200
+  maxAttackDamageCap: 25
+  initialRewardCurrency: 50
+  maxRewardCurrencyCap: 250
   defaultMoveSpeed: 2.5
   defaultAttackRange: 1.8
   defaultAttackCooldown: 1.5

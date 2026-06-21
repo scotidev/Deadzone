@@ -33,6 +33,7 @@ public class EasterEggTarget : MonoBehaviour {
     private bool isActivated = false;
     private Collider targetCollider;
     private Coroutine missCheckCoroutine;
+    private IAudioManagerService audioService;
 
     #endregion
 
@@ -48,6 +49,8 @@ public class EasterEggTarget : MonoBehaviour {
             rb.isKinematic = true;
             rb.useGravity = false;
         }
+
+        audioService = ServiceLocator.Current.Get<IAudioManagerService>();
     }
 
     private void OnEnable() {
@@ -166,7 +169,7 @@ public class EasterEggTarget : MonoBehaviour {
 
         // Play activation sound
         if (activationSound != null) {
-            AudioSource.PlayClipAtPoint(activationSound, transform.position, 1f);
+            audioService?.PlaySFX3D(activationSound, transform.position, 1f);
         }
 
         // Transform all alive enemies into penguins

@@ -63,6 +63,7 @@ namespace InfimaGames.LowPolyShooterPack {
         private float currentDamage;
         private float currentFireRate;
         private bool isAutomatic;
+        private IAudioManagerService audioService;
 
         #endregion
 
@@ -75,6 +76,8 @@ namespace InfimaGames.LowPolyShooterPack {
             gameModeService = ServiceLocator.Current.Get<IGameModeService>();
             characterBehaviour = gameModeService.GetPlayerCharacter();
             playerCamera = characterBehaviour.GetCameraWorld().transform;
+
+            audioService = ServiceLocator.Current.Get<IAudioManagerService>();
 
             if (weaponData == null) {
                 Debug.LogError($"[Weapon] {gameObject.name} (ID: {itemID}) HAS NO WEAPONDATASO ASSIGNED! Assign a WeaponDataSO in the Inspector.", this);
@@ -307,7 +310,7 @@ namespace InfimaGames.LowPolyShooterPack {
                     // No reserve ammo - play a feedback sound instead of reload animation.
                     // This gives the player clear audio feedback that they're out of ammo.
                     if (audioClipFireEmpty != null) {
-                        AudioSource.PlayClipAtPoint(audioClipFireEmpty, transform.position);
+                        audioService?.PlaySFX3D(audioClipFireEmpty, transform.position, 1f);
                     }
                     Debug.Log($"[Weapon] Cannot reload {itemID} - no reserve ammo available.");
                     return;
