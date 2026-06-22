@@ -16,6 +16,12 @@ The game is **endless** — waves scale in difficulty indefinitely, and the only
 
 This project is being developed as an academic game project for **UNINTER Digital Games**.
 
+### Play in Browser 
+
+The game is available to play directly in your browser.
+
+**[PLAY NOW](https://scotidev.itch.io/deadzone)**
+
 ## Gameplay
 
 |<img width="865" height="481" alt="Shopping Phase" src="https://github.com/user-attachments/assets/be9b3340-7fee-4ef3-b0e9-41accbf0fc29" />|<img width="867" height="486" alt="Combat Phase" src="https://github.com/user-attachments/assets/6725793a-f250-48e5-b57d-056bb055601c" />|<img width="867" height="487" alt="Building System" src="https://github.com/user-attachments/assets/1f17217a-b0d0-4813-a14f-106484518954" />|
@@ -38,16 +44,6 @@ This project is being developed as an academic game project for **UNINTER Digita
 ---
 
 ## How to Play
-
-### Play in Browser 
-
-The game is available to play directly in your browser.
-
-**[PLAY NOW](https://scotidev.itch.io/deadzone)**
-
----
-
-## Controls
 
 | Action | Keyboard |
 | :--- | :---: |
