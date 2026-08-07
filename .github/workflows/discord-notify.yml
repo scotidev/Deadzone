@@ -15,8 +15,38 @@ jobs:
           curl -H "Content-Type: application/json" \
           -d @- $DISCORD_WEBHOOK << EOF
           {
-            "username": "GitHub",
+            "username": "GitHub - Deadzone",
             "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-            "content": "**Novo commit** em \`${{ github.repository }}\`\n**Branch:** \`${{ github.ref_name }}\`\n**Autor:** ${{ github.actor }}\n**Mensagem:** ${{ github.event.head_commit.message }}\n\n🔗 ${{ github.event.head_commit.url }}"
+            "embeds": [
+              {
+                "title": "Novo Commit",
+                "url": "${{ github.event.head_commit.url }}",
+                "color": 5814782,
+                "fields": [
+                  {
+                    "name": "Repositório",
+                    "value": "`${{ github.repository }}`",
+                    "inline": true
+                  },
+                  {
+                    "name": "Branch",
+                    "value": "`${{ github.ref_name }}`",
+                    "inline": true
+                  },
+                  {
+                    "name": "Autor",
+                    "value": "${{ github.actor }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "Mensagem",
+                    "value": "${{ github.event.head_commit.message }}"
+                  }
+                ],
+                "footer": {
+                  "text": "GitHub Actions"
+                }
+              }
+            ]
           }
           EOF
