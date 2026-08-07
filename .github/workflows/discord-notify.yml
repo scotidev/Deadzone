@@ -2,20 +2,21 @@ name: Discord Notify
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [master, main]
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send to Discord
+      - name: Send Discord Notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
           curl -H "Content-Type: application/json" \
-          -d "{
-            \"username\": \"GitHub\",
-            \"avatar_url\": \"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\",
-            \"content\": \"**Novo commit** em \`${{ github.repository }}\`\n**Branch:** \`${{ github.ref_name }}\`\n**Autor:** ${{ github.actor }}\n**Mensagem:** ${{ github.event.head_commit.message }}\n\n🔗 ${{ github.event.head_commit.url }}\"
-          }" \
-          $DISCORD_WEBHOOK
+          -d @- $DISCORD_WEBHOOK << EOF
+          {
+            "username": "GitHub",
+            "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+            "content": "**Novo commit** em \`${{ github.repository }}\`\n**Branch:** \`${{ github.ref_name }}\`\n**Autor:** ${{ github.actor }}\n**Mensagem:** ${{ github.event.head_commit.message }}\n\n🔗 ${{ github.event.head_commit.url }}"
+          }
+          EOF
