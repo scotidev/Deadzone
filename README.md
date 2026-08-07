@@ -76,7 +76,7 @@ The game is available to play directly in your browser.
 
 ---
 
-## 👥 Development Team
+## 👥 Developers
 
 | | |
 |---|---|
@@ -84,4 +84,3 @@ The game is available to play directly in your browser.
 | [LinkedIn](https://www.linkedin.com/in/scotidev/) | [LinkedIn](https://www.linkedin.com/in/larymenjon/) |
 
 ---
-
